@@ -1,0 +1,55 @@
+[(Contract(partners=['06Dec@2', '10Ash@3'], 
+agreement={'quantity': 13, 'time': 14, 'unit_price': 33}, 
+annotation={'product': 3, 'is_buy': False, 'buyer': '10Ash@3', 'seller': '06Dec@2', 'caller': '06Dec@2'}, 
+issues=[quantity: (1, 22), time: (13, 14), unit_price: (33, 66)], 
+signed_at=-1, 
+executed_at=-1, 
+concluded_at=13, 
+nullified_at=-1, 
+to_be_signed_at=13, 
+signatures={}, 
+mechanism_state=SAOState(running=False, waiting=False, started=True, step=2, time=0.19533130000490928, relative_time=0.15, broken=False, timedout=False, agreement=(13, 14, 33), results=None, n_negotiators=2, has_error=False, error_details='', current_offer=(13, 14, 33), current_proposer='95fe5fc8-38e5-4a12-afde-789636b825c2', current_proposer_agent='06Dec@2', n_acceptances=0, new_offers=[], new_offerer_agents=[]), 
+mechanism_id='06fd329b-d18c-415d-a36b-378cd5418d2e', 
+id='07eada28-21cd-4d12-b87b-6b5adb44a74d'), 0)]
+
+
+
+
+[(Contract(partners=['BUYER', '09Ash@3'], 
+agreement={'time': 19, 'quantity': 2, 'unit_price': 45},
+ annotation={'seller': '09Ash@3', 'buyer': 'BUYER', 'caller': 'BUYER', 'is_buy': False, 'product': 4}, 
+ issues=[], 
+ signed_at=-1, 
+ executed_at=-1, 
+ concluded_at=-1, 
+ nullified_at=-1, 
+ to_be_signed_at=12, 
+ signatures={'BUYER': 'BUYER'}, 
+ mechanism_state=None, 
+ mechanism_id=None, 
+ id='8173c7e4-656c-41d3-b942-e39bd627ec02'),
+  0), 
+
+ (Contract(partners=['BUYER', '09Ash@3'], 
+ agreement={'time': 19, 'quantity': 7, 'unit_price': 45}, 
+ annotation={'seller': '09Ash@3', 'buyer': 'BUYER', 'caller': 'BUYER', 'is_buy': True, 'product': 4}, 
+ issues=[], 
+ signed_at=-1, 
+ executed_at=-1, 
+ concluded_at=-1, 
+ nullified_at=-1, 
+ to_be_signed_at=12, signatures={'BUYER': 'BUYER'}, 
+ mechanism_state=None, 
+ mechanism_id=None, 
+ id='0eda15f9-1152-4b44-a9a0-b34246bb3149'), 1), 
+ 
+ (Contract(partners=['BUYER', '09Ash@3'], agreement={'time': 19, 'quantity': 2, 'unit_price': 45}, annotation={'seller': '09Ash@3', 'buyer': 'BUYER', 'caller': 'BUYER', 'is_buy': False, 'product': 4}, issues=[], signed_at=-1, executed_at=-1, concluded_at=-1, nullified_at=-1, to_be_signed_at=12, signatures={'BUYER': 'BUYER'}, mechanism_state=None, mechanism_id=None, id='6e94737a-e65f-4a56-956f-1cf4f734aa00'), 2), 
+ (Contract(partners=['BUYER', '09Ash@3'], agreement={'time': 19, 'quantity': 5, 'unit_price': 45}, annotation={'seller': '09Ash@3', 'buyer': 'BUYER', 'caller': 'BUYER', 'is_buy': True, 'product': 4}, issues=[], signed_at=-1, executed_at=-1, concluded_at=-1, nullified_at=-1, to_be_signed_at=12, signatures={'BUYER': 'BUYER'}, mechanism_state=None, mechanism_id=None, id='7b47a1e0-0d55-4cab-a55b-5d548e9b338d'), 3), 
+ (Contract(partners=['BUYER', '09Ash@3'], agreement={'time': 19, 'quantity': 1, 'unit_price': 45}, annotation={'seller': '09Ash@3', 'buyer': 'BUYER', 'caller': 'BUYER', 'is_buy': True, 'product': 4}, issues=[], signed_at=-1, executed_at=-1, concluded_at=-1, nullified_at=-1, to_be_signed_at=12, signatures={'BUYER': 'BUYER'}, mechanism_state=None, mechanism_id=None, id='8d7a84bb-c67e-46ab-8942-ee5c95193f69'), 4)]
+end
+sign_all_contracts
+[(Contract(partners=['02Ash@0', '04Dec@1'], agreement={'quantity': 5, 'time': 14, 'unit_price': 25}, annotation={'product': 1, 'is_buy': False, 'buyer': '04Dec@1', 'seller': '02Ash@0', 'caller': '02Ash@0'}, issues=[quantity: (1, 5), time: (12, 17), unit_price: (17, 34)], signed_at=-1, executed_at=-1, concluded_at=12, nullified_at=-1, to_be_signed_at=12, signatures={}, mechanism_state=SAOState(running=False, waiting=False, started=True, step=17, time=0.3616314000028069, relative_time=0.9, broken=False, timedout=False, agreement=(5, 14, 25), results=None, n_negotiators=2, has_error=False, error_details='', current_offer=(5, 14, 25), current_proposer='6bf9f626-10df-40ba-ad20-f7c83b3f52c8', current_proposer_agent='02Ash@0', n_acceptances=0, new_offers=[('6bf9f626-10df-40ba-ad20-f7c83b3f52c8', (5, 14, 25))], new_offerer_agents=['02Ash@0']), mechanism_id='098e7cdc-05a2-40ec-a518-86629b035fd2', id='3632189f-c8a1-4ff1-9a86-ef8b686b921f'), 0)]
+end
+sign_all_contracts
+[(Contract(partners=['11Dec@3', '08Ash@2'], agreement={'quantity': 5, 'time': 14, 'unit_price': 19}, annotation={'product': 3, 'is_buy': True, 'buyer': '11Dec@3', 'seller': '08Ash@2', 'caller': '11Dec@3'}, issues=[quantity: (1, 5), time: (12, 17), unit_price: (1, 35)], signed_at=-1, executed_at=-1, concluded_at=12, nullified_at=-1, to_be_signed_at=12, signatures={}, mechanism_state=SAOState(running=False, waiting=False, started=True, step=17, time=0.3854254000034416, relative_time=0.9, broken=False, timedout=False, agreement=(5, 14, 19), results=None, n_negotiators=2, has_error=False, error_details='', current_offer=(5, 14, 19), current_proposer='0bd6d918-443d-48e8-ae75-3f1437040a60', current_proposer_agent='11Dec@3', n_acceptances=0, new_offers=[('0bd6d918-443d-48e8-ae75-3f1437040a60', (5, 14, 19))], new_offerer_agents=['11Dec@3']), mechanism_id='e376f168-ae77-4c6d-b476-b4345fac6bba', id='b4b5599c-c791-4a39-8df1-48e0404ce1e2'), 0), 
+(Contract(partners=['08Ash@2', '04Dec@1'], agreement={'quantity': 12, 'time': 15, 'unit_price': 29}, annotation={'product': 2, 'is_buy': True, 'buyer': '08Ash@2', 'seller': '04Dec@1', 'caller': '08Ash@2'}, issues=[quantity: (1, 12), time: (12, 15), unit_price: (1, 29)], signed_at=-1, executed_at=-1, concluded_at=12, nullified_at=-1, to_be_signed_at=12, signatures={}, mechanism_state=SAOState(running=False, waiting=False, started=True, step=2, time=0.2724491999979364, relative_time=0.15, broken=False, timedout=False, agreement=(12, 15, 29), results=None, n_negotiators=2, has_error=False, error_details='', current_offer=(12, 15, 29), current_proposer='d94d1777-bd35-4d0c-a13a-8fa369cb0fe1', current_proposer_agent='04Dec@1', n_acceptances=0, new_offers=[], new_offerer_agents=[]), mechanism_id='196d5f4d-1b9c-47e4-b8a7-b9bda2e02ac4', id='9d8b750f-7fa6-47b0-882e-d6193fe8694f'), 1)]

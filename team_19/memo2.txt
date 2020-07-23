@@ -1,0 +1,65 @@
+(Contract(partners=['BUYER', '11Ash@3'], agreement={'time': 19, 'quantity': 3, 'unit_price': 49}, annotation={'seller': '11Ash@3', 'buyer': 'BUYER', 'caller': 'BUYER', 'is_buy': False, 'product': 4}, issues=[], signed_at=-1, executed_at=-1, concluded_at=-1, nullified_at=-1, to_be_signed_at=13, signatures={'BUYER': 'BUYER'}, mechanism_state=None, mechanism_id=None, id='f9873abb-5589-4c7e-8bd8-e2d279827fa1'), 0)
+(Contract(partners=['BUYER', '11Ash@3'], agreement={'time': 19, 'quantity': 1, 'unit_price': 49}, annotation={'seller': '11Ash@3', 'buyer': 'BUYER', 'caller': 'BUYER', 'is_buy': True, 'product': 4}, issues=[], signed_at=-1, executed_at=-1, concluded_at=-1, nullified_at=-1, to_be_signed_at=13, signatures={'BUYER': 'BUYER'}, mechanism_state=None, mechanism_id=None, id='374ffc75-581f-4465-974a-75ee452d8764'), 1)
+(Contract(partners=['BUYER', '11Ash@3'], agreement={'time': 19, 'quantity': 1, 'unit_price': 49}, annotation={'seller': '11Ash@3', 'buyer': 'BUYER', 'caller': 'BUYER', 'is_buy': False, 'product': 4}, issues=[], signed_at=-1, executed_at=-1, concluded_at=-1, nullified_at=-1, to_be_signed_at=13, signatures={'BUYER': 'BUYER'}, mechanism_state=None, mechanism_id=None, id='7f3e80ad-5862-4e56-9bd0-1c1a15eae79b'), 2)
+(Contract(partners=['11Ash@3', '06Dec@2'], agreement={'quantity': 5, 'time': 15, 'unit_price': 22}, annotation={'product': 3, 'is_buy': True, 'buyer': '11Ash@3', 'seller': '06Dec@2', 'caller': '11Ash@3'}, issues=[quantity: (1, 5), time: (13, 17), unit_price: (1, 41)], signed_at=-1, executed_at=-1, concluded_at=13, nullified_at=-1, to_be_signed_at=13, signatures={}, mechanism_state=SAOState(running=False, waiting=False, started=True, step=17, time=0.332842999996501, relative_time=0.9, broken=False, timedout=False, agreement=(5, 15, 22), results=None, n_negotiators=2, has_error=False, error_details='', current_offer=(5, 15, 22), current_proposer='75a98d49-5f72-47f2-ad2f-0d8bd7cdba75', current_proposer_agent='11Ash@3', n_acceptances=0, new_offers=[('75a98d49-5f72-47f2-ad2f-0d8bd7cdba75', (5, 15, 22))], new_offerer_agents=['11Ash@3']), mechanism_id='81727b5d-99bf-4026-9d9c-e712888af6d3', id='d45c8cae-514f-4298-85ad-e30b65896d24'), 3)
+(Contract(partners=['11Ash@3', '08Dec@2'], agreement={'quantity': 5, 'time': 14, 'unit_price': 20}, annotation={'product': 3, 'is_buy': True, 'buyer': '11Ash@3', 'seller': '08Dec@2', 'caller': '11Ash@3'}, issues=[quantity: (1, 5), time: (13, 17), unit_price: (1, 41)], signed_at=-1, executed_at=-1, concluded_at=13, nullified_at=-1, to_be_signed_at=13, signatures={}, mechanism_state=SAOState(running=False, waiting=False, started=True, step=17, time=0.3312191000004532, relative_time=0.9, broken=False, timedout=False, agreement=(5, 14, 20), results=None, n_negotiators=2, has_error=False, error_details='', current_offer=(5, 14, 20), current_proposer='4fdea9df-3ab7-4a8e-845e-456c1119d0d4', current_proposer_agent='08Dec@2', n_acceptances=0, new_offers=[('4fdea9df-3ab7-4a8e-845e-456c1119d0d4', (5, 14, 20))], new_offerer_agents=['08Dec@2']), mechanism_id='af9b36e9-88eb-43a6-8440-c9e20a0595e7', id='af564d8c-0be8-4d70-9f0f-5425818e2490'), 4)
+(Contract(partners=['BUYER', '11Ash@3'], agreement={'time': 19, 'quantity': 2, 'unit_price': 49}, annotation={'seller': '11Ash@3', 'buyer': 'BUYER', 'caller': 'BUYER', 'is_buy': True, 'product': 4}, issues=[], signed_at=-1, executed_at=-1, concluded_at=-1, nullified_at=-1, to_be_signed_at=13, signatures={'BUYER': 'BUYER'}, mechanism_state=None, mechanism_id=None, id='1619a84a-18b2-4f77-ab5c-85ce06efb81b'), 5)
+(Contract(partners=['BUYER', '11Ash@3'], agreement={'time': 19, 'quantity': 2, 'unit_price': 49}, annotation={'seller': '11Ash@3', 'buyer': 'BUYER', 'caller': 'BUYER', 'is_buy': False, 'product': 4}, issues=[], signed_at=-1, executed_at=-1, concluded_at=-1, nullified_at=-1, to_be_signed_at=13, signatures={'BUYER': 'BUYER'}, mechanism_state=None, mechanism_id=None, id='8c97b314-59da-48a1-9b4b-995ae987eae1'), 6)
+
+False 9 5 5
+False 9 5 7
+False 9 5 10
+True 10 6 1
+True 10 6 4
+True 10 6 6
+True 10 6 9
+True 10 6 11
+False 25 5 3
+False 25 8 12
+False 26 4 2
+False 26 5 13
+False 26 7 8
+False 26 8 0
+[5, 7, 10, 1, 4, 6, 9, 11, 3, 12, 2, 13, 8, 0]
+
+
+False 19 1 8
+False 19 3 21
+False 21 1 15
+False 58 1 7
+False 58 1 12
+False 58 1 19
+False 58 2 2
+False 58 3 1
+False 58 3 23
+False 58 3 24
+False 58 4 25
+False 58 5 16
+True 58 6 6
+True 58 6 14
+True 58 6 17
+True 58 6 18
+True 58 6 22
+False 58 6 4
+False 58 6 13
+False 58 6 20
+False 59 7 0
+False 59 7 3
+False 59 9 9
+False 59 9 10
+False 59 10 5
+False 59 10 11
+[8, 21, 15, 7, 12, 19, 2, 1, 23, 24, 25, 16, 6, 14, 17, 18, 22, 4, 13, 20, 0, 3, 9, 10, 5, 11]
+
+
+
+[10 10 10 10 10 10 10 10 10 10 
+11 11 11 11 11 11 11 11 11 11 
+12 12 12 12 12 12 12 12 12 12 
+13 13 13 13 13 13 13 13 13 13 
+14 14 14 14 14 14 14 14 14 14 
+15 15 15 15 15 15 15 15 15 15 
+16 16 16 16 16 16 16 16 16 16 
+17 17 17 17 17 17 17 17 17 17 
+18 18 18 18 18 18 18 18 18 18 
+19 19 19 19 19 19 19 19 19 19]
