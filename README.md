@@ -21,8 +21,8 @@ Agents accepted for the qualifications
 | Team 27     | team_27     | Agent 32              | AgentProjectGC        | Ozyegin University                             |
 | Team 29     | team_29     | BIU-DODY              | DrorDanaStepAgent     | Bar Ilan University                            |
 | Team 32     | team_32     | BeerAgent             | BeerAgent             | Bar Ilan University                            |
-| Team 34     | team_34     | UEY-BIU               | MainAgent             | Bar Ilan University                            |
 | ThreadField | threadfield | GreedyFactoryManager2 | GreedyFactoryManager2 | Tokyo University of Agriculture and Technology |
 | Team May    | team_may    | MMM                   | CollusionAgent        | Tokyo University of Agriculture and Technology |
 | MontyHall   | montyhall   | MontyHall             | MyAgent               | Brown University                               |
-
+| Team 34 *   | team_34     | UEY-BIU               | MainAgent             | Bar Ilan University                            |
+| * Conditional acceptance 																									 |
