@@ -1,7 +1,7 @@
 Agents qualified for the SCML 2020 competition
 
-Agents accepted for the qualifications
-======================================
+Agents accepted for the SCML 20220 qualifications
+=================================================
 
  ============= ============= ======================= ======== ================================================ 
   Team          Identifier    Agent/Class name        Country  Institute                                       
