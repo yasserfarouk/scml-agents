@@ -345,7 +345,7 @@ class StepBuyBestSellNegManager(StepNegotiationManager):
         time_horizon=0.4,  # 0.2,
         **kwargs,
     ):
-        kwargs["negotiator_type"] = "src.mixed_neg.MyAsp"
+        kwargs["negotiator_type"] = "scml_agents.scml2020.team_25.mixed_neg.MyAsp"
         kwargs["negotiator_params"] = {"MyManager": self}
         super().__init__(*args, **kwargs)
         self.index: List[int] = None
