@@ -68,7 +68,7 @@ from scml.scml2019.simulators import (
     FastFactorySimulator,
     temporary_transaction,
 )
-from .builtins import (
+from scml.scml2019.factory_managers.builtins import (
     PessimisticNegotiatorUtility,
     NegotiatorUtility,
     OptimisticNegotiatorUtility,

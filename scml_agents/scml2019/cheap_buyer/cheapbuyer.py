@@ -44,7 +44,11 @@ from typing import Any, List, Dict, Union, Type, Optional, Collection
 
 from negmas import Contract, AgentMechanismInterface, MechanismState, Negotiator
 from scml.scml2019.common import CFP, SCMLAgreement
-from ..builtins import GreedyFactoryManager, Scheduler, temporary_transaction
+from scml.scml2019.factory_managers.builtins import (
+    GreedyFactoryManager,
+    Scheduler,
+    temporary_transaction,
+)
 import random
 import shutil
 

@@ -1,1 +1,6 @@
+click
 scml
+torch
+tensorflow_cpu
+pulp
+-e .

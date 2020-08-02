@@ -7,8 +7,8 @@ from scml.scml2019.consumers import ConsumptionProfile
 from scml.scml2019.schedulers import Scheduler, ScheduleInfo, GreedyScheduler
 from scml.scml2019.simulators import FactorySimulator, FastFactorySimulator
 from scml.scml2019.simulators import temporary_transaction
-from .builtins import NegotiatorUtility
-from .builtins import (
+from scml.scml2019.factory_managers.builtins import NegotiatorUtility
+from scml.scml2019.factory_managers.builtins import (
     PessimisticNegotiatorUtility,
     OptimisticNegotiatorUtility,
     AveragingNegotiatorUtility,
@@ -35,7 +35,7 @@ from negmas.utilities import ComplexWeightedUtilityFunction, MappingUtilityFunct
 from scml.scml2019.common import CFP
 from scml.scml2019.helpers import pos_gauss
 
-from .builtins import GreedyFactoryManager
+from scml.scml2019.factory_managers.builtins import GreedyFactoryManager
 import math
 import numpy as np
 

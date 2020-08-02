@@ -1,4 +1,5 @@
 """A setuptools based setup module.
+
 See:
 https://packaging.python.org/en/latest/distributing.html
 https://github.com/pypa/sampleproject
@@ -63,6 +64,8 @@ setup(
         exclude=[
             "scml2020/**/*.pyc",
             "scml2020/**/__pycache__",
+            "scml2019/**/*.pyc",
+            "scml2019/**/__pycache__",
             "config",
             "docs",
             "etc",

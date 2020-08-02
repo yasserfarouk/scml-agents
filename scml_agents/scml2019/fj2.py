@@ -4,7 +4,7 @@ from negmas.sao import NiceNegotiator
 from typing import Optional
 
 from scml.scml2019.common import CFP
-from .builtins import GreedyFactoryManager
+from scml.scml2019.factory_managers.builtins import GreedyFactoryManager
 
 
 class FJ2FactoryManager(GreedyFactoryManager):
