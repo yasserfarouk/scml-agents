@@ -76,7 +76,6 @@ from scml.scml2020.components import (
     DemandDrivenProductionStrategy,
 )
 from scml.scml2020.components.trading import PredictionBasedTradingStrategy
-import matplotlib.pyplot as plt
 
 from scml.scml2020 import SCML2020Agent
 

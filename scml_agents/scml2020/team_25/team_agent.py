@@ -57,30 +57,3 @@ class Agent30(
         return (self.output_price[step] - production_cost) * beta
 
 
-if __name__ == "__main__":
-    from collections import defaultdict
-
-    def show_agent_scores(world):
-        scores = defaultdict(list)
-        for aid, score in world.scores().items():
-            scores[world.agents[aid].__class__.__name__.split(".")[-1]].append(score)
-        scores = {k: sum(v) / len(v) for k, v in scores.items()}
-        plt.bar(list(scores.keys()), list(scores.values()), width=0.2)
-        plt.show()
-
-    import matplotlib.pyplot as plt
-
-    world = SCML2020World(
-        **SCML2020World.generate(
-            [TeamAgent, DecentralizingAgent, TeamAgent, DecentralizingAgent],
-            n_steps=50,
-            n_processes=2,
-            n_agents_per_process=2,
-            log_stats_every=1,
-        ),
-        construct_graphs=True
-    )
-    world.run_with_progress()
-    world.draw(steps=(0, world.n_steps), together=False, ncols=2, figsize=(20, 20))
-    plt.show()
-    show_agent_scores(world)
