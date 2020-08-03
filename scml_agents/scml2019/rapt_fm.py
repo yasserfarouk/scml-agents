@@ -726,7 +726,7 @@ class RaptFactoryManager(GreedyFactoryManager):
             )
             key_cfps = key_cfps.values()
             sort_key_cfp = sorted(
-                key_cfps, key=lambda cfp: cfp.unit_price, reverse=True
+                key_cfps, key=lambda cfp: cfp.min_unit_price, reverse=True
             )
             #             sort_key_cfp = sorted(key_cfps, key=lambda cfp: cfp.time)
             half_sort_key_cfp = sort_key_cfp[0 : int(len(sort_key_cfp) / 4)]
