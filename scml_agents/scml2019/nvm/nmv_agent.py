@@ -701,6 +701,7 @@ class NVMFactoryManager(DoNothingFactoryManager):
         Function to plot results of a game
         :return:
         """
+        pass
         plt.subplot(self.num_intermediate_products + 3, 1, 1)
         ax = plt.subplot(str(self.num_intermediate_products + 3) + "11")
         ax.set_ylabel("Wallet Balance")

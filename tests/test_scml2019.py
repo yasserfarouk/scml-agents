@@ -23,10 +23,11 @@ from negmas.situated import Contract
 import hypothesis.strategies as st
 from scml_agents.scml2019 import *
 from scml_agents import get_agents
+from scml.scml2019.utils import anac2019_std, anac2019_sabotage, anac2019_collusion
 
 
-@mark.parametrize("fm", get_agents(2019))
-def test_can_run(fm):
+@mark.parametrize("fm", get_agents(2019, track="all"))
+def test_can_run_std(fm):
     horizon = None
     signing_delay = 0
     n_factory_levels = 1
@@ -47,6 +48,42 @@ def test_can_run(fm):
     )
     world.run()
     assert sum(world.stats["n_contracts_concluded"]) > 0
+
+
+def test_can_run_std_tournament():
+    competitors = get_agents(2019, track="std", qualified_only=True)
+    anac2019_std(
+        competitors,
+        n_configs=1,
+        n_steps=6,
+        n_runs_per_world=1,
+        max_worlds_per_config=10,
+        min_factories_per_level=2,
+    )
+
+
+def test_can_run_collusion_tournament():
+    competitors = get_agents(2019, track="collusion", qualified_only=True)
+    anac2019_collusion(
+        competitors,
+        n_configs=1,
+        n_steps=6,
+        n_runs_per_world=1,
+        max_worlds_per_config=10,
+        min_factories_per_level=2,
+    )
+
+
+def test_can_run_sabotage_tournament():
+    competitors = get_agents(2019, track="sabotage", qualified_only=True)
+    anac2019_sabotage(
+        competitors,
+        n_configs=1,
+        n_steps=6,
+        n_runs_per_world=1,
+        max_worlds_per_config=10,
+        min_factories_per_level=2,
+    )
 
 
 if __name__ == "__main__":

@@ -4,6 +4,8 @@ from .iffm import InsuranceFraudFactoryManager
 from .saha import SAHAFactoryManager
 from .cheap_buyer.cheapbuyer import CheapBuyerFactoryManager
 from .nvm.nmv_agent import NVMFactoryManager
+from .monopoly import Monopoly
+from .psfm import PenaltySabotageFactoryManager
 
 __all__ = [
     "FJ2FactoryManager",
@@ -12,4 +14,6 @@ __all__ = [
     "SAHAFactoryManager",
     "CheapBuyerFactoryManager",
     "NVMFactoryManager",
+    "Monopoly",
+    "PenaltySabotageFactoryManager",
 ]

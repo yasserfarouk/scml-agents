@@ -3,7 +3,7 @@ from pytest import mark
 
 
 @mark.parametrize(
-    ["version"], [(2019,), (2020,),],
+    "version", [2019, 2020],
 )
 def test_get_agents_per_year(version):
     from pprint import pprint
@@ -18,6 +18,8 @@ def test_get_agents_per_year(version):
             "scml_agents.scml2019.saha.SAHAFactoryManager",
             "scml_agents.scml2019.cheap_buyer.cheapbuyer.CheapBuyerFactoryManager",
             "scml_agents.scml2019.nvm.nmv_agent.NVMFactoryManager",
+            "scml_agents.scml2019.monopoly.Monopoly",
+            "scml_agents.scml2019.psfm.PenaltySabotageFactoryManager",
         )
     elif version == 2020:
         assert agents == (
@@ -42,3 +44,21 @@ def test_get_agents_per_year(version):
             "scml_agents.scml2020.team_32.BeerAgent",
         )
 
+
+def test_winners_2020():
+    # agents = get_agents(2020, track="collusion", winners_only=True)
+    # assert len(agents) == 3
+    # agents = get_agents(2020, track="all", winners_only=True)
+    # assert len(agents) == 4
+    pass
+
+
+def test_winners_2019():
+    agents = get_agents(2019, track="std", winners_only=True)
+    assert len(agents) == 3
+    agents = get_agents(2019, track="collusion", winners_only=True)
+    assert len(agents) == 3
+    agents = get_agents(2019, track="all", winners_only=True)
+    assert len(agents) == 4
+    agents = get_agents(2019, track="sabotage", winners_only=True)
+    assert len(agents) == 0
