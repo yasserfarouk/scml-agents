@@ -8,3 +8,7 @@ Created on Mon May 18 14:09:59 2020
 from .myagent import *
 
 __all__ = myagent.__all__
+
+__author__ = ""
+__team__ = ""
+__email__ = ""
