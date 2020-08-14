@@ -1,6 +1,6 @@
 Agents qualified for the SCML 2020 competition
 
-Agents accepted for the SCML 20220 qualifications
+Agents accepted for the SCML 2020 qualifications
 =================================================
 
  ============= ============= ======================= ======== ================================================ 
