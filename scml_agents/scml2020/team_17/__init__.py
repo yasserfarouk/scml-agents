@@ -1,4 +1,4 @@
-from .whagnet import *
+from .whagent import *
 
 __all__ = whagent.__all__
 
