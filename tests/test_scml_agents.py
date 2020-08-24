@@ -33,7 +33,7 @@ def test_get_agents_per_year(version):
             "scml_agents.scml2020.past_frauds.MhiranoAgent",
             "scml_agents.scml2020.monty_hall.MontyHall",
             "scml_agents.scml2020.team_19.Ashgent",
-            "scml_agents.scml2020.team_17.Pagent",
+            "scml_agents.scml2020.team_17.WhAgent",
             "scml_agents.scml2020.team_10.UnicornAgent",
             "scml_agents.scml2020.threadfield.GreedyFactoryManager2",
             "scml_agents.scml2020.team_29.BIUDODY",
