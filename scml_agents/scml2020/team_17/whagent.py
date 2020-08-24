@@ -69,7 +69,7 @@ from scml.scml2020.components.prediction import MeanERPStrategy
 from scml.scml2020.services.controllers import StepController, SyncController
 from scml.scml2020.common import TIME
 
-__all__ = ["Pagent"]
+__all__ = ["WhAgent"]
 
 
 class AllmakeProductionStrategy(ProductionStrategy):
@@ -517,7 +517,7 @@ class PreNegotiationManager(IndependentNegotiationsManager):
         return LinearUtilityFunction((0, -0.5, -0.8))
 
 
-class Pagent(
+class WhAgent(
     AvoidOverproductionTradingStrategy,
     PreNegotiationManager,
     AllmakeProductionStrategy,

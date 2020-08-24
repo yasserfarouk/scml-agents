@@ -1,6 +1,6 @@
-from .p_agent import *
+from .whagnet import *
 
-__all__ = p_agent.__all__
+__all__ = whagent.__all__
 
 __author__ = ""
 __team__ = ""
