@@ -83,7 +83,49 @@ def get_agents(
         elif track in ("sabotage",) and winners_only:
             classes = tuple()
     elif isinstance(version, int) and version == 2020:
-        if track in ("any", "all", "std", "standard", "collusion") and not winners_only:
+        if track in ("std", "standard") and finalists_only:
+            classes = tuple(
+                sum(
+                    [
+                        [f"{_.__name__}.{a}" for a in _.__all__]
+                        for _ in (
+                            scml2020.team_may,
+                            scml2020.team_22,
+                            scml2020.team_25,
+                            scml2020.team_15,
+                            scml2020.a_sengupta,
+                            scml2020.monty_hall,
+                            scml2020.team_17,
+                            scml2020.team_10,
+                            scml2020.threadfield,
+                            scml2020.team_20,
+                            scml2020.biu_th,
+                            scml2020.team_32,
+                        )
+                    ],
+                    start=[],
+                )
+            )
+        elif track in ("coll", "collusion") and finalists_only:
+            classes = tuple(
+                sum(
+                    [
+                        [f"{_.__name__}.{a}" for a in _.__all__]
+                        for _ in (
+                            scml2020.team_17,
+                            scml2020.team_may,
+                            scml2020.team_25,
+                            scml2020.team_15,
+                            scml2020.a_sengupta,
+                            scml2020.team_20,
+                        )
+                    ],
+                    start=[],
+                )
+            )
+        elif (
+            track in ("any", "all", "std", "standard", "collusion") and not winners_only
+        ):
             classes = tuple(
                 sum(
                     [

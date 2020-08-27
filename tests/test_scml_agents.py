@@ -53,6 +53,13 @@ def test_winners_2020():
     pass
 
 
+def test_finalists_2020():
+    agents = get_agents(2020, track="std", finalists_only=True)
+    assert len(agents) == 12
+    agents = get_agents(2020, track="collusion", finalists_only=True)
+    assert len(agents) == 6
+
+
 def test_winners_2019():
     agents = get_agents(2019, track="std", winners_only=True)
     assert len(agents) == 3
