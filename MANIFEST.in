@@ -3,9 +3,11 @@ include CONTRIBUTING.rst
 include HISTORY.rst
 include LICENSE
 include README.rst
-recursive-exclude scml2020 *.pyc
-recursive-exclude scml2020 __pycache__
-
+recursive-include scml_agents *.*
+global-exclude *.pyc
+global-exclude __pycache__
+global-exclude __pycache__/*
+global-exclude *DS_Store
 
 
 
