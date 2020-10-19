@@ -28,13 +28,13 @@ Agents accepted for the SCML 2020 qualifications
  ------------- ------------- -----------------------  ---------------------------------------------
   Team 10       team_10       UnicornAgent             Dolev Mutzari
  ------------- ------------- -----------------------  ---------------------------------------------
-  BARgent       bargent       BARGentCovid19           Z. Cohen, O. Fogler, D. Neuman and R. Cohen
+  BARgent       bargent       BARGentCovid19           Zacharie Cohen, O. Fogler, D. Neuman and R. Cohen
  ------------- ------------- -----------------------  ---------------------------------------------
   BIU-TH        biu_th        THBiu                    Haim Nafcha
  ------------- ------------- -----------------------  ---------------------------------------------
   agent0x111    agent0x111    ASMASH                   Matanya, Shmulik, Assaf
  ------------- ------------- -----------------------  ---------------------------------------------
-  Team 25       team_25       Agent30                  G. Heller, E. Gerson, I. Hen and M. Akrabi
+  Team 25       team_25       Agent30                  Guy Heller, E. Gerson, I. Hen and M. Akrabi
  ------------- ------------- -----------------------  ---------------------------------------------
   Team 29       team_29       BIUDODY                  Dror Levy, Dana Joffe and Omer Nagar
  ------------- ------------- -----------------------  ---------------------------------------------
