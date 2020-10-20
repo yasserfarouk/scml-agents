@@ -20,7 +20,7 @@ Agents accepted for the SCML 2020 qualifications
  ------------- ------------- -----------------------  ---------------------------------------------
   Team 20       team_20       CrescentAgent            Yuki Yoshimura
  ------------- ------------- -----------------------  ---------------------------------------------
-  Team 22       team_22       SavingAgent              -
+  Team 22       team_22       SavingAgent              Takuma Kawamura
  ------------- ------------- -----------------------  ---------------------------------------------
   ThreadField   threadfield   GreedyFactoryManager2    Yuta Hosokawa
  ------------- ------------- -----------------------  ---------------------------------------------
