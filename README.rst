@@ -42,5 +42,5 @@ Agents accepted for the SCML 2020 qualifications
  ------------- ------------- -----------------------  ---------------------------------------------
   Team 27       team_27       AgentProjectGC           Cihan Eran and Gevher Yesevi
  ------------- ------------- -----------------------  ---------------------------------------------
-  MontyHall     montyhall     MontyHall                Enrique Areyan Viqueira, E Li, D. Silverston, A. Sridhar, J. Tsatsaros, A. Yuan, A. Greenwald
+  MontyHall     montyhall     MontyHall                Enrique Areyan Viqueira, E. Li, D. Silverston, A. Sridhar, J. Tsatsaros, A. Yuan, A. Greenwald
  ============= ============= =======================  =============================================
