@@ -36,11 +36,11 @@ Agents accepted for the SCML 2020 qualifications
  ------------- ------------- -----------------------  ---------------------------------------------
   Team 25       team_25       Agent30                  Guy Heller, E. Gerson, I. Hen and M. Akrabi
  ------------- ------------- -----------------------  ---------------------------------------------
-  Team 29       team_29       BIUDODY                  Dror Levy, Dana Joffe and Omer Nagar
+  Team 29       team_29       BIUDODY                  Dror Levy, D. Joffe and O. Nagar
  ------------- ------------- -----------------------  ---------------------------------------------
   Team 32       team_32       BeerAgent                Benjamin Wexler
  ------------- ------------- -----------------------  ---------------------------------------------
   Team 27       team_27       AgentProjectGC           Cihan Eran and Gevher Yesevi
  ------------- ------------- -----------------------  ---------------------------------------------
-  MontyHall     montyhall     MontyHall                Enrique Areyan Viqueira, E. Li, D. Silverston, A. Sridhar, J. Tsatsaros, A. Yuan, A. Greenwald
+  MontyHall     montyhall     MontyHall                Enrique Areyan Viqueira, E. Li, D. Silverston, A. Sridhar, J. Tsatsaros, A. Yuan and A. Greenwald
  ============= ============= =======================  =============================================
