@@ -20,7 +20,7 @@ Agents accepted for the SCML 2020 qualifications
  ------------- ------------- -----------------------  ---------------------------------------------
   Team 20       team_20       CrescentAgent            Yuki Yoshimura
  ------------- ------------- -----------------------  ---------------------------------------------
-  Team 22       team_22       SavingAgent
+  Team 22       team_22       SavingAgent              Takuma Kawamura
  ------------- ------------- -----------------------  ---------------------------------------------
   ThreadField   threadfield   GreedyFactoryManager2    Yuta Hosokawa
  ------------- ------------- -----------------------  ---------------------------------------------
@@ -28,19 +28,19 @@ Agents accepted for the SCML 2020 qualifications
  ------------- ------------- -----------------------  ---------------------------------------------
   Team 10       team_10       UnicornAgent             Dolev Mutzari
  ------------- ------------- -----------------------  ---------------------------------------------
-  BARgent       bargent       BARGentCovid19           Z. Cohen, O. Fogler, D. Neuman and R. Cohen
+  BARgent       bargent       BARGentCovid19           Zacharie Cohen, O. Fogler, D. Neuman and R. Cohen
  ------------- ------------- -----------------------  ---------------------------------------------
   BIU-TH        biu_th        THBiu                    Haim Nafcha
  ------------- ------------- -----------------------  ---------------------------------------------
   agent0x111    agent0x111    ASMASH                   Matanya, Shmulik, Assaf
  ------------- ------------- -----------------------  ---------------------------------------------
-  Team 25       team_25       Agent30                  G. Heller, E. Gerson, I. Hen and M. Akrabi
+  Team 25       team_25       Agent30                  Guy Heller, E. Gerson, I. Hen and M. Akrabi
  ------------- ------------- -----------------------  ---------------------------------------------
-  Team 29       team_29       BIUDODY                  Dror Levy, Dana Joffe and Omer Nagar
+  Team 29       team_29       BIUDODY                  Dror Levy, D. Joffe and O. Nagar
  ------------- ------------- -----------------------  ---------------------------------------------
   Team 32       team_32       BeerAgent                Benjamin Wexler
  ------------- ------------- -----------------------  ---------------------------------------------
   Team 27       team_27       AgentProjectGC           Cihan Eran and Gevher Yesevi
  ------------- ------------- -----------------------  ---------------------------------------------
-  MontyHall     montyhall     MontyHall
- ------------- ------------- -----------------------  ---------------------------------------------
+  MontyHall     montyhall     MontyHall                Enrique Areyan Viqueira, E. Li, D. Silverston, A. Sridhar, J. Tsatsaros, A. Yuan and A. Greenwald
+ ============= ============= =======================  =============================================
