@@ -45,14 +45,6 @@ def test_get_agents_per_year(version):
         )
 
 
-def test_winners_2020():
-    # agents = get_agents(2020, track="collusion", winners_only=True)
-    # assert len(agents) == 3
-    # agents = get_agents(2020, track="all", winners_only=True)
-    # assert len(agents) == 4
-    pass
-
-
 def test_finalists_2020():
     agents = get_agents(2020, track="std", finalists_only=True)
     assert len(agents) == 12
@@ -69,3 +61,12 @@ def test_winners_2019():
     assert len(agents) == 4
     agents = get_agents(2019, track="sabotage", winners_only=True)
     assert len(agents) == 0
+
+
+def test_winners_2020():
+    agents = get_agents(2020, track="std", winners_only=True)
+    assert len(agents) == 2
+    agents = get_agents(2020, track="collusion", winners_only=True)
+    assert len(agents) == 2
+    agents = get_agents(2020, track="all", winners_only=True)
+    assert len(agents) == 4

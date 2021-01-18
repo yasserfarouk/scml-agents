@@ -156,11 +156,40 @@ def get_agents(
                 )
             )
         elif track in ("std", "standard") and winners_only:
-            classes = tuple()
+            classes = tuple(
+                sum(
+                    [
+                        [f"{_.__name__}.{a}" for a in _.__all__]
+                        for _ in (scml2020.team_15, scml2020.team_25,)
+                    ],
+                    start=[],
+                )
+            )
         elif track in ("any", "all") and winners_only:
-            classes = tuple()
+            classes = tuple(
+                sum(
+                    [
+                        [f"{_.__name__}.{a}" for a in _.__all__]
+                        for _ in (
+                            scml2020.team_15,
+                            scml2020.team_may,
+                            scml2020.team_25,
+                            scml2020.a_sengupta,
+                        )
+                    ],
+                    start=[],
+                )
+            )
         elif track in ("coll", "collusion") and winners_only:
-            classes = tuple()
+            classes = tuple(
+                sum(
+                    [
+                        [f"{_.__name__}.{a}" for a in _.__all__]
+                        for _ in (scml2020.team_may, scml2020.a_sengupta,)
+                    ],
+                    start=[],
+                )
+            )
     elif isinstance(version, str) and version == "contrib":
         classes = tuple()
     else:
