@@ -29,6 +29,10 @@ Finalists of the SCML 2020 Competition
 Standard Track
 --------------
 
+* N. Configurations: 1,256
+* N. Simulation: 195,936
+* N. Instantiations: 15,072 in 15,072 simulations
+
 
 === ================ ======== ======== ========= ========= ============ ======= ======
      Agent             mean     std      min       25%       Median       75%     max  
@@ -61,7 +65,10 @@ Standard Track
 === ================ ======== ======== ========= ========= ============ ======= ======
 
 Collusion Track
----------------
+---------------* N. Configurations: 940
+* N. Simulation: 39,480
+* N. Instantiations: 16,920 in 5,640 simulations
+
 
 ====   ===============   ==================   ======   =====   ======   ======   ======      ======   =====
 Rank   Agent Type        Institute            mean     std     min      25%      Median      75%      max
@@ -85,6 +92,7 @@ Rank   Agent Type        Institute            mean     std     min      25%     
 
 Agents accepted for the SCML 2020 qualifications
 ================================================
+This is a list of all the agents accepted for the SCML 2020 qualifications round. 
 
  ============= ============= =======================  =============================================
   Team          Identifier    Agent/Class name         Team Members
