@@ -1,5 +1,14 @@
 This repository contains agents for the SCML world.
 
+To install this package just run:
+
+>>> pip install scml-agents
+
+There are two ways to submit agents to this repository:
+
+1. Participate in the SCML competition `https://scml.cs.brown.edu <https://scml.cs.brown.edu>`_
+2. Submit a pull-request with your agent added to the contrib directory.
+
 
 Winners of the SCML 2020 Competition
 =====================================
