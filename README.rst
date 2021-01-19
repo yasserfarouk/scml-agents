@@ -29,13 +29,13 @@ Finalists of the SCML 2020 Competition
 Standard Track
 --------------
 
-* N. Configurations: 1,256
-* N. Simulation: 195,936
-* N. Instantiations: 15,072 in 15,072 simulations
+* Number of Configurations: 1,256
+* Number of Simulation: 195,936
+* Number of Instantiations: 15,072 in 15,072 simulations
 
 
 === ================ ======== ======== ========= ========= ============ ======= ======
-     Agent             mean     std      min       25%       Median       75%     max  
+ #   Agent             mean     std      min       25%       Median       75%     max  
 === ================ ======== ======== ========= ========= ============ ======= ======
  1   SteadyMgr        0.0758   0.1627   -0.3536   -0.0078   **0.0783**   0.161   7.52 
 --- ---------------- -------- -------- --------- --------- ------------ ------- ------
@@ -65,13 +65,15 @@ Standard Track
 === ================ ======== ======== ========= ========= ============ ======= ======
 
 Collusion Track
----------------* N. Configurations: 940
-* N. Simulation: 39,480
-* N. Instantiations: 16,920 in 5,640 simulations
+---------------
+
+* Number of Configurations: 940
+* Number of Simulation: 39,480
+* Number of Instantiations: 16,920 in 5,640 simulations
 
 
 ====   ===============   ==================   ======   =====   ======   ======   ======      ======   =====
-Rank   Agent Type        Institute            mean     std     min      25%      Median      75%      max
+  #     Agent Type        Institute            mean     std     min      25%      Median      75%      max
 ====   ===============   ==================   ======   =====   ======   ======   ======      ======   =====
  1     MMM               TUAT      , Japan    0.4547   1.379   -2.770   -0.191   **0**       0.3301   15.66
 ----   ---------------   ------------------   ------   -----   ------   ------   ------      ------   -----
@@ -92,6 +94,7 @@ Rank   Agent Type        Institute            mean     std     min      25%     
 
 Agents accepted for the SCML 2020 qualifications
 ================================================
+
 This is a list of all the agents accepted for the SCML 2020 qualifications round. 
 
  ============= ============= =======================  =============================================
