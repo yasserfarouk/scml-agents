@@ -6,8 +6,8 @@ Winners of the SCML 2020 Competition
 
 Standard Track
 --------------
-First Place: Masahito Okuno for **SteadyMgr**
-Second Place: Guy Heller, E. Gerson, I. Hen and M. Akrabi for **Agent30**
+* First Place: Masahito Okuno for **SteadyMgr**
+* Second Place: Guy Heller, E. Gerson, I. Hen and M. Akrabi for **Agent30**
 
 You can get these agents after installing scml-agents by running:
 
@@ -15,8 +15,8 @@ You can get these agents after installing scml-agents by running:
 
 Collusion Track
 ---------------
-First Place: Kazuki Komori for **MMM**
-Second Place: Ayan Sengupta for **Merchant**
+* First Place: Kazuki Komori for **MMM**
+* Second Place: Ayan Sengupta for **Merchant**
 
 You can get these agents after installing scml-agents by running:
 
