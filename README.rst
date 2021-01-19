@@ -64,6 +64,10 @@ Standard Track
  12  GFM2             -0.109   0.1978   -0.6301   -0.2021   **-0.087**   -0.01   7.62 
 === ================ ======== ======== ========= ========= ============ ======= ======
 
+You can get these agents after installing scml-agents by running:
+
+>>> scml_agents.get_agents(2020, track="std", finalists_only=True)
+
 Collusion Track
 ---------------
 
@@ -91,6 +95,9 @@ Collusion Track
 ==== =============== ====== ===== ====== ====== ====== ====== =====
 
 
+You can get these agents after installing scml-agents by running:
+
+>>> scml_agents.get_agents(2020, track="collusion", finalists_only=True)
 
 
 Agents accepted for the SCML 2020 qualifications
