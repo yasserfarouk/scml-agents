@@ -48,7 +48,7 @@ from negmas import (
 )
 from scml.scml2020 import SCML2020Agent, PredictionBasedTradingStrategy
 
-from scml.scml2020.world import Failure, QUANTITY, UNIT_PRICE, TIME, FinancialReport
+from scml.scml2020 import Failure, QUANTITY, UNIT_PRICE, TIME, FinancialReport
 
 
 """

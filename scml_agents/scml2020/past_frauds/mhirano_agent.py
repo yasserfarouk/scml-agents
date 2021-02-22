@@ -77,7 +77,7 @@ from scml.scml2020.agents import (
     MovingRangeAgent,
 )
 from scml.scml2020.utils import anac2020_collusion, anac2020_std
-from scml.scml2020.world import Failure
+from scml.scml2020 import Failure
 from tabulate import tabulate
 from matplotlib import pylab as plt
 from collections import defaultdict

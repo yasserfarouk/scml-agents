@@ -9,7 +9,7 @@ from negmas import (
     MechanismState,
     Breach,
 )
-from scml.scml2020.world import Failure
+from scml.scml2020 import Failure
 from scml.scml2020 import SCML2020Agent
 from scml.scml2020 import TradingStrategy
 from scml.scml2020 import SupplyDrivenProductionStrategy

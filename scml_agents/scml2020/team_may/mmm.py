@@ -21,7 +21,7 @@ from scml import SupplyDrivenProductionStrategy
 from scml.scml2020.agents import DecentralizingAgent
 from scml.scml2020.components import IndependentNegotiationsManager
 from scml.scml2020.utils import anac2020_collusion, anac2020_std
-from scml.scml2020.world import Failure
+from scml.scml2020 import Failure
 from scml.scml2020.common import TIME, QUANTITY, UNIT_PRICE
 
 # from tabulate import tabulate

@@ -59,7 +59,7 @@ from scml.scml2020.agents import (
     ReactiveAgent,
 )
 from scml.scml2020.utils import anac2020_collusion, anac2020_std
-from scml.scml2020.world import Failure
+from scml.scml2020 import Failure
 from scml.scml2020.common import is_system_agent, ANY_LINE, NO_COMMAND, TIME, QUANTITY
 from scml.scml2020.components.production import ProductionStrategy
 from scml.scml2020.components.negotiation import (

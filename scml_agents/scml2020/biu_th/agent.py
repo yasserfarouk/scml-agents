@@ -18,7 +18,7 @@ from scml.scml2020 import (
     PredictionBasedTradingStrategy,
     SupplyDrivenProductionStrategy,
 )
-from scml.scml2020.world import Failure, AWI
+from scml.scml2020 import Failure, AWI
 
 from negotiation_manager import NegotiationManager
 

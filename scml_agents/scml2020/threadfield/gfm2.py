@@ -65,7 +65,7 @@ from scml.scml2020 import SCML2020Agent
 # required for development
 from scml.scml2020.agents import BuyCheapSellExpensiveAgent, DecentralizingAgent
 from scml.scml2020.utils import anac2020_collusion, anac2020_std
-from scml.scml2020.world import Failure, AWI
+from scml.scml2020 import Failure, AWI
 from tabulate import tabulate
 
 __all__ = ["GreedyFactoryManager2"]

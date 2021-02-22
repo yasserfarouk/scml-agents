@@ -38,7 +38,7 @@ from scml.scml2020.agents import (
 from scml.scml2020.common import TIME
 from scml.scml2020.services.controllers import StepController, SyncController
 from scml.scml2020.utils import anac2020_collusion, anac2020_std
-from scml.scml2020.world import Failure
+from scml.scml2020 import Failure
 from tabulate import tabulate
 
 from .mynegotiationmanager import MyNegotiationManager
