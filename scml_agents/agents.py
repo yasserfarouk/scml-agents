@@ -103,7 +103,7 @@ def get_agents(
                             scml2020.team_32,
                         )
                     ],
-                    start=[],
+                    [],
                 )
             )
         elif track in ("coll", "collusion") and finalists_only:
@@ -120,7 +120,7 @@ def get_agents(
                             scml2020.team_20,
                         )
                     ],
-                    start=[],
+                    [],
                 )
             )
         elif (
@@ -152,7 +152,7 @@ def get_agents(
                             scml2020.team_32,
                         )
                     ],
-                    start=[],
+                    [],
                 )
             )
         elif track in ("std", "standard") and winners_only:
@@ -162,7 +162,7 @@ def get_agents(
                         [f"{_.__name__}.{a}" for a in _.__all__]
                         for _ in (scml2020.team_15, scml2020.team_25,)
                     ],
-                    start=[],
+                    [],
                 )
             )
         elif track in ("any", "all") and winners_only:
@@ -177,7 +177,7 @@ def get_agents(
                             scml2020.a_sengupta,
                         )
                     ],
-                    start=[],
+                    [],
                 )
             )
         elif track in ("coll", "collusion") and winners_only:
@@ -187,7 +187,7 @@ def get_agents(
                         [f"{_.__name__}.{a}" for a in _.__all__]
                         for _ in (scml2020.team_may, scml2020.a_sengupta,)
                     ],
-                    start=[],
+                    [],
                 )
             )
     elif isinstance(version, str) and version == "contrib":
