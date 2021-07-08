@@ -31,18 +31,18 @@ class ProtectedSyncController(SyncController):
         self.__parent = kwargs["parent"]
         super().__init__(*args, **kwargs)
 
-    def propose(self, negotiator_id: str, state):
-        # if there are no proposals yet, get first proposals
-        if len(self.proposals) == 0:
-            self.proposals = self.first_proposals()
-        # get the saved proposal if it exists and return it
-        proposal = self.proposals.get(negotiator_id, None)
-        # if some proposal was there, delete it to force the controller to get a new one
-        # if proposal is not None:
-        #    self.proposals[negotiator_id] = None
-        # if the proposal that was there was None, just offer the best offer
-        # proposal = self.first_offer(negotiator_id)
-        return proposal
+    # def propose(self, negotiator_id: str, state):
+    #     # if there are no proposals yet, get first proposals
+    #     if len(self.proposals) == 0:
+    #         self.proposals = self.first_proposals()
+    #     # get the saved proposal if it exists and return it
+    #     proposal = self.proposals.get(negotiator_id, None)
+    #     # if some proposal was there, delete it to force the controller to get a new one
+    #     # if proposal is not None:
+    #     #    self.proposals[negotiator_id] = None
+    #     # if the proposal that was there was None, just offer the best offer
+    #     # proposal = self.first_offer(negotiator_id)
+    #     return proposal
 
     def best_proposal(self, nid):
         try:
