@@ -10,8 +10,63 @@ There are two ways to submit agents to this repository:
 2. Submit a pull-request with your agent added to the contrib directory.
 
 
+Getting lists of agents
+=======================
+
+You can get any specific subset of the agents in the library using `get_agents()`. This function
+has the following parameters:
+
+* version: Either a competition year (2019, 2020, 2021, ....) or the value "contrib" for all other agents
+* track: The track (any, collusion, std, sabotage[only for 2019]).
+* qualified_only: If true, only agents that were submitted to SCML and ran in the qualifications round will be
+                  returned
+* finalists_only: If true, only agents that were submitted to SCML and passed qualifications will be
+                  returned
+* winners_only: If true, only winners of SCML (the given version) will be returned.
+* top_only: Either a fraction of finalists or the top n finalists with highest scores in the finals of
+            SCML
+* as_class: If true, the agent classes will be returned otherwise their full class names.
+
+
+For example, to get the top 10% of the Oneshot track finalists in year 2021 as strings, you can use:
+
+>> get_agents(version=2021, track="oneshot", finalists_only=True, as_class=False)
+
+Winners of the SCML 2021 Competition
+====================================
+
+Oneshot Track
+-------------
+* First Place: Assaf Tirangel, Yossi Weizman, Inbal Avraham for **Agent112**
+* Second Place: Takumu Shimizu for **Gentle**
+* Third Place (tie): Sagi Nachum for **Agent74**
+* Third Place (tie): Yuchen Liu, Rafik Hadfi and Takayuki Ito for **UCOneshotAgent**
+
+You can get these agents after installing scml-agents by running:
+
+>>> scml_agents.get_agents(2021, track="oneshot", winners_only=True)
+
+Standard Track
+--------------
+* First Place: Kazuki Komori for **M4**
+* Second Place: Mehmet Onur Keskin, Umit Cakan, Gevher Yesevi, Reyhan Aydogan, Amy Greenwald for **CharliesAgent**
+* Third Place: Koki Katagiri for **Artisan Kangaroo**
+
+You can get these agents after installing scml-agents by running:
+
+>>> scml_agents.get_agents(2021, track="std", winners_only=True)
+
+Collusion Track
+---------------
+* First Place: Kazuki Komori for **M4**
+* Second Place: Mehmet Onur Keskin, Umit Cakan, Gevher Yesevi, Reyhan Aydogan, Amy Greenwald for **CharliesAgent**
+
+You can get these agents after installing scml-agents by running:
+
+>>> scml_agents.get_agents(2021, track="collusion", winners_only=True)
+
 Winners of the SCML 2020 Competition
-=====================================
+====================================
 
 Standard Track
 --------------
@@ -32,87 +87,15 @@ You can get these agents after installing scml-agents by running:
 >>> scml_agents.get_agents(2020, track="collusion", winners_only=True)
 
 
-Finalists of the SCML 2020 Competition
-======================================
+Agents accepted for the SCML 2021 qualifications
+================================================
 
-Standard Track
---------------
-
-* Number of Configurations: 1,256
-* Number of Simulation: 195,936
-* Number of Instantiations: 15,072 in 15,072 simulations
-
-
-=== ================ ======== ======== ========= ========= ============ ======= ======
- #   Agent             mean     std      min       25%       Median       75%     max  
-=== ================ ======== ======== ========= ========= ============ ======= ======
- 1   SteadyMgr        0.0758   0.1627   -0.3536   -0.0078   **0.0783**   0.161   7.52 
---- ---------------- -------- -------- --------- --------- ------------ ------- ------
- 2   Agent30          0.0199   0.0376   -0.1813   -0.0002   **0.0127**   0.041   1.21 
---- ---------------- -------- -------- --------- --------- ------------ ------- ------
- 3   CrescentAgent    -0.000   0.0015   -0.0375   0         **0**        0       0.05 
---- ---------------- -------- -------- --------- --------- ------------ ------- ------
- 4   Whagent          -0.034   0.1333   -2.5990   -0.0061   **0**        0       2.47 
---- ---------------- -------- -------- --------- --------- ------------ ------- ------
- 5   Merchant         -0.033   0.0818   -0.5046   -0.0575   **-0.019**   -0.00   1.87 
---- ---------------- -------- -------- --------- --------- ------------ ------- ------
- 6   MMM              -0.036   0.1635   -2.5582   -0.0829   **-0.022**   0.015   3.28 
---- ---------------- -------- -------- --------- --------- ------------ ------- ------
- 7   MontyHall        0.0006   0.2187   -0.5264   -0.0394   **-0.022**   -0.00   4.63 
---- ---------------- -------- -------- --------- --------- ------------ ------- ------
- 8   BeerAgent        -0.022   0.1185   -0.5417   -0.0791   **-0.025**   0.042   8.16 
---- ---------------- -------- -------- --------- --------- ------------ ------- ------
- 9   UnicornAgent     -0.067   0.1886   -2.1693   -0.1271   **-0.047**   0.008   7.42 
---- ---------------- -------- -------- --------- --------- ------------ ------- ------
- *   Decentralizing   -0.124   0.2660   -2.4583   -0.1763   **-0.081**   -0.01   5.07 
---- ---------------- -------- -------- --------- --------- ------------ ------- ------
- 10  Saving_Agent     -0.127   0.2775   -2.4318   -0.1785   **-0.082**   -0.02   8.94 
---- ---------------- -------- -------- --------- --------- ------------ ------- ------
- 11  THBiuAgent       -0.125   0.2538   -2.4092   -0.1790   **-0.083**   -0.02   5.38
---- ---------------- -------- -------- --------- --------- ------------ ------- ------
- 12  GFM2             -0.109   0.1978   -0.6301   -0.2021   **-0.087**   -0.01   7.62 
-=== ================ ======== ======== ========= ========= ============ ======= ======
-
-You can get these agents after installing scml-agents by running:
-
->>> scml_agents.get_agents(2020, track="std", finalists_only=True)
-
-Collusion Track
----------------
-
-* Number of Configurations: 940
-* Number of Simulation: 39,480
-* Number of Instantiations: 16,920 in 5,640 simulations
-
-
-==== =============== ====== ===== ====== ====== ====== ====== =====
-  #   Agent Type      mean   std   min    25%   Median  75%    max
-==== =============== ====== ===== ====== ====== ====== ====== =====
- 1   MMM             0.4547 1.379 -2.770 -0.191 **0**  0.3301 15.66
----- --------------- ------ ----- ------ ------ ------ ------ -----
- 2   Merchant        0.1127 0.681 -0.801 -0.792 **0**  0.5656 1.624
----- --------------- ------ ----- ------ ------ ------ ------ -----
- 3   SteadyMgr       0.0390 0.300 -0.445 -0.054 **0**  0.0792 6.678
----- --------------- ------ ----- ------ ------ ------ ------ -----
- 4   Agent30         0.0215 0.087 -0.095 -0.002 **0**  0.0174 1.086
----- --------------- ------ ----- ------ ------ ------ ------ -----
- 5   Whagent         -0.020 0.057 -0.738 0      **0**  0      0.145
----- --------------- ------ ----- ------ ------ ------ ------ -----
- 6   CrescentAgent   -0.001 0.004 -0.048 0      **0**  0      0.165
----- --------------- ------ ----- ------ ------ ------ ------ -----
- -   Decentralizing  -0.017 0.485 -2.340 -0.111 -0.06  -0.002 8.633
-==== =============== ====== ===== ====== ====== ====== ====== =====
-
-
-You can get these agents after installing scml-agents by running:
-
->>> scml_agents.get_agents(2020, track="collusion", finalists_only=True)
-
+A list of all agents accepted for the SCML 2021 qualifications round can be found at `https://scml.cs.brown.edu <https://scml.cs.brown.edu>`_
 
 Agents accepted for the SCML 2020 qualifications
 ================================================
 
-This is a list of all the agents accepted for the SCML 2020 qualifications round. 
+This is a list of all the agents accepted for the SCML 2020 qualifications round.
 
  ============= ============= =======================  =============================================
   Team          Identifier    Agent/Class name         Team Members
@@ -155,7 +138,7 @@ This is a list of all the agents accepted for the SCML 2020 qualifications round
  ------------- ------------- -----------------------  ---------------------------------------------
   MontyHall     montyhall     MontyHall                Enrique Areyan Viqueira, E. Li, D. Silverston, A. Sridhar, J. Tsatsaros, A. Yuan and A. Greenwald
  ============= ============= =======================  =============================================
- 
+
  You can get these agents after installing scml-agents by running:
 
->>> scml_agents.get_agents(2020, track="collusion")
+>>> scml_agents.get_agents(2020, track="any")

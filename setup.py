@@ -78,8 +78,10 @@ setup(
         "Click (>=6.0)",
         'dataclasses; python_version < "3.7"',
         "torch",
-        "tensorflow-cpu",
+        "tensorflow",
         "scml",
+        "pulp",
+        "xgboost",
     ],  # Optional
     # extras_require={},
     # https://setuptools.readthedocs.io/en/latest/setuptools.html#dependencies-that-aren-t-in-pypi

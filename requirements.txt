@@ -1,6 +1,7 @@
 click
 scml
 torch
-tensorflow_cpu
+tensorflow
 pulp
+xgboost
 -e .
