@@ -60,7 +60,7 @@ import warnings
 # from mpl_toolkits.mplot3d import Axes3D
 
 __all__ = [
-        "GodfatherAgent",
+        # "GodfatherAgent",
         "MinDisagreementGodfatherAgent",
         "MinEmpiricalGodfatherAgent",
         "AspirationUniformGodfatherAgent",
