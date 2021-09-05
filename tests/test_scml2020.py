@@ -25,6 +25,7 @@ def test_can_run(fm):
     world = SCML2020World(
         **SCML2020World.generate(
             agent_types=["scml.scml2020.DecentralizingAgent", fm], n_steps=n_steps,
+            n_processes=3 if fm == MontyHall else None
         )
     )
     world.run()
