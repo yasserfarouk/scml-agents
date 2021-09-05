@@ -81,7 +81,7 @@ from negmas import (
 
 from .worker_agents import SimpleAgent, BetterAgent, AdaptiveAgent, LearningAgent
 
-__all__ = [ "ZilberanBackup", ]
+__all__ = []
 
 class ZilberanBackup(OneShotAgent):
     """

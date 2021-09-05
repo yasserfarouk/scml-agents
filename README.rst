@@ -30,7 +30,7 @@ has the following parameters:
 
 For example, to get the top 10% of the Oneshot track finalists in year 2021 as strings, you can use:
 
->> get_agents(version=2021, track="oneshot", finalists_only=True, as_class=False)
+>>> get_agents(version=2021, track="oneshot", finalists_only=True, as_class=False)
 
 Winners of the SCML 2021 Competition
 ====================================
