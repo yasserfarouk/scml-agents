@@ -187,7 +187,7 @@ class ProtectedSyncController(SyncController):
         return lowest_offer
 
     def good_neg_offers(self, offers):
-        return {nid: self.good_neg_proposal(nid) for nid in self.offers.keys()}
+        return {nid: self.good_neg_proposal(nid) for nid in offers.keys()}
 
     def on_negotiation_end(self, negotiator_id, state):
         pass

@@ -81,7 +81,7 @@ from negmas import (
 
 from .worker_agents import SimpleAgent, BetterAgent, AdaptiveAgent, LearningAgent
 
-__all__ = [ "ZilberanBackup", ]
+__all__ = []
 
 class ZilberanBackup(OneShotAgent):
     """
@@ -96,7 +96,7 @@ class ZilberanBackup(OneShotAgent):
     ALL_BASE_AGENTS = [GreedyOneShotAgent, SimpleAgent, BetterAgent, AdaptiveAgent, LearningAgent]
 
     def __init__(self, *args, **kwargs):
-        super(MyAgent, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.base_agents = [agent(*args, **kwargs) for agent in self.ALL_BASE_AGENTS]
 
         word_blacklist = ["span", "negotiator"]
@@ -147,7 +147,7 @@ class ZilberanBackup(OneShotAgent):
 
             if hasattr(self, method_name):
                 try:
-                    getattr(super(MyAgent, self), method_name)(*args[1:], **kwargs)
+                    getattr(super(), method_name)(*args[1:], **kwargs)
 
                 except TypeError as e:
                     raise ValueError(f"{args} {kwargs}")

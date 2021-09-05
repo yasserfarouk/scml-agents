@@ -60,7 +60,6 @@ import warnings
 # from mpl_toolkits.mplot3d import Axes3D
 
 __all__ = [
-        "GodfatherAgent",
         "MinDisagreementGodfatherAgent",
         "MinEmpiricalGodfatherAgent",
         "AspirationUniformGodfatherAgent",
@@ -174,7 +173,7 @@ class GodfatherAgent(AspirationMixin, OneShotSyncAgent):
             return self._strategy_type()
         else:
             raise Exception("No strategy type specified")
-    
+
     def _init_opponents(self) -> None:
         self._f_opponents_initialized = True
         opp_ids = self.negotiators.keys()
@@ -207,7 +206,8 @@ class GodfatherAgent(AspirationMixin, OneShotSyncAgent):
 
         # important: we have to guarantee that self.estufuns
         # is always from the current round (bc offer space could've changed)
-        del self.estufuns
+        if hasattr(self, "estufuns"):
+            del self.estufuns
 
         self._step_idx += 1
         self._counter_idx = -1
@@ -215,7 +215,7 @@ class GodfatherAgent(AspirationMixin, OneShotSyncAgent):
         self.log("step complete!")
 
         self._exit_call()
-    
+
     def on_negotiation_failure(self, partners, annotation, ami, state):
         """Updates negotiation history"""
         call_idx, _ = self._enter_call()
@@ -225,7 +225,7 @@ class GodfatherAgent(AspirationMixin, OneShotSyncAgent):
         self._history.fail(opp_id)
 
         self._exit_call()
-    
+
     def on_negotiation_success(self, contract, ami):
         """Updates negotiation history"""
         call_idx, _ = self._enter_call()
@@ -260,7 +260,7 @@ class GodfatherAgent(AspirationMixin, OneShotSyncAgent):
         for opp_id, move in move_dict.items():
             # self.log("first move", move, "against", opp_id)
             self._history.my_move(opp_id, move)
-        
+
         # self.log("first prop time", datetime.datetime.now() - first_proposals_time)
         return self._exit_call({ opp_id: move.to_negmas(self.awi.current_step)
               for opp_id, move in move_dict.items() })
@@ -303,11 +303,11 @@ class GodfatherAgent(AspirationMixin, OneShotSyncAgent):
         # update negotiation histories with our moves
         for opp_id, move in move_dict.items():
             self._history.my_move(opp_id, move)
-        
+
         #self.log("counter time", datetime.datetime.now() - counter_time)
         return self._exit_call({ opp_id: MoveSpace.move_to_sao_response(move, self.awi.current_step)
                 for opp_id, move in move_dict.items() })
-    
+
     def _counter_profile(self, opponents_to_counter):
         if not self.enable_profiling:
             return self._counter(opponents_to_counter)
@@ -319,7 +319,7 @@ class GodfatherAgent(AspirationMixin, OneShotSyncAgent):
                 locals(),
                 filename="profiling/counter_stats")
             return self._counter_profile_res # type: ignore
-    
+
     def _counter(self, opponents_to_counter: Iterable[str]) -> Dict[str, Move]:
         """Respond to a set of offers given the negotiation state of each."""
         # self.log("counter_all > _counter: begin")
@@ -378,7 +378,7 @@ class GodfatherAgent(AspirationMixin, OneShotSyncAgent):
 
         # self.log("counter_all > _counter: responding moves")
         return moves
-    
+
     def _est_bilat_ufun(self, j: str, outcome_distrs: Dict[str, OutcomeDistr]) -> Optional[BilatUFun]:
         """Estimates the bilateral utility function for negotiation j, wrt other outcomes predicted"""
 
@@ -405,9 +405,9 @@ class GodfatherAgent(AspirationMixin, OneShotSyncAgent):
 
         for outcome in all_outcomes:
             util_table[outcome] /= self._num_sample_outcomes
-        
+
         return BilatUFunMarginalTable(offer_space, util_table)
-    
+
     def update_util_table(
         self,
         ufun_calc: UFunCalc,
@@ -486,11 +486,11 @@ class GodfatherAgent(AspirationMixin, OneShotSyncAgent):
         self.awi.logdebug("Counter-offers:\n")
         for k, v in sorted(counter_proposals.items()):
             self.awi.logdebug("{0} {1}".format(self._get_opp_id_from_neg_id(k), v))
-    
+
     def _log_history(self):
         self.awi.logdebug("SCML History\n=============\n{0}\n================"
             .format(self._history))
-    
+
     def _vis_negotiations(self):
         """Visualize all the negotiations this round in their entirety"""
         if self._is_selling():
@@ -571,7 +571,7 @@ class GodfatherAgent(AspirationMixin, OneShotSyncAgent):
                     dq = o.quantity - prev_move.quantity
                     ax.arrow(prev_move.price, prev_move.quantity, dp, dq, head_width=0.2, color='r')
                     prev_move = o
-            
+
             ax.set_title("negotiation with {}".format(opp))
             ax.set_xlabel("Price")
             os = self._get_offer_space(opp)
@@ -634,18 +634,18 @@ class GodfatherAgent(AspirationMixin, OneShotSyncAgent):
 
         anim = animation.FuncAnimation(fig, step_ufun_animation, enumerate(estufun_history), repeat=False)
         anim.save('{}/{}.ufuns_convergence.mp4'.format(self.vis_path, file_id), writer=writer)
-        
+
         def step_outcome_animation(tup):
             iteration_idx, outcomes = tup
             for idx, opp in enumerate(opponents_all):
                 ax1 = axes[idx]
                 outcomes[opp].vis(fig, ax1)
                 ax1.set_title("opp {} iteration # {}".format(opp, iteration_idx))
-        
+
         anim = animation.FuncAnimation(fig, step_ufun_animation, enumerate(outcome_history), repeat=False)
         anim.save('{}/{}.outcomes_convergence.mp4'.format(self.vis_path, file_id), writer=writer)
         plt.close()
-    
+
         # 3d ufun plot of final ufun
         estufun = estufun_history[-1][opponents_all[0]]
         fig = plt.figure()
@@ -673,13 +673,13 @@ class GodfatherAgent(AspirationMixin, OneShotSyncAgent):
         # util_2 = helpers.ufun_from_offer(self.ufun, offer, self._is_selling())
         # self.log("diff", util, util2)
         return util
-        
+
     def _is_selling(self) -> bool:
         if self.awi.profile.input_product != 0 and self.awi.profile.input_product != 1:
             raise Exception("Input product {0} is not 0 or 1 (operating outside OneShot?)"
                 .format(self.awi.input_product))
         return self.awi.profile.input_product == 0
-        
+
     def _get_opp_id_from_contract(self, contract) -> str:
         return (contract.annotation["buyer"]
                 if contract.annotation["product"] == self.awi.my_output_product
@@ -690,7 +690,7 @@ class GodfatherAgent(AspirationMixin, OneShotSyncAgent):
 
     def _get_opp_id_from_neg_id(self, negotiator_id: str) -> str:
         return self._get_opp_id_from_ami(self.get_ami(negotiator_id))
-    
+
     def _get_offer_space(self, neg_id: str) -> OfferSpace:
         ami = self.get_ami(neg_id)
         q = ami.issues[QUANTITY]
@@ -701,7 +701,7 @@ class GodfatherAgent(AspirationMixin, OneShotSyncAgent):
             min_q = q.min_value,
             max_q = q.max_value,
             reserve = Offer(0, 0))
-    
+
     def _get_outcome_space(self, neg_id: str) -> OutcomeSpace:
         return OutcomeSpace(self._get_offer_space(neg_id))
 
@@ -715,7 +715,7 @@ class MinDisagreementGodfatherAgent(GodfatherAgent):
             strategy_type=StrategyMin,
             num_iter_consistency=3,
             num_sample_outcomes=1)
-    
+
     # def initial_outcome_distr(self, opp_id: str) -> OutcomeDistr:
     #     return OutcomeDistrPoint(self._get_outcome_space(opp_id), Offer(5, 5))
 
@@ -854,10 +854,10 @@ class SlowLearningGodfather(GodfatherAgent):
         return ModelEmpirical(opp_id, strategy_self=strat, prior_bias=25)
 
 class TestGodfatherHard(GodfatherAgent):
-    asp_ex = 4 
+    asp_ex = 4
     pct = 1
 
-    def __init__(self) -> None: 
+    def __init__(self) -> None:
         super().__init__(
             model_type=ModelEmpirical,
             strategy_type=StrategyParameterizedGoldfish,
@@ -872,7 +872,7 @@ class TestGodfatherSoft(GodfatherAgent):
     asp_ex = 1
     pct = 0.5
 
-    def __init__(self) -> None: 
+    def __init__(self) -> None:
         super().__init__(
             model_type=ModelEmpirical,
             strategy_type=StrategyParameterizedGoldfish,
@@ -886,7 +886,7 @@ class TestGodfatherSoft(GodfatherAgent):
 class TestGodfatherRegAsp(GodfatherAgent):
     asp_ex = 1
 
-    def __init__(self) -> None: 
+    def __init__(self) -> None:
         super().__init__(
             model_type=ModelEmpirical,
             strategy_type=StrategyParameterizedRegAsp,
@@ -925,7 +925,7 @@ class ZooGodfather(GodfatherAgent):
             strategy_type=self._strategy_type,
             num_iter_consistency=1,
             num_sample_outcomes=20)
-    
+
     def _get_model(self, opp_id: str) -> Model:
         strat = self._get_strategy(opp_id)
         return ModelEmpirical(opp_id, strategy_self=strat, prior_bias=self.prior_bias)
@@ -969,7 +969,7 @@ class CheatingGodfatherAgent(GodfatherAgent):
             num_iter_consistency=3,
             num_sample_outcomes=1 # point estimate
         )
-    
+
     def get_my_id(self, opp_id: str):
         """Gets agent's own id. Probably not the best method, but oh well."""
         ami = self.get_ami(opp_id)
@@ -978,7 +978,7 @@ class CheatingGodfatherAgent(GodfatherAgent):
         if len(my_id_list) != 1:
             raise RuntimeError("Couldn't get my negotiator id from ami")
         return my_id_list[0]
-    
+
     def opp_ufun_getter(self, opp_id: str) -> Callable[[], Optional[BilatUFun]]:
         opponent = self.awi._world.agents[opp_id]
         my_id = self.get_my_id(opp_id)
@@ -996,7 +996,7 @@ class CheatingGodfatherAgent(GodfatherAgent):
             ufun_getter=self.opp_ufun_getter(opp_id),
             strategy_self=self.strat(),
             strategy_opp=self.strat())
-    
+
     def _get_strategy(self, opp_id: str) -> Strategy:
         return self.strat()
 
@@ -1011,7 +1011,7 @@ class CheatingGPAGodfatherAgent(CheatingGodfatherAgent):
 class CheatingCPAGodfatherAgent(CheatingGodfatherAgent):
     def __init__(self) -> None:
         super().__init__(strat=StrategyCheatingParetoAspiration)
-    
+
     def _get_model(self, opp_id: str) -> Model:
         opponent = self.awi._world.agents[opp_id]
         my_id = self.get_my_id(opp_id)
