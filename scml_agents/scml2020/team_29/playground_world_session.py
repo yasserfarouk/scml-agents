@@ -1,9 +1,9 @@
-from scml.scml2020 import *
-import matplotlib.pyplot as plt
 from pprint import pprint
-import pandas as pd
-import numpy as np
 
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from scml.scml2020 import *
 
 agent_types = [
     DecentralizingAgent,

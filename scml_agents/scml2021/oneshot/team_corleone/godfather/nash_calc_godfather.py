@@ -1,8 +1,11 @@
 from scml.oneshot import *
+
 from .offer import Offer
+
 
 class NashCalcGodfather:
     """NashCalc, adapted to the Godfather interface"""
+
     def __init__(self, my_ufun, opp_ufun):
         self.ufun = my_ufun
         self.opp_ufun = opp_ufun
@@ -20,7 +23,7 @@ class NashCalcGodfather:
     def calc_nash_point(self):
         own_disagree_util, opp_disagree_util = self.calc_utility(0, 0)
 
-        max_value = float('-inf')
+        max_value = float("-inf")
         curr_max = None
         for point in self.pareto_frontier:
             nash_value = (point[2] - own_disagree_util) * (point[3] - opp_disagree_util)
@@ -39,7 +42,7 @@ class NashCalcGodfather:
     def calc_pareto_frontier(self):
         """Returns pareto frontier as a list of [q, p, own_util, opp_util] lists"""
         pareto_frontier = []
-        utils  = {}
+        utils = {}
         for o in self.ufun.outcome_space.outcome_set():
             p = o.price
             q = o.quantity
@@ -62,24 +65,24 @@ class NashCalcGodfather:
         return pareto_frontier
 
     def my_max(self, bit):
-        max_val = float('-inf')
+        max_val = float("-inf")
         for element in self.pareto_frontier:
             if element[2 + bit] > max_val:
                 max_val = element[2 + bit]
         return max_val
 
     def my_min(self, bit):
-        min_val = float('inf')
+        min_val = float("inf")
         for element in self.pareto_frontier:
             if element[2 + bit] < min_val:
                 min_val = element[2 + bit]
         return min_val
-    
+
     def frontier_offers(self):
         return [Offer(e[1], e[0]) for e in self.pareto_frontier]
-    
+
     def nash_point_offer(self):
         return Offer(self.nbp[1], self.nbp[0])
-    
+
     def nash_point_my_util(self):
         return self.nbp[2]

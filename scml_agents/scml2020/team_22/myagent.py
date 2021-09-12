@@ -38,7 +38,7 @@ You can access the full list of these capabilities on the documentation.
 import time
 
 # required for typing
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 from negmas import (
@@ -46,11 +46,12 @@ from negmas import (
     Breach,
     Contract,
     Issue,
+    LinearUtilityFunction,
     MechanismState,
     Negotiator,
 )
 from negmas.helpers import humanize_time
-from scml.scml2020 import SCML2020Agent
+from scml.scml2020 import Failure, SCML2020Agent
 
 # required for development
 from scml.scml2020.agents import (
@@ -58,26 +59,18 @@ from scml.scml2020.agents import (
     DecentralizingAgent,
     DoNothingAgent,
 )
-from scml.scml2020.utils import anac2020_collusion, anac2020_std
-from scml.scml2020 import Failure
-from tabulate import tabulate
-from typing import Tuple
-
-from negmas import LinearUtilityFunction
-from negmas import Contract
 from scml.scml2020.common import NO_COMMAND
-
-from scml.scml2020.components import FixedERPStrategy
 from scml.scml2020.components import (
-    SupplyDrivenProductionStrategy,
+    DemandDrivenProductionStrategy,
+    FixedERPStrategy,
+    IndependentNegotiationsManager,
     ProductionStrategy,
     StepNegotiationManager,
-    IndependentNegotiationsManager,
-    DemandDrivenProductionStrategy,
+    SupplyDrivenProductionStrategy,
 )
 from scml.scml2020.components.trading import PredictionBasedTradingStrategy
-
-from scml.scml2020 import SCML2020Agent
+from scml.scml2020.utils import anac2020_collusion, anac2020_std
+from tabulate import tabulate
 
 __all__ = ["SavingAgent"]
 

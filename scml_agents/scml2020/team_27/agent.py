@@ -1,24 +1,23 @@
 import heapq
-from typing import Dict, List, Optional, Tuple, Any
+from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
 from negmas import (
+    AgentMechanismInterface,
     Contract,
     Issue,
-    AgentMechanismInterface,
-    Negotiator,
     MechanismState,
+    Negotiator,
     ResponseType,
     SAOState,
 )
-
 from scml.scml2020 import (
-    SCML2020Agent,
-    TIME,
     ANY_LINE,
     QUANTITY,
+    TIME,
     UNIT_PRICE,
     FinancialReport,
+    SCML2020Agent,
 )
 from scml.scml2020.services import SyncController
 

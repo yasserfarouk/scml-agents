@@ -1,19 +1,18 @@
 import functools
+from typing import Any, Dict, Optional, Tuple, Union
+
+from dana_neg_algo import DanasController, DanasNegotiator
+from negmas import SAONegotiator
+from run_tournament import run
+from scml.scml2020 import (
+    PredictionBasedTradingStrategy,
+    SCML2020Agent,
+    StepNegotiationManager,
+    SupplyDrivenProductionStrategy,
+)
 from scml.scml2020.agents.decentralizing import _NegotiationCallbacks
 from scml.scml2020.components.negotiation import ControllerInfo
 from scml.scml2020.services import StepController
-from typing import Any, Dict, Optional, Union, Tuple
-
-
-from dana_neg_algo import DanasNegotiator, DanasController
-from run_tournament import run
-from negmas import SAONegotiator
-from scml.scml2020 import (
-    SCML2020Agent,
-    PredictionBasedTradingStrategy,
-    SupplyDrivenProductionStrategy,
-    StepNegotiationManager,
-)
 
 
 class MyNegotiationManager(StepNegotiationManager):

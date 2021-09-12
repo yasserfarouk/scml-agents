@@ -1,13 +1,14 @@
-from scipy.stats import geom, binom
-from prettytable import PrettyTable
-import numpy as np
-import pulp
 import itertools as it
-import time
-import pprint
-from typing import List, Set, Dict, Tuple, Optional
 import json
 import pathlib
+import pprint
+import time
+from typing import Dict, List, Optional, Set, Tuple
+
+import numpy as np
+import pulp
+from prettytable import PrettyTable
+from scipy.stats import binom, geom
 
 
 class NVMPlan:
@@ -276,7 +277,7 @@ class NVMLib2:
         :param json_file_name:
         :return:
         """
-        with open(json_file_name, "r") as JSON:
+        with open(json_file_name) as JSON:
             return json.load(JSON)
 
     def generate_synthetic_uncertainty_model(T: int, q_max: int):
@@ -386,8 +387,8 @@ class NVMLib2:
         # print(f'it took {time.time() - t0 : .4f} to generate objective function')
         # Genrate the constraints. Only one quantity can be planned for at each time step for buying or selling.
         for t in range(self.current_time, self.current_time + T):
-            model += sum([out_vars[t, k] for k in range(0, q_max)]) <= 1
-            model += sum([inn_vars[t, k] for k in range(0, q_max)]) <= 1
+            model += sum(out_vars[t, k] for k in range(0, q_max)) <= 1
+            model += sum(inn_vars[t, k] for k in range(0, q_max)) <= 1
         # print(f'it took {time.time() - t0 : .4f} to generate constraints ')
         # Document here: optimistic == True means no bluffing, otherwise there is bluffing going on
         optimistic = True
@@ -397,25 +398,22 @@ class NVMLib2:
             right_hand_size = current_inventory
             for t in range(self.current_time, self.current_time + T):
                 model += (
-                    sum([out_vars[t, k] * k for k in range(0, q_max)])
-                    <= right_hand_size
+                    sum(out_vars[t, k] * k for k in range(0, q_max)) <= right_hand_size
                 )
                 right_hand_size += sum(
-                    [inn_vars[t, k] * k - out_vars[t, k] * k for k in range(0, q_max)]
+                    inn_vars[t, k] * k - out_vars[t, k] * k for k in range(0, q_max)
                 )
         else:
             # Constraints that ensure there are enough outputs, in expectation, to sell at each time step.
             right_hand_size = current_inventory
             for t in range(self.current_time, self.current_time + T):
                 model += (
-                    sum([out_vars[t, k] * out[t][k] for k in range(0, q_max)])
+                    sum(out_vars[t, k] * out[t][k] for k in range(0, q_max))
                     <= right_hand_size
                 )
                 right_hand_size += sum(
-                    [
-                        inn_vars[t, k] * inn[t][k] - out_vars[t, k] * out[t][k]
-                        for k in range(0, q_max)
-                    ]
+                    inn_vars[t, k] * inn[t][k] - out_vars[t, k] * out[t][k]
+                    for k in range(0, q_max)
                 )
         # We assume that the planning starts with no inventory and thus, the agent cannot sell anything at time 0.
         # for k in range(current_inventory+1, q_max):
@@ -434,11 +432,11 @@ class NVMLib2:
         # #print(f'it took {total_time : .4f} sec in total, and has opt profit of {pulp.value(model.objective) : .4f}')
         t0 = time.time()
         buy_plan = {
-            t: sum([int(k * inn_vars[t, k].varValue) for k in range(0, q_max)])
+            t: sum(int(k * inn_vars[t, k].varValue) for k in range(0, q_max))
             for t in range(self.current_time, self.current_time + T)
         }
         sell_plan = {
-            t: sum([int(k * out_vars[t, k].varValue) for k in range(0, q_max)])
+            t: sum(int(k * out_vars[t, k].varValue) for k in range(0, q_max))
             for t in range(self.current_time, self.current_time + T)
         }
         # print(f'it took {time.time() - t0 : .4f} sec to produce the plan')
@@ -466,11 +464,11 @@ class NVMLib2:
         ##print(f'it took {total_time : .4f} sec in total, and has opt profit of {pulp.value(model.objective) : .4f}')
         t0 = time.time()
         buy_plan = {
-            t: sum([int(k * inn_vars[t, k].varValue) for k in range(0, q_max)])
+            t: sum(int(k * inn_vars[t, k].varValue) for k in range(0, q_max))
             for t in range(0, T)
         }
         sell_plan = {
-            t: sum([int(k * out_vars[t, k].varValue) for k in range(0, q_max)])
+            t: sum(int(k * out_vars[t, k].varValue) for k in range(0, q_max))
             for t in range(0, T)
         }
         # print(f'it took {time.time() - t0 : .4f} sec to produce the plan')
@@ -499,7 +497,7 @@ class NVMLib2:
             + ["total"]
         )
         total_buy_qtty = sum(
-            [buy_plan[t] for t in range(self.current_time, self.current_time + T)]
+            buy_plan[t] for t in range(self.current_time, self.current_time + T)
         )
         x.add_row(
             ["B-Q"]
@@ -507,7 +505,7 @@ class NVMLib2:
             + [total_buy_qtty]
         )
         total_sell_qtty = sum(
-            [sell_plan[t] for t in range(self.current_time, self.current_time + T)]
+            sell_plan[t] for t in range(self.current_time, self.current_time + T)
         )
         x.add_row(
             ["S-Q"]
@@ -531,10 +529,7 @@ class NVMLib2:
             + ["--"]
         )
         total_exp_buy_qtty = sum(
-            [
-                inn[t][buy_plan[t]]
-                for t in range(self.current_time, self.current_time + T)
-            ]
+            inn[t][buy_plan[t]] for t in range(self.current_time, self.current_time + T)
         )
         x.add_row(
             ["B-E"]
@@ -545,10 +540,8 @@ class NVMLib2:
             + [str(round(total_exp_buy_qtty, 2))]
         )
         total_exp_sell_qtty = sum(
-            [
-                out[t][sell_plan[t]]
-                for t in range(self.current_time, self.current_time + T)
-            ]
+            out[t][sell_plan[t]]
+            for t in range(self.current_time, self.current_time + T)
         )
         x.add_row(
             ["S-E"]

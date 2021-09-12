@@ -1,7 +1,8 @@
-from negmas import Contract
 from typing import List, Optional
 
-from scml import ANY_LINE, is_system_agent, TradingStrategy, TradePredictionStrategy
+from negmas import Contract
+from scml import ANY_LINE, TradePredictionStrategy, TradingStrategy, is_system_agent
+
 from .MLBasedTradePredictionStrategy import MLBasedTradePredictionStrategy
 from .ModifiedERPStrategy import ModifiedERPStrategy
 
@@ -9,12 +10,7 @@ from .ModifiedERPStrategy import ModifiedERPStrategy
 class MachineLearningBasedTradingStrategy(
     TradePredictionStrategy, ModifiedERPStrategy, TradingStrategy
 ):
-
-    def __init__(
-            self,
-            *args,
-            **kwargs
-    ):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
     def init(self):
@@ -25,10 +21,10 @@ class MachineLearningBasedTradingStrategy(
         self.outputs_needed[1:] = self.expected_inputs[:-1]
 
     def on_contracts_finalized(
-            self,
-            signed: List[Contract],
-            cancelled: List[Contract],
-            rejectors: List[List[str]],
+        self,
+        signed: List[Contract],
+        cancelled: List[Contract],
+        rejectors: List[List[str]],
     ) -> None:
 
         super().on_contracts_finalized(signed, cancelled, rejectors)
@@ -78,7 +74,7 @@ class MachineLearningBasedTradingStrategy(
                 x[0].agreement["time"],
                 0
                 if is_system_agent(x[0].annotation["seller"])
-                   or is_system_agent(x[0].annotation["buyer"])
+                or is_system_agent(x[0].annotation["buyer"])
                 else 1,
                 x[0].agreement["unit_price"],
             ),
@@ -105,7 +101,11 @@ class MachineLearningBasedTradingStrategy(
                 contract_value = input_trading_price / ((t - s + 1) * u)
                 contracts_with_values[contract] = (contract_value, index)
 
-        contracts_sorted_by_values = dict(sorted(contracts_with_values.items(), key=lambda item: item[1], reverse=True))
+        contracts_sorted_by_values = dict(
+            sorted(
+                contracts_with_values.items(), key=lambda item: item[1], reverse=True
+            )
+        )
 
         for contract in contracts_sorted_by_values:
             is_seller = contract.annotation["seller"] == self.id
@@ -130,12 +130,17 @@ class MachineLearningBasedTradingStrategy(
                 taken = bought
 
             # check that I can produce the required quantities even in principle
-            steps, lines = self.awi.available_for_production(q, trange, ANY_LINE, override=False, method="all")
+            steps, lines = self.awi.available_for_production(
+                q, trange, ANY_LINE, override=False, method="all"
+            )
 
             if len(steps) - taken < q:
                 continue
 
-            if secured[trange[0]: trange[1] + 1].sum() + q + taken <= needed[trange[0]: trange[1] + 1].sum():
+            if (
+                secured[trange[0] : trange[1] + 1].sum() + q + taken
+                <= needed[trange[0] : trange[1] + 1].sum()
+            ):
                 signatures[index] = self.id
                 if is_seller:
                     sold += q
@@ -151,11 +156,11 @@ class MachineLearningBasedTradingStrategy(
         )
 
     def on_agent_bankrupt(
-            self,
-            agent: str,
-            contracts: List[Contract],
-            quantities: List[int],
-            compensation_money: int,
+        self,
+        agent: str,
+        contracts: List[Contract],
+        quantities: List[int],
+        compensation_money: int,
     ) -> None:
         super().on_agent_bankrupt(agent, contracts, quantities, compensation_money)
         for contract, new_quantity in zip(contracts, quantities):

@@ -1,6 +1,5 @@
-import numpy as np
 import matplotlib.pyplot as plt
-
+import numpy as np
 
 fig, (ax1, ax2) = plt.subplots(2, 1)
 # make a little extra space between the subplots

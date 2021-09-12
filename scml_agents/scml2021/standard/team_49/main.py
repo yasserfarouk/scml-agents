@@ -1,20 +1,27 @@
 import time
 
-from negmas.helpers import humanize_time
-from scml.scml2020.utils import anac2020_collusion, anac2020_std
-from scml import DecentralizingAgent, BuyCheapSellExpensiveAgent, RandomAgent, DoNothingAgent, IndDecentralizingAgent, \
-    IndependentNegotiationsAgent
-from tabulate import tabulate
 from agent import E3BIUagent
+from negmas.helpers import humanize_time
+from scml import (
+    BuyCheapSellExpensiveAgent,
+    DecentralizingAgent,
+    DoNothingAgent,
+    IndDecentralizingAgent,
+    IndependentNegotiationsAgent,
+    RandomAgent,
+)
+from scml.scml2020.utils import anac2020_collusion, anac2020_std
+from tabulate import tabulate
 
 
-def run(competition='std',
-        reveal_names=True,
-        n_steps=20,
-        n_configs=2,
-        max_n_worlds_per_config=None,
-        n_runs_per_world=1
-        ):
+def run(
+    competition="std",
+    reveal_names=True,
+    n_steps=20,
+    n_configs=2,
+    max_n_worlds_per_config=None,
+    n_runs_per_world=1,
+):
     """
     **Not needed for submission.** You can use this function to test your agent.
 
@@ -37,24 +44,34 @@ def run(competition='std',
         - To speed it up, use a smaller `n_step` value
 
     """
-    competitors = [E3BIUagent, DecentralizingAgent, BuyCheapSellExpensiveAgent,
-                   IndDecentralizingAgent]
+    competitors = [
+        E3BIUagent,
+        DecentralizingAgent,
+        BuyCheapSellExpensiveAgent,
+        IndDecentralizingAgent,
+    ]
     start = time.perf_counter()
-    if competition == 'std':
+    if competition == "std":
         results = anac2020_std(
-            competitors=competitors, verbose=True, n_steps=n_steps,
-            n_configs=n_configs, n_runs_per_world=n_runs_per_world
+            competitors=competitors,
+            verbose=True,
+            n_steps=n_steps,
+            n_configs=n_configs,
+            n_runs_per_world=n_runs_per_world,
         )
-    elif competition == 'collusion':
+    elif competition == "collusion":
         results = anac2020_collusion(
-            competitors=competitors, verbose=True, n_steps=n_steps,
-            n_configs=n_configs, n_runs_per_world=n_runs_per_world
+            competitors=competitors,
+            verbose=True,
+            n_steps=n_steps,
+            n_configs=n_configs,
+            n_runs_per_world=n_runs_per_world,
         )
     else:
-        raise ValueError(f'Unknown competition type {competition}')
-    print(tabulate(results.total_scores, headers='keys', tablefmt='psql'))
-    print(f'Finished in {humanize_time(time.perf_counter() - start)}')
+        raise ValueError(f"Unknown competition type {competition}")
+    print(tabulate(results.total_scores, headers="keys", tablefmt="psql"))
+    print(f"Finished in {humanize_time(time.perf_counter() - start)}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     run()

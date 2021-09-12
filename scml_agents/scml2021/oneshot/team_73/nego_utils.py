@@ -1,7 +1,7 @@
 from statistics import mean
+from typing import List
 
 from negmas import SAOAMI
-from typing import List
 
 QUANTITY = 0
 TIME = 1
@@ -18,22 +18,28 @@ def t(step, n_steps):
 
 
 def shorten_name(name: str):
-    return name.split('-')[0]
+    return name.split("-")[0]
 
 
 def opponent_agreements(ami: SAOAMI, is_selling: bool, success_contracts: list) -> list:
     """指定された相手との合意（contract）を返す"""
     if is_selling:
         opponent_name = ami.annotation["buyer"]
-        success_agreements = [_ for _ in success_contracts if _.partners[0] == opponent_name]
+        success_agreements = [
+            _ for _ in success_contracts if _.partners[0] == opponent_name
+        ]
     else:
         opponent_name = ami.annotation["seller"]
-        success_agreements = [_ for _ in success_contracts if _.partners[1] == opponent_name]
+        success_agreements = [
+            _ for _ in success_contracts if _.partners[1] == opponent_name
+        ]
 
     return success_agreements
 
 
-def worst_opp_acc_price(ami: SAOAMI, is_selling: bool, success_contracts: list) -> float:
+def worst_opp_acc_price(
+    ami: SAOAMI, is_selling: bool, success_contracts: list
+) -> float:
     """
     指定された相手との合意の中で，相手にとって最も良い価格を返す．
     合意がない場合は，0かinfを返す．
@@ -45,7 +51,9 @@ def worst_opp_acc_price(ami: SAOAMI, is_selling: bool, success_contracts: list) 
     success_agreements = opponent_agreements(ami, is_selling, success_contracts)
 
     if is_selling:
-        price = min([_.agreement["unit_price"] for _ in success_agreements] + [float("inf")])
+        price = min(
+            [_.agreement["unit_price"] for _ in success_agreements] + [float("inf")]
+        )
     else:
         price = max([_.agreement["unit_price"] for _ in success_agreements] + [0])
 
@@ -65,12 +73,20 @@ def opponent_rank(opponent_names: List[str], is_selling: bool, success_contract:
     rank = {}
     if is_selling:
         for name in opponent_names:
-            agreements = [_.agreement["unit_price"] for _ in success_contract if _.partners[0] == name]
+            agreements = [
+                _.agreement["unit_price"]
+                for _ in success_contract
+                if _.partners[0] == name
+            ]
             rank[name] = mean(agreements) if agreements else 0
         sorted(rank.items(), key=lambda x: x[1], reverse=True)
     else:
         for name in opponent_names:
-            agreements = [_.agreement["unit_price"] for _ in success_contract if _.partners[1] == name]
+            agreements = [
+                _.agreement["unit_price"]
+                for _ in success_contract
+                if _.partners[1] == name
+            ]
             rank[name] = mean(agreements) if agreements else float("inf")
         sorted(rank.items(), key=lambda x: x[1], reverse=False)
 

@@ -1,18 +1,18 @@
 # required for typing
-import numpy as np
-from negmas import Contract
-from typing import List, Dict, Tuple
+from pprint import pprint
+from typing import Dict, List, Tuple
 
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import seaborn as sns
+from negmas import *
+from negmas import Contract
+from scml.scml2020 import *
 from scml.scml2020.common import NO_COMMAND
 
 # my need
 from scml.scml2020.components.production import *
-from scml.scml2020 import *
-from negmas import *
-import matplotlib.pyplot as plt
-from pprint import pprint
-import pandas as pd
-import seaborn as sns
 
 
 class MyProductor(ProductionStrategy):
@@ -41,9 +41,10 @@ class MyProductor(ProductionStrategy):
 
         current_step = self.awi.current_step
         defcit = (
-            (self.output_price[current_step] - self.input_cost[current_step]) / 2
-            < self.awi.profile.costs[0, self.awi.my_input_product]
-        )  # 在庫の生産が，そのステップにおいて赤字になるか
+            self.output_price[current_step] - self.input_cost[current_step]
+        ) / 2 < self.awi.profile.costs[
+            0, self.awi.my_input_product
+        ]  # 在庫の生産が，そのステップにおいて赤字になるか
         passive = self.awi.n_steps * 0.8  # どのへんから生産を慎重になるか
         latest = self.awi.n_steps - 2  # 最悪どこまで遅い生産を許容するか
         earliest_production = self.awi.current_step

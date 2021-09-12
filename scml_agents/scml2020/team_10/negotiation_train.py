@@ -1,16 +1,15 @@
-from scml import SCML2020World
-from scml.scml2020 import RandomAgent, DecentralizingAgent
-import torch
-import numpy as np
-from tqdm import tqdm
 from random import shuffle
 
-from patches import *
+import numpy as np
+import torch
 from agent import *
 from draw import plot
-from neg_model import NegModel, load_seller_neg_model, load_buyer_neg_model
-
 from hyperparameters import *
+from neg_model import NegModel, load_buyer_neg_model, load_seller_neg_model
+from patches import *
+from scml import SCML2020World
+from scml.scml2020 import DecentralizingAgent, RandomAgent
+from tqdm import tqdm
 
 
 def get_train_data(world):
@@ -59,7 +58,10 @@ buyer_train_data = []
 for i in tqdm(range(NEG_TRAIN_DATA)):
     world = SCML2020World(
         **SCML2020World.generate(
-            agent_types=[MyLearnNegotiationAgent, DecentralizingAgent,],
+            agent_types=[
+                MyLearnNegotiationAgent,
+                DecentralizingAgent,
+            ],
             n_steps=40,
             n_processes=2,
         ),

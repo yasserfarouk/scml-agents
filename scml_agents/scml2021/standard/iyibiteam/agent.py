@@ -1,14 +1,15 @@
+import numpy as np
 from scml.scml2020 import SCML2020Agent
-
-from .components.production_strategy import MyProductionStrategy
-from .components.negotiation_manager import MyNegotiationManager
-from .components.trading_strategy import MyTradingStrategy
-from .components.trade_prediction_strategy import MyTradePredictionStrategy
 from scml.scml2020.components.signing import KeepOnlyGoodPrices
 
-import numpy as np
+from .components.negotiation_manager import MyNegotiationManager
+from .components.production_strategy import MyProductionStrategy
+from .components.trade_prediction_strategy import MyTradePredictionStrategy
+from .components.trading_strategy import MyTradingStrategy
 
-__all__ = [ "IYIBIAgent", ]
+__all__ = [
+    "IYIBIAgent",
+]
 
 
 class _NegotiationCallbacks:
@@ -44,5 +45,6 @@ class IYIBIAgent(
     MyProductionStrategy,
     MyNegotiationManager,
     MyTradingStrategy,
-    SCML2020Agent):
+    SCML2020Agent,
+):
     pass

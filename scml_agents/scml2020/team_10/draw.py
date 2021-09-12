@@ -1,10 +1,12 @@
-import os, sys
+import os
+import sys
 
 sys.path.append(os.path.dirname(__file__))
 
-from negmas import save_stats
-from matplotlib import pyplot as plt
 from collections import defaultdict
+
+from matplotlib import pyplot as plt
+from negmas import save_stats
 
 
 def show_agent_scores(world):

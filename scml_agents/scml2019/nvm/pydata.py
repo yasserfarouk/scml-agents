@@ -1,5 +1,6 @@
-import pandas as pd
 import json
+
+import pandas as pd
 
 
 def get_raw_quantity_uncertainty_model(the_game_logs: pd.DataFrame) -> pd.DataFrame:
@@ -92,5 +93,5 @@ def get_json_dict(json_file_name: str) -> dict:
     :param json_file_name:
     :return:
     """
-    with open(json_file_name, "r") as JSON:
+    with open(json_file_name) as JSON:
         return json.load(JSON)

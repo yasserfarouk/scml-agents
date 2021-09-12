@@ -34,36 +34,46 @@ You can access the full list of these capabilities on the documentation.
 
 """
 
-# required for development
-from scml.scml2020.agents import DoNothingAgent
-
 # required for running the test tournament
 import time
-from tabulate import tabulate
-from scml.scml2020.utils import anac2020_std, anac2020_collusion
-from scml.scml2020.agents import DecentralizingAgent, BuyCheapSellExpensiveAgent
-from negmas.helpers import humanize_time
 
 # required for typing
-from typing import List, Optional, Dict, Any
+from typing import Any, Dict, List, Optional
+
 import numpy as np
 from negmas import (
-    Issue, AgentMechanismInterface, Contract, Negotiator,
-    MechanismState, Breach,
+    AgentMechanismInterface,
+    Breach,
+    Contract,
+    Issue,
+    MechanismState,
+    Negotiator,
 )
-from scml.scml2020.world import Failure
-from scml.scml2020 import SCML2020Agent
-from scml.scml2020 import PredictionBasedTradingStrategy
-from scml.scml2020 import MovingRangeNegotiationManager
-from scml.scml2020 import TradeDrivenProductionStrategy
+from negmas.helpers import humanize_time
+from scml.scml2020 import (
+    MovingRangeNegotiationManager,
+    PredictionBasedTradingStrategy,
+    SCML2020Agent,
+    TradeDrivenProductionStrategy,
+)
 
+# required for development
+from scml.scml2020.agents import (
+    BuyCheapSellExpensiveAgent,
+    DecentralizingAgent,
+    DoNothingAgent,
+)
+from scml.scml2020.utils import anac2020_collusion, anac2020_std
+from scml.scml2020.world import Failure
+from tabulate import tabulate
 
 from .trading_strategy import SklearnPredictionBasedTradingStrategy
-from .YIY_production_strategy import YIYProductionStrategy
 from .YIY_negotiation_strategy import YIYNegotiationManager
+from .YIY_production_strategy import YIYProductionStrategy
 
-
-__all__ = [ "YIYAgent", ]
+__all__ = [
+    "YIYAgent",
+]
 
 
 class YIYAgent(
@@ -71,7 +81,7 @@ class YIYAgent(
     YIYNegotiationManager,
     # PredictionBasedTradingStrategy,
     SklearnPredictionBasedTradingStrategy,
-    SCML2020Agent
+    SCML2020Agent,
 ):
     """
     This is the only class you *need* to implement. You can create the agent
@@ -84,13 +94,15 @@ class YIYAgent(
 
     """
 
-def run(competition='std',
-         reveal_names=True,
-         n_steps=50,
-         n_configs=2,
-         max_n_worlds_per_config=None,
-         n_runs_per_world=1
-        ):
+
+def run(
+    competition="std",
+    reveal_names=True,
+    n_steps=50,
+    n_configs=2,
+    max_n_worlds_per_config=None,
+    n_runs_per_world=1,
+):
     """
     **Not needed for submission.** You can use this function to test your agent.
 
@@ -115,21 +127,27 @@ def run(competition='std',
     """
     competitors = [YIYAgent, DecentralizingAgent, BuyCheapSellExpensiveAgent]
     start = time.perf_counter()
-    if competition == 'std':
+    if competition == "std":
         results = anac2020_std(
-            competitors=competitors, verbose=True, n_steps=n_steps,
-            n_configs=n_configs, n_runs_per_world=n_runs_per_world
-            )
-    elif competition == 'collusion':
+            competitors=competitors,
+            verbose=True,
+            n_steps=n_steps,
+            n_configs=n_configs,
+            n_runs_per_world=n_runs_per_world,
+        )
+    elif competition == "collusion":
         results = anac2020_collusion(
-            competitors=competitors, verbose=True, n_steps=n_steps,
-            n_configs=n_configs, n_runs_per_world=n_runs_per_world
-            )
+            competitors=competitors,
+            verbose=True,
+            n_steps=n_steps,
+            n_configs=n_configs,
+            n_runs_per_world=n_runs_per_world,
+        )
     else:
-        raise ValueError(f'Unknown competition type {competition}')
-    print(tabulate(results.total_scores, headers='keys', tablefmt='psql'))
-    print(f'Finished in {humanize_time(time.perf_counter() - start)}')
+        raise ValueError(f"Unknown competition type {competition}")
+    print(tabulate(results.total_scores, headers="keys", tablefmt="psql"))
+    print(f"Finished in {humanize_time(time.perf_counter() - start)}")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     run()

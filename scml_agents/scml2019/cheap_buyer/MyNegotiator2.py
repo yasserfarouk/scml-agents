@@ -1,8 +1,8 @@
 import math
 import random
-
-from negmas import SAONegotiator, MechanismState, ResponseType
 from typing import Optional
+
+from negmas import MechanismState, ResponseType, SAONegotiator
 
 
 class MyNegotiator2(SAONegotiator):
@@ -19,7 +19,7 @@ class MyNegotiator2(SAONegotiator):
         interval=0.05,
         reserved_value=1,
     ):
-        super(MyNegotiator2, self).__init__(name=name, ufun=ufun)
+        super().__init__(name=name, ufun=ufun)
         self.ordered_outcomes = []
         self.ufun = ufun
         self.utility_values_of_offers = {}
@@ -61,7 +61,7 @@ class MyNegotiator2(SAONegotiator):
             return
         outcomes = self._ami.discrete_outcomes()
         self.ordered_outcomes = sorted(
-            [(self._utility_function(outcome), outcome) for outcome in outcomes],
+            ((self._utility_function(outcome), outcome) for outcome in outcomes),
             key=lambda x: float(x[0]) if x[0] is not None else float("-inf"),
             reverse=True,
         )

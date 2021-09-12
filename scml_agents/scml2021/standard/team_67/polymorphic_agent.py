@@ -3,45 +3,63 @@
 *Authors* type-your-team-member-names-with-their-emails here
 """
 
-# required for development
-from scml.scml2020 import (
-    SCML2020Agent,
-    PredictionBasedTradingStrategy,
-    MovingRangeNegotiationManager,
-    TradeDrivenProductionStrategy,
-)
+import math
 
 # required for running the test tournament
 import time
-from tabulate import tabulate
-from scml.scml2020.utils import anac2021_std, anac2021_collusion, anac2021_oneshot
-from scml.scml2020.common import is_system_agent, ANY_LINE, NO_COMMAND, TIME, QUANTITY
-from scml.scml2020.agents import DecentralizingAgent, BuyCheapSellExpensiveAgent, MarketAwareDecentralizingAgent
-from negmas.helpers import humanize_time, instantiate
-import math
-import scml_agents
 
 # Libraries
-from typing import List, Optional, Dict, Any, Tuple
+from typing import Any, Dict, List, Optional, Tuple
+
 import numpy as np
-from negmas import Contract, SAONegotiator, SAOMetaNegotiatorController, LinearUtilityFunction, Issue, \
-    MappingUtilityFunction, AspirationNegotiator, AgentMechanismInterface, Negotiator, UtilityFunction
+from negmas import (
+    AgentMechanismInterface,
+    AspirationNegotiator,
+    Contract,
+    Issue,
+    LinearUtilityFunction,
+    MappingUtilityFunction,
+    Negotiator,
+    SAOMetaNegotiatorController,
+    SAONegotiator,
+    UtilityFunction,
+)
+from negmas.helpers import humanize_time, instantiate
+
+# required for development
 from scml.scml2020 import (
+    DemandDrivenProductionStrategy,
+    IndependentNegotiationsManager,
+    MarketAwareBuyCheapSellExpensiveAgent,
+    MarketAwarePredictionBasedTradingStrategy,
+    MovingRangeNegotiationManager,
+    PredictionBasedTradingStrategy,
+    ProductionStrategy,
     ReactiveTradingStrategy,
     SCML2020Agent,
-    TradingStrategy,
-    TradePredictionStrategy,
-    ProductionStrategy,
     StepNegotiationManager,
-    DemandDrivenProductionStrategy,
-    TradeDrivenProductionStrategy,
-    MarketAwarePredictionBasedTradingStrategy,
-    MarketAwareBuyCheapSellExpensiveAgent,
     SupplyDrivenProductionStrategy,
-    MovingRangeNegotiationManager,
-    IndependentNegotiationsManager
+    TradeDrivenProductionStrategy,
+    TradePredictionStrategy,
+    TradingStrategy,
 )
-from scml.scml2020.common import is_system_agent, UNIT_PRICE
+from scml.scml2020.agents import (
+    BuyCheapSellExpensiveAgent,
+    DecentralizingAgent,
+    MarketAwareDecentralizingAgent,
+)
+from scml.scml2020.common import (
+    ANY_LINE,
+    NO_COMMAND,
+    QUANTITY,
+    TIME,
+    UNIT_PRICE,
+    is_system_agent,
+)
+from scml.scml2020.utils import anac2021_collusion, anac2021_oneshot, anac2021_std
+from tabulate import tabulate
+
+import scml_agents
 
 __all__ = ["PolymorphicAgent"]
 
@@ -69,20 +87,24 @@ class PolymorphicProductionStrategy(ProductionStrategy):
             self.supply_driven_step(self)
 
     def on_contracts_finalized(
-            self: "SCML2020Agent",
-            signed: List[Contract],
-            cancelled: List[Contract],
-            rejectors: List[List[str]],
+        self: "SCML2020Agent",
+        signed: List[Contract],
+        cancelled: List[Contract],
+        rejectors: List[List[str]],
     ) -> None:
         if self.awi.current_step < self.awi.n_steps * 0.2:
             # logger.log("trade_driven " + "step: " + str(self.awi.current_step))
             self.trade_driven_on_contracts_finalized(self, signed, cancelled, rejectors)
         elif self.awi.current_step < self.awi.n_steps * 0.8:
             # logger.log("demand_driven " + "step: " + str(self.awi.current_step))
-            self.demand_driven_on_contracts_finalized(self, signed, cancelled, rejectors)
+            self.demand_driven_on_contracts_finalized(
+                self, signed, cancelled, rejectors
+            )
         else:
             # logger.log("supply_driven " + "step: " + str(self.awi.current_step))
-            self.supply_driven_on_contracts_finalized(self, signed, cancelled, rejectors)
+            self.supply_driven_on_contracts_finalized(
+                self, signed, cancelled, rejectors
+            )
 
     @staticmethod
     def supply_driven_step(self):
@@ -95,10 +117,10 @@ class PolymorphicProductionStrategy(ProductionStrategy):
 
     @staticmethod
     def supply_driven_on_contracts_finalized(
-            self: "SCML2020Agent",
-            signed: List[Contract],
-            cancelled: List[Contract],
-            rejectors: List[List[str]],
+        self: "SCML2020Agent",
+        signed: List[Contract],
+        cancelled: List[Contract],
+        rejectors: List[List[str]],
     ) -> None:
         super().on_contracts_finalized(signed, cancelled, rejectors)
         latest = self.awi.n_steps - 2
@@ -128,10 +150,10 @@ class PolymorphicProductionStrategy(ProductionStrategy):
 
     @staticmethod
     def trade_driven_on_contracts_finalized(
-            self: "SCML2020Agent",
-            signed: List[Contract],
-            cancelled: List[Contract],
-            rejectors: List[List[str]],
+        self: "SCML2020Agent",
+        signed: List[Contract],
+        cancelled: List[Contract],
+        rejectors: List[List[str]],
     ) -> None:
         super().on_contracts_finalized(signed, cancelled, rejectors)
         for contract in signed:
@@ -170,10 +192,10 @@ class PolymorphicProductionStrategy(ProductionStrategy):
 
     @staticmethod
     def demand_driven_on_contracts_finalized(
-            self: "SCML2020Agent",
-            signed: List[Contract],
-            cancelled: List[Contract],
-            rejectors: List[List[str]],
+        self: "SCML2020Agent",
+        signed: List[Contract],
+        cancelled: List[Contract],
+        rejectors: List[List[str]],
     ) -> None:
         super().on_contracts_finalized(signed, cancelled, rejectors)
         for contract in signed:
@@ -207,9 +229,12 @@ class MyTradingStrategy(PredictionBasedTradingStrategy):
         super().init()
         production_cost = np.max(self.awi.profile.costs[:, self.awi.my_input_product])
 
-        self.input_cost = (self.awi.catalog_prices[self.awi.my_input_product]) * np.ones(self.awi.n_steps, dtype=int)
-        self.output_price = (self.awi.catalog_prices[self.awi.my_output_product] + production_cost
-                             ) * np.ones(self.awi.n_steps, dtype=int)
+        self.input_cost = (
+            self.awi.catalog_prices[self.awi.my_input_product]
+        ) * np.ones(self.awi.n_steps, dtype=int)
+        self.output_price = (
+            self.awi.catalog_prices[self.awi.my_output_product] + production_cost
+        ) * np.ones(self.awi.n_steps, dtype=int)
 
         self.inputs_needed = (self.awi.n_steps * self.awi.n_lines) * np.ones(
             self.awi.n_steps, dtype=int
@@ -232,14 +257,14 @@ class MyTradingStrategy(PredictionBasedTradingStrategy):
                 self.awi.trading_prices[self.awi.my_output_product],
             ]
 
-        self.input_cost[self.awi.current_step:] = self.prices[0]
-        self.output_price[self.awi.current_step:] = self.prices[1]
+        self.input_cost[self.awi.current_step :] = self.prices[0]
+        self.output_price[self.awi.current_step :] = self.prices[1]
 
     def on_contracts_finalized(
-            self,
-            signed: List[Contract],
-            cancelled: List[Contract],
-            rejectors: List[List[str]],
+        self,
+        signed: List[Contract],
+        cancelled: List[Contract],
+        rejectors: List[List[str]],
     ) -> None:
         super().on_contracts_finalized(signed, cancelled, rejectors)
 
@@ -257,20 +282,19 @@ class MyTradingStrategy(PredictionBasedTradingStrategy):
             else:
                 self.inputs_secured[ctime] += quantity
                 self.inputs_needed[ctime:] -= quantity
-                self.outputs_needed[ctime + 1:] += quantity
+                self.outputs_needed[ctime + 1 :] += quantity
 
 
 class MyNegotiationManager(IndependentNegotiationsManager):
-
     def _start_negotiations(
-            self,
-            product: int,
-            sell: bool,
-            step: int,
-            qvalues: Tuple[int, int],
-            uvalues: Tuple[int, int],
-            tvalues: Tuple[int, int],
-            partners: List[str],
+        self,
+        product: int,
+        sell: bool,
+        step: int,
+        qvalues: Tuple[int, int],
+        uvalues: Tuple[int, int],
+        tvalues: Tuple[int, int],
+        partners: List[str],
     ) -> None:
 
         issues = [
@@ -291,11 +315,11 @@ class MyNegotiationManager(IndependentNegotiationsManager):
             )
 
     def respond_to_negotiation_request(
-            self,
-            initiator: str,
-            issues: List[Issue],
-            annotation: Dict[str, Any],
-            mechanism: AgentMechanismInterface,
+        self,
+        initiator: str,
+        issues: List[Issue],
+        annotation: Dict[str, Any],
+        mechanism: AgentMechanismInterface,
     ) -> Optional[Negotiator]:
         is_seller = annotation["seller"] == self.id
         if is_seller:
@@ -310,18 +334,22 @@ class MyNegotiationManager(IndependentNegotiationsManager):
         )
 
     def negotiator(
-            self, is_seller: bool, issues=None, outcomes=None, partner=None
+        self, is_seller: bool, issues=None, outcomes=None, partner=None
     ) -> SAONegotiator:
         """Creates a negotiator"""
         if outcomes is None and (
-                issues is None or not Issue.enumerate(issues, astype=tuple)
+            issues is None or not Issue.enumerate(issues, astype=tuple)
         ):
             return None
         params = self.negotiator_params
-        params["ufun"] = self.create_ufun(is_seller=is_seller, outcomes=outcomes, issues=issues, partner=partner)
+        params["ufun"] = self.create_ufun(
+            is_seller=is_seller, outcomes=outcomes, issues=issues, partner=partner
+        )
         return instantiate(self.negotiator_type, id=partner, **params)
 
-    def create_ufun(self, is_seller: bool, issues=None, outcomes=None, partner=None) -> UtilityFunction:
+    def create_ufun(
+        self, is_seller: bool, issues=None, outcomes=None, partner=None
+    ) -> UtilityFunction:
         if is_seller:
             trust = self.consumers_financial_trust[partner]
             return LinearUtilityFunction((1.0 * trust, 1.0 * trust, 10.0 * trust))
@@ -329,8 +357,12 @@ class MyNegotiationManager(IndependentNegotiationsManager):
         return LinearUtilityFunction((1.0 * trust, -1.0 * trust, -10.0 * trust))
 
 
-class PolymorphicAgent(MyTradingStrategy, MyNegotiationManager, PolymorphicProductionStrategy, SCML2020Agent):
-
+class PolymorphicAgent(
+    MyTradingStrategy,
+    MyNegotiationManager,
+    PolymorphicProductionStrategy,
+    SCML2020Agent,
+):
     def init(self):
         super().init()
         logger.log("Agent Init ----------------------------------")
@@ -420,10 +452,10 @@ class PolymorphicAgent(MyTradingStrategy, MyNegotiationManager, PolymorphicProdu
 
 
 def run(
-        competition="std",
-        reveal_names=True,
-        n_steps=100,
-        n_configs=2,
+    competition="std",
+    reveal_names=True,
+    n_steps=100,
+    n_configs=2,
 ):
     """
     **Not needed for submission.** You can use this function to test your agent.
@@ -447,8 +479,7 @@ def run(
 
     """
 
-    competitors_2020 = list(scml_agents.get_agents(
-        2020, track="std"))[0:7]
+    competitors_2020 = list(scml_agents.get_agents(2020, track="std"))[0:7]
     competitors_2020.append(PolymorphicAgent)
 
     competitors = [

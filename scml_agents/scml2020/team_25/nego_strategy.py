@@ -1,6 +1,20 @@
 import logging
+from typing import Any, Dict, List, Optional, Tuple
 
-from scml.scml2020 import SCML2020Agent, SCML2020World, RandomAgent, DecentralizingAgent
+import matplotlib.pyplot as plt
+import numpy as np
+from negmas import ResponseType, SAOSyncController, outcome_is_valid
+from negmas.sao import SAOResponse
+from scml.scml2020 import (
+    QUANTITY,
+    TIME,
+    UNIT_PRICE,
+    DecentralizingAgent,
+    RandomAgent,
+    SCML2020Agent,
+    SCML2020World,
+)
+from scml.scml2020.agents.decentralizing import _NegotiationCallbacks
 from scml.scml2020.components.production import (
     DemandDrivenProductionStrategy,
     ProductionStrategy,
@@ -10,16 +24,7 @@ from scml.scml2020.components.trading import (
     PredictionBasedTradingStrategy,
     ReactiveTradingStrategy,
 )
-from scml.scml2020.agents.decentralizing import _NegotiationCallbacks
 from scml.scml2020.services.controllers import SyncController
-
-from scml.scml2020 import TIME, QUANTITY, UNIT_PRICE
-from negmas import ResponseType, outcome_is_valid
-from negmas.sao import SAOResponse
-from typing import List, Dict, Optional, Tuple, Any
-from negmas import SAOSyncController
-import numpy as np
-import matplotlib.pyplot as plt
 
 
 class SyncController(SAOSyncController):
@@ -237,7 +242,7 @@ class SyncController(SAOSyncController):
         return negotiator.ami.outcomes[best_indx], utils[best_indx]
 
     def best_offers(self) -> Dict[str, "Outcome"]:
-        " same as first_proposals but with myUtil "
+        "same as first_proposals but with myUtil"
         return {
             nid: self.best_proposal_for_nid(nid)[0] for nid in self.negotiators.keys()
         }

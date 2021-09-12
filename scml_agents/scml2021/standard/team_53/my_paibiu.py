@@ -1,19 +1,24 @@
 from collections import defaultdict
+from typing import Any, Dict, List, Optional, Tuple
 
 import matplotlib.pyplot as plt
-from scml.scml2020 import SCML2020Agent, SCML2021World
-from scml.scml2020.agents import RandomAgent, MarketAwareDecentralizingAgent, DecentralizingAgent
-from scml.scml2020.components.production import DemandDrivenProductionStrategy, ProductionStrategy
-from scml.scml2020.components.trading import PredictionBasedTradingStrategy
-from scml.scml2020.components.prediction import MarketAwareTradePredictionStrategy
-from negmas import LinearUtilityFunction
-from negmas import SAOMetaNegotiatorController
-from negmas import Contract
 import numpy as np
-from typing import List, Dict, Optional, Tuple, Any
-from scml.scml2020 import TIME, QUANTITY, UNIT_PRICE
+from negmas import Contract, LinearUtilityFunction, SAOMetaNegotiatorController
+from scml.scml2020 import QUANTITY, TIME, UNIT_PRICE, SCML2020Agent, SCML2021World
+from scml.scml2020.agents import (
+    DecentralizingAgent,
+    MarketAwareDecentralizingAgent,
+    RandomAgent,
+)
+
 # from steady_mgr import SteadyMgr
 from scml.scml2020.common import is_system_agent
+from scml.scml2020.components.prediction import MarketAwareTradePredictionStrategy
+from scml.scml2020.components.production import (
+    DemandDrivenProductionStrategy,
+    ProductionStrategy,
+)
+from scml.scml2020.components.trading import PredictionBasedTradingStrategy
 
 __all__ = ["MyPaibiuAgent"]
 
@@ -74,36 +79,36 @@ class MyTradingStrategy(PredictionBasedTradingStrategy):
     #
     #     step = self.awi.current_step
 
-        # Update sell and buy prices
-        # Update the selling price except of then the last process is assigned (because the selling price of the last process is fixed)
-        # if self.awi.my_output_product != (self.awi.n_products - 1):
-        #     if (
-        #             sold > 0
-        #     ):  # If products are sold, the price is increased by 10% (upper limit is twice of the catalog price)
-        #         self.output_price[step:] = min(
-        #             self.output_price[step] + self.output_price[step] // 10,
-        #             self.awi.catalog_prices[self.awi.my_output_product] * 2,
-        #         )
-        #     else:  # If the product doesn't sell, the price is reduced by 10% (lower limit is the initial selling price)
-        #         self.output_price[step:] = max(
-        #             self.output_price[step] - self.output_price[step] // 10,
-        #             self.output_price[0],
-        #         )
-        #
-        # # Update the buying price except of when the first process is assigned (because the buying price of the first process is fixed)
-        # if self.awi.my_input_product != 0:
-        #     if (
-        #             bought > 0
-        #     ):  # If I could buy the units, reduce the buying price by 10% (lower limit is half of the catalogue price)
-        #         self.input_cost[step:] = max(
-        #             self.input_cost[step] - self.input_cost[step] // 10,
-        #             self.awi.catalog_prices[self.awi.my_input_product] // 2,
-        #         )
-        #     else:  # If I could not buy, increase the buying price by 10% (upper limit is the initial buying price)
-        #         self.input_cost[step:] = min(
-        #             self.input_cost[step] + self.input_cost[step] // 10,
-        #             self.input_cost[0],
-        #         )
+    # Update sell and buy prices
+    # Update the selling price except of then the last process is assigned (because the selling price of the last process is fixed)
+    # if self.awi.my_output_product != (self.awi.n_products - 1):
+    #     if (
+    #             sold > 0
+    #     ):  # If products are sold, the price is increased by 10% (upper limit is twice of the catalog price)
+    #         self.output_price[step:] = min(
+    #             self.output_price[step] + self.output_price[step] // 10,
+    #             self.awi.catalog_prices[self.awi.my_output_product] * 2,
+    #         )
+    #     else:  # If the product doesn't sell, the price is reduced by 10% (lower limit is the initial selling price)
+    #         self.output_price[step:] = max(
+    #             self.output_price[step] - self.output_price[step] // 10,
+    #             self.output_price[0],
+    #         )
+    #
+    # # Update the buying price except of when the first process is assigned (because the buying price of the first process is fixed)
+    # if self.awi.my_input_product != 0:
+    #     if (
+    #             bought > 0
+    #     ):  # If I could buy the units, reduce the buying price by 10% (lower limit is half of the catalogue price)
+    #         self.input_cost[step:] = max(
+    #             self.input_cost[step] - self.input_cost[step] // 10,
+    #             self.awi.catalog_prices[self.awi.my_input_product] // 2,
+    #         )
+    #     else:  # If I could not buy, increase the buying price by 10% (upper limit is the initial buying price)
+    #         self.input_cost[step:] = min(
+    #             self.input_cost[step] + self.input_cost[step] // 10,
+    #             self.input_cost[0],
+    #         )
 
     def sign_all_contracts(self, contracts: List[Contract]) -> List[Optional[str]]:
         # sort contracts by time and then put system contracts first within each time-step
@@ -115,7 +120,7 @@ class MyTradingStrategy(PredictionBasedTradingStrategy):
                 x[0].agreement["time"],
                 0
                 if is_system_agent(x[0].annotation["seller"])
-                   or is_system_agent(x[0].annotation["buyer"])
+                or is_system_agent(x[0].annotation["buyer"])
                 else 1,
                 x[0].agreement["unit_price"],
             ),
@@ -149,9 +154,9 @@ class MyTradingStrategy(PredictionBasedTradingStrategy):
                 est = min(est, (t - s) * self.awi.n_lines)
 
                 available = (
-                        est
-                        + self.internal_state["_output_inventory"]
-                        - (self.outputs_secured[s:]).sum()
+                    est
+                    + self.internal_state["_output_inventory"]
+                    - (self.outputs_secured[s:]).sum()
                 )  # Add stock and sub contracted
                 # Only sign contracts that ensure production is on time.
                 if available - sold > q:
@@ -169,7 +174,7 @@ class MyTradingStrategy(PredictionBasedTradingStrategy):
 
                 needed = self.inputs_needed[
                     self.awi.n_steps - 1
-                    ]  # Maximum number of products that can be produced
+                ]  # Maximum number of products that can be produced
                 if needed - bought > q:
                     signatures[indx] = self.id
                     bought += q
@@ -177,11 +182,11 @@ class MyTradingStrategy(PredictionBasedTradingStrategy):
         return signatures
 
     def on_agent_bankrupt(
-            self,
-            agent: str,
-            contracts: List[Contract],
-            quantities: List[int],
-            compensation_money: int,
+        self,
+        agent: str,
+        contracts: List[Contract],
+        quantities: List[int],
+        compensation_money: int,
     ) -> None:
         super().on_agent_bankrupt(agent, contracts, quantities, compensation_money)
         for contract, new_quantity in zip(contracts, quantities):
@@ -195,16 +200,27 @@ class MyTradingStrategy(PredictionBasedTradingStrategy):
             if contract.annotation["seller"] == self.id:
                 self.outputs_secured[t] -= missing
                 if t > 0:
-                    self.outputs_needed[t - 1:] += missing
+                    self.outputs_needed[t - 1 :] += missing
             else:
                 self.inputs_secured[t] -= missing
                 self.inputs_needed[t:] += missing
 
 
-class MyPaibiuAgent(MarketAwareTradePredictionStrategy, MyTradingStrategy,
-                    DemandDrivenProductionStrategy, SCML2020Agent):
-    def __init__(self, *args, price_weight=0.7, time_horizon=0.1, utility_threshold=0.9, time_threshold=0.9,
-                 **kwargs, ):
+class MyPaibiuAgent(
+    MarketAwareTradePredictionStrategy,
+    MyTradingStrategy,
+    DemandDrivenProductionStrategy,
+    SCML2020Agent,
+):
+    def __init__(
+        self,
+        *args,
+        price_weight=0.7,
+        time_horizon=0.1,
+        utility_threshold=0.9,
+        time_threshold=0.9,
+        **kwargs,
+    ):
         super().__init__(*args, **kwargs)
         self.index: List[int] = None
         self.time_horizon = time_horizon
@@ -221,18 +237,28 @@ class MyPaibiuAgent(MarketAwareTradePredictionStrategy, MyTradingStrategy,
         production_cost = np.max(self.awi.profile.costs[:, self.awi.my_input_product])
         if step == 0:
             self.output_price = (
-                                    max(self.awi.catalog_prices[self.awi.my_input_product] + production_cost,
-                                        self.awi.catalog_prices[self.awi.my_output_product] + 1)
-                                ) * np.ones(self.awi.n_steps, dtype=int)
-            self.input_cost = (self.awi.catalog_prices[self.awi.my_output_product] - production_cost
-                               ) * np.ones(self.awi.n_steps, dtype=int)
+                max(
+                    self.awi.catalog_prices[self.awi.my_input_product]
+                    + production_cost,
+                    self.awi.catalog_prices[self.awi.my_output_product] + 1,
+                )
+            ) * np.ones(self.awi.n_steps, dtype=int)
+            self.input_cost = (
+                self.awi.catalog_prices[self.awi.my_output_product] - production_cost
+            ) * np.ones(self.awi.n_steps, dtype=int)
         else:
-            self.output_price[step:] = (
-                max(max(self.awi.catalog_prices[self.awi.my_input_product] + production_cost,
-                        self.awi.catalog_prices[self.awi.my_output_product] + 1),
-                    self.awi.trading_prices[self.awi.my_output_product]))
-            self.input_cost[step:] = min(self.awi.catalog_prices[self.awi.my_output_product] - production_cost,
-                                         self.awi.trading_prices[self.awi.my_output_product] - production_cost)
+            self.output_price[step:] = max(
+                max(
+                    self.awi.catalog_prices[self.awi.my_input_product]
+                    + production_cost,
+                    self.awi.catalog_prices[self.awi.my_output_product] + 1,
+                ),
+                self.awi.trading_prices[self.awi.my_output_product],
+            )
+            self.input_cost[step:] = min(
+                self.awi.catalog_prices[self.awi.my_output_product] - production_cost,
+                self.awi.trading_prices[self.awi.my_output_product] - production_cost,
+            )
         self._current_start = step + 1
         self._current_end = min(
             self.awi.n_steps - 1,
@@ -243,12 +269,17 @@ class MyPaibiuAgent(MarketAwareTradePredictionStrategy, MyTradingStrategy,
 
         for seller, needed, secured, product in [
             (False, self.inputs_needed, self.inputs_secured, self.awi.my_input_product),
-            (True, self.outputs_needed, self.outputs_secured, self.awi.my_output_product),
+            (
+                True,
+                self.outputs_needed,
+                self.outputs_secured,
+                self.awi.my_output_product,
+            ),
         ]:
             # find the maximum amount needed at any time-step in the given range
             needs = np.max(
-                needed[self._current_start: self._current_end]
-                - secured[self._current_start: self._current_end]
+                needed[self._current_start : self._current_end]
+                - secured[self._current_start : self._current_end]
             )
             if needs < 1:
                 continue
@@ -257,16 +288,28 @@ class MyPaibiuAgent(MarketAwareTradePredictionStrategy, MyTradingStrategy,
                 # for selling set a price that is at least the catalog price
                 min_price = self.output_price[step]
                 price_range = (min_price, 2 * min_price)
-                controller = SAOMetaNegotiatorController(ufun=LinearUtilityFunction({
-                    TIME: 0.0, QUANTITY: (1 - self._price_weight), UNIT_PRICE: self._price_weight
-                }))
+                controller = SAOMetaNegotiatorController(
+                    ufun=LinearUtilityFunction(
+                        {
+                            TIME: 0.0,
+                            QUANTITY: (1 - self._price_weight),
+                            UNIT_PRICE: self._price_weight,
+                        }
+                    )
+                )
             else:
                 # for buying sell a price that is at most the catalog price
                 max_price = self.input_cost[step]
                 price_range = (max_price // 2, max_price)
-                controller = SAOMetaNegotiatorController(ufun=LinearUtilityFunction({
-                    TIME: 0.0, QUANTITY: (1 - self._price_weight), UNIT_PRICE: -self._price_weight
-                }))
+                controller = SAOMetaNegotiatorController(
+                    ufun=LinearUtilityFunction(
+                        {
+                            TIME: 0.0,
+                            QUANTITY: (1 - self._price_weight),
+                            UNIT_PRICE: -self._price_weight,
+                        }
+                    )
+                )
 
             self.awi.request_negotiations(
                 not seller,
@@ -278,45 +321,59 @@ class MyPaibiuAgent(MarketAwareTradePredictionStrategy, MyTradingStrategy,
             )
 
     def respond_to_negotiation_request(
-            self,
-            initiator: str,
-            issues: List["Issue"],
-            annotation: Dict[str, Any],
-            mechanism: "AgentMechanismInterface",
+        self,
+        initiator: str,
+        issues: List["Issue"],
+        annotation: Dict[str, Any],
+        mechanism: "AgentMechanismInterface",
     ) -> Optional["Negotiator"]:
         # refuse to negotiate if the time-range does not intersect
         # the current range
         if not (
-                issues[TIME].min_value < self._current_end
-                or issues[TIME].max_value > self._current_start
+            issues[TIME].min_value < self._current_end
+            or issues[TIME].max_value > self._current_start
         ):
             return None
         if self.id == annotation["seller"]:
-            controller = SAOMetaNegotiatorController(ufun=LinearUtilityFunction({
-                TIME: 0.0, QUANTITY: (1 - self._price_weight), UNIT_PRICE: self._price_weight
-            }))
+            controller = SAOMetaNegotiatorController(
+                ufun=LinearUtilityFunction(
+                    {
+                        TIME: 0.0,
+                        QUANTITY: (1 - self._price_weight),
+                        UNIT_PRICE: self._price_weight,
+                    }
+                )
+            )
         else:
             if self.awi.current_step == 0:
                 try:
                     needs = np.max(
-                        self.inputs_needed[0: self.awi.n_steps - 1]
-                        - self.inputs_secured[0: self.awi.n_steps - 1]
-                        , initial=0)
+                        self.inputs_needed[0 : self.awi.n_steps - 1]
+                        - self.inputs_secured[0 : self.awi.n_steps - 1],
+                        initial=0,
+                    )
                 except:
                     return None
             else:
                 try:
                     needs = np.max(
-                        self.inputs_needed[self._current_start: self._current_end]
-                        - self.inputs_secured[self._current_start: self._current_end]
-                        , initial=0)
+                        self.inputs_needed[self._current_start : self._current_end]
+                        - self.inputs_secured[self._current_start : self._current_end],
+                        initial=0,
+                    )
                 except:
                     return None
             if needs < 1:
                 return None
-            controller = SAOMetaNegotiatorController(ufun=LinearUtilityFunction({
-                TIME: 0.0, QUANTITY: (1 - self._price_weight), UNIT_PRICE: -self._price_weight
-            }))
+            controller = SAOMetaNegotiatorController(
+                ufun=LinearUtilityFunction(
+                    {
+                        TIME: 0.0,
+                        QUANTITY: (1 - self._price_weight),
+                        UNIT_PRICE: -self._price_weight,
+                    }
+                )
+            )
         return controller.create_negotiator()
 
     """My agent"""
@@ -344,4 +401,3 @@ def show_agent_scores(world):
     scores = {k: sum(v) / len(v) for k, v in scores.items()}
     plt.bar(list(scores.keys()), list(scores.values()), width=0.2)
     plt.show()
-

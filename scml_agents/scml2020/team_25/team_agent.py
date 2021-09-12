@@ -1,20 +1,21 @@
 import logging
 
-from scml.scml2020 import SCML2020Agent, SCML2020World, RandomAgent, DecentralizingAgent
+import numpy as np
+from scml.scml2020 import DecentralizingAgent, RandomAgent, SCML2020Agent, SCML2020World
 from scml.scml2020.agents.decentralizing import _NegotiationCallbacks
-from .mixed_neg import StepBuyBestSellNegManager
-from .prod_strategy import myProductionStratgey
-from .trade_strategy import NewPredictionBasedTradingStrategy
-from scml.scml2020.components.trading import (
-    PredictionBasedTradingStrategy,
-    ReactiveTradingStrategy,
-)
 from scml.scml2020.components.production import (
     DemandDrivenProductionStrategy,
     ProductionStrategy,
     SupplyDrivenProductionStrategy,
 )
-import numpy as np
+from scml.scml2020.components.trading import (
+    PredictionBasedTradingStrategy,
+    ReactiveTradingStrategy,
+)
+
+from .mixed_neg import StepBuyBestSellNegManager
+from .prod_strategy import myProductionStratgey
+from .trade_strategy import NewPredictionBasedTradingStrategy
 
 __all__ = ["Agent30"]
 
@@ -55,5 +56,3 @@ class Agent30(
         else:
             beta = 1
         return (self.output_price[step] - production_cost) * beta
-
-

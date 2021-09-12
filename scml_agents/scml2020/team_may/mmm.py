@@ -6,23 +6,22 @@ from negmas import (
     Breach,
     Contract,
     Issue,
+    LinearUtilityFunction,
     MechanismState,
     Negotiator,
     ResponseType,
-    LinearUtilityFunction,
 )
-from negmas.sao import SAONegotiator, RandomNegotiator
-
-# from negmas.helpers import humanize_time
-from scml.scml2020 import SCML2020Agent
+from negmas.sao import RandomNegotiator, SAONegotiator
 
 # required for development
 from scml import SupplyDrivenProductionStrategy
+
+# from negmas.helpers import humanize_time
+from scml.scml2020 import Failure, SCML2020Agent
 from scml.scml2020.agents import DecentralizingAgent
+from scml.scml2020.common import QUANTITY, TIME, UNIT_PRICE
 from scml.scml2020.components import IndependentNegotiationsManager
 from scml.scml2020.utils import anac2020_collusion, anac2020_std
-from scml.scml2020 import Failure
-from scml.scml2020.common import TIME, QUANTITY, UNIT_PRICE
 
 # from tabulate import tabulate
 

@@ -24,32 +24,31 @@ import time
 # required for typing
 from collections import defaultdict
 from typing import Any, Dict, List, Optional
-from sklearn.linear_model import LinearRegression
-import numpy as np
-from negmas import (
-    AgentMechanismInterface,
-    MechanismState,
-    ResponseType,
-)
-from negmas.helpers import humanize_time
-from scml import UNIT_PRICE, QUANTITY, TIME, RandomOneShotAgent
-from scml.oneshot import OneShotAgent
 
-from scml.scml2020.utils import anac2021_oneshot, anac2021_std, anac2021_collusion
+import numpy as np
+from negmas import AgentMechanismInterface, MechanismState, ResponseType
+from negmas.helpers import humanize_time
+from scml import QUANTITY, TIME, UNIT_PRICE, RandomOneShotAgent
+from scml.oneshot import OneShotAgent
+from scml.scml2020.utils import anac2021_collusion, anac2021_oneshot, anac2021_std
+from sklearn.linear_model import LinearRegression
 from tabulate import tabulate
 
-from .worker_agents import BetterAgent, AdaptiveAgent, LearningAgent
+from .worker_agents import AdaptiveAgent, BetterAgent, LearningAgent
 
-__all__ = [ "Zilberan", ]
+__all__ = [
+    "Zilberan",
+]
+
 
 class Zilberan(OneShotAgent):
     def __init__(
-            self,
-            *args,
-            opp_acc_price_slack=0.2,
-            range_slack=0.03,
-            concession_exponent=0.2,
-            **kwargs
+        self,
+        *args,
+        opp_acc_price_slack=0.2,
+        range_slack=0.03,
+        concession_exponent=0.2,
+        **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self._opp_acc_price_slack = opp_acc_price_slack
@@ -67,8 +66,7 @@ class Zilberan(OneShotAgent):
         unit_price_issue = ami.issues[UNIT_PRICE]
         offer = [-1] * 3
         offer[QUANTITY] = max(
-            min(my_needs, quantity_issue.max_value),
-            quantity_issue.min_value
+            min(my_needs, quantity_issue.max_value), quantity_issue.min_value
         )
         offer[TIME] = self.awi.current_step
         if self._is_selling(ami):
@@ -78,9 +76,11 @@ class Zilberan(OneShotAgent):
         return tuple(offer)
 
     def _needed(self, negotiator_id=None):
-        return self.awi.current_exogenous_input_quantity + \
-               self.awi.current_exogenous_output_quantity - \
-               self.secured
+        return (
+            self.awi.current_exogenous_input_quantity
+            + self.awi.current_exogenous_output_quantity
+            - self.secured
+        )
 
     def _is_selling(self, ami):
         return ami.annotation["product"] == self.awi.my_output_product
@@ -90,9 +90,7 @@ class Zilberan(OneShotAgent):
         if not offer:
             return None
         offer = list(offer)
-        offer[UNIT_PRICE] = self._find_good_price(
-            self.get_ami(negotiator_id), state
-        )
+        offer[UNIT_PRICE] = self._find_good_price(self.get_ami(negotiator_id), state)
         return tuple(offer)
 
     def _is_good_price(self, ami, state, price):
@@ -104,21 +102,27 @@ class Zilberan(OneShotAgent):
         if self._is_selling(ami):
             # We sell
             # Checking the distance from min
-            if (self.awi.current_step > 5):
-                predicted_trading_price = self.model.predict(np.array(self.awi.current_step).reshape(-1,1))
-                good_price = min(mx, predicted_trading_price + mx/5)
+            if self.awi.current_step > 5:
+                predicted_trading_price = self.model.predict(
+                    np.array(self.awi.current_step).reshape(-1, 1)
+                )
+                good_price = min(mx, predicted_trading_price + mx / 5)
                 # self.awi.logerror(f"cost: {self.awi.profile.cost} good price: {good_price}, predicted price: {predicted_trading_price}, prev: {self.awi.trading_prices[self.output_product]}")
-                return (price - mn) >= th * (mx-(mx - good_price)/mx - mn)
+                return (price - mn) >= th * (mx - (mx - good_price) / mx - mn)
             else:
                 return (price - mn) >= th * (mx - mn)
         else:
             # We buy
             # Checking the distance from max
-            if (self.awi.current_step > 5):
-                predicted_trading_price = self.model.predict(np.array(self.awi.current_step).reshape(-1,1))
+            if self.awi.current_step > 5:
+                predicted_trading_price = self.model.predict(
+                    np.array(self.awi.current_step).reshape(-1, 1)
+                )
                 # self.awi.logerror(f"predicted price: {predicted_trading_price}, prev: {self.awi.trading_prices[self.output_product]}")
-                good_price = max(mn, (predicted_trading_price - self.awi.profile.cost) + mn/5)
-                return (mx - price) >= th * (mx-(mx - good_price)/mx - mn)
+                good_price = max(
+                    mn, (predicted_trading_price - self.awi.profile.cost) + mn / 5
+                )
+                return (mx - price) >= th * (mx - (mx - good_price) / mx - mn)
             else:
                 return (mx - price) >= th * (mx - mn)
 
@@ -172,18 +176,20 @@ class Zilberan(OneShotAgent):
             (self.awi.current_step, self.awi.trading_prices[self.output_product])
         )
         # self.awi.logerror(f"X,Y: {self.output_product_trading_prices}")
-        if (self.awi.current_step > 2):
-            x = np.array([x for (x,y) in self.output_product_trading_prices]).reshape((-1, 1))
-            y = np.array([y for (x,y) in self.output_product_trading_prices])
+        if self.awi.current_step > 2:
+            x = np.array([x for (x, y) in self.output_product_trading_prices]).reshape(
+                (-1, 1)
+            )
+            y = np.array([y for (x, y) in self.output_product_trading_prices])
             # self.awi.logerror(f"X:{x}, Y:{y}")
             self.model = LinearRegression().fit(x, y)
 
     def on_negotiation_failure(
-            self,
-            partners: List[str],
-            annotation: Dict[str, Any],
-            mechanism: AgentMechanismInterface,
-            state: MechanismState,
+        self,
+        partners: List[str],
+        annotation: Dict[str, Any],
+        mechanism: AgentMechanismInterface,
+        state: MechanismState,
     ) -> None:
         # TODO: Perform a discount for getting next contracts.
         self._range_slack *= 1.1
@@ -212,12 +218,16 @@ class Zilberan(OneShotAgent):
         if self._is_selling(mechanism):
             partner = contract.annotation["buyer"]
             self._best_acc_selling = max(up, self._best_acc_selling)
-            self._best_opp_acc_selling[partner] = max(up, self._best_opp_acc_selling[partner])
+            self._best_opp_acc_selling[partner] = max(
+                up, self._best_opp_acc_selling[partner]
+            )
 
         else:
             partner = contract.annotation["seller"]
             self._best_acc_buying = min(up, self._best_acc_buying)
-            self._best_opp_acc_buying[partner] = min(up, self._best_opp_acc_buying[partner])
+            self._best_opp_acc_buying[partner] = min(
+                up, self._best_opp_acc_buying[partner]
+            )
 
     def respond(self, negotiator_id, state, offer):
         # find the quantity I still need and end negotiation if I need nothing more
@@ -235,8 +245,8 @@ class Zilberan(OneShotAgent):
 
         if response == ResponseType.ACCEPT_OFFER:
             response = (
-                response if
-                self._is_good_price(ami, state, offer[UNIT_PRICE])
+                response
+                if self._is_good_price(ami, state, offer[UNIT_PRICE])
                 else ResponseType.REJECT_OFFER
             )
             if self._is_selling(ami):
@@ -287,14 +297,26 @@ class Zilberan(OneShotAgent):
         # If the partner is accepting more than he reject, be more strict to earn more.
         if self.partners_respond_history[partner] > 0:
             if self.partners_respond_history[partner] != 0:
-                self.decrease_factor *= 1 - (self.number_of_rounds[partner]-self.partners_respond_history[partner]) / self.number_of_rounds[partner]
+                self.decrease_factor *= (
+                    1
+                    - (
+                        self.number_of_rounds[partner]
+                        - self.partners_respond_history[partner]
+                    )
+                    / self.number_of_rounds[partner]
+                )
             self._opp_acc_price_slack *= self.decrease_factor
             # self.increase_factor = 1.2
 
         else:
             if self.partners_respond_history[partner] != 0:
                 #  self.partners_respond_history[partner] is negative
-                self.increase_factor *= 1 + -1 * self.partners_respond_history[partner] / self.number_of_rounds[partner]
+                self.increase_factor *= (
+                    1
+                    + -1
+                    * self.partners_respond_history[partner]
+                    / self.number_of_rounds[partner]
+                )
             self._opp_acc_price_slack *= self.increase_factor
             # self.decrease_factor = 0.8
 
@@ -304,27 +326,41 @@ class Zilberan(OneShotAgent):
         mx = ami.issues[UNIT_PRICE].max_value
         if self._is_selling(ami):
             partner = ami.annotation["buyer"]
-            mn = max([mn] + [p * (1 - slack) for p, slack in (  # ((1,2),(3,4),(5,6)) => (min, 12, 34, 56)
-                (self._best_opp_acc_selling[partner], self._opp_acc_price_slack),
-            )])
+            mn = max(
+                [mn]
+                + [
+                    p * (1 - slack)
+                    for p, slack in (  # ((1,2),(3,4),(5,6)) => (min, 12, 34, 56)
+                        (
+                            self._best_opp_acc_selling[partner],
+                            self._opp_acc_price_slack,
+                        ),
+                    )
+                ]
+            )
         else:
             partner = ami.annotation["seller"]
             mx = min(
-                [mx] + [p * (1 + slack)
-                        for p, slack in (
-                            (self._best_opp_acc_buying[partner], self._opp_acc_price_slack,),
-                        )
-                        ]
+                [mx]
+                + [
+                    p * (1 + slack)
+                    for p, slack in (
+                        (
+                            self._best_opp_acc_buying[partner],
+                            self._opp_acc_price_slack,
+                        ),
+                    )
+                ]
             )
 
         return mn, mx
 
 
 def run(
-        competition="oneshot",
-        reveal_names=True,
-        n_steps=10,  # =10
-        n_configs=1,  # =2
+    competition="oneshot",
+    reveal_names=True,
+    n_steps=10,
+    n_configs=1,  # =10  # =2
 ):
     """
     **Not needed for submission.** You can use this function to test your agent.
@@ -366,8 +402,8 @@ def run(
         verbose=True,
         n_steps=n_steps,
         n_configs=n_configs,
-    #   log_screen_level=logging.ERROR,
-    #   log_to_screen=True,
+        #   log_screen_level=logging.ERROR,
+        #   log_to_screen=True,
     )
 
     # just make names shorter

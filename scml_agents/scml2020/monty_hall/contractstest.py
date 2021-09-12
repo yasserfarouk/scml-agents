@@ -1,12 +1,11 @@
-import pulp
 import pprint
-import time
 import random
+import time
 
+import pulp
 from click import Tuple
 from prettytable import PrettyTable
 from traitlets import List
-
 
 # A contract is a tuple (q, t, p), where q is the quantity, t the time and p the price.
 # The following solver assume that the contracts to be signed are received as lists of tuples, e.g., as follows.

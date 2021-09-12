@@ -1,13 +1,13 @@
+from pathlib import Path
+
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn import linear_model
 from sklearn.metrics import mean_squared_error, r2_score
-from pathlib import Path
 
 
 def get_stats(directory):
-    for f in Path(directory).glob("**/stats.csv"):
-        yield f
+    yield from Path(directory).glob("**/stats.csv")
 
 
 # print(Path(__file__).resolve())

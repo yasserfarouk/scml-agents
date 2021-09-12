@@ -1,9 +1,15 @@
-from scml.scml2020 import *
-from scml.oneshot import *
-from negmas import ResponseType
 from collections import defaultdict
 
-__all__ = [ "SimpleAgent", "BetterAgent", "BondAgent", ]
+from negmas import ResponseType
+from scml.oneshot import *
+from scml.scml2020 import *
+
+__all__ = [
+    "SimpleAgent",
+    "BetterAgent",
+    "BondAgent",
+]
+
 
 class SimpleAgent(OneShotAgent):
     """A greedy agent based on OneShotAgent"""
@@ -38,8 +44,7 @@ class SimpleAgent(OneShotAgent):
         unit_price_issue = ami.issues[UNIT_PRICE]
         offer = [-1] * 3
         offer[QUANTITY] = max(
-            min(my_needs, quantity_issue.max_value),
-            quantity_issue.min_value
+            min(my_needs, quantity_issue.max_value), quantity_issue.min_value
         )
         offer[TIME] = self.awi.current_step
         if self._is_selling(ami):
@@ -49,9 +54,11 @@ class SimpleAgent(OneShotAgent):
         return tuple(offer)
 
     def _needed(self, negotiator_id=None):
-        return self.awi.current_exogenous_input_quantity + \
-               self.awi.current_exogenous_output_quantity - \
-               self.secured
+        return (
+            self.awi.current_exogenous_input_quantity
+            + self.awi.current_exogenous_output_quantity
+            - self.secured
+        )
 
     def _is_selling(self, ami):
         return ami.annotation["product"] == self.awi.my_output_product
@@ -69,9 +76,7 @@ class BetterAgent(SimpleAgent):
         if not offer:
             return None
         offer = list(offer)
-        offer[UNIT_PRICE] = self._find_good_price(
-            self.get_ami(negotiator_id), state
-        )
+        offer[UNIT_PRICE] = self._find_good_price(self.get_ami(negotiator_id), state)
         return tuple(offer)
 
     def respond(self, negotiator_id, state, offer):
@@ -80,8 +85,8 @@ class BetterAgent(SimpleAgent):
             return response
         ami = self.get_ami(negotiator_id)
         return (
-            response if
-            self._is_good_price(ami, state, offer[UNIT_PRICE])
+            response
+            if self._is_good_price(ami, state, offer[UNIT_PRICE])
             else ResponseType.REJECT_OFFER
         )
 
@@ -119,7 +124,9 @@ class BetterAgent(SimpleAgent):
 class BondAgent(SimpleAgent):
     """A greedy agent based on OneShotAgent with more sane strategy"""
 
-    def __init__(self, *args, concession_exponent=0.2, refuse_tol=2, refuse_delta=0.1, **kwargs):
+    def __init__(
+        self, *args, concession_exponent=0.2, refuse_tol=2, refuse_delta=0.1, **kwargs
+    ):
         super().__init__(*args, **kwargs)
         self._e = concession_exponent
         self._good_price_refuse_count = defaultdict(int)
@@ -200,7 +207,7 @@ class BondAgent(SimpleAgent):
         return ((n_steps - step - 1) / (n_steps - 1)) ** self._e
 
     def on_negotiation_success(self, contract, mechanism):
-        super(BondAgent, self).on_negotiation_success(contract, mechanism)
+        super().on_negotiation_success(contract, mechanism)
         for n_id in contract.partners:
             self._good_price_refuse_count[n_id] = 0
             self._last_good_price[n_id] = None

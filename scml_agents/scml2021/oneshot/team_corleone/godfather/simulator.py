@@ -1,14 +1,17 @@
-from .bilat_ufun import BilatUFun
-from .strategy import Strategy
-from .negotiation_history import BilateralHistory
-from .spaces import *
-from .offer import Offer
-from scml.scml2020.common import QUANTITY, TIME, UNIT_PRICE
-import numpy as np
 import pdb
 import sys
 
-class BilatSimulator():
+import numpy as np
+from scml.scml2020.common import QUANTITY, TIME, UNIT_PRICE
+
+from .bilat_ufun import BilatUFun
+from .negotiation_history import BilateralHistory
+from .offer import Offer
+from .spaces import *
+from .strategy import Strategy
+
+
+class BilatSimulator:
     """Simulates a bilateral negotiation in progress. Not entirely deterministic
     because it does not know exact # of rounds (would be possible to cheat and look
     that up, but it shouldn't matter much)."""
@@ -19,15 +22,19 @@ class BilatSimulator():
         u_b: BilatUFun,
         s_a: Strategy,
         s_b: Strategy,
-        history_a: BilateralHistory) -> Outcome:
+        history_a: BilateralHistory,
+    ) -> Outcome:
         """history_a: negotiation history from POV of player A."""
 
         # print("simulating negotiation", file=sys.stderr)
 
-        num_rounds: int = np.random.choice([
-            history_a.world_info.n_negotiation_rounds, # if our first proposal was chosen
-            history_a.world_info.n_negotiation_rounds + 1 # if our first proposal was ignored
-        ])
+        num_rounds: int = np.random.choice(
+            [
+                history_a.world_info.n_negotiation_rounds,  # if our first proposal was chosen
+                history_a.world_info.n_negotiation_rounds
+                + 1,  # if our first proposal was ignored
+            ]
+        )
 
         def move_next():
             if history_a.whose_turn() == 1:
@@ -40,7 +47,7 @@ class BilatSimulator():
         while not history_a.is_ended() and len(history_a.moves) < num_rounds:
             move_next()
             move_next()
-            
+
         if len(history_a.moves) >= num_rounds:
             history_a.fail()  # hit round limit
 

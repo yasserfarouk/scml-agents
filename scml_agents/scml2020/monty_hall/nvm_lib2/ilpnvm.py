@@ -1,10 +1,11 @@
-from scipy.stats import geom, binom
-from prettytable import PrettyTable
+import itertools as it
+import pprint
+import time
+
 import numpy as np
 import pulp
-import itertools as it
-import time
-import pprint
+from prettytable import PrettyTable
+from scipy.stats import binom, geom
 
 
 # There might be a bug here when the probability distribution, dict_data, does not add to exactly one.
@@ -127,8 +128,8 @@ def construct_ILP():
     print(f"it took {time.time() - t0 : .4f} to generate objective function")
     # Genrate the constraints. Only one quantity can be planned for at each time step for buying or selling.
     for t in range(0, T):
-        model += sum([out_vars[t, k] for k in range(0, q_max)]) <= 1
-        model += sum([inn_vars[t, k] for k in range(0, q_max)]) <= 1
+        model += sum(out_vars[t, k] for k in range(0, q_max)) <= 1
+        model += sum(inn_vars[t, k] for k in range(0, q_max)) <= 1
     print(f"it took {time.time() - t0 : .4f} to generate constraints ")
     # Document here: optimistic == True means no bluffing, otherwise there is bluffing going on
     optimistic = True
@@ -137,25 +138,21 @@ def construct_ILP():
         # Constraints that ensure there are enough outputs to sell at each time step.
         right_hand_size = current_inventory
         for t in range(0, T):
-            model += (
-                sum([out_vars[t, k] * k for k in range(0, q_max)]) <= right_hand_size
-            )
+            model += sum(out_vars[t, k] * k for k in range(0, q_max)) <= right_hand_size
             right_hand_size += sum(
-                [inn_vars[t, k] * k - out_vars[t, k] * k for k in range(0, q_max)]
+                inn_vars[t, k] * k - out_vars[t, k] * k for k in range(0, q_max)
             )
     else:
         # Constraints that ensure there are enough outputs, in expectation, to sell at each time step.
         right_hand_size = current_inventory
         for t in range(0, T):
             model += (
-                sum([out_vars[t, k] * out[t][k] for k in range(0, q_max)])
+                sum(out_vars[t, k] * out[t][k] for k in range(0, q_max))
                 <= right_hand_size
             )
             right_hand_size += sum(
-                [
-                    inn_vars[t, k] * inn[t][k] - out_vars[t, k] * out[t][k]
-                    for k in range(0, q_max)
-                ]
+                inn_vars[t, k] * inn[t][k] - out_vars[t, k] * out[t][k]
+                for k in range(0, q_max)
             )
     # We assume that the planning starts with no inventory and thus, the agent cannot sell anything at time 0.
     # for k in range(current_inventory+1, q_max):
@@ -182,11 +179,11 @@ def get_solved_plan():
     )
     t02 = time.time()
     buy_plan = {
-        t: sum([int(k * inn_vars[t, k].varValue) for k in range(0, q_max)])
+        t: sum(int(k * inn_vars[t, k].varValue) for k in range(0, q_max))
         for t in range(0, T)
     }
     sell_plan = {
-        t: sum([int(k * out_vars[t, k].varValue) for k in range(0, q_max)])
+        t: sum(int(k * out_vars[t, k].varValue) for k in range(0, q_max))
         for t in range(0, T)
     }
     print(f"it took {time.time() - t02 : .4f} sec to produce the plan")
@@ -199,19 +196,19 @@ buy_plan, sell_plan, solve_time, total_time = get_solved_plan()
 def print_pretty_tables():
     x = PrettyTable()
     x.field_names = ["t"] + [t for t in range(0, T)] + ["total"]
-    total_buy_qtty = sum([buy_plan[t] for t in range(0, T)])
+    total_buy_qtty = sum(buy_plan[t] for t in range(0, T))
     x.add_row(["B-Q"] + [buy_plan[t] for t in range(0, T)] + [total_buy_qtty])
-    total_sell_qtty = sum([sell_plan[t] for t in range(0, T)])
+    total_sell_qtty = sum(sell_plan[t] for t in range(0, T))
     x.add_row(["S-Q"] + [sell_plan[t] for t in range(0, T)] + [total_sell_qtty])
     x.add_row(["B-P"] + [str(round(p_inn[t], 2)) for t in range(0, T)] + ["--"])
     x.add_row(["S-P"] + [str(round(p_out[t], 2)) for t in range(0, T)] + ["--"])
-    total_exp_buy_qtty = sum([inn[t][buy_plan[t]] for t in range(0, T)])
+    total_exp_buy_qtty = sum(inn[t][buy_plan[t]] for t in range(0, T))
     x.add_row(
         ["B-E"]
         + [str(round(inn[t][buy_plan[t]], 2)) for t in range(0, T)]
         + [str(round(total_exp_buy_qtty, 2))]
     )
-    total_exp_sell_qtty = sum([out[t][sell_plan[t]] for t in range(0, T)])
+    total_exp_sell_qtty = sum(out[t][sell_plan[t]] for t in range(0, T))
     x.add_row(
         ["S-E"]
         + [str(round(out[t][sell_plan[t]], 2)) for t in range(0, T)]

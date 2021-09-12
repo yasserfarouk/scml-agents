@@ -1,11 +1,10 @@
-from pytest import mark
-
 import pytest
-
-from scml.scml2020 import SCML2021World
+from pytest import mark
 from scml.oneshot import SCML2020OneShotWorld
-from scml_agents.scml2020 import *
+from scml.scml2020 import SCML2021World
+
 from scml_agents import get_agents
+from scml_agents.scml2020 import *
 
 
 @mark.parametrize("fm", get_agents(2021, as_class=True, track="collusion"))

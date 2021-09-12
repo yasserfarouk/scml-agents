@@ -1,8 +1,8 @@
 import sys
 
 sys.path.append("/".join(__file__.split("/")[:-1]))
-import pandas as pd
 import matplotlib.pyplot as plt
+import pandas as pd
 
 
 def compute_min_expectation(dict_data, size) -> dict:

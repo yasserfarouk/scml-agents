@@ -11,30 +11,36 @@ Agent Information
   - Country: Japan
   - Team Members:
     1. Ayan Sengupta <a-sengupta@nec.com>
-       
+
 """
-from collections import namedtuple
 import copy
-from abc import ABC
 import itertools
+from abc import ABC
+from collections import defaultdict, namedtuple
+from typing import Any, Dict, List, Optional, Tuple, Union
+
+import matplotlib.pyplot as plt
+import numpy as np
+from negmas import (
+    AgentMechanismInterface,
+    AspirationNegotiator,
+    Contract,
+    Issue,
+    LinearUtilityFunction,
+    Negotiator,
+    SAONegotiator,
+    ToughNegotiator,
+)
+from negmas.helpers import get_class, instantiate
+from negmas.outcomes import ResponseType
 from scml.scml2020 import (
-    SCML2020Agent,
-    SCML2020World,
-    RandomAgent,
     DecentralizingAgent,
     DoNothingAgent,
     NegotiationManager,
+    RandomAgent,
+    SCML2020Agent,
+    SCML2020World,
     Simulation,
-)
-import matplotlib.pyplot as plt
-from scml.scml2020.components import (
-    SupplyDrivenProductionStrategy,
-    NegotiationManager,
-    IndependentNegotiationsManager,
-    PredictionBasedTradingStrategy,
-    ReactiveTradingStrategy,
-    TradingStrategy,
-    SignAll,
 )
 
 # required for development
@@ -43,22 +49,15 @@ from scml.scml2020.agents import (
     DecentralizingAgent,
     DoNothingAgent,
 )
-from negmas.outcomes import ResponseType
-from negmas.helpers import get_class, instantiate
-from typing import Tuple, List, Union, Any, Optional, Dict
-from negmas import (
-    Contract,
-    Issue,
-    AgentMechanismInterface,
-    Negotiator,
-    SAONegotiator,
-    AspirationNegotiator,
-    ToughNegotiator,
+from scml.scml2020.components import (
+    IndependentNegotiationsManager,
+    NegotiationManager,
+    PredictionBasedTradingStrategy,
+    ReactiveTradingStrategy,
+    SignAll,
+    SupplyDrivenProductionStrategy,
+    TradingStrategy,
 )
-import numpy as np
-from negmas import LinearUtilityFunction
-from collections import defaultdict
-
 
 __all__ = ["Merchant"]
 

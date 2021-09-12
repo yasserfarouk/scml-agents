@@ -1,44 +1,42 @@
-from statistics import mean
-from collections import defaultdict
-from scml.scml2020.components.prediction import ExecutionRatePredictionStrategy
-from scml.scml2020.services.controllers import StepController, SyncController
-from scml.scml2020 import AWI, IndDecentralizingAgent
-from scml.scml2020.common import TIME
-from negmas import (
-    SAONegotiator,
-    AspirationNegotiator,
-    Issue,
-    AgentMechanismInterface,
-    Negotiator,
-    UtilityFunction,
-    Contract,
-    Breach,
-)
-from negmas.helpers import get_class
-from dataclasses import dataclass
-from abc import abstractmethod
-from pprint import pformat
-from typing import Union, Any
 import functools
 import math
-
 import pickle
+from abc import abstractmethod
+from collections import defaultdict
+from dataclasses import dataclass
+from pprint import pformat
+from statistics import mean
+from typing import Any, Dict, List, Optional, Tuple, Union
 
-from negmas import Contract, Breach
-from scml import SCML2020World
-from scml.scml2020 import (
-    SCML2020Agent,
-    PredictionBasedTradingStrategy,
-    DecentralizingAgent,
-    IndDecentralizingAgent,
-)
-from scml.scml2020.components.production import ProductionStrategy
 import matplotlib.pyplot as plt
 import numpy as np
-from typing import List, Dict, Tuple, Optional
-from scml.scml2020.components.production import SupplyDrivenProductionStrategy
-
 from dana_neg_algo2 import DanasController, DanasNegotiator
+from negmas import (
+    AgentMechanismInterface,
+    AspirationNegotiator,
+    Breach,
+    Contract,
+    Issue,
+    Negotiator,
+    SAONegotiator,
+    UtilityFunction,
+)
+from negmas.helpers import get_class
+from scml import SCML2020World
+from scml.scml2020 import (
+    AWI,
+    DecentralizingAgent,
+    IndDecentralizingAgent,
+    PredictionBasedTradingStrategy,
+    SCML2020Agent,
+)
+from scml.scml2020.common import TIME
+from scml.scml2020.components.prediction import ExecutionRatePredictionStrategy
+from scml.scml2020.components.production import (
+    ProductionStrategy,
+    SupplyDrivenProductionStrategy,
+)
+from scml.scml2020.services.controllers import StepController, SyncController
 
 
 class OmerProductionStrategyAgent(ProductionStrategy):

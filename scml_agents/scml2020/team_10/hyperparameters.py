@@ -1,9 +1,9 @@
-import os, sys
+import os
+import sys
 
 sys.path.append(os.path.dirname(__file__))
 
 import pathlib
-
 
 ######################## negotiation data ########################
 MAX_HORIZON = 5  # TODO: to make > 1, change predict_outcome...

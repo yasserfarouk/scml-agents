@@ -1,8 +1,9 @@
 import sys
 
 sys.path.append("/".join(__file__.split("/")[:-1]))
-import pandas as pd
 import time
+
+import pandas as pd
 
 
 def read_qtty_feasible_domain(
@@ -75,14 +76,11 @@ def solve_mpnvm(
     for row in the_feasible_sols.itertuples(index=False):
         # Compute the objective value
         candidate_sol_value = sum(
-            [
-                the_prices_out[t]
-                * the_expectations_q_min_out[t]["min_" + str(row[(t * 3) + 1])]
-                - the_prices_in[t]
-                * the_expectations_q_min_in[t]["min_" + str(row[t * 3])]
-                - the_production_cost * row[(t * 3) + 2]
-                for t in range(T)
-            ]
+            the_prices_out[t]
+            * the_expectations_q_min_out[t]["min_" + str(row[(t * 3) + 1])]
+            - the_prices_in[t] * the_expectations_q_min_in[t]["min_" + str(row[t * 3])]
+            - the_production_cost * row[(t * 3) + 2]
+            for t in range(T)
         )
         # Keep track in case this solution improves on the optimal so far
         if candidate_sol_value > optimal_sol_revenue:

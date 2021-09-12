@@ -1,13 +1,21 @@
 import math
+from typing import Any, Dict, List, Optional, Tuple
 
-from scml.scml2020 import TIME, QUANTITY, UNIT_PRICE
-from negmas import ResponseType, outcome_is_valid, UtilityFunction, SAOSyncController, Issue
-from negmas.sao import SAOResponse
-from typing import List, Dict, Optional, Tuple, Any
 import numpy as np
+from negmas import (
+    Issue,
+    ResponseType,
+    SAOSyncController,
+    UtilityFunction,
+    outcome_is_valid,
+)
+from negmas.sao import SAOResponse
+from scml.scml2020 import QUANTITY, TIME, UNIT_PRICE
+
 
 class ControllerUFun(UtilityFunction):
     """A utility function for the controller"""
+
     def __init__(self, controller=None):
         super().__init__(outcome_type=tuple)
         self.controller = controller
@@ -172,7 +180,9 @@ class SyncController(SAOSyncController):
         else:
             self.__parent.buy_prices.append(state.agreement[UNIT_PRICE])
 
+
 # ===================================== Negotiation Manager ============================================
+
 
 class YIYNegotiationManager:
     """YIY negotiation strategy
@@ -191,7 +201,7 @@ class YIYNegotiationManager:
         utility_threshold=0.9,
         time_threshold=0.9,
         time_horizon=0.1,
-        breach_threshold = 0.8,
+        breach_threshold=0.8,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
@@ -228,7 +238,10 @@ class YIYNegotiationManager:
             reports = self.awi.reports_at_step(reportstep)
             if reports:
                 for agent in reports.values():
-                    if agent.agent_name == agent_str and agent.breach_level > self.breach_threshold:
+                    if (
+                        agent.agent_name == agent_str
+                        and agent.breach_level > self.breach_threshold
+                    ):
                         return True
             return False
 
@@ -296,7 +309,9 @@ class YIYNegotiationManager:
 
                 # get updated buying price
                 buy_price = self.get_updated_price(seller)
-                updated_price = buy_price if buy_price > 0 else self.awi.catalog_prices[product]
+                updated_price = (
+                    buy_price if buy_price > 0 else self.awi.catalog_prices[product]
+                )
 
                 price_range = (0, updated_price)
 
@@ -307,7 +322,7 @@ class YIYNegotiationManager:
                 price_range,
                 time=(self._current_start, self._current_end),
                 controller=self.controllers[seller],
-                partners=my_legal_partners
+                partners=my_legal_partners,
             )
 
     def respond_to_negotiation_request(

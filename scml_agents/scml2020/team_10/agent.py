@@ -1,16 +1,17 @@
-import os, sys
+import os
+import sys
 
 sys.path.append(os.path.dirname(__file__))
 
+from typing import Tuple
+
+import numpy as np
+from negotiation import MyNegotiationManager
+from production import MySupplyDrivenProductionStrategy
 from scml.scml2020 import DecentralizingAgent, SCML2020Agent
+from scml.scml2020.components.negotiation import IndependentNegotiationsManager
 from scml.scml2020.components.production import SupplyDrivenProductionStrategy
 from scml.scml2020.components.trading import PredictionBasedTradingStrategy
-from scml.scml2020.components.negotiation import IndependentNegotiationsManager
-from typing import Tuple
-import numpy as np
-
-from production import MySupplyDrivenProductionStrategy
-from negotiation import MyNegotiationManager
 from trade import MyPredictionBasedTradingStrategy
 
 __all__ = ["UnicornAgent"]

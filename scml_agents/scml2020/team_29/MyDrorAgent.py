@@ -1,11 +1,32 @@
+from collections import defaultdict
+from typing import Any, Dict, List, Optional, Tuple
+
+import matplotlib.pyplot as plt
+import numpy as np
+from negmas import (
+    LinearUtilityFunction,
+    ResponseType,
+    SAOSyncController,
+    outcome_is_valid,
+)
+from negmas.sao import SAOResponse
+from playground_agent import MyAgent, MyAgentDror
 from scml.scml2020 import (
-    SCML2020Agent,
-    SCML2020World,
-    RandomAgent,
+    QUANTITY,
+    TIME,
+    UNIT_PRICE,
     DecentralizingAgent,
     IndDecentralizingAgent,
+    RandomAgent,
+    SCML2020Agent,
+    SCML2020World,
 )
-import matplotlib.pyplot as plt
+from scml.scml2020.components import TradePredictionStrategy
+from scml.scml2020.components.negotiation import (
+    IndependentNegotiationsManager,
+    MovingRangeNegotiationManager,
+    StepNegotiationManager,
+)
 from scml.scml2020.components.production import (
     DemandDrivenProductionStrategy,
     ProductionStrategy,
@@ -13,22 +34,6 @@ from scml.scml2020.components.production import (
     TradeDrivenProductionStrategy,
 )
 from scml.scml2020.components.trading import PredictionBasedTradingStrategy
-from scml.scml2020.components.negotiation import (
-    IndependentNegotiationsManager,
-    MovingRangeNegotiationManager,
-    StepNegotiationManager,
-)
-from scml.scml2020.components import TradePredictionStrategy
-from negmas import LinearUtilityFunction
-from collections import defaultdict
-from negmas import SAOSyncController
-from scml.scml2020 import TIME, QUANTITY, UNIT_PRICE
-from negmas import ResponseType, outcome_is_valid
-from negmas.sao import SAOResponse
-from typing import List, Dict, Optional, Tuple, Any
-import numpy as np
-
-from playground_agent import MyAgent, MyAgentDror
 
 
 class SyncController(SAOSyncController):

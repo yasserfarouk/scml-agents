@@ -1,5 +1,5 @@
 
-Maintainer: 
+Maintainer:
 ============
 Yasser Mohammad <yasserfraouk@gmail.com>
 

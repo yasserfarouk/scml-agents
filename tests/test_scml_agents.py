@@ -1,10 +1,12 @@
-from scml_agents import get_agents
-import scml_agents
 from pytest import mark
+
+import scml_agents
+from scml_agents import get_agents
 
 
 @mark.parametrize(
-    "version", [2019, 2020, 2021],
+    "version",
+    [2019, 2020, 2021],
 )
 def test_get_agents_per_year(version):
     from pprint import pprint

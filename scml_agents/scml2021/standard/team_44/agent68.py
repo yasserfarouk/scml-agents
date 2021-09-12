@@ -32,7 +32,7 @@ To test this template do the following:
 On Linux/Mac:
     >> source .venv/bin/activate
 On Windows:
-    >> \.venv\Scripts\activate.bat
+    >> \\.venv\\Scripts\activate.bat
 
 3. Update pip just in case (recommended)
 
@@ -53,22 +53,26 @@ On Windows:
 You should see a short tournament running and results reported.
 """
 
-# required for development
-from scml.scml2020 import (
-    SCML2020Agent,
-    PredictionBasedTradingStrategy,
-    MovingRangeNegotiationManager,
-    TradeDrivenProductionStrategy,
-)
-
 # required for running the test tournament
 import time
-from tabulate import tabulate
-from scml.scml2020.utils import anac2021_std, anac2021_collusion, anac2021_oneshot
-from scml.scml2020.agents import DecentralizingAgent, BuyCheapSellExpensiveAgent
+
 from negmas.helpers import humanize_time
 
-__all__ = [ "Agent68", ]
+# required for development
+from scml.scml2020 import (
+    MovingRangeNegotiationManager,
+    PredictionBasedTradingStrategy,
+    SCML2020Agent,
+    TradeDrivenProductionStrategy,
+)
+from scml.scml2020.agents import BuyCheapSellExpensiveAgent, DecentralizingAgent
+from scml.scml2020.utils import anac2021_collusion, anac2021_oneshot, anac2021_std
+from tabulate import tabulate
+
+__all__ = [
+    "Agent68",
+]
+
 
 class Agent68(
     TradeDrivenProductionStrategy,

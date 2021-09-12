@@ -1,11 +1,10 @@
 import random
+from typing import Optional
 
 from negmas import ResponseType
 from negmas.common import MechanismState
 from negmas.sao import AspirationNegotiator
-from typing import Optional
-
-from scml.scml2019 import INVALID_UTILITY, CFP
+from scml.scml2019 import CFP, INVALID_UTILITY
 
 
 class Mynegotiator(AspirationNegotiator):
@@ -26,7 +25,7 @@ class Mynegotiator(AspirationNegotiator):
             for value in issue.values:
                 self.estimated_issue_values[value] = 1 / len(issue.values)
         """"""
-        super(Mynegotiator, self).__init__(name=name, ufun=ufun, partner_id=partner_id)
+        super().__init__(name=name, ufun=ufun, partner_id=partner_id)
 
     def respond(self, state: MechanismState, offer: "Outcome") -> "ResponseType":
         self.notify_ufun_changed()
@@ -181,7 +180,7 @@ class Mynegotiator(AspirationNegotiator):
         super().on_ufun_changed()
         outcomes = self._ami.discrete_outcomes()
         self.ordered_outcomes = sorted(
-            [(self._utility_function(outcome), outcome) for outcome in outcomes],
+            ((self._utility_function(outcome), outcome) for outcome in outcomes),
             key=lambda x: float(x[0]) if x[0] is not None else float("-inf"),
             reverse=True,
         )

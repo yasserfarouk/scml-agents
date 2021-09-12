@@ -11,7 +11,6 @@ from .team_86 import *
 from .team_90 import *
 from .team_corleone import *
 
-
 __all__ = (
     staghunter.__all__
     + team_50.__all__

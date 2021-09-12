@@ -1,13 +1,14 @@
 import sys
-from typing import Union, Tuple, Optional
 from inspect import ismodule
+from typing import Optional, Tuple, Union
+
+from negmas.situated import Agent
+
+from negmas.helpers import get_full_type_name
+
 import scml_agents.scml2019 as scml2019
 import scml_agents.scml2020 as scml2020
 import scml_agents.scml2021 as scml2021
-
-# import scml_agents.contrib as contrib
-from negmas.helpers import get_full_type_name
-from negmas import Agent
 
 __all__ = ["get_agents"]
 
@@ -30,8 +31,9 @@ def get_agents(
         version: Either a competition year (2019, 2020, 2021, ....) or the following special values:
 
                  - "contrib" for agents contributed directly to the repository not through ANAC's SCML Competition
+                 - "all"/"any" for all agents
 
-        track: The track (any, collusion, std, sabotage[only for 2019]).
+        track: The track (all, any, collusion, std, sabotage[only for 2019], oneshot [starting 2021]).
         qualified_only: If true, only agents that were submitted to SCML and ran in the qualifications round will be
                         returned
         finalists_only: If true, only agents that were submitted to SCML and passed qualifications will be
@@ -42,6 +44,20 @@ def get_agents(
                   SCML
         as_class: If true, the agent classes will be returned otherwise their full class names.
     """
+    if version in ("all", "any"):
+        results = []
+        for v in (2019, 2020, 2021, "contrib"):
+            results += get_agents(
+                v,
+                track=track,
+                qualified_only=qualifiled_only,
+                finalists_only=finalists_only,
+                winners_only=winners_only,
+                bird_only=bird_only,
+                top_only=top_only,
+                as_class=as_class,
+            )
+        return results
     classes = tuple()
     track = track.lower()
     if isinstance(version, int) and version == 2019:
@@ -96,7 +112,7 @@ def get_agents(
         if track in ("std", "standard") and finalists_only:
             classes = tuple(
                 sum(
-                    [
+                    (
                         [f"{_.__name__}.{a}" for a in _.__all__]
                         for _ in (
                             scml2020.team_may,
@@ -112,14 +128,14 @@ def get_agents(
                             scml2020.biu_th,
                             scml2020.team_32,
                         )
-                    ],
+                    ),
                     [],
                 )
             )
         elif track in ("coll", "collusion") and finalists_only:
             classes = tuple(
                 sum(
-                    [
+                    (
                         [f"{_.__name__}.{a}" for a in _.__all__]
                         for _ in (
                             scml2020.team_17,
@@ -129,7 +145,7 @@ def get_agents(
                             scml2020.a_sengupta,
                             scml2020.team_20,
                         )
-                    ],
+                    ),
                     [],
                 )
             )
@@ -138,7 +154,7 @@ def get_agents(
         ):
             classes = tuple(
                 sum(
-                    [
+                    (
                         [f"{_.__name__}.{a}" for a in _.__all__]
                         for _ in (
                             scml2020.team_may,
@@ -161,24 +177,24 @@ def get_agents(
                             scml2020.biu_th,
                             scml2020.team_32,
                         )
-                    ],
+                    ),
                     [],
                 )
             )
         elif track in ("std", "standard") and winners_only:
             classes = tuple(
                 sum(
-                    [
+                    (
                         [f"{_.__name__}.{a}" for a in _.__all__]
                         for _ in (scml2020.team_15, scml2020.team_25,)
-                    ],
+                    ),
                     [],
                 )
             )
         elif track in ("any", "all") and winners_only:
             classes = tuple(
                 sum(
-                    [
+                    (
                         [f"{_.__name__}.{a}" for a in _.__all__]
                         for _ in (
                             scml2020.team_15,
@@ -186,25 +202,23 @@ def get_agents(
                             scml2020.team_25,
                             scml2020.a_sengupta,
                         )
-                    ],
+                    ),
                     [],
                 )
             )
         elif track in ("coll", "collusion") and winners_only:
             classes = tuple(
                 sum(
-                    [
+                    (
                         [f"{_.__name__}.{a}" for a in _.__all__]
                         for _ in (scml2020.team_may, scml2020.a_sengupta,)
-                    ],
+                    ),
                     [],
                 )
             )
     elif isinstance(version, int) and version == 2021:
         if bird_only:
-            classes = (
-                    scml2021.oneshot.team_corleone.MAIN_AGENT
-            )
+            classes = scml2021.oneshot.team_corleone.MAIN_AGENT
         elif track in ("std", "standard") and winners_only:
             classes = (
                 (scml2021.standard.team_may.MAIN_AGENT,),
@@ -360,28 +374,28 @@ def get_agents(
         elif track in ("std", "coll", "standard", "collusion"):
             classes = tuple(
                 sum(
-                    [
+                    (
                         [
                             eval(f"scml2021.standard.{_}.{a}")
                             for a in eval(f"scml2021.standard.{_}").__all__
                         ]
                         for _ in dir(scml2021.standard)
                         if ismodule(eval(f"scml2021.standard.{_}"))
-                    ],
+                    ),
                     [],
                 )
             )
         elif track in ("one", "oneshot"):
             classes = tuple(
                 sum(
-                    [
+                    (
                         [
                             eval(f"scml2021.oneshot.{_}.{a}")
                             for a in eval(f"scml2021.oneshot.{_}").__all__
                         ]
                         for _ in dir(scml2021.oneshot)
                         if ismodule(eval(f"scml2021.oneshot.{_}"))
-                    ],
+                    ),
                     [],
                 )
             )
@@ -419,6 +433,6 @@ def get_agents(
     if top_only is not None:
         n = int(top_only) if top_only >= 1 else (top_only * len(classes))
         if n > 0:
-            return classes[:min(n, len(classes))]
+            return classes[: min(n, len(classes))]
 
     return classes

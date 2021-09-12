@@ -1,25 +1,30 @@
 import functools
 import math
+from typing import Any, Dict, List, Optional, Tuple, Union
 
-from negmas import Negotiator, Issue, AgentMechanismInterface, AspirationNegotiator, SAONegotiator
+import numpy as np
+from negmas import (
+    AgentMechanismInterface,
+    AspirationNegotiator,
+    Issue,
+    Negotiator,
+    SAONegotiator,
+)
 from negmas.helpers import get_class
 from scml import TIME, NegotiationManager
 from scml.scml2020.components.negotiation import ControllerInfo
 from scml.scml2020.services import StepController
-from typing import Tuple, Optional, Dict, Any, List, Union
-import numpy as np
 
 from .ModifiedERPStrategy import ModifiedERPStrategy
 
 
 class ModifiedStepNegotiationManager(ModifiedERPStrategy, NegotiationManager):
-
     def __init__(
-            self,
-            *args,
-            negotiator_type: Union[SAONegotiator, str] = AspirationNegotiator,
-            negotiator_params: Optional[Dict[str, Any]] = None,
-            **kwargs,
+        self,
+        *args,
+        negotiator_type: Union[SAONegotiator, str] = AspirationNegotiator,
+        negotiator_params: Optional[Dict[str, Any]] = None,
+        **kwargs,
     ):
         super().__init__(*args, **kwargs)
 
@@ -45,20 +50,24 @@ class ModifiedStepNegotiationManager(ModifiedERPStrategy, NegotiationManager):
         ]
 
     def _start_negotiations(
-            self,
-            product: int,
-            sell: bool,
-            step: int,
-            qvalues: Tuple[int, int],
-            uvalues: Tuple[int, int],
-            tvalues: Tuple[int, int],
-            partners: List[str],
+        self,
+        product: int,
+        sell: bool,
+        step: int,
+        qvalues: Tuple[int, int],
+        uvalues: Tuple[int, int],
+        tvalues: Tuple[int, int],
+        partners: List[str],
     ) -> None:
 
         execution_fraction = np.array(
-            [self._execution_fractions[
-                 partner] if partner in self._execution_fractions else self._default_execution_fraction for partner in
-             partners]).mean()
+            [
+                self._execution_fractions[partner]
+                if partner in self._execution_fractions
+                else self._default_execution_fraction
+                for partner in partners
+            ]
+        ).mean()
 
         expected_quantity = int(math.floor(qvalues[1] * execution_fraction))
 
@@ -67,25 +76,25 @@ class ModifiedStepNegotiationManager(ModifiedERPStrategy, NegotiationManager):
         )
 
         if self.awi.request_negotiations(
-                is_buy=not sell,
-                product=product,
-                quantity=qvalues,
-                unit_price=uvalues,
-                time=tvalues,
-                partners=partners,
-                controller=controller,
-                extra=dict(controller_index=step, is_seller=sell),
+            is_buy=not sell,
+            product=product,
+            quantity=qvalues,
+            unit_price=uvalues,
+            time=tvalues,
+            partners=partners,
+            controller=controller,
+            extra=dict(controller_index=step, is_seller=sell),
         ):
             self.add_controller(
                 controller, sell, qvalues[1], uvalues, expected_quantity, step
             )
 
     def respond_to_negotiation_request(
-            self,
-            initiator: str,
-            issues: List[Issue],
-            annotation: Dict[str, Any],
-            mechanism: AgentMechanismInterface,
+        self,
+        initiator: str,
+        issues: List[Issue],
+        annotation: Dict[str, Any],
+        mechanism: AgentMechanismInterface,
     ) -> Optional[Negotiator]:
 
         # find negotiation parameters
@@ -124,7 +133,7 @@ class ModifiedStepNegotiationManager(ModifiedERPStrategy, NegotiationManager):
         return controller.create_negotiator(id=initiator)
 
     def all_negotiations_concluded(
-            self, controller_index: int, is_seller: bool
+        self, controller_index: int, is_seller: bool
     ) -> None:
         """Called by the `StepController` to affirm that it is done negotiating for some time-step"""
         info = (
@@ -149,13 +158,13 @@ class ModifiedStepNegotiationManager(ModifiedERPStrategy, NegotiationManager):
             return
 
     def add_controller(
-            self,
-            controller: StepController,
-            is_seller: bool,
-            target,
-            urange: Tuple[int, int],
-            expected_quantity: int,
-            step: int,
+        self,
+        controller: StepController,
+        is_seller: bool,
+        target,
+        urange: Tuple[int, int],
+        expected_quantity: int,
+        step: int,
     ) -> StepController:
         if is_seller:
             # assert self.sellers[step].controller is None
@@ -182,12 +191,12 @@ class ModifiedStepNegotiationManager(ModifiedERPStrategy, NegotiationManager):
         return controller
 
     def create_controller(
-            self,
-            is_seller: bool,
-            target,
-            urange: Tuple[int, int],
-            expected_quantity: int,
-            step: int,
+        self,
+        is_seller: bool,
+        target,
+        urange: Tuple[int, int],
+        expected_quantity: int,
+        step: int,
     ) -> StepController:
         if is_seller and self.sellers[step].controller is not None:
             return self.sellers[step].controller
@@ -195,7 +204,9 @@ class ModifiedStepNegotiationManager(ModifiedERPStrategy, NegotiationManager):
             return self.buyers[step].controller
         return StepController(
             is_seller=is_seller,
-            target_quantity=target * 1.2 if target < expected_quantity else target * 0.8,
+            target_quantity=target * 1.2
+            if target < expected_quantity
+            else target * 0.8,
             negotiator_type=self.negotiator_type,
             negotiator_params=self.negotiator_params,
             step=step,

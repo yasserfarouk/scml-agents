@@ -2,72 +2,75 @@
 **Submitted to ANAC 2020 SCML**
 *Authors* Masanori HIRANO: hirano@g.ecc.u-tokyo.ac.jp;
 
-Your agent can learn about the state of the world and itself by accessing 
+Your agent can learn about the state of the world and itself by accessing
 properties in the AWI it has. For example:
 
-- The number of simulation steps (days): self.awi.n_steps  
+- The number of simulation steps (days): self.awi.n_steps
 - The current step (day): self.awi.current_steps
 - The factory state: self.awi.state
 - Availability for producton: self.awi.available_for_production
 
 
-Your agent can act in the world by calling methods in the AWI it has. 
+Your agent can act in the world by calling methods in the AWI it has.
 For example:
 
 - *self.awi.request_negotiation(...)*  # requests a negotiation with one partner
 - *self.awi.request_negotiations(...)* # requests a set of negotiations
 
- 
+
 You can access the full list of these capabilities on the documentation.
 
-- For properties/methods available only to SCM agents, check the list 
+- For properties/methods available only to SCM agents, check the list
   [here](https://scml.readthedocs.io/en/latest/api/scml.scml2020.AWI.html)
 
 """
-import json
-import math
 import argparse
+import json
+import logging
+import math
 import random
-from scipy.stats import poisson
-from tqdm import tqdm
 
 # required for running the test tournament
 import time
+from collections import defaultdict
 
 # required for typing
-from typing import Any, Dict, List, Optional, Tuple, Union, Type, Set
+from typing import Any, Dict, List, Optional, Set, Tuple, Type, Union
 
 import numpy as np
+from matplotlib import pylab as plt
 from negmas import (
     AgentMechanismInterface,
+    AgentWorldInterface,
+    AspirationNegotiator,
     Breach,
     Contract,
+    Controller,
     Issue,
+    LinearUtilityFunction,
     MechanismState,
     Negotiator,
-    AgentWorldInterface,
-    SAOController,
-    Controller,
-    SAONegotiator,
-    AspirationNegotiator,
-    UtilityFunction,
-    LinearUtilityFunction,
     PassThroughNegotiator,
     PassThroughSAONegotiator,
     ResponseType,
+    SAOController,
+    SAONegotiator,
+    UtilityFunction,
 )
-from negmas.helpers import humanize_time, get_class
+from negmas.helpers import get_class, humanize_time
+from scipy.stats import poisson
 from scml.scml2020 import (
-    SCML2020Agent,
-    SCML2020World,
-    FactoryState,
     AWI,
-    FinancialReport,
     TIME,
-    TradingStrategy,
     DemandDrivenProductionStrategy,
+    FactoryState,
+    Failure,
+    FinancialReport,
     PredictionBasedTradingStrategy,
     ReactiveTradingStrategy,
+    SCML2020Agent,
+    SCML2020World,
+    TradingStrategy,
 )
 from scml.scml2020.agents import (
     BuyCheapSellExpensiveAgent,
@@ -77,13 +80,11 @@ from scml.scml2020.agents import (
     MovingRangeAgent,
 )
 from scml.scml2020.utils import anac2020_collusion, anac2020_std
-from scml.scml2020 import Failure
 from tabulate import tabulate
-from matplotlib import pylab as plt
-from collections import defaultdict
-import logging
+from tqdm import tqdm
+
+from .Negotiator import ControllerUFun, IntegratedNegotiationManager, SyncController
 from .PrintingAgent import PrintingAgent, PrintingSAOController
-from .Negotiator import IntegratedNegotiationManager, SyncController, ControllerUFun
 
 __all__ = ["MhiranoAgent"]
 
@@ -98,7 +99,9 @@ __all__ = ["MhiranoAgent"]
 
 class MhiranoAgent(DemandDrivenProductionStrategy, PrintingAgent):
     def __init__(
-        self, *args, **kwargs,
+        self,
+        *args,
+        **kwargs,
     ):
         super().__init__(*args, is_debug=is_debug, **kwargs)
         # 契約済(signed)の確実なinput量
@@ -145,13 +148,11 @@ class MhiranoAgent(DemandDrivenProductionStrategy, PrintingAgent):
         #####
         # ToDO 在庫の放出注文 => Done & test (価格設定の余地ある)
         #####
-        more_or_less: int = sum(
-            self.outputs_signed[awi.current_step + 1 : awi.current_step + 10]
-        ) - sum(
-            self.inputs_signed[awi.current_step + 1 : awi.current_step + 10]
-        ) - factory_state.inventory[
-            awi.my_input_product
-        ]
+        more_or_less: int = (
+            sum(self.outputs_signed[awi.current_step + 1 : awi.current_step + 10])
+            - sum(self.inputs_signed[awi.current_step + 1 : awi.current_step + 10])
+            - factory_state.inventory[awi.my_input_product]
+        )
 
         if more_or_less > 0:
             # outputの方が多い => 購入したい
@@ -723,14 +724,12 @@ class MhiranoController(PrintingSAOController):
             all_q += sum(agreements)
             for data in self._negotiating.values():
                 if data["is_seller"]:
-                    max_q = max([q for (q, t, up) in data["current_space"]])
+                    max_q = max(q for (q, t, up) in data["current_space"])
                     all_q += max_q
                     negotiating_opponents.append(
                         (
                             max_q,
-                            list(
-                                set([(t, up) for (q, t, up) in data["current_space"]])
-                            ),
+                            list({(t, up) for (q, t, up) in data["current_space"]}),
                         )
                     )
         else:
@@ -740,14 +739,12 @@ class MhiranoController(PrintingSAOController):
             all_q += sum(agreements)
             for data in self._negotiating.values():
                 if not data["is_seller"]:
-                    max_q = max([q for (q, t, up) in data["current_space"]])
+                    max_q = max(q for (q, t, up) in data["current_space"])
                     all_q += max_q
                     negotiating_opponents.append(
                         (
                             max_q,
-                            list(
-                                set([(t, up) for (q, t, up) in data["current_space"]])
-                            ),
+                            list({(t, up) for (q, t, up) in data["current_space"]}),
                         )
                     )
         #####
@@ -1232,10 +1229,10 @@ def run(
     **Not needed for submission.** You can use this function to test your agent.
 
     Args:
-        competition: The competition type to run (possibilities are std, 
-                     collusion).        
+        competition: The competition type to run (possibilities are std,
+                     collusion).
         n_steps:     The number of simulation steps.
-        n_configs:   Number of different world configurations to try. 
+        n_configs:   Number of different world configurations to try.
                      Different world configurations will correspond to
                      different number of factories, profiles
                      , production graphs etc
@@ -1247,7 +1244,7 @@ def run(
     Remarks:
 
         - This function will take several minutes to run.
-        - To speed it up, use a smaller `n_step` value        
+        - To speed it up, use a smaller `n_step` value
 
     """
     competitors = [MhiranoAgent, DecentralizingAgent, BuyCheapSellExpensiveAgent]
@@ -1338,9 +1335,9 @@ if __name__ == "__main__":
     parser.add_argument("arg4", help="seeds")
     args = parser.parse_args()
     seed: int = int(args.arg4)
-    is_std: bool = (args.arg1 == "1")
-    is_many: bool = (args.arg2 == "1")
-    print("seed: {}, is_std:{}, is_many:{}".format(seed, is_std, is_many))
+    is_std: bool = args.arg1 == "1"
+    is_many: bool = args.arg2 == "1"
+    print(f"seed: {seed}, is_std:{is_std}, is_many:{is_many}")
     random.seed(seed)
     np.random.seed(seed)
     run(competition=("std" if is_std else "collusion"), is_many=is_many)

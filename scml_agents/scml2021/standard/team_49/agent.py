@@ -1,19 +1,37 @@
 import os
 import sys
+
 sys.path.append(os.path.dirname(__file__))
 from typing import Any, Dict, List, Optional, Tuple
 
 import numpy as np
-from negmas import (AgentMechanismInterface, Breach, Contract,
-                    MechanismState, Issue, Negotiator)
-from scml.scml2020 import SCML2020Agent, PredictionBasedTradingStrategy, SupplyDrivenProductionStrategy
-from scml.scml2020.world import Failure, AWI
-
+from negmas import (
+    AgentMechanismInterface,
+    Breach,
+    Contract,
+    Issue,
+    MechanismState,
+    Negotiator,
+)
 from negotiation_manager import NegotiationManager
+from scml.scml2020 import (
+    PredictionBasedTradingStrategy,
+    SCML2020Agent,
+    SupplyDrivenProductionStrategy,
+)
+from scml.scml2020.world import AWI, Failure
 
-__all__ = [ "E3BIUagent", ]
+__all__ = [
+    "E3BIUagent",
+]
 
-class E3BIUagent(NegotiationManager, PredictionBasedTradingStrategy, SupplyDrivenProductionStrategy, SCML2020Agent):
+
+class E3BIUagent(
+    NegotiationManager,
+    PredictionBasedTradingStrategy,
+    SupplyDrivenProductionStrategy,
+    SCML2020Agent,
+):
 
     # =====================
     # Time-Driven Callbacks
@@ -21,28 +39,29 @@ class E3BIUagent(NegotiationManager, PredictionBasedTradingStrategy, SupplyDrive
 
     def init(self):
         """Called once after the agent-world interface is initialized"""
-        super(E3BIUagent, self).init()
+        super().init()
 
     def step(self):
         """Called at every production step by the world"""
-        super(E3BIUagent, self).step()
+        super().step()
 
     # ================================
     # Negotiation Control and Feedback
     # ================================
 
-    def on_negotiation_failure(self,
-                               partners: List[str],
-                               annotation: Dict[str, Any],
-                               mechanism: AgentMechanismInterface,
-                               state: MechanismState
-                               ) -> None:
+    def on_negotiation_failure(
+        self,
+        partners: List[str],
+        annotation: Dict[str, Any],
+        mechanism: AgentMechanismInterface,
+        state: MechanismState,
+    ) -> None:
         """Called when a negotiation the agent is a party of ends without
         agreement"""
 
-    def on_negotiation_success(self,
-                               contract: Contract,
-                               mechanism: AgentMechanismInterface) -> None:
+    def on_negotiation_success(
+        self, contract: Contract, mechanism: AgentMechanismInterface
+    ) -> None:
         """Called when a negotiation the agent is a party of ends with
         agreement"""
 
@@ -53,11 +72,9 @@ class E3BIUagent(NegotiationManager, PredictionBasedTradingStrategy, SupplyDrive
     def on_contract_executed(self, contract: Contract) -> None:
         """Called when a contract executes successfully and fully"""
 
-    def on_contract_breached(self,
-                             contract: Contract,
-                             breaches: List[Breach],
-                             resolution: Optional[Contract]
-                             ) -> None:
+    def on_contract_breached(
+        self, contract: Contract, breaches: List[Breach], resolution: Optional[Contract]
+    ) -> None:
         """Called when a breach occur. In 2020, there will be no resolution
         (i.e. resoluion is None)"""
 
@@ -65,8 +82,9 @@ class E3BIUagent(NegotiationManager, PredictionBasedTradingStrategy, SupplyDrive
     # Production Callbacks
     # ====================
 
-    def confirm_production(self, commands: np.ndarray, balance: int,
-                           inventory: np.ndarray) -> np.ndarray:
+    def confirm_production(
+        self, commands: np.ndarray, balance: int, inventory: np.ndarray
+    ) -> np.ndarray:
         """
         Called just before production starts at every step allowing the
         agent to change what is to be produced in its factory on that step.
@@ -85,29 +103,38 @@ class E3BIUagent(NegotiationManager, PredictionBasedTradingStrategy, SupplyDrive
         else:
             needed, secured = self.inputs_needed, self.inputs_secured
 
-        return needed[steps[0]: steps[1]] - secured[steps[0]: steps[1]]
+        return needed[steps[0] : steps[1]] - secured[steps[0] : steps[1]]
 
     def respond_to_negotiation_request(
-            self,
-            initiator: str,
-            issues: List["Issue"],
-            annotation: Dict[str, Any],
-            mechanism: "AgentMechanismInterface",
+        self,
+        initiator: str,
+        issues: List["Issue"],
+        annotation: Dict[str, Any],
+        mechanism: "AgentMechanismInterface",
     ) -> Optional["Negotiator"]:
 
         # Don't make a negotiation in case the agent has breached
-        breached_agent_name = annotation["buyer"] if annotation["is_buy"] else annotation["seller"]
+        breached_agent_name = (
+            annotation["buyer"] if annotation["is_buy"] else annotation["seller"]
+        )
         if self.is_breached_last_n_steps(breached_agent_name, 25):
             return None
 
-        if self.is_agent_unique(annotation["is_buy"]) and self.get_agent_type(
-                breached_agent_name) != self.type_name:
+        if (
+            self.is_agent_unique(annotation["is_buy"])
+            and self.get_agent_type(breached_agent_name) != self.type_name
+        ):
             return None
-        return super().respond_to_negotiation_request(initiator, issues, annotation, mechanism)
+        return super().respond_to_negotiation_request(
+            initiator, issues, annotation, mechanism
+        )
 
     def is_breached_last_n_steps(self, agent_id, nsteps):
         if self.awi.reports_of_agent(agent_id) is not None:
-            breach_levels = [step.breach_level for step in self.awi.reports_of_agent(agent_id).values()]
+            breach_levels = [
+                step.breach_level
+                for step in self.awi.reports_of_agent(agent_id).values()
+            ]
             if sum(breach_levels[-nsteps:]) > 0:
                 return True
         return False
@@ -152,9 +179,17 @@ class E3BIUagent(NegotiationManager, PredictionBasedTradingStrategy, SupplyDrive
             else:
                 partners = self.awi.my_suppliers
 
-        partners = [partner for partner in partners if not self.is_breached_last_n_steps(partner, 20)]
+        partners = [
+            partner
+            for partner in partners
+            if not self.is_breached_last_n_steps(partner, 20)
+        ]
         if self.is_agent_unique(is_seller):
-            partners = [partner for partner in partners if self.get_agent_type(partner) == self.type_name]
+            partners = [
+                partner
+                for partner in partners
+                if self.get_agent_type(partner) == self.type_name
+            ]
         return super()._start_negotiations(
             product, is_seller, step, q_val, u_val, t_val, partners
         )
@@ -168,9 +203,9 @@ class E3BIUagent(NegotiationManager, PredictionBasedTradingStrategy, SupplyDrive
             for supplier_name in self._awi.my_suppliers:
                 if self.get_agent_type(supplier_name) == self.type_name:
                     return True
-        return False    
+        return False
 
     def get_agent_type(self, agent_name):
-        if agent_name in ['BUYER', 'SELLER']:
+        if agent_name in ["BUYER", "SELLER"]:
             return agent_name
         return self.awi._world.agent_types[self.awi._world.a2i[agent_name]]

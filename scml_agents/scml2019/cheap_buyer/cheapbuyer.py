@@ -39,25 +39,25 @@ import sys
 
 sys.path.append("/".join(__file__.split("/")[:-1]))
 import os
+import random
+import shutil
 import time
-from typing import Any, List, Dict, Union, Type, Optional, Collection
+from typing import Any, Collection, Dict, List, Optional, Type, Union
 
-from negmas import Contract, AgentMechanismInterface, MechanismState, Negotiator
+from negmas import AgentMechanismInterface, Contract, MechanismState, Negotiator
 from scml.scml2019.common import CFP, SCMLAgreement
 from scml.scml2019.factory_managers.builtins import (
     GreedyFactoryManager,
     Scheduler,
     temporary_transaction,
 )
-import random
-import shutil
 
-from .MyNegotiator2 import MyNegotiator2
-from .NegotiationStepsDataHolder import NegotiationStepsDataHolder
-from .SellerUtilityFunction import SellerUtilityFunction
 from .myconsumer import MyConsumer
+from .MyNegotiator2 import MyNegotiator2
 from .myscheduler import MyScheduler
 from .myutilityfunction import MyUtilityFunction
+from .NegotiationStepsDataHolder import NegotiationStepsDataHolder
+from .SellerUtilityFunction import SellerUtilityFunction
 
 
 class CheapBuyerFactoryManager(GreedyFactoryManager):
@@ -110,7 +110,7 @@ class CheapBuyerFactoryManager(GreedyFactoryManager):
         self.NEGOTIATOR_ID_FIXED_PART = "NEGOTIATOR_ID_SELLER"
         self.sell_contract_cancellations = 0
         self.buy_contract_cancellations = 0
-        super(CheapBuyerFactoryManager, self).__init__(
+        super().__init__(
             scheduler_type=scheduler_type,
             negotiator_type=negotiator_type,
             riskiness=riskiness,
@@ -471,8 +471,8 @@ class CheapBuyerFactoryManager(GreedyFactoryManager):
         return response
 
     def accept_negotiation_old(self, cfp):
-        negotiation_steps_data_holder: NegotiationStepsDataHolder = self.number_of_negotiation_steps.get(
-            cfp.publisher
+        negotiation_steps_data_holder: NegotiationStepsDataHolder = (
+            self.number_of_negotiation_steps.get(cfp.publisher)
         )
         average_number_of_steps = 0
         if negotiation_steps_data_holder is not None:

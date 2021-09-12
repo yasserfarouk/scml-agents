@@ -9,18 +9,18 @@ from negmas import (
     AgentMechanismInterface,
     Breach,
     Contract,
-    MechanismState,
     Issue,
+    MechanismState,
     Negotiator,
 )
+from negotiation_manager import NegotiationManager
 from scml.scml2020 import (
-    SCML2020Agent,
+    AWI,
+    Failure,
     PredictionBasedTradingStrategy,
+    SCML2020Agent,
     SupplyDrivenProductionStrategy,
 )
-from scml.scml2020 import Failure, AWI
-
-from negotiation_manager import NegotiationManager
 
 __all__ = ["THBiuAgent"]
 
@@ -38,11 +38,11 @@ class THBiuAgent(
 
     def init(self):
         """Called once after the agent-world interface is initialized"""
-        super(THBiuAgent, self).init()
+        super().init()
 
     def step(self):
         """Called at every production step by the world"""
-        super(THBiuAgent, self).step()
+        super().step()
 
     # ================================
     # Negotiation Control and Feedback

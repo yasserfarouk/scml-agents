@@ -1,41 +1,48 @@
+import functools
+from dataclasses import dataclass
+from typing import Any, Dict, List, Optional, Tuple, Union
+
+import numpy as np
 from negmas import (
+    AgentMechanismInterface,
+    AspirationNegotiator,
     Contract,
     Issue,
-    AgentMechanismInterface,
     Negotiator,
     SAONegotiator,
-    AspirationNegotiator,
     ToughNegotiator,
 )
-from typing import Union
-from typing import Tuple
-from typing import Optional
-from typing import List
-from typing import Dict
-from typing import Any
-from sklearn.linear_model import LinearRegression
-import functools
-import numpy as np
-from scml.scml2020 import AWI, SCML2020Agent, SCML2020World
-from scipy.stats import linregress
-from scml.scml2020.components.negotiation import IndependentNegotiationsManager, StepNegotiationManager, NegotiationManager
-from scml.scml2020 import MovingRangeNegotiationManager
-from scml.scml2020 import Failure
-from scml.scml2020 import SCML2020Agent
-from scml.scml2020 import TradingStrategy
-from scml.scml2020 import SupplyDrivenProductionStrategy
-from scml.scml2020.services.controllers import StepController
-
-from dataclasses import dataclass
-from negmas.outcomes import ResponseType
 from negmas.helpers import get_class
+from negmas.outcomes import ResponseType
+from scipy.stats import linregress
+from scml.scml2020 import (
+    AWI,
+    Failure,
+    MovingRangeNegotiationManager,
+    SCML2020Agent,
+    SCML2020World,
+    SupplyDrivenProductionStrategy,
+    TradingStrategy,
+)
+from scml.scml2020.components.negotiation import (
+    IndependentNegotiationsManager,
+    NegotiationManager,
+    StepNegotiationManager,
+)
+from scml.scml2020.services.controllers import StepController
+from sklearn.linear_model import LinearRegression
+
 
 class ModifiedAspirationAgent(AspirationNegotiator):
     def respond(self, state, offer):
         if self.ufun_max is None or self.ufun_min is None:
             self.on_ufun_changed()
 
-        if (self._utility_function is None or self.ufun_max is None or self.ufun_min is None):
+        if (
+            self._utility_function is None
+            or self.ufun_max is None
+            or self.ufun_min is None
+        ):
             return ResponseType.REJECT_OFFER
 
         u = self._utility_function(offer)
@@ -46,13 +53,15 @@ class ModifiedAspirationAgent(AspirationNegotiator):
 
         if u is None or u < self.reserved_value:
             return ResponseType.REJECT_OFFER
-        
 
         if slope > 0:
-            self.ufun_min -= ((slope - 0.2) % (0 - 0.2 + 1) + 0.2)
-        
-        asp = (self.aspiration(state.relative_time) * (self.ufun_max - self.ufun_min) + self.ufun_min)
-        
+            self.ufun_min -= (slope - 0.2) % (0 - 0.2 + 1) + 0.2
+
+        asp = (
+            self.aspiration(state.relative_time) * (self.ufun_max - self.ufun_min)
+            + self.ufun_min
+        )
+
         if u >= asp and u > self.reserved_value:
             return ResponseType.ACCEPT_OFFER
 
@@ -61,20 +70,21 @@ class ModifiedAspirationAgent(AspirationNegotiator):
 
         return ResponseType.REJECT_OFFER
 
+
 class MyNegotiationManager(StepNegotiationManager):
     def __init__(
-            self,
-            *args,
-            negotiator_type=ModifiedAspirationAgent,
-            negotiator_params=None,
-            **kwargs):
+        self,
+        *args,
+        negotiator_type=ModifiedAspirationAgent,
+        negotiator_params=None,
+        **kwargs
+    ):
 
         super().__init__(*args, **kwargs)
 
         self.negotiator_type = get_class(negotiator_type)
         self.negotiator_params = (
-            negotiator_params if negotiator_params is not None else {
-                "owner": self}
+            negotiator_params if negotiator_params is not None else {"owner": self}
         )
 
         self.controller_models = {}
@@ -95,7 +105,12 @@ class MyNegotiationManager(StepNegotiationManager):
             else:
                 return self.output_price[step] * 0.8
 
-        return np.mean([self.awi.catalog_prices[self.awi.my_output_product], self.output_price[step]])
+        return np.mean(
+            [
+                self.awi.catalog_prices[self.awi.my_output_product],
+                self.output_price[step],
+            ]
+        )
 
     def target_quantity(self, step: int, sell: bool):
         """A fixed target quantity of 33 my production capacity"""
@@ -105,7 +120,7 @@ class MyNegotiationManager(StepNegotiationManager):
         if step / self.awi.n_steps < 0.2:
             return (self.outputs_needed[step] - self.outputs_secured[step]) * 2
         elif step / self.awi.n_steps < 0.8:
-            return (self.outputs_needed[step] - self.outputs_secured[step])
+            return self.outputs_needed[step] - self.outputs_secured[step]
         else:
             return (self.outputs_needed[step] - self.outputs_secured[step]) * 0.5
 
@@ -157,15 +172,21 @@ class MyNegotiationManager(StepNegotiationManager):
         total_state = self.awi.n_steps
 
     def register_negotiation_bids(self, aid, bid_tuple):
-        agent_dir = self.controller_models.get(aid) if self.controller_models.get(aid) is not None else {}
+        agent_dir = (
+            self.controller_models.get(aid)
+            if self.controller_models.get(aid) is not None
+            else {}
+        )
         step = self.awi.current_step
         bids_list = agent_dir.get(step) if agent_dir.get(step) is not None else []
         agent_dir[step] = bids_list.append(bid_tuple)
 
-        x = list(range(1, len(bids_list)+1))
+        x = list(range(1, len(bids_list) + 1))
         y = [a[1] for a in bids_list]
 
-        lr = LinearRegression().fit(np.array(x).reshape(-1, 1), np.array(y).reshape(-1, 1))
+        lr = LinearRegression().fit(
+            np.array(x).reshape(-1, 1), np.array(y).reshape(-1, 1)
+        )
         slope = lr.coef_
 
         self.controller_models[aid] = agent_dir

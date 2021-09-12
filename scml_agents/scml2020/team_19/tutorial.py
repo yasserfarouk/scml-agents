@@ -1,8 +1,9 @@
+from pprint import pprint
+
 import matplotlib.pyplot as plt
 import numpy as np
-from scml.scml2020 import *
-from pprint import pprint
 import pandas as pd
+from scml.scml2020 import *
 
 ###
 agent_types = [

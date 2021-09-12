@@ -1,29 +1,28 @@
 import copy
 from pathlib import Path
 from pprint import pprint
+from typing import Dict, List
 
-from pytest import mark
-from typing import List, Dict
-
+import hypothesis.strategies as st
 import numpy as np
 import pkg_resources
 import pytest
 from hypothesis import given, settings
-
-from scml.scml2019 import *
-from scml.scml2019 import (
-    InputOutput,
-    Job,
-    FactoryStatusUpdate,
-    GreedyScheduler,
-    ProductionFailure,
-)
 from negmas.helpers import unique_name
 from negmas.situated import Contract
-import hypothesis.strategies as st
-from scml_agents.scml2019 import *
+from pytest import mark
+from scml.scml2019 import *
+from scml.scml2019 import (
+    FactoryStatusUpdate,
+    GreedyScheduler,
+    InputOutput,
+    Job,
+    ProductionFailure,
+)
+from scml.scml2019.utils import anac2019_collusion, anac2019_sabotage, anac2019_std
+
 from scml_agents import get_agents
-from scml.scml2019.utils import anac2019_std, anac2019_sabotage, anac2019_collusion
+from scml_agents.scml2019 import *
 
 
 @mark.parametrize("fm", get_agents(2019, track="all"))

@@ -1,12 +1,11 @@
 import functools
 from typing import Tuple
 
-from controller import Controller
-
 import numpy as np
-from scml import StepNegotiationManager, PredictionBasedTradingStrategy
+from controller import Controller
+from scml import PredictionBasedTradingStrategy, StepNegotiationManager
 from scml.scml2020.components.negotiation import ControllerInfo
-from scml.scml2020.services import SyncController, StepController
+from scml.scml2020.services import StepController, SyncController
 
 
 class NegotiationManager(StepNegotiationManager, PredictionBasedTradingStrategy):
@@ -43,7 +42,9 @@ class NegotiationManager(StepNegotiationManager, PredictionBasedTradingStrategy)
     """
 
     def __init__(
-        self, *args, **kwargs,
+        self,
+        *args,
+        **kwargs,
     ):
         super().__init__(*args, **kwargs)
 

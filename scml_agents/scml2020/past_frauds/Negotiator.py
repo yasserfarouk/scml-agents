@@ -1,27 +1,28 @@
+from typing import Any, Dict, List, Optional, Tuple, Union
+
 import numpy as np
-from scml.scml2020 import (
-    TIME,
-    QUANTITY,
-    UNIT_PRICE,
-    TradingStrategy,
-    PredictionBasedTradingStrategy,
-    ReactiveTradingStrategy,
-    DemandDrivenProductionStrategy,
-    AWI,
-    FactoryState,
-)
 from negmas import (
-    ResponseType,
-    outcome_is_valid,
-    Outcome,
     MechanismState,
-    UtilityFunction,
     Negotiator,
+    Outcome,
+    ResponseType,
     SAOController,
+    UtilityFunction,
+    outcome_is_valid,
 )
 from negmas.sao import SAOResponse, SAOSyncController
+from scml.scml2020 import (
+    AWI,
+    QUANTITY,
+    TIME,
+    UNIT_PRICE,
+    DemandDrivenProductionStrategy,
+    FactoryState,
+    PredictionBasedTradingStrategy,
+    ReactiveTradingStrategy,
+    TradingStrategy,
+)
 from scml.scml2020.components.trading import NoTradingStrategy
-from typing import List, Dict, Optional, Tuple, Any, Union
 
 __all__ = ["IntegratedNegotiationManager", "SyncController", "ControllerUFun"]
 
@@ -190,9 +191,9 @@ class IntegratedNegotiationManager(ReactiveTradingStrategy):
                 continue
             if i_step == awi.current_step:
                 # 現在のターンに出したい => 在庫あまりの場合のみ
-                marginal_product: int = input_demand[
-                    awi.current_step
-                ] + current_marginal_product_inventory
+                marginal_product: int = (
+                    input_demand[awi.current_step] + current_marginal_product_inventory
+                )
                 if marginal_product > 0:
                     self.request_negotiations(
                         is_buy=False,

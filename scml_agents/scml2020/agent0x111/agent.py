@@ -6,35 +6,33 @@ import time
 from abc import abstractmethod
 from collections import defaultdict
 from statistics import median
-from typing import Tuple, Union, List, Optional, Any, Dict, Type, Callable
+from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union
 
 import numpy as np
 from negmas import (
+    AgentWorldInterface,
     AspirationMixin,
+    AspirationNegotiator,
+    Breach,
+    Contract,
+    Issue,
     LinearUtilityFunction,
-    PassThroughNegotiator,
     MechanismState,
+    Negotiator,
+    Outcome,
+    PassThroughNegotiator,
     ResponseType,
     UtilityFunction,
-    AgentWorldInterface,
-    Outcome,
 )
-from negmas import AspirationNegotiator, Issue, Negotiator, Contract
-from negmas import Breach
 from negmas.common import AgentMechanismInterface
-from negmas.events import Notifier, Notification
-from negmas.helpers import get_class
-from negmas.helpers import humanize_time
-from negmas.helpers import instantiate
-from negmas.sao import (
-    SAOController,
-    SAONegotiator,
-)
+from negmas.events import Notification, Notifier
+from negmas.helpers import get_class, humanize_time, instantiate
+from negmas.sao import SAOController, SAONegotiator
 from scml.scml2020 import *
-from scml.scml2020 import SCML2020Agent, DecentralizingAgent
+from scml.scml2020 import DecentralizingAgent, SCML2020Agent
 from scml.scml2020.common import TIME
 from scml.scml2020.components.negotiation import ControllerInfo
-from scml.scml2020.utils import anac2020_std, anac2020_collusion
+from scml.scml2020.utils import anac2020_collusion, anac2020_std
 from tabulate import tabulate
 
 __all__ = ["ASMASH"]
@@ -950,7 +948,8 @@ class ASMASH(
         return 0.9
 
     def good_situation_partners(
-        self, partners: List[str],
+        self,
+        partners: List[str],
     ):
         partners_after_filtering = list(set(partners))
         Breaches_strategy_partners = list(self.suspects_to_bankrupt.keys())

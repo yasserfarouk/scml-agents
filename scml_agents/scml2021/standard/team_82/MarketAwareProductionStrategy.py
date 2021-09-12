@@ -1,11 +1,11 @@
 from typing import List
+
+import numpy as np
 from negmas import Contract
 from scml import NO_COMMAND, ProductionStrategy
-import numpy as np
 
 
 class MarketAwareProductionStrategy(ProductionStrategy):
-
     def step(self):
         super().step()
         commands = NO_COMMAND * np.ones(self.awi.n_lines, dtype=int)
@@ -15,10 +15,10 @@ class MarketAwareProductionStrategy(ProductionStrategy):
         self.awi.set_commands(commands)
 
     def on_contracts_finalized(
-            self: "SCML2020Agent",
-            signed: List[Contract],
-            cancelled: List[Contract],
-            rejectors: List[List[str]],
+        self: "SCML2020Agent",
+        signed: List[Contract],
+        cancelled: List[Contract],
+        rejectors: List[List[str]],
     ) -> None:
         super().on_contracts_finalized(signed, cancelled, rejectors)
         input_price = self.awi.trading_prices[self.awi.my_input_product]

@@ -1,19 +1,17 @@
-from scml import SCML2020World
-import torch
-from tqdm import tqdm
 from random import shuffle
 
-from patches import *
+import torch
 from agent import *
 from draw import plot
-
+from hyperparameters import *
+from patches import *
+from scml import SCML2020World
+from tqdm import tqdm
 from utility_model import (
     UtilityModel,
-    load_seller_utiltiy_model,
     load_buyer_utility_model,
+    load_seller_utiltiy_model,
 )
-
-from hyperparameters import *
 
 
 def get_train_data(world):
@@ -62,7 +60,10 @@ buyer_train_data = []
 for i in tqdm(range(UTILITY_TRAIN_DATA)):
     world = SCML2020World(
         **SCML2020World.generate(
-            agent_types=[MyLearnUtilityAgent, DecentralizingAgent,],
+            agent_types=[
+                MyLearnUtilityAgent,
+                DecentralizingAgent,
+            ],
             n_steps=40,
             n_processes=2,
         ),

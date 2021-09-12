@@ -11,48 +11,22 @@ The agents make the most profits and take least penalties for shortfall and disp
 
 """
 
-from collections import defaultdict
-from scml.oneshot import OneShotAgent
-from matplotlib import pyplot as plt
-# required for typing
-from typing import Any, Dict, List, Optional
-#from Learningagent import LearningAgent
-import numpy as np
-from negmas import (
-    AgentMechanismInterface,
-    Breach,
-    Contract,
-    Issue,
-    MechanismState,
-    Negotiator,
-    ResponseType,
-)
-from negmas.helpers import humanize_time
-
-
 # required for running tournaments and printing
 import math
-import time
-from tabulate import tabulate
-from scml.scml2020.utils import anac2021_collusion, anac2021_oneshot, anac2021_std
-from scml.oneshot.agents import (
-    RandomOneShotAgent,
-    SyncRandomOneShotAgent,
-)
-from collections import defaultdict
 import random
-from negmas import ResponseType
-from scml.oneshot import *
-from scml.scml2020 import is_system_agent
+
+# required for running tournaments and printing
+import time
+from collections import defaultdict
 from pprint import pprint
-# required for development
-#from pandas._libs.internals import defaultdict
-from scml.oneshot import OneShotAgent
-from scml.scml2020 import is_system_agent
+
+# required for typing
 # required for typing
 from typing import Any, Dict, List, Optional
 
+# from Learningagent import LearningAgent
 import numpy as np
+from matplotlib import pyplot as plt
 from negmas import (
     AgentMechanismInterface,
     Breach,
@@ -64,35 +38,35 @@ from negmas import (
 )
 from negmas.helpers import humanize_time
 
-
-# required for running tournaments and printing
-import time
-from tabulate import tabulate
+# required for development
+# from pandas._libs.internals import defaultdict
+from scml.oneshot import *
+from scml.oneshot import OneShotAgent
+from scml.oneshot.agents import RandomOneShotAgent, SyncRandomOneShotAgent
+from scml.scml2020 import is_system_agent
 from scml.scml2020.utils import anac2021_collusion, anac2021_oneshot, anac2021_std
-from scml.oneshot.agents import (
-    RandomOneShotAgent,
-    SyncRandomOneShotAgent,
-)
+from tabulate import tabulate
 
+__all__ = [
+    "Agent97",
+]
 
-__all__ = [ "Agent97", ]
 
 class Agent97(OneShotAgent):
     def init(self):
         """Called once after the agent-world interface is initialized
-            initiate records when every world begins
+        initiate records when every world begins
         """
         self._sold = 0
         self._bought = 0
         self._selling_log = defaultdict(float)
         self._buying_log = defaultdict(float)
         self.secured = 0
-        self.failure_list=defaultdict(int)
+        self.failure_list = defaultdict(int)
         self.succ_list = defaultdict(int)
         self.reputation = defaultdict(float)
         self.best_offered_sell = 0
-        self.best_offered_buy=0
-
+        self.best_offered_buy = 0
 
     def step(self):
         self._sold = 0
@@ -103,9 +77,7 @@ class Agent97(OneShotAgent):
         self._buying_log = defaultdict(float)
         self.failure_list = defaultdict(int)
         self.reputation = defaultdict(float)
-        '''initiate the secured every step'''
-
-
+        """initiate the secured every step"""
 
     # =====================
     # Negotiation Callbacks
@@ -113,310 +85,331 @@ class Agent97(OneShotAgent):
 
     def _is_selling(self, ami):
         return ami.annotation["product"] == self.awi.my_output_product
+
     def _needed(self, negotiator_id=None):
-        return self.awi.current_exogenous_input_quantity + \
-               self.awi.current_exogenous_output_quantity - \
-               self.secured
-
-
+        return (
+            self.awi.current_exogenous_input_quantity
+            + self.awi.current_exogenous_output_quantity
+            - self.secured
+        )
 
     def propose(self, negotiator_id, state):
-        """Called when the agent is asking to propose in one negotiation
-                """
+        """Called when the agent is asking to propose in one negotiation"""
         my_needs = self._needed(negotiator_id)
         ami = self.get_ami(negotiator_id)
-        rep=0.1
+        rep = 0.1
         if self.reputation:
-            rep=self.sigmoid(self.reputation[min(self.reputation)])
+            rep = self.sigmoid(self.reputation[min(self.reputation)])
         if my_needs <= 0:
             return None
 
         if not ami:
             return None
         quantity_issue = ami.issues[QUANTITY]
-        #unit_price_issue = ami.issues[UNIT_PRICE]
+        # unit_price_issue = ami.issues[UNIT_PRICE]
         offer = [-1] * 3
         offer[QUANTITY] = max(
-            min(my_needs, quantity_issue.max_value),
-            quantity_issue.min_value
+            min(my_needs, quantity_issue.max_value), quantity_issue.min_value
         )
         offer[TIME] = self.awi.current_step
         if self._is_selling(ami):
-            #offer[UNIT_PRICE] = self._find_good_price(
-                #self.get_ami(negotiator_id), state
-            #)
-            maxx,minn= self._find_good_price(
-                self.get_ami(negotiator_id), state
-            )
-            '''
+            # offer[UNIT_PRICE] = self._find_good_price(
+            # self.get_ami(negotiator_id), state
+            # )
+            maxx, minn = self._find_good_price(self.get_ami(negotiator_id), state)
+            """
             if maxx!=0 and minn!=0:
                 offer[UNIT_PRICE]= (maxx+minn)/2
             else:
                 offer[UNIT_PRICE]= maxx
-            '''
+            """
             if self.reputation[ami.annotation["buyer"]]:
-                #threshold=0.7*abs(self.sigmoid(self.reputation[ami.annotation["buyer"]]))
-                threshold = 0.7 * abs(self.sigmoid(self.reputation[ami.annotation["buyer"]]))
+                # threshold=0.7*abs(self.sigmoid(self.reputation[ami.annotation["buyer"]]))
+                threshold = 0.7 * abs(
+                    self.sigmoid(self.reputation[ami.annotation["buyer"]])
+                )
             else:
-                threshold=0.2
-            if abs(threshold)<0.2:
-                if threshold<0:
-                    threshold=-0.2
+                threshold = 0.2
+            if abs(threshold) < 0.2:
+                if threshold < 0:
+                    threshold = -0.2
                 else:
-                    threshold=0.2
-            th=(maxx-minn)*threshold
+                    threshold = 0.2
+            th = (maxx - minn) * threshold
             offer[UNIT_PRICE] = maxx - th
-            #offer[UNIT_PRICE] = maxx - th
+            # offer[UNIT_PRICE] = maxx - th
 
-            '''if self.reputation[ami.annotation["buyer"]]<-6:
+            """if self.reputation[ami.annotation["buyer"]]<-6:
                 offer[UNIT_PRICE]=minn*(1-rep)
                 self.reputation[ami.annotation["buyer"]] += 4
             else:
-                offer[UNIT_PRICE] = maxx - th'''
-                #offer[UNIT_PRICE] = maxx*(1+rep)
+                offer[UNIT_PRICE] = maxx - th"""
+            # offer[UNIT_PRICE] = maxx*(1+rep)
 
         else:
-            #offer[UNIT_PRICE] = self._find_good_price(
-                #self.get_ami(negotiator_id), state
-            #)
-            maxx, minn = self._find_good_price(
-                self.get_ami(negotiator_id), state
-            )
-            '''
+            # offer[UNIT_PRICE] = self._find_good_price(
+            # self.get_ami(negotiator_id), state
+            # )
+            maxx, minn = self._find_good_price(self.get_ami(negotiator_id), state)
+            """
             if maxx!=0 and minn!=0:
                 offer[UNIT_PRICE]=(maxx+minn)/2
             else:
                 offer[UNIT_PRICE] = minn
-            '''
+            """
             if self.reputation[ami.annotation["seller"]]:
-                threshold=0.7*abs(self.sigmoid(self.reputation[ami.annotation["seller"]]))
+                threshold = 0.7 * abs(
+                    self.sigmoid(self.reputation[ami.annotation["seller"]])
+                )
             else:
-                threshold=0.2
+                threshold = 0.2
             if threshold < 0.2:
-                if threshold<0:
+                if threshold < 0:
                     threshold = -0.2
                 else:
-                    threshold=0.2
-            th=threshold*(maxx-minn)
-            offer[UNIT_PRICE] =  minn+th
-            #offer[UNIT_PRICE] = th + minn
-            '''if self.reputation[ami.annotation["seller"]]<-6:
+                    threshold = 0.2
+            th = threshold * (maxx - minn)
+            offer[UNIT_PRICE] = minn + th
+            # offer[UNIT_PRICE] = th + minn
+            """if self.reputation[ami.annotation["seller"]]<-6:
                 offer[UNIT_PRICE]=maxx*(1+rep)
                 self.reputation[ami.annotation["seller"]]+=4
             else:
-                offer[UNIT_PRICE] = th + minn'''
-                #offer[UNIT_PRICE]=minn*(1-rep)
+                offer[UNIT_PRICE] = th + minn"""
+            # offer[UNIT_PRICE]=minn*(1-rep)
 
-
-
-
-        #print(ami.issues)
+        # print(ami.issues)
         return tuple(offer)
 
-    def _find_good_price(self,ami,state):
-        '''find the best proposing prices by considering time,quatities and history prices'''
+    def _find_good_price(self, ami, state):
+        """find the best proposing prices by considering time,quatities and history prices"""
         if self._is_selling(ami):
-            partner=ami.annotation["buyer"]
+            partner = ami.annotation["buyer"]
             if self._selling_log[partner] or self.best_offered_sell:
-                minmin=[self.best_offered_sell,
-                           self._selling_log[partner],
-                           ami.issues[UNIT_PRICE].max_value,
-                           self._sold,
-                           self._selling_log[ami.annotation["buyer"]] ,
-                            self.best_offered_sell]
-                minin=[]
+                minmin = [
+                    self.best_offered_sell,
+                    self._selling_log[partner],
+                    ami.issues[UNIT_PRICE].max_value,
+                    self._sold,
+                    self._selling_log[ami.annotation["buyer"]],
+                    self.best_offered_sell,
+                ]
+                minin = []
                 for item in minmin:
-                    if item!=0:
+                    if item != 0:
                         minin.append(item)
-            #return ami.issues[UNIT_PRICE].min_value
-                #return self._selling_log[partner]*self.get_concession(ami,state)
-                #print("selling sigmoid:" + str(1 + self.sigmoid(self.reputation[ami.annotation["buyer"]])))
-                return max(self.best_offered_sell,
-                           self._selling_log[partner],
-                           ami.issues[UNIT_PRICE].max_value,
-                           self._sold,
-                           self._selling_log[ami.annotation["buyer"]] ,
-                           ),\
-                       min(minin)
+                # return ami.issues[UNIT_PRICE].min_value
+                # return self._selling_log[partner]*self.get_concession(ami,state)
+                # print("selling sigmoid:" + str(1 + self.sigmoid(self.reputation[ami.annotation["buyer"]])))
+                return (
+                    max(
+                        self.best_offered_sell,
+                        self._selling_log[partner],
+                        ami.issues[UNIT_PRICE].max_value,
+                        self._sold,
+                        self._selling_log[ami.annotation["buyer"]],
+                    ),
+                    min(minin),
+                )
             else:
-                return ami.issues[UNIT_PRICE].max_value*self.get_concession(ami,state),\
-                       ami.issues[UNIT_PRICE].min_value * self.get_concession(ami, state)
-                #return ami.issues[UNIT_PRICE].max_value*(((ami.n_steps-state.step+1)/ami.n_steps)**0.14)
+                return (
+                    ami.issues[UNIT_PRICE].max_value * self.get_concession(ami, state),
+                    ami.issues[UNIT_PRICE].min_value * self.get_concession(ami, state),
+                )
+                # return ami.issues[UNIT_PRICE].max_value*(((ami.n_steps-state.step+1)/ami.n_steps)**0.14)
 
         else:
-            partner=ami.annotation["seller"]
+            partner = ami.annotation["seller"]
             if self._buying_log[partner] or self.best_offered_buy or self._bought:
-                minmin=[self.best_offered_buy ,
-                           self._buying_log[partner] ,
-                           ami.issues[UNIT_PRICE].min_value,
-                           self._bought,
-                           self._buying_log[ami.annotation["seller"]],
-                           ]
-                minin=[]
+                minmin = [
+                    self.best_offered_buy,
+                    self._buying_log[partner],
+                    ami.issues[UNIT_PRICE].min_value,
+                    self._bought,
+                    self._buying_log[ami.annotation["seller"]],
+                ]
+                minin = []
                 for item in minmin:
-                    if item!=0:
+                    if item != 0:
                         minin.append(item)
-                #return self._buying_log[partner] *self.get_concession(ami,state)
-                #print("buying sigmoid:"+str(1 - self.sigmoid(self.reputation[ami.annotation["seller"]])))
+                # return self._buying_log[partner] *self.get_concession(ami,state)
+                # print("buying sigmoid:"+str(1 - self.sigmoid(self.reputation[ami.annotation["seller"]])))
 
-                return max(self.best_offered_buy ,
-                           self._buying_log[partner] ,
-                           ami.issues[UNIT_PRICE].min_value,
-                           self._bought,
-                           self._buying_log[ami.annotation["seller"]] ,
-                            self.best_offered_buy
-                           ),\
-                       min(minin)
+                return (
+                    max(
+                        self.best_offered_buy,
+                        self._buying_log[partner],
+                        ami.issues[UNIT_PRICE].min_value,
+                        self._bought,
+                        self._buying_log[ami.annotation["seller"]],
+                        self.best_offered_buy,
+                    ),
+                    min(minin),
+                )
             else:
-                return ami.issues[UNIT_PRICE].max_value*self.get_concession(ami,state),\
-                       ami.issues[UNIT_PRICE].min_value*self.get_concession(ami,state)
-                #return ami.issues[UNIT_PRICE].min_value*((ami.n_steps/(ami.n_steps-state.step+1))**0.14)
+                return (
+                    ami.issues[UNIT_PRICE].max_value * self.get_concession(ami, state),
+                    ami.issues[UNIT_PRICE].min_value * self.get_concession(ami, state),
+                )
+                # return ami.issues[UNIT_PRICE].min_value*((ami.n_steps/(ami.n_steps-state.step+1))**0.14)
 
-
-
-    def find_respond_price(self, negotiator_id,offer,ami, state):
-        '''find the best reponding price by considering both quatities and history prices'''
-        my_need=self._needed(negotiator_id)
-        if my_need<=0:
-            return ami.issues[UNIT_PRICE].max_value*(ami.n_steps/state.step) if self._is_selling(ami) else ami.issues[UNIT_PRICE].min_value*(state.step/ami.n_steps)
+    def find_respond_price(self, negotiator_id, offer, ami, state):
+        """find the best reponding price by considering both quatities and history prices"""
+        my_need = self._needed(negotiator_id)
+        if my_need <= 0:
+            return (
+                ami.issues[UNIT_PRICE].max_value * (ami.n_steps / state.step)
+                if self._is_selling(ami)
+                else ami.issues[UNIT_PRICE].min_value * (state.step / ami.n_steps)
+            )
         if self._is_selling(ami):
-            partner=ami.annotation["buyer"]
+            partner = ami.annotation["buyer"]
             if self._selling_log[partner]:
-            #return ami.issues[UNIT_PRICE].min_value
-                #print("I found a optimal selling price")
-                #return (self._selling_log[partner]*my_need/offer[QUANTITY] if offer[QUANTITY]>my_need
-                        #else self._selling_log[partner]*offer[QUANTITY]/my_need)
+                # return ami.issues[UNIT_PRICE].min_value
+                # print("I found a optimal selling price")
+                # return (self._selling_log[partner]*my_need/offer[QUANTITY] if offer[QUANTITY]>my_need
+                # else self._selling_log[partner]*offer[QUANTITY]/my_need)
                 return self._selling_log[partner]
 
             else:
                 return ami.issues[UNIT_PRICE].max_value
 
         else:
-            partner=ami.annotation["seller"]
+            partner = ami.annotation["seller"]
             if self._buying_log[partner]:
-                #print("I found a optimal buying price")
+                # print("I found a optimal buying price")
 
-                #return (self._buying_log[partner] * my_need / offer[QUANTITY] if my_need>offer[QUANTITY]
-                    #else self._buying_log[partner] * offer[QUANTITY] / my_need)
+                # return (self._buying_log[partner] * my_need / offer[QUANTITY] if my_need>offer[QUANTITY]
+                # else self._buying_log[partner] * offer[QUANTITY] / my_need)
                 return self._buying_log[partner]
             else:
                 return ami.issues[UNIT_PRICE].min_value
 
-    def get_image(self, negotiator_id, state, offer,ami):
+    def get_image(self, negotiator_id, state, offer, ami):
 
-        maxx,minn = self._find_good_price(
-            ami, state
-        )
-        expected_quantity=self._needed()
+        maxx, minn = self._find_good_price(ami, state)
+        expected_quantity = self._needed()
         if self._is_selling(ami):
             if maxx != 0 and minn != 0:
                 expected_price = (maxx + minn) / 2
             else:
-                expected_price=maxx
+                expected_price = maxx
             if self.reputation[ami.annotation["buyer"]]:
-                #threshold=0.7*abs(self.sigmoid(self.reputation[ami.annotation["buyer"]]))
-                threshold = 0.7 * abs(self.sigmoid(self.reputation[ami.annotation["buyer"]]))
+                # threshold=0.7*abs(self.sigmoid(self.reputation[ami.annotation["buyer"]]))
+                threshold = 0.7 * abs(
+                    self.sigmoid(self.reputation[ami.annotation["buyer"]])
+                )
             else:
-                threshold=0.2
-            if abs(threshold)<0.2:
-                if threshold<0:
-                    threshold=-0.2
-                else:
-                    threshold=0.2
-            th=(maxx-minn)*threshold
-            expected_price = maxx - th
-            image = (ami.annotation["buyer"],offer[UNIT_PRICE]-expected_price,
-                     expected_quantity-offer[QUANTITY])
-            image=list(image)
-
-        else:
-            if maxx != 0 and minn != 0:
-                expected_price = (maxx + minn) / 2
-            else:
-                expected_price=minn
-            if self.reputation[ami.annotation["seller"]]:
-                threshold=0.7*abs(self.sigmoid(self.reputation[ami.annotation["seller"]]))
-            else:
-                threshold=0.2
-            if threshold < 0.2:
-                if threshold<0:
+                threshold = 0.2
+            if abs(threshold) < 0.2:
+                if threshold < 0:
                     threshold = -0.2
                 else:
-                    threshold=0.2
-            th=threshold*(maxx-minn)
-            expected_price =  minn+th
-            image = (ami.annotation["seller"], expected_price - offer[UNIT_PRICE],
-                     expected_quantity - offer[QUANTITY])
+                    threshold = 0.2
+            th = (maxx - minn) * threshold
+            expected_price = maxx - th
+            image = (
+                ami.annotation["buyer"],
+                offer[UNIT_PRICE] - expected_price,
+                expected_quantity - offer[QUANTITY],
+            )
             image = list(image)
-            #print(maxx, minn)
 
+        else:
+            if maxx != 0 and minn != 0:
+                expected_price = (maxx + minn) / 2
+            else:
+                expected_price = minn
+            if self.reputation[ami.annotation["seller"]]:
+                threshold = 0.7 * abs(
+                    self.sigmoid(self.reputation[ami.annotation["seller"]])
+                )
+            else:
+                threshold = 0.2
+            if threshold < 0.2:
+                if threshold < 0:
+                    threshold = -0.2
+                else:
+                    threshold = 0.2
+            th = threshold * (maxx - minn)
+            expected_price = minn + th
+            image = (
+                ami.annotation["seller"],
+                expected_price - offer[UNIT_PRICE],
+                expected_quantity - offer[QUANTITY],
+            )
+            image = list(image)
+            # print(maxx, minn)
 
-        #print(image)
+        # print(image)
         return image
 
-    def sigmoid(self,x):
-        return (1/(1+math.exp(0-x))-0.5)
+    def sigmoid(self, x):
+        return 1 / (1 + math.exp(0 - x)) - 0.5
 
-    def get_concession(self,ami,state):
+    def get_concession(self, ami, state):
         if self._is_selling(ami):
-            return (((ami.n_steps-state.step+1)/ami.n_steps)**0.04)
-            #return  1
+            return ((ami.n_steps - state.step + 1) / ami.n_steps) ** 0.04
+            # return  1
         else:
-            return ((ami.n_steps/(ami.n_steps-state.step+1))**0.04)
-            #return 1
+            return (ami.n_steps / (ami.n_steps - state.step + 1)) ** 0.04
+            # return 1
 
-    def get_reputation(self,image,state,ami):
+    def get_reputation(self, image, state, ami):
         if self.reputation[image[0]]:
-            self.reputation[image[0]]+=math.sin(math.pi*image[1]/100)*((ami.n_steps-state.step+1)/ami.n_steps)
-            #self.reputation[image[0]] +=  image[1] / 5
+            self.reputation[image[0]] += math.sin(math.pi * image[1] / 100) * (
+                (ami.n_steps - state.step + 1) / ami.n_steps
+            )
+            # self.reputation[image[0]] +=  image[1] / 5
         else:
-            self.reputation[image[0]]=0
-            self.reputation[image[0]] += math.sin(math.pi * image[1] / 100)*((ami.n_steps-state.step+1)/ami.n_steps)
-            #self.reputation[image[0]] += image[1] / 5
-        #print(image[1])
-        #print(self.reputation)
-        #print(image)
-        #print(self.awi.profile)
-        #print(self.profile.shortfall_penalty_mean)
-        #print(self.failure_list)
+            self.reputation[image[0]] = 0
+            self.reputation[image[0]] += math.sin(math.pi * image[1] / 100) * (
+                (ami.n_steps - state.step + 1) / ami.n_steps
+            )
+            # self.reputation[image[0]] += image[1] / 5
+        # print(image[1])
+        # print(self.reputation)
+        # print(image)
+        # print(self.awi.profile)
+        # print(self.profile.shortfall_penalty_mean)
+        # print(self.failure_list)
         return self.reputation[image[0]]
-
-
-
-
-
 
     def respond(self, negotiator_id, state, offer):
         """Called when the agent is asked to respond to an offer
         relate time with the prices
         """
         ami = self.get_ami(negotiator_id)
-        image=self.get_image(negotiator_id, state, offer, ami)
-        reputation=self.get_reputation(image,state,ami)
-        #print(self._selling_log)
-        #print(self._buying_log)
+        image = self.get_image(negotiator_id, state, offer, ami)
+        reputation = self.get_reputation(image, state, ami)
+        # print(self._selling_log)
+        # print(self._buying_log)
         my_needs = self._needed(negotiator_id)
         if my_needs <= 0:
             if self._is_selling(ami):
-                if offer[UNIT_PRICE] >=ami.issues[UNIT_PRICE].max_value*(ami.n_steps/state.step):
+                if offer[UNIT_PRICE] >= ami.issues[UNIT_PRICE].max_value * (
+                    ami.n_steps / state.step
+                ):
                     return ResponseType.ACCEPT_OFFER
                 else:
                     return ResponseType.REJECT_OFFER
             else:
-                if offer[UNIT_PRICE] <= ami.issues[UNIT_PRICE].min_value*(state.step/ami.n_steps):
+                if offer[UNIT_PRICE] <= ami.issues[UNIT_PRICE].min_value * (
+                    state.step / ami.n_steps
+                ):
                     return ResponseType.ACCEPT_OFFER
                 else:
                     return ResponseType.REJECT_OFFER
 
         if self._is_selling(ami):
 
-            self.best_offered_sell=max(self.best_offered_sell,offer[UNIT_PRICE])
+            self.best_offered_sell = max(self.best_offered_sell, offer[UNIT_PRICE])
 
-            #if self._selling_log[ami.annotation["buyer"]]:
-                #self._selling_log[ami.annotation["buyer"]]=min(self._selling_log[ami.annotation["buyer"]],offer[UNIT_PRICE])
-            #else:
-                #self._selling_log[ami.annotation["buyer"]] =offer[UNIT_PRICE]
-            '''if self._sold!=0:
+            # if self._selling_log[ami.annotation["buyer"]]:
+            # self._selling_log[ami.annotation["buyer"]]=min(self._selling_log[ami.annotation["buyer"]],offer[UNIT_PRICE])
+            # else:
+            # self._selling_log[ami.annotation["buyer"]] =offer[UNIT_PRICE]
+            """if self._sold!=0:
                 if offer[UNIT_PRICE]-self._sold >= min(self._selling_log[ami.annotation["buyer"]]*self.get_concession(ami,state),
                                             (1+self.sigmoid(self.reputation[ami.annotation["buyer"]]))*self.best_offered_sell,
                                             ami.issues[UNIT_PRICE].max_value*self.get_concession(ami,state),
@@ -435,48 +428,52 @@ class Agent97(OneShotAgent):
                 else:
                     #print("I reject")
                     return ResponseType.REJECT_OFFER
-            else:'''
-            minmin = [self.best_offered_sell,
-                      self._selling_log[ami.annotation["buyer"]],
-                      ami.issues[UNIT_PRICE].max_value,
-                      self._sold,
-                      self._selling_log[ami.annotation["buyer"]],
-                    self.best_offered_sell]
+            else:"""
+            minmin = [
+                self.best_offered_sell,
+                self._selling_log[ami.annotation["buyer"]],
+                ami.issues[UNIT_PRICE].max_value,
+                self._sold,
+                self._selling_log[ami.annotation["buyer"]],
+                self.best_offered_sell,
+            ]
             minin = []
             for item in minmin:
                 if item != 0:
                     minin.append(item)
-            maxx=max(
-                      self._selling_log[ami.annotation["buyer"]] ,
-                      ami.issues[UNIT_PRICE].max_value ,
-                      self._sold,
-                      self._selling_log[ami.annotation["buyer"]] ,
-                      )
-            ave=(maxx+min(minin))/2
+            maxx = max(
+                self._selling_log[ami.annotation["buyer"]],
+                ami.issues[UNIT_PRICE].max_value,
+                self._sold,
+                self._selling_log[ami.annotation["buyer"]],
+            )
+            ave = (maxx + min(minin)) / 2
             if self.reputation[ami.annotation["buyer"]]:
-                threshold=0.7*abs(self.sigmoid(self.reputation[ami.annotation["buyer"]]))
+                threshold = 0.7 * abs(
+                    self.sigmoid(self.reputation[ami.annotation["buyer"]])
+                )
             else:
-                threshold=0.2
-            if threshold<0.2:
-                threshold=0.2
-            th=(maxx-min(minin))*threshold
-            if maxx-offer[UNIT_PRICE]<= th:
+                threshold = 0.2
+            if threshold < 0.2:
+                threshold = 0.2
+            th = (maxx - min(minin)) * threshold
+            if maxx - offer[UNIT_PRICE] <= th:
                 return ResponseType.ACCEPT_OFFER
             else:
 
-                #print("I reject")
+                # print("I reject")
                 return ResponseType.REJECT_OFFER
         else:
-            if self.best_offered_buy!=0:
+            if self.best_offered_buy != 0:
                 self.best_offered_buy = min(self.best_offered_buy, offer[UNIT_PRICE])
             else:
                 self.best_offered_buy = offer[UNIT_PRICE]
 
-            #if self._selling_log[ami.annotation["seller"]]:
-                #self._selling_log[ami.annotation["seller"]]=max(self._selling_log[ami.annotation["seller"]],offer[UNIT_PRICE])
-            #else:
-                #self._selling_log[ami.annotation["seller"]] =offer[UNIT_PRICE]
-            '''if self._bought!=0:
+            # if self._selling_log[ami.annotation["seller"]]:
+            # self._selling_log[ami.annotation["seller"]]=max(self._selling_log[ami.annotation["seller"]],offer[UNIT_PRICE])
+            # else:
+            # self._selling_log[ami.annotation["seller"]] =offer[UNIT_PRICE]
+            """if self._bought!=0:
                 if self._bought-offer[UNIT_PRICE] >= min(self._buying_log[ami.annotation["seller"]]*self.get_concession(ami,state),
                                             (1-self.sigmoid(self.reputation[ami.annotation["seller"]]))*self.best_offered_buy
                                             ,ami.issues[UNIT_PRICE].min_value*self.get_concession(ami,state),
@@ -496,43 +493,44 @@ class Agent97(OneShotAgent):
                     # print("I reject")
                     return ResponseType.REJECT_OFFER
 
-            else:'''
-            minmin=[self._buying_log[ami.annotation["seller"]] ,
-                       ami.issues[UNIT_PRICE].min_value,
-                       self._bought,
-                       self._buying_log[ami.annotation["seller"]] ,
-                       ]
-            maxx = max(self._buying_log[ami.annotation["seller"]] ,
-                       ami.issues[UNIT_PRICE].min_value,
-                       self._bought,
-                       self._buying_log[ami.annotation["seller"]] ,
-                       self.best_offered_buy,
-                       self.best_offered_buy)
-            minin=[]
+            else:"""
+            minmin = [
+                self._buying_log[ami.annotation["seller"]],
+                ami.issues[UNIT_PRICE].min_value,
+                self._bought,
+                self._buying_log[ami.annotation["seller"]],
+            ]
+            maxx = max(
+                self._buying_log[ami.annotation["seller"]],
+                ami.issues[UNIT_PRICE].min_value,
+                self._bought,
+                self._buying_log[ami.annotation["seller"]],
+                self.best_offered_buy,
+                self.best_offered_buy,
+            )
+            minin = []
             for item in minmin:
-                if item!=0:
+                if item != 0:
                     minin.append(item)
             if self.reputation[ami.annotation["seller"]]:
-                threshold=0.7*abs(self.sigmoid(self.reputation[ami.annotation["seller"]]))
+                threshold = 0.7 * abs(
+                    self.sigmoid(self.reputation[ami.annotation["seller"]])
+                )
             else:
-                threshold=0.2
+                threshold = 0.2
             if threshold < 0.2:
                 threshold = 0.2
-            th=threshold*(maxx-min(minin))
-            if offer[UNIT_PRICE]-min(minin) <=th :
+            th = threshold * (maxx - min(minin))
+            if offer[UNIT_PRICE] - min(minin) <= th:
                 return ResponseType.ACCEPT_OFFER
             else:
-                #print("I reject")
+                # print("I reject")
 
                 return ResponseType.REJECT_OFFER
-
-
 
     # =====================
     # Time-Driven Callbacks
     # =====================
-
-
 
     # ================================
     # Negotiation Control and Feedback
@@ -545,17 +543,17 @@ class Agent97(OneShotAgent):
         mechanism: AgentMechanismInterface,
         state: MechanismState,
     ):
-        #print("failed")
+        # print("failed")
         if self.reputation[partners[1]]:
-            self.reputation[partners[1]]-=self.failure_list[partners[1]]
+            self.reputation[partners[1]] -= self.failure_list[partners[1]]
         if self.reputation[partners[0]]:
             self.reputation[partners[0]] -= self.failure_list[partners[0]]
         if self.failure_list[partners[1]]:
-            self.failure_list[partners[1]]+=1
+            self.failure_list[partners[1]] += 1
         else:
             self.failure_list[partners[1]] = 1
         if self.failure_list[partners[0]]:
-            self.failure_list[partners[0]]+=1
+            self.failure_list[partners[0]] += 1
         else:
             self.failure_list[partners[0]] = 1
         """Called when a negotiation the agent is a party of ends without
@@ -564,37 +562,47 @@ class Agent97(OneShotAgent):
     def on_negotiation_success(
         self, contract: Contract, mechanism: AgentMechanismInterface
     ):
-        '''record the history success prices'''
-        #print("succeed")
+        """record the history success prices"""
+        # print("succeed")
         self.secured += contract.agreement["quantity"]
         if self._is_selling(mechanism):
-            if self._sold==0:
-                self._sold=contract.agreement["unit_price"]
+            if self._sold == 0:
+                self._sold = contract.agreement["unit_price"]
             else:
-                self._sold=(self._sold+contract.agreement["unit_price"])/2
-            partner=contract.annotation["buyer"]
-            self._selling_log[partner]=max(contract.agreement["unit_price"],self._selling_log[partner]) \
-                if self._selling_log[partner]!=0 else contract.agreement["unit_price"]
-            #self._selling_log[partner]=max(self.neg_log[partner],contract.agreement["unit_price"],self._selling_log[partner]) \
-                #if self._selling_log[partner] else contract.agreement["unit_price"]
+                self._sold = (self._sold + contract.agreement["unit_price"]) / 2
+            partner = contract.annotation["buyer"]
+            self._selling_log[partner] = (
+                max(contract.agreement["unit_price"], self._selling_log[partner])
+                if self._selling_log[partner] != 0
+                else contract.agreement["unit_price"]
+            )
+            # self._selling_log[partner]=max(self.neg_log[partner],contract.agreement["unit_price"],self._selling_log[partner]) \
+            # if self._selling_log[partner] else contract.agreement["unit_price"]
             if self.reputation[contract.annotation["buyer"]]:
-                self.reputation[contract.annotation["buyer"]] += self.succ_list[contract.annotation["buyer"]]
+                self.reputation[contract.annotation["buyer"]] += self.succ_list[
+                    contract.annotation["buyer"]
+                ]
             if self.succ_list[contract.annotation["buyer"]]:
                 self.succ_list[contract.annotation["buyer"]] += 1
             else:
                 self.succ_list[contract.annotation["buyer"]] = 1
         else:
-            if self._bought==0:
-                self._bought=contract.agreement["unit_price"]
+            if self._bought == 0:
+                self._bought = contract.agreement["unit_price"]
             else:
-                self._bought=(self._bought+contract.agreement["unit_price"])/2
+                self._bought = (self._bought + contract.agreement["unit_price"]) / 2
             partner = contract.annotation["seller"]
-            self._buying_log[partner] = min(contract.agreement["unit_price"],self._buying_log[partner]) \
-                if self._buying_log[partner]!=0 else contract.agreement["unit_price"]
-            #self._selling_log[partner] = min(self.neg_log[partner],contract.agreement["unit_price"] , self._buying_log[partner])  \
-                #if self._buying_log[partner] else contract.agreement["unit_price"]
+            self._buying_log[partner] = (
+                min(contract.agreement["unit_price"], self._buying_log[partner])
+                if self._buying_log[partner] != 0
+                else contract.agreement["unit_price"]
+            )
+            # self._selling_log[partner] = min(self.neg_log[partner],contract.agreement["unit_price"] , self._buying_log[partner])  \
+            # if self._buying_log[partner] else contract.agreement["unit_price"]
             if self.reputation[contract.annotation["seller"]]:
-                self.reputation[contract.annotation["seller"]] += self.succ_list[contract.annotation["seller"]]
+                self.reputation[contract.annotation["seller"]] += self.succ_list[
+                    contract.annotation["seller"]
+                ]
             if self.succ_list[contract.annotation["seller"]]:
                 self.succ_list[contract.annotation["seller"]] += 1
             else:
@@ -602,7 +610,6 @@ class Agent97(OneShotAgent):
 
         """Called when a negotiation the agent is a party of ends with
         agreement"""
-
 
 
 def run(
@@ -614,10 +621,16 @@ def run(
 ):
 
     if competition == "oneshot":
-        competitors = [MyAgent,LearningAgent, SyncRandomOneShotAgent, RandomOneShotAgent,GreedyOneShotAgent]
-        #competitors = [LearningAgent, MyAgent, RandomOneShotAgent, SyncRandomOneShotAgent, RandomOneShotAgent,GreedyOneShotAgent]
+        competitors = [
+            MyAgent,
+            LearningAgent,
+            SyncRandomOneShotAgent,
+            RandomOneShotAgent,
+            GreedyOneShotAgent,
+        ]
+        # competitors = [LearningAgent, MyAgent, RandomOneShotAgent, SyncRandomOneShotAgent, RandomOneShotAgent,GreedyOneShotAgent]
     else:
-        from scml.scml2020.agents import DecentralizingAgent, BuyCheapSellExpensiveAgent
+        from scml.scml2020.agents import BuyCheapSellExpensiveAgent, DecentralizingAgent
 
         competitors = [
             MyAgent,

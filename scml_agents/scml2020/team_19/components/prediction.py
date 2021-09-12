@@ -1,16 +1,17 @@
 # required for typing
 from abc import abstractmethod
-from typing import Union, Iterable, List, Optional
+from pprint import pprint
+from typing import Iterable, List, Optional, Union
+
+import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
+import seaborn as sns
+from negmas import *
+from scml.scml2020 import *
 
 # my need
 from scml.scml2020.components.trading import *
-from scml.scml2020 import *
-from negmas import *
-import matplotlib.pyplot as plt
-from pprint import pprint
-import pandas as pd
-import seaborn as sns
 
 
 class MyTradePredictor(TradePredictionStrategy):
@@ -111,10 +112,7 @@ class MyTradePredictor(TradePredictionStrategy):
                     for i in range(q):
                         predict = (1 - contract_weight) * predict + contract_weight * p
                     predict = round(
-                        (
-                            penalty * self.output_price[step - 1]
-                            + (1 - penalty) * predict
-                        )
+                        penalty * self.output_price[step - 1] + (1 - penalty) * predict
                     )  # 整数のみだから四捨五入
                     self.output_price[step - 1] = round(
                         (
@@ -133,7 +131,7 @@ class MyTradePredictor(TradePredictionStrategy):
                     for i in range(q):
                         predict = (1 - contract_weight) * predict + contract_weight * p
                     predict = round(
-                        (penalty * self.input_cost[step - 1] + (1 - penalty) * predict)
+                        penalty * self.input_cost[step - 1] + (1 - penalty) * predict
                     )  # 整数のみだから四捨五入
                     self.input_cost[step - 1] = round(
                         (

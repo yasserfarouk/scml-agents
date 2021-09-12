@@ -1,16 +1,16 @@
-import os, sys
+import os
+import sys
 
 sys.path.append(os.path.dirname(__file__))
 
-from scml.scml2020.components.trading import PredictionBasedTradingStrategy
-from scml.scml2020.components.prediction import TradePredictionStrategy
-from negmas import Contract
-from typing import List, Iterable
+from typing import Iterable, List
+
 import numpy as np
 import torch
-
 from hyperparameters import *
-
+from negmas import Contract
+from scml.scml2020.components.prediction import TradePredictionStrategy
+from scml.scml2020.components.trading import PredictionBasedTradingStrategy
 from trade_model import load_trade_model
 
 

@@ -1,6 +1,25 @@
 import logging
+from typing import Any, Dict, List, Optional, Tuple
 
-from scml.scml2020 import SCML2020Agent, SCML2020World, RandomAgent, DecentralizingAgent
+import numpy as np
+from negmas import (
+    AspirationNegotiator,
+    ResponseType,
+    SAOSyncController,
+    outcome_is_valid,
+)
+from negmas.sao import SAOResponse
+from scml.scml2020 import (
+    QUANTITY,
+    TIME,
+    UNIT_PRICE,
+    DecentralizingAgent,
+    RandomAgent,
+    SCML2020Agent,
+    SCML2020World,
+)
+from scml.scml2020.agents.decentralizing import _NegotiationCallbacks
+from scml.scml2020.components.negotiation import StepNegotiationManager
 from scml.scml2020.components.production import (
     DemandDrivenProductionStrategy,
     ProductionStrategy,
@@ -10,18 +29,9 @@ from scml.scml2020.components.trading import (
     PredictionBasedTradingStrategy,
     ReactiveTradingStrategy,
 )
-from scml.scml2020.agents.decentralizing import _NegotiationCallbacks
 from scml.scml2020.services.controllers import SyncController
-from scml.scml2020.components.negotiation import StepNegotiationManager
-from .pred_trade import ConsumeDrivenPredictionBasedTradingStrategy
 
-from scml.scml2020 import TIME, QUANTITY, UNIT_PRICE
-from negmas import ResponseType, outcome_is_valid
-from negmas.sao import SAOResponse
-from typing import List, Dict, Optional, Tuple, Any
-from negmas import SAOSyncController
-from negmas import AspirationNegotiator
-import numpy as np
+from .pred_trade import ConsumeDrivenPredictionBasedTradingStrategy
 
 
 class ProtectedSyncController(SyncController):
@@ -315,7 +325,9 @@ class MyAsp(AspirationNegotiator):
                 rng = self.ufun_max - self.ufun_min
                 mx = min(asp + tol * rng, self.__last_offer_util)
                 outcome = outcome_with_utility(
-                    ufun=self._utility_function, rng=(asp, mx), issues=self._ami.issues,
+                    ufun=self._utility_function,
+                    rng=(asp, mx),
+                    issues=self._ami.issues,
                 )
                 if outcome is not None:
                     break
@@ -383,7 +395,12 @@ class StepBuyBestSellNegManager(StepNegotiationManager):
         return
 
     def start_negotiations(
-        self, product, quantity, unit_price, step, partners=None,
+        self,
+        product,
+        quantity,
+        unit_price,
+        step,
+        partners=None,
     ):
         awi: AWI
         awi = self.awi  # type: ignore
@@ -492,7 +509,11 @@ class StepBuyBestSellNegManager(StepNegotiationManager):
         self.stepSell()
 
     def sell_respond_to_negotiation_request(
-        self, initiator, issues, annotation, mechanism,
+        self,
+        initiator,
+        issues,
+        annotation,
+        mechanism,
     ) -> Optional["Negotiator"]:
         # refuse to negotiate if the time-range does not intersect
         # the current range
@@ -507,7 +528,11 @@ class StepBuyBestSellNegManager(StepNegotiationManager):
         return controller.create_negotiator()
 
     def buy_respond_to_negotiation_request(
-        self, initiator, issues, annotation, mechanism,
+        self,
+        initiator,
+        issues,
+        annotation,
+        mechanism,
     ):
 
         # find negotiation parameters
@@ -546,7 +571,11 @@ class StepBuyBestSellNegManager(StepNegotiationManager):
         return controller.create_negotiator()
 
     def respond_to_negotiation_request(
-        self, initiator, issues, annotation, mechanism,
+        self,
+        initiator,
+        issues,
+        annotation,
+        mechanism,
     ):
         is_seller = annotation["seller"] == self.id
         if is_seller:

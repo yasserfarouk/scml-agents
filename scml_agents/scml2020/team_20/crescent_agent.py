@@ -1,24 +1,30 @@
-import sys
-import numpy as np
 import itertools
-from negmas import (
-    Issue,
-    AgentMechanismInterface,
-    Contract,
-    Negotiator,
-    MechanismState,
-    Breach,
-)
-from scml.scml2020 import Failure
-from scml.scml2020 import SCML2020Agent
-from scml.scml2020 import TradingStrategy
-from scml.scml2020 import SupplyDrivenProductionStrategy
+import sys
+from typing import Any, Dict, List, Optional, Tuple
 
-from scml.scml2020 import TIME, QUANTITY, UNIT_PRICE
-from negmas import ResponseType, outcome_is_valid, UtilityFunction
+import numpy as np
+from negmas import (
+    AgentMechanismInterface,
+    Breach,
+    Contract,
+    Issue,
+    MechanismState,
+    Negotiator,
+    ResponseType,
+    SAOSyncController,
+    UtilityFunction,
+    outcome_is_valid,
+)
 from negmas.sao import SAOResponse
-from typing import List, Dict, Optional, Tuple, Any
-from negmas import SAOSyncController
+from scml.scml2020 import (
+    QUANTITY,
+    TIME,
+    UNIT_PRICE,
+    Failure,
+    SCML2020Agent,
+    SupplyDrivenProductionStrategy,
+    TradingStrategy,
+)
 from scml.scml2020.components import SignAllPossible
 
 __all__ = ["CrescentAgent"]

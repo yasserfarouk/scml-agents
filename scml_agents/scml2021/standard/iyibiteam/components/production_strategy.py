@@ -1,9 +1,8 @@
-from scml.scml2020 import DemandDrivenProductionStrategy
-from typing import Dict
-from typing import List
-from typing import Tuple
-from negmas import Contract
+from typing import Dict, List, Tuple
+
 import numpy as np
+from negmas import Contract
+from scml.scml2020 import DemandDrivenProductionStrategy
 from scml.scml2020.common import NO_COMMAND
 
 
@@ -12,12 +11,10 @@ class MyProductionStrategy(DemandDrivenProductionStrategy):
     Placeholder
     """
 
-
     def should_i_produce(self):
         product_in_price = self.awi.catalog_prices[self.awi.my_input_product]
         product_out_price = self.awi.catalog_prices[self.awi.my_output_product]
-        production_cost = np.max(
-            self.awi.profile.costs[:, self.awi.my_input_product])
+        production_cost = np.max(self.awi.profile.costs[:, self.awi.my_input_product])
         if product_out_price > production_cost + product_in_price:
             return True
         else:

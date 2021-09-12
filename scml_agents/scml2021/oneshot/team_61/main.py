@@ -1,40 +1,46 @@
-from scml.scml2020 import *
-from scml.oneshot import *
-from scml.scml2020.utils import anac2021_oneshot
-
-import pandas as pd
 import matplotlib.pyplot as plt
-from agents import BondAgent, SimpleAgent, BetterAgent
+import pandas as pd
+from agents import BetterAgent, BondAgent, SimpleAgent
+from scml.oneshot import *
+from scml.scml2020 import *
+from scml.scml2020.utils import anac2021_oneshot
 
 
 def shorten_names(results):
     # just make agent types more readable
-    results.score_stats.agent_type = results.score_stats.agent_type.str.split(".").str[-1]
+    results.score_stats.agent_type = results.score_stats.agent_type.str.split(".").str[
+        -1
+    ]
     results.kstest.a = results.kstest.a.str.split(".").str[-1]
     results.kstest.b = results.kstest.b.str.split(".").str[-1]
-    results.total_scores.agent_type = results.total_scores.agent_type.str.split(".").str[-1]
+    results.total_scores.agent_type = results.total_scores.agent_type.str.split(
+        "."
+    ).str[-1]
     results.scores.agent_type = results.scores.agent_type.str.split(".").str[-1]
     results.winners = [_.split(".")[-1] for _ in results.winners]
     return results
 
 
 def run_simple_example():
-    agent_types = [BetterAgent, BondAgent, DecentralizingAgent, MarketAwareDecentralizingAgent, SyncRandomOneShotAgent]
+    agent_types = [
+        BetterAgent,
+        BondAgent,
+        DecentralizingAgent,
+        MarketAwareDecentralizingAgent,
+        SyncRandomOneShotAgent,
+    ]
     # may take a long time
     world = SCML2021World(
-        **SCML2021World.generate(
-            agent_types=agent_types,
-            n_steps=50
-        ),
+        **SCML2021World.generate(agent_types=agent_types, n_steps=50),
         construct_graphs=True,
     )
     _, _ = world.draw()
     plt.show()
 
     world.run_with_progress()  # may take few minutes
-    plt.plot(world.stats['n_negotiations'])
-    plt.xlabel('Simulation Step')
-    plt.ylabel('N. Negotiations')
+    plt.plot(world.stats["n_negotiations"])
+    plt.xlabel("Simulation Step")
+    plt.ylabel("N. Negotiations")
     plt.show()
 
     winner = world.winners[0]
@@ -42,8 +48,15 @@ def run_simple_example():
 
 
 def run_tournament():
-    pd.options.display.float_format = '{:,.2f}'.format
-    tournament_types = [BetterAgent, BondAgent, RandomOneShotAgent, SyncRandomOneShotAgent, GreedyOneShotAgent, GreedySingleAgreementAgent]
+    pd.options.display.float_format = "{:,.2f}".format
+    tournament_types = [
+        BetterAgent,
+        BondAgent,
+        RandomOneShotAgent,
+        SyncRandomOneShotAgent,
+        GreedyOneShotAgent,
+        GreedySingleAgreementAgent,
+    ]
     # may take a long time
     results = anac2021_oneshot(
         competitors=tournament_types,
@@ -57,6 +70,6 @@ def run_tournament():
     return results
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     results = run_tournament()
     print(results.score_stats)

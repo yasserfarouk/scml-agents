@@ -7,13 +7,9 @@ from dataclasses import dataclass
 
 # required for typing
 from pprint import pprint
-
-import matplotlib.pyplot as plt  # for graphs
-
-from .nvm_lib.nvm_lib import NVMLib
-
 from typing import Any, Dict, List, Optional, Tuple, Union
 
+import matplotlib.pyplot as plt  # for graphs
 import numpy as np
 from negmas import (
     AgentMechanismInterface,
@@ -25,26 +21,24 @@ from negmas import (
     Negotiator,
     SAONegotiator,
 )
-
 from negmas.helpers import get_class, humanize_time
-from scml.scml2020 import AWI, SCML2020Agent, SCML2020World
+from scml.scml2020 import AWI, Failure, SCML2020Agent, SCML2020World
 from scml.scml2020.agents import (
+    BuyCheapSellExpensiveAgent,
     DecentralizingAgent,
     IndDecentralizingAgent,
     MovingRangeAgent,
-    BuyCheapSellExpensiveAgent,
     RandomAgent,
 )
 from scml.scml2020.common import TIME
 from scml.scml2020.services.controllers import StepController, SyncController
 from scml.scml2020.utils import anac2020_collusion, anac2020_std
-from scml.scml2020 import Failure
 from tabulate import tabulate
-
-from .mynegotiationmanager import MyNegotiationManager
 
 # from myothernegotiationmanager import NewStepNegotiationManager
 from .myindependentnegotiatonmanager import MyIndependentNegotiationManager
+from .mynegotiationmanager import MyNegotiationManager
+from .nvm_lib.nvm_lib import NVMLib
 from .utils import *
 
 __all__ = ["MontyHall"]
@@ -137,7 +131,7 @@ class MontyHall(SCML2020Agent):
         self.plan.expected_input = (
             []
         )  # At step t, agent expects to receive this many inputs
-        for i in range((self.data.last_day + 1)):
+        for i in range(self.data.last_day + 1):
             self.plan.expected_input.append(
                 BuyPlan(
                     self,

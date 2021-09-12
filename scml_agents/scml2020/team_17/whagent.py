@@ -1,73 +1,66 @@
-from scml.scml2020 import SCML2020Agent, SCML2020World, RandomAgent, DecentralizingAgent
-import matplotlib.pyplot as plt
-from pprint import pprint
-import pandas as pd
-import numpy as np
-import seaborn as sns
-from scml.scml2020.agents import DoNothingAgent
-import time
-from tabulate import tabulate
-from scml.scml2020.utils import anac2020_std, anac2020_collusion
-from scml.scml2020.agents import (
-    DecentralizingAgent,
-    BuyCheapSellExpensiveAgent,
-    IndDecentralizingAgent,
-)
-from negmas.helpers import humanize_time
-from typing import List, Optional, Dict, Any
-import numpy as np
-from negmas import (
-    Issue,
-    AgentMechanismInterface,
-    Contract,
-    Negotiator,
-    MechanismState,
-    Breach,
-)
-from scml.scml2020 import Failure
-from scml.scml2020 import SCML2020Agent
-from scml.scml2020 import PredictionBasedTradingStrategy
-from scml.scml2020 import MovingRangeNegotiationManager
-from scml.scml2020 import TradeDrivenProductionStrategy
-from negmas import LinearUtilityFunction
-from scml.scml2020.components.production import DemandDrivenProductionStrategy
-from scml.scml2020.components.trading import TradingStrategy
-from scml.scml2020.components.negotiation import IndependentNegotiationsManager
-from scml.scml2020.components.negotiation import NegotiationManager
-from scml.scml2020.components.negotiation import StepNegotiationManager
-from negmas import LinearUtilityFunction
-from scml.scml2020 import AWI
-from scml.scml2020.components.prediction import MeanERPStrategy
-from scml.scml2020.components import FixedTradePredictionStrategy, SignAllPossible
-from scml.scml2020.components.production import ProductionStrategy
-from scml.scml2020.components.production import SupplyDrivenProductionStrategy
-from scml.scml2020.common import NO_COMMAND
-from negmas import Contract
-from typing import List, Dict, Tuple
-from scml.scml2020.components import TradePredictionStrategy
-from scml.scml2020.common import is_system_agent
-from scml.scml2020.common import ANY_LINE
 import functools
 import math
+import time
 from abc import abstractmethod
 from dataclasses import dataclass
-from pprint import pformat
-from typing import Tuple, List, Union, Any, Optional, Dict
+from pprint import pformat, pprint
+from typing import Any, Dict, List, Optional, Tuple, Union
+
+import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
+import seaborn as sns
 from negmas import (
-    SAONegotiator,
-    AspirationNegotiator,
-    Issue,
     AgentMechanismInterface,
-    Negotiator,
-    UtilityFunction,
+    AspirationNegotiator,
+    Breach,
     Contract,
+    Issue,
+    LinearUtilityFunction,
+    MechanismState,
+    Negotiator,
+    SAONegotiator,
+    UtilityFunction,
 )
-from negmas.helpers import get_class, instantiate
-from scml.scml2020 import AWI
+from negmas.helpers import get_class, humanize_time, instantiate
+from scml.scml2020 import (
+    AWI,
+    DecentralizingAgent,
+    Failure,
+    MovingRangeNegotiationManager,
+    PredictionBasedTradingStrategy,
+    RandomAgent,
+    SCML2020Agent,
+    SCML2020World,
+    TradeDrivenProductionStrategy,
+)
+from scml.scml2020.agents import (
+    BuyCheapSellExpensiveAgent,
+    DecentralizingAgent,
+    DoNothingAgent,
+    IndDecentralizingAgent,
+)
+from scml.scml2020.common import ANY_LINE, NO_COMMAND, TIME, is_system_agent
+from scml.scml2020.components import (
+    FixedTradePredictionStrategy,
+    SignAllPossible,
+    TradePredictionStrategy,
+)
+from scml.scml2020.components.negotiation import (
+    IndependentNegotiationsManager,
+    NegotiationManager,
+    StepNegotiationManager,
+)
 from scml.scml2020.components.prediction import MeanERPStrategy
+from scml.scml2020.components.production import (
+    DemandDrivenProductionStrategy,
+    ProductionStrategy,
+    SupplyDrivenProductionStrategy,
+)
+from scml.scml2020.components.trading import TradingStrategy
 from scml.scml2020.services.controllers import StepController, SyncController
-from scml.scml2020.common import TIME
+from scml.scml2020.utils import anac2020_collusion, anac2020_std
+from tabulate import tabulate
 
 __all__ = ["WhAgent"]
 

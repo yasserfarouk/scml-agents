@@ -1,12 +1,14 @@
-import os, sys
+import os
+import sys
 
 sys.path.append(os.path.dirname(__file__))
 
-from scml.scml2020.components.production import ProductionStrategy
-from scml.scml2020.common import NO_COMMAND
-from negmas import Contract
 from typing import List
+
 import numpy as np
+from negmas import Contract
+from scml.scml2020.common import NO_COMMAND
+from scml.scml2020.components.production import ProductionStrategy
 
 
 class MySupplyDrivenProductionStrategy(ProductionStrategy):

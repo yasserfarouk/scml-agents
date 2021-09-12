@@ -32,7 +32,7 @@ To test this template do the following:
 On Linux/Mac:
     >> source .venv/bin/activate
 On Windows:
-    >> \.venv\Scripts\activate.bat
+    >> \\.venv\\Scripts\activate.bat
 
 3. Update pip just in case (recommended)
 
@@ -61,27 +61,24 @@ import time
 
 # required for typing
 import types
-from typing import Any, Optional, Union, Type
+from typing import Any, Optional, Type, Union
 
 import numpy as np
+from negmas import Outcome, PassThroughNegotiator, ResponseType
 from negmas.helpers import humanize_time
 from negmas.sao import SAOState
 
 # required for development
-from scml import GreedyOneShotAgent, UNIT_PRICE, QUANTITY
+from scml import QUANTITY, UNIT_PRICE, GreedyOneShotAgent
 from scml.oneshot import OneShotAgent
 from scml.oneshot.agents import RandomOneShotAgent, SyncRandomOneShotAgent
 from scml.scml2020.utils import anac2021_collusion, anac2021_oneshot, anac2021_std
 from tabulate import tabulate
 
-from negmas import (
-    Outcome,
-    ResponseType, PassThroughNegotiator,
-)
-
-from .worker_agents import SimpleAgent, BetterAgent, AdaptiveAgent, LearningAgent
+from .worker_agents import AdaptiveAgent, BetterAgent, LearningAgent, SimpleAgent
 
 __all__ = []
+
 
 class ZilberanBackup(OneShotAgent):
     """
@@ -92,35 +89,53 @@ class ZilberanBackup(OneShotAgent):
     in your agent. See the documentation for more details
 
     """
+
     DEBUG = True
-    ALL_BASE_AGENTS = [GreedyOneShotAgent, SimpleAgent, BetterAgent, AdaptiveAgent, LearningAgent]
+    ALL_BASE_AGENTS = [
+        GreedyOneShotAgent,
+        SimpleAgent,
+        BetterAgent,
+        AdaptiveAgent,
+        LearningAgent,
+    ]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.base_agents = [agent(*args, **kwargs) for agent in self.ALL_BASE_AGENTS]
 
         word_blacklist = ["span", "negotiator"]
-        not_overridden_methods = ["add_method", "generate_method_which_call_inner_agents", "propose", "respond",
-                                  "connect_to_oneshot_adapter", "connect_to_2021_adapter", "make_ufun",
-                                  "on_ufun_changed"]
+        not_overridden_methods = [
+            "add_method",
+            "generate_method_which_call_inner_agents",
+            "propose",
+            "respond",
+            "connect_to_oneshot_adapter",
+            "connect_to_2021_adapter",
+            "make_ufun",
+            "on_ufun_changed",
+        ]
 
         for attribute in dir(self):
-            is_private = ("_" == attribute[:1])
-            is_builtin = ("__" == attribute[:2])
-            is_in_blacklist = (any([word in attribute for word in word_blacklist]))
+            is_private = "_" == attribute[:1]
+            is_builtin = "__" == attribute[:2]
+            is_in_blacklist = any([word in attribute for word in word_blacklist])
             is_forbidden = attribute in not_overridden_methods
 
             try:
                 attribute_object = getattr(self, attribute)
-                if isinstance(attribute_object, types.MethodType) \
-                        and not is_forbidden \
-                        and not is_builtin \
-                        and not is_private \
-                        and not is_in_blacklist:
+                if (
+                    isinstance(attribute_object, types.MethodType)
+                    and not is_forbidden
+                    and not is_builtin
+                    and not is_private
+                    and not is_in_blacklist
+                ):
                     if self.DEBUG:
                         self.awi.logdebug(f"Patching {attribute}")
 
-                    method_with_proxy = self.generate_method_which_call_inner_agents(attribute, self.base_agents)
+                    method_with_proxy = self.generate_method_which_call_inner_agents(
+                        attribute, self.base_agents
+                    )
                     self.add_method(attribute, method_with_proxy)
 
                 else:
@@ -165,23 +180,29 @@ class ZilberanBackup(OneShotAgent):
 
         # TODO: Run KMEANS with Elbow
         propose = [-1] * 3
-        propose[UNIT_PRICE] = sum([propose[UNIT_PRICE] for propose in proposes]) / len(proposes)
-        propose[QUANTITY] = sum([propose[QUANTITY] for propose in proposes]) // len(proposes)
+        propose[UNIT_PRICE] = sum(propose[UNIT_PRICE] for propose in proposes) / len(
+            proposes
+        )
+        propose[QUANTITY] = sum(propose[QUANTITY] for propose in proposes) // len(
+            proposes
+        )
         return propose
 
     def respond(
-            self, negotiator_id: str, state: SAOState, offer: Outcome
+        self, negotiator_id: str, state: SAOState, offer: Outcome
     ) -> ResponseType:
         """Called when the agent is asked to respond to an offer"""
-        responds = [agent.respond(negotiator_id, state, offer) for agent in self.base_agents]
+        responds = [
+            agent.respond(negotiator_id, state, offer) for agent in self.base_agents
+        ]
         return collections.Counter(responds).most_common()[0][0]
 
 
 def run(
-        competition="oneshot",
-        reveal_names=True,
-        n_steps=2,  # =10
-        n_configs=1,  # =2
+    competition="oneshot",
+    reveal_names=True,
+    n_steps=2,
+    n_configs=1,  # =10  # =2
 ):
     """
     **Not needed for submission.** You can use this function to test your agent.
@@ -205,7 +226,13 @@ def run(
 
     """
     if competition == "oneshot":
-        competitors = [MyAgent, RandomOneShotAgent, BetterAgent, AdaptiveAgent, LearningAgent]
+        competitors = [
+            MyAgent,
+            RandomOneShotAgent,
+            BetterAgent,
+            AdaptiveAgent,
+            LearningAgent,
+        ]
     else:
         from scml.scml2020.agents import BuyCheapSellExpensiveAgent, DecentralizingAgent
 

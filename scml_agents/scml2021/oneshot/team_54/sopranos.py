@@ -35,7 +35,7 @@ To test this template do the following:
 On Linux/Mac:
     >> source .venv/bin/activate
 On Windows:
-    >> \.venv\Scripts\activate.bat
+    >> \\.venv\\Scripts\activate.bat
 
 3. Update pip just in case (recommended)
 
@@ -64,22 +64,39 @@ import time
 from typing import Any, Dict, List, Optional
 
 import numpy as np
-from negmas.sao import SAOState
+from negmas import (
+    AgentMechanismInterface,
+    Breach,
+    Contract,
+    Issue,
+    MechanismState,
+    Negotiator,
+    Outcome,
+    ResponseType,
+)
 from negmas.helpers import humanize_time
+from negmas.sao import SAOState
+from scml.oneshot import OneShotAgent
+from scml.oneshot.agents import (
+    GreedyOneShotAgent,
+    RandomOneShotAgent,
+    SingleAgreementAspirationAgent,
+    SyncRandomOneShotAgent,
+)
+from scml.scml2020.common import QUANTITY, TIME, UNIT_PRICE
+from scml.scml2020.utils import anac2021_collusion, anac2021_oneshot, anac2021_std
 
 # required for development
 from tabulate import tabulate
-from scml.oneshot import OneShotAgent
-from scml.scml2020.common import TIME, QUANTITY, UNIT_PRICE
-from scml.scml2020.utils import anac2021_collusion, anac2021_oneshot, anac2021_std
-from scml.oneshot.agents import RandomOneShotAgent, SyncRandomOneShotAgent, GreedyOneShotAgent, SingleAgreementAspirationAgent
-from negmas import (AgentMechanismInterface, Breach, Contract, Issue, MechanismState, Negotiator, Outcome, ResponseType)
 
 # consts
-PRODUCT_STR = 'product'
-QUANTITY_STR = 'quantity'
+PRODUCT_STR = "product"
+QUANTITY_STR = "quantity"
 
-__all__ = [ "TheSopranos78", ]
+__all__ = [
+    "TheSopranos78",
+]
+
 
 class TheSopranos78(OneShotAgent):
     """
@@ -114,7 +131,11 @@ class TheSopranos78(OneShotAgent):
 
         agent_machine_interface = self.get_ami(negotiator_id)
 
-        return (response if self._is_good_price(agent_machine_interface, state, offers[UNIT_PRICE]) else ResponseType.REJECT_OFFER)
+        return (
+            response
+            if self._is_good_price(agent_machine_interface, state, offers[UNIT_PRICE])
+            else ResponseType.REJECT_OFFER
+        )
 
     def before_step(self):
         self.secured = 0
@@ -128,7 +149,11 @@ class TheSopranos78(OneShotAgent):
         if requirements <= 0:
             return ResponseType.END_NEGOTIATION
 
-        return (ResponseType.ACCEPT_OFFER if offers[QUANTITY] <= requirements else ResponseType.REJECT_OFFER)
+        return (
+            ResponseType.ACCEPT_OFFER
+            if offers[QUANTITY] <= requirements
+            else ResponseType.REJECT_OFFER
+        )
 
     def _is_good_price(self, agent_machine_interface, state, price):
         min_value = agent_machine_interface.issues[UNIT_PRICE].min_value
@@ -167,7 +192,9 @@ class TheSopranos78(OneShotAgent):
         unit_price_issue = agent_machine_interface.issues[UNIT_PRICE]
 
         offers = [-1] * 3
-        offers[QUANTITY] = max(min(requirements, quantity_issue.max_value), quantity_issue.min_value)
+        offers[QUANTITY] = max(
+            min(requirements, quantity_issue.max_value), quantity_issue.min_value
+        )
         offers[TIME] = self.awi.current_step
 
         if self._annotation_awi_product_equals(agent_machine_interface):
@@ -178,10 +205,17 @@ class TheSopranos78(OneShotAgent):
         return tuple(offers)
 
     def _agent_requirements(self, negotiator_id=None):
-        return self.awi.current_exogenous_input_quantity + self.awi.current_exogenous_output_quantity - self.secured
+        return (
+            self.awi.current_exogenous_input_quantity
+            + self.awi.current_exogenous_output_quantity
+            - self.secured
+        )
 
     def _annotation_awi_product_equals(self, agent_machine_interface):
-        return agent_machine_interface.annotation[PRODUCT_STR] == self.awi.my_output_product
+        return (
+            agent_machine_interface.annotation[PRODUCT_STR]
+            == self.awi.my_output_product
+        )
 
 
 def run(competition="oneshot", reveal_names=True, n_steps=10, n_configs=2):
@@ -211,6 +245,7 @@ def run(competition="oneshot", reveal_names=True, n_steps=10, n_configs=2):
         # competitors = [GreedyOneShotAgent, MyAgent, SingleAgreementAspirationAgent]
     else:
         from scml.scml2020.agents import BuyCheapSellExpensiveAgent, DecentralizingAgent
+
         competitors = [MyAgent, DecentralizingAgent, BuyCheapSellExpensiveAgent]
 
     start = time.perf_counter()
@@ -221,9 +256,13 @@ def run(competition="oneshot", reveal_names=True, n_steps=10, n_configs=2):
     else:
         runner = anac2021_oneshot
 
-    results = runner(competitors=competitors, verbose=True, n_steps=n_steps, n_configs=n_configs)
+    results = runner(
+        competitors=competitors, verbose=True, n_steps=n_steps, n_configs=n_configs
+    )
     # just make names shorter
-    results.total_scores.agent_type = results.total_scores.agent_type.str.split(".").str[-1]
+    results.total_scores.agent_type = results.total_scores.agent_type.str.split(
+        "."
+    ).str[-1]
     # display results
     print(tabulate(results.total_scores, headers="keys", tablefmt="psql"))
     print(f"Finished in {humanize_time(time.perf_counter() - start)}")

@@ -1,33 +1,33 @@
-import os, sys
+import os
+import sys
 
 sys.path.append(os.path.dirname(__file__))
 
-from scml.scml2020 import TIME, QUANTITY, UNIT_PRICE
-from scml.scml2020.components.negotiation import (
-    NegotiationManager,
-    AspirationNegotiator,
-)
-from negmas import (
-    ResponseType,
-    outcome_is_valid,
-    SAOSyncController,
-    Issue,
-    AgentMechanismInterface,
-    Negotiator,
-)
-from negmas.sao import SAOResponse, SAONegotiator
-from negmas.common import MechanismState
-from negmas.utilities import UtilityFunction
-from negmas.helpers import get_class, instantiate
-from negmas.outcomes import Outcome
-from typing import List, Dict, Optional, Tuple, Any, Union
+from math import ceil, floor
+from typing import Any, Dict, List, Optional, Tuple, Union
+
 import numpy as np
 import torch
-from math import floor, ceil
-
 from hyperparameters import *
-
-from neg_model import load_seller_neg_model, load_buyer_neg_model, NegModel
+from neg_model import NegModel, load_buyer_neg_model, load_seller_neg_model
+from negmas import (
+    AgentMechanismInterface,
+    Issue,
+    Negotiator,
+    ResponseType,
+    SAOSyncController,
+    outcome_is_valid,
+)
+from negmas.common import MechanismState
+from negmas.helpers import get_class, instantiate
+from negmas.outcomes import Outcome
+from negmas.sao import SAONegotiator, SAOResponse
+from negmas.utilities import UtilityFunction
+from scml.scml2020 import QUANTITY, TIME, UNIT_PRICE
+from scml.scml2020.components.negotiation import (
+    AspirationNegotiator,
+    NegotiationManager,
+)
 from utility import MyRLUtilityFunction, MyUtilityFunction
 
 
@@ -747,7 +747,11 @@ class MySyncController(SAOSyncController):
         return self.ufun(_is_seller=is_seller, parent=self, manager=self.__parent)
 
     def create_negotiator(
-        self, negotiator_type=None, name: str = None, cntxt: Any = None, **kwargs,
+        self,
+        negotiator_type=None,
+        name: str = None,
+        cntxt: Any = None,
+        **kwargs,
     ):
         kwargs["ufun"] = self.create_ufun(is_seller=self._is_seller)
         kwargs["_is_seller"] = self._is_seller

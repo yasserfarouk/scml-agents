@@ -1,8 +1,8 @@
-from negmas import Contract, Negotiator, NiceNegotiator
-from scml.scml2019 import DoNothingFactoryManager, CFP
 import random
-
 from typing import Optional
+
+from negmas import Contract, Negotiator, NiceNegotiator
+from scml.scml2019 import CFP, DoNothingFactoryManager
 
 __all__ = ["Monopoly"]
 

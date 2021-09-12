@@ -1,12 +1,11 @@
 import functools
 from typing import Tuple
 
-from controller import Controller
-
 import numpy as np
-from scml import StepNegotiationManager, PredictionBasedTradingStrategy
+from controller import Controller
+from scml import PredictionBasedTradingStrategy, StepNegotiationManager
 from scml.scml2020.components.negotiation import ControllerInfo
-from scml.scml2020.services import SyncController, StepController
+from scml.scml2020.services import StepController, SyncController
 
 
 class NegotiationManager(StepNegotiationManager, PredictionBasedTradingStrategy):
@@ -43,9 +42,9 @@ class NegotiationManager(StepNegotiationManager, PredictionBasedTradingStrategy)
     """
 
     def __init__(
-            self,
-            *args,
-            **kwargs,
+        self,
+        *args,
+        **kwargs,
     ):
         super().__init__(*args, **kwargs)
 
@@ -64,13 +63,13 @@ class NegotiationManager(StepNegotiationManager, PredictionBasedTradingStrategy)
         return needed[step] - secured[step]
 
     def add_controller(
-            self,
-            is_seller: bool,
-            step: int,
-            expected_quantity: int,
-            urange: Tuple[int, int],
-            target,
-            partners,  #check if correct         
+        self,
+        is_seller: bool,
+        step: int,
+        expected_quantity: int,
+        urange: Tuple[int, int],
+        target,
+        partners,  # check if correct
     ) -> Controller:
         if is_seller and self.sellers[step].controller is not None:
             return self.sellers[step].controller
@@ -89,7 +88,8 @@ class NegotiationManager(StepNegotiationManager, PredictionBasedTradingStrategy)
             partners=self.awi.my_consumers if is_seller else self.awi.my_suppliers,
             horizon=self._horizon,
             negotiations_concluded_callback=functools.partial(
-                self.__class__.all_negotiations_concluded, self),
+                self.__class__.all_negotiations_concluded, self
+            ),
             parent_name=self.name,
             awi=self.awi,
         )

@@ -5,13 +5,14 @@
 """
 # Libraries
 from typing import List, Optional
+
 import numpy as np
 from negmas import Contract
 from scml.scml2020 import (
     SCML2020Agent,
-    TradingStrategy,
     StepNegotiationManager,
     SupplyDrivenProductionStrategy,
+    TradingStrategy,
 )
 from scml.scml2020.common import is_system_agent
 

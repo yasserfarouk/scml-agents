@@ -9,45 +9,60 @@ the authors and the ANAC 2021 SCML.
 
 """
 
+import itertools
+import os
+import pickle
+
 # required for running the test tournament
 import time
-import itertools
+
 # required for typing
 from typing import Any, Dict, List, Optional
 
 import numpy as np
-from negmas import (AgentMechanismInterface, Breach, Contract, Issue,
-                    MechanismState, Negotiator)
+import pandas as pd
+from negmas import (
+    AgentMechanismInterface,
+    Breach,
+    Contract,
+    Issue,
+    MechanismState,
+    Negotiator,
+    ResponseType,
+    SAOResponse,
+)
 from negmas.helpers import humanize_time
-from negmas import ResponseType
-from negmas import SAOResponse
-from scml.scml2020.common import QUANTITY
-from scml.scml2020.common import UNIT_PRICE
+from scml.oneshot.agents import (
+    GreedyOneShotAgent,
+    GreedySingleAgreementAgent,
+    GreedySyncAgent,
+    OneshotDoNothingAgent,
+    RandomOneShotAgent,
+    SingleAgreementAspirationAgent,
+    SingleAgreementRandomAgent,
+    SyncRandomOneShotAgent,
+)
 from scml.scml2020 import SCML2020Agent
-# required for development
-from scml.scml2020.agents import (BuyCheapSellExpensiveAgent,
-                                  DecentralizingAgent, DoNothingAgent,
-                                  MarketAwareBuyCheapSellExpensiveAgent)
-from scml.oneshot.agents import (RandomOneShotAgent,
-                                 SyncRandomOneShotAgent,
-                                 SingleAgreementRandomAgent,
-                                 SingleAgreementAspirationAgent,
-                                 GreedyOneShotAgent,
-                                 GreedySyncAgent,
-                                 GreedySingleAgreementAgent,
-                                 OneshotDoNothingAgent)
 
+# required for development
+from scml.scml2020.agents import (
+    BuyCheapSellExpensiveAgent,
+    DecentralizingAgent,
+    DoNothingAgent,
+    MarketAwareBuyCheapSellExpensiveAgent,
+)
+from scml.scml2020.common import QUANTITY, UNIT_PRICE
 from scml.scml2020.utils import anac2020_collusion, anac2020_std, anac2021_oneshot
 from scml.scml2020.world import Failure
 from tabulate import tabulate
-import pandas as pd
-import pickle
-import os
 
-__all__ = [ "PDPSyncAgent", ]
+__all__ = [
+    "PDPSyncAgent",
+]
+
 
 class PDPSyncAgent(GreedySyncAgent):
-    """ Predictive Dynmical programming agent basd on GreedySyncAgent"""
+    """Predictive Dynmical programming agent basd on GreedySyncAgent"""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -76,11 +91,12 @@ class PDPSyncAgent(GreedySyncAgent):
         n_input = len(input_offers)
         n_output = len(output_offers)
         t_input = [[-1 for i in range(my_input_needs + 1)] for j in range(n_input + 1)]
-        t_output = [[-1 for i in range(my_output_needs + 1)] for j in range(n_output + 1)]
-
+        t_output = [
+            [-1 for i in range(my_output_needs + 1)] for j in range(n_output + 1)
+        ]
 
         def knapsack_agent(t, offers, my_needs, n, isSelling):
-            """ Knapscak algotrithm func. with memoization"""
+            """Knapscak algotrithm func. with memoization"""
 
             sorted_offers = sorted(
                 offers.values(),
@@ -95,10 +111,16 @@ class PDPSyncAgent(GreedySyncAgent):
             # choice diagram code
             if sorted_offers[n - 1][QUANTITY] <= my_needs:
                 t[n][my_needs] = max(
-                    sorted_offers[n - 1][QUANTITY] +
-                    knapsack_agent(t, offers,
-                                   my_needs - sorted_offers[n - 1][QUANTITY], n - 1, isSelling),
-                    knapsack_agent(t, offers, my_needs, n - 1, isSelling))
+                    sorted_offers[n - 1][QUANTITY]
+                    + knapsack_agent(
+                        t,
+                        offers,
+                        my_needs - sorted_offers[n - 1][QUANTITY],
+                        n - 1,
+                        isSelling,
+                    ),
+                    knapsack_agent(t, offers, my_needs, n - 1, isSelling),
+                )
                 return t[n][my_needs]
             elif sorted_offers[n - 1][QUANTITY] > my_needs:
                 t[n][my_needs] = knapsack_agent(t, offers, my_needs, n - 1, isSelling)
@@ -130,24 +152,42 @@ class PDPSyncAgent(GreedySyncAgent):
 
                     # Since this weight is included
                     # its value is deducted
-                    res = res - sorted_offers[i - 1][UNIT_PRICE] * sorted_offers[i - 1][QUANTITY]
+                    res = (
+                        res
+                        - sorted_offers[i - 1][UNIT_PRICE]
+                        * sorted_offers[i - 1][QUANTITY]
+                    )
                     w = w - sorted_offers[i - 1][QUANTITY]
             # print(items_idxs)
             return items_idxs
 
         def change_threshold(is_selling):
             if is_selling:
-                loaded_model = pickle.load(open(os.path.dirname(__file__) + '/output_model.sav', 'rb'))
+                loaded_model = pickle.load(
+                    open(os.path.dirname(__file__) + "/output_model.sav", "rb")
+                )
             else:
-                loaded_model = pickle.load(open(os.path.dirname(__file__) + '/input_model.sav', 'rb'))
+                loaded_model = pickle.load(
+                    open(os.path.dirname(__file__) + "/input_model.sav", "rb")
+                )
 
             try:
-                data = [{'day': self.awi.current_step, 'price': self.awi.current_exogenous_output_price,
-                         'prev_price': self.awi.prev_exogenous_output_price}]
+                data = [
+                    {
+                        "day": self.awi.current_step,
+                        "price": self.awi.current_exogenous_output_price,
+                        "prev_price": self.awi.prev_exogenous_output_price,
+                    }
+                ]
             except:
                 self.awi.prev_exogenous_output_price = 0
-                data = [{'day': self.awi.current_step, 'price': self.awi.current_exogenous_output_price,
-                         'prev_price': self.awi.prev_exogenous_output_price}]
+                data = [
+                    {
+                        "day": self.awi.current_step,
+                        "price": self.awi.current_exogenous_output_price,
+                        "prev_price": self.awi.prev_exogenous_output_price,
+                    }
+                ]
 
             X_test = pd.DataFrame(data)
             result = loaded_model.predict(X_test)
@@ -167,7 +207,7 @@ class PDPSyncAgent(GreedySyncAgent):
                     self._threshold = 0.2
 
         def transform_idxs2keys(idxs, sorted_offers, offers, is_selling):
-            """Given the indexes formalizes the responses according to the SCML environment """
+            """Given the indexes formalizes the responses according to the SCML environment"""
             secured, outputs, chosen = 0, [], dict()
             change_threshold(is_selling)
 
@@ -179,32 +219,43 @@ class PDPSyncAgent(GreedySyncAgent):
                 chosen[k] = offer
                 outputs.append(is_selling)
             if (
-                    self.ufun.from_offers(list(chosen.values()), outputs)
-                    >= self._th(self.awi.current_step, self.awi.n_steps)
-                    * self.ufun.max_utility
+                self.ufun.from_offers(list(chosen.values()), outputs)
+                >= self._th(self.awi.current_step, self.awi.n_steps)
+                * self.ufun.max_utility
             ):
                 for k in chosen.keys():
                     responses[k] = SAOResponse(ResponseType.ACCEPT_OFFER, None)
             return secured
 
-        input_sorted_offers = sorted(
-            offers.values(),
-            key=lambda x: x[UNIT_PRICE]
+        input_sorted_offers = sorted(offers.values(), key=lambda x: x[UNIT_PRICE])
+        output_sorted_offers = sorted(offers.values(), key=lambda x: -x[UNIT_PRICE])
+        check_input = knapsack_agent(
+            t_input, input_offers, my_input_needs, n_input, False
         )
-        output_sorted_offers = sorted(
-            offers.values(),
-            key=lambda x: -x[UNIT_PRICE]
+        check_output = knapsack_agent(
+            t_output, output_offers, my_output_needs, n_output, True
         )
-        check_input = knapsack_agent(t_input, input_offers, my_input_needs, n_input, False)
-        check_output = knapsack_agent(t_output, output_offers, my_output_needs, n_output, True)
-        input_idxs = calc_items_idxs(t_input, input_sorted_offers, my_input_needs, n_input)
-        output_idxs = calc_items_idxs(t_output, output_sorted_offers, my_output_needs, n_output)
+        input_idxs = calc_items_idxs(
+            t_input, input_sorted_offers, my_input_needs, n_input
+        )
+        output_idxs = calc_items_idxs(
+            t_output, output_sorted_offers, my_output_needs, n_output
+        )
 
-        secured = transform_idxs2keys(input_idxs, input_sorted_offers, input_offers, False)
-        secured += transform_idxs2keys(output_idxs, output_sorted_offers, output_offers, True)
+        secured = transform_idxs2keys(
+            input_idxs, input_sorted_offers, input_offers, False
+        )
+        secured += transform_idxs2keys(
+            output_idxs, output_sorted_offers, output_offers, True
+        )
 
-        if self.awi.prev_exogenous_output_price != self.awi.current_exogenous_output_price:
-            self.awi.prev_exogenous_output_price = self.awi.current_exogenous_output_price
+        if (
+            self.awi.prev_exogenous_output_price
+            != self.awi.current_exogenous_output_price
+        ):
+            self.awi.prev_exogenous_output_price = (
+                self.awi.current_exogenous_output_price
+            )
 
         for k, v in responses.items():
             if v.response != ResponseType.REJECT_OFFER:

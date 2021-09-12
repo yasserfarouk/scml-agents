@@ -1,7 +1,8 @@
-from biu_dody import DrorStepAgent, DrorOmer, DecentralizingAgent, return_agent_scores
-import numpy
-from biu_dody1 import DrorDanaStepAgent
 import operator
+
+import numpy
+from biu_dody import DecentralizingAgent, DrorOmer, DrorStepAgent, return_agent_scores
+from biu_dody1 import DrorDanaStepAgent
 from biu_dody2 import DrorDana2StepAgent
 from scml import SCML2020World
 
@@ -16,7 +17,7 @@ def learn_param():
         if res > max:
             max = res
             index = i
-    print("index = %s, max = %s" % (index, max))
+    print(f"index = {index}, max = {max}")
 
     max = -1000
     for i in numpy.arange(index - 0.2, index + 0.2, 0.02):
@@ -26,7 +27,7 @@ def learn_param():
         if res > max:
             max = res
             index = i
-    print("index = %s, max = %s" % (index, max))
+    print(f"index = {index}, max = {max}")
 
 
 def play_n_game(n, dror_agent):

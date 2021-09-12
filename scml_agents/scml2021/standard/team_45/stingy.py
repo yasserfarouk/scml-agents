@@ -33,7 +33,7 @@ To test this template do the following:
 On Linux/Mac:
     >> source .venv/bin/activate
 On Windows:
-    >> \.venv\Scripts\activate.bat
+    >> \\.venv\\Scripts\activate.bat
 
 3. Update pip just in case (recommended)
 
@@ -55,49 +55,54 @@ You should see a short tournament running and results reported.
 """
 
 
+# required for development
+# required for running the test tournament
+import time
+
 # required for typing
 from typing import Any, Dict, List, Optional
 
 import numpy as np
+import pandas as pd
 from negmas import (
     AgentMechanismInterface,
     Breach,
     Contract,
     Issue,
+    LinearUtilityFunction,
     MechanismState,
     Negotiator,
+    Outcome,
+    ResponseType,
+    SAOState,
+    SAOSyncController,
+    UtilityFunction,
+    outcome_is_valid,
 )
 from negmas.helpers import humanize_time
-from scml.scml2020 import Failure
-import pandas as pd
-from negmas import SAOSyncController, SAOState
-from negmas import ResponseType, outcome_is_valid, UtilityFunction, Outcome
-from scml.scml2020 import TIME, QUANTITY, UNIT_PRICE
 from negmas.sao import SAOResponse
-from scml import is_system_agent, ANY_LINE
-
-# required for development
-# required for running the test tournament
-import time
-from tabulate import tabulate
-from scml.scml2020.utils import anac2021_collusion, anac2021_std, anac2021_oneshot
-from scml.scml2020.components.trading import PredictionBasedTradingStrategy
-from scml.scml2020.components.production import DemandDrivenProductionStrategy, ProductionStrategy
-from scml.scml2020.components.negotiation import IndependentNegotiationsManager
-from scml.scml2020 import SCML2020Agent
+from scml import ANY_LINE, is_system_agent
+from scml.scml2020 import QUANTITY, TIME, UNIT_PRICE, Failure, SCML2020Agent
 from scml.scml2020.agents import (
-    MovingRangeAgent,
-    RandomAgent,
-    MarketAwareIndependentNegotiationsAgent,
     BuyCheapSellExpensiveAgent,
     DecentralizingAgent,
     DoNothingAgent,
+    MarketAwareIndependentNegotiationsAgent,
+    MovingRangeAgent,
+    RandomAgent,
 )
+from scml.scml2020.components.negotiation import IndependentNegotiationsManager
+from scml.scml2020.components.production import (
+    DemandDrivenProductionStrategy,
+    ProductionStrategy,
+)
+from scml.scml2020.components.trading import PredictionBasedTradingStrategy
+from scml.scml2020.utils import anac2021_collusion, anac2021_oneshot, anac2021_std
+from tabulate import tabulate
 
-from negmas import LinearUtilityFunction
-
-
-__all__ = [ "StingyAgent", ]
+__all__ = [
+    "StingyAgent",
+]
 
 
 class MyNegotiationManager:
@@ -178,15 +183,15 @@ class MyNegotiationManager:
             if seller:
                 # for selling set a price that is at least the catalog price
                 min_price = self.awi.catalog_prices[product]
-                price_range = (min_price, 2 * min_price)                            #change
+                price_range = (min_price, 2 * min_price)  # change
             else:
                 # for buying sell a price that is at most the catalog price
-                price_range = (0, self.awi.catalog_prices[product] / 1.5)           #change
+                price_range = (0, self.awi.catalog_prices[product] / 1.5)  # change
 
-            if seller and step < self.awi.n_steps/2:
+            if seller and step < self.awi.n_steps / 2:
                 continue
 
-            if not seller and step > self.awi.n_steps/2:
+            if not seller and step > self.awi.n_steps / 2:
                 continue
 
             self.awi.request_negotiations(
@@ -217,8 +222,10 @@ class MyNegotiationManager:
             return None
         return controller.create_negotiator()
 
+
 class ControllerUFun(UtilityFunction):
     """A utility function for the controller"""
+
     def __init__(self, controller=None):
         super().__init__(outcome_type=tuple)
         self.controller = controller
@@ -228,6 +235,7 @@ class ControllerUFun(UtilityFunction):
 
     def xml(self, issues):
         pass
+
 
 class SyncController(SAOSyncController):
     """
@@ -383,100 +391,111 @@ class SyncController(SAOSyncController):
         else:
             self.__parent.inputs_secured[t] += q
 
+
 class MyTradingStrategy(PredictionBasedTradingStrategy):
     def sign_all_contracts(self, contracts: List[Contract]) -> List[Optional[str]]:
-            signatures = [None] * len(contracts)
-            # sort contracts by goodness of price, time and then put system contracts first within each time-step
-            contracts = sorted(
-                zip(contracts, range(len(contracts))),
-                key=lambda x: (
-                    x[0].agreement["time"],
-                    (
-                        x[0].agreement["unit_price"]
-                        - self.output_price[x[0].agreement["time"]]
-                    )
-                    if x[0].annotation["seller"] == self.id
-                    else (
-                        self.input_cost[x[0].agreement["time"]]
-                        - x[0].agreement["unit_price"]
-                    ),
-                    0
-                    if is_system_agent(x[0].annotation["seller"])
-                    or is_system_agent(x[0].annotation["buyer"])
-                    else 1,
+        signatures = [None] * len(contracts)
+        # sort contracts by goodness of price, time and then put system contracts first within each time-step
+        contracts = sorted(
+            zip(contracts, range(len(contracts))),
+            key=lambda x: (
+                x[0].agreement["time"],
+                (
+                    x[0].agreement["unit_price"]
+                    - self.output_price[x[0].agreement["time"]]
+                )
+                if x[0].annotation["seller"] == self.id
+                else (
+                    self.input_cost[x[0].agreement["time"]]
+                    - x[0].agreement["unit_price"]
                 ),
+                0
+                if is_system_agent(x[0].annotation["seller"])
+                or is_system_agent(x[0].annotation["buyer"])
+                else 1,
+            ),
+        )
+        sold, bought = 0, 0
+        s = self.awi.current_step
+        b = self.awi.current_balance
+        i = self.awi.current_inventory
+
+        for contract, indx in contracts:
+            is_seller = contract.annotation["seller"] == self.id
+            q, u, t = (
+                contract.agreement["quantity"],
+                contract.agreement["unit_price"],
+                contract.agreement["time"],
             )
-            sold, bought = 0, 0
-            s = self.awi.current_step
-            b = self.awi.current_balance
-            i = self.awi.current_inventory
+            # check that the contract is executable in principle. The second
+            # condition checkes that the contract is negotiated and not exogenous
+            if t < s and len(contract.issues) == 3:
+                continue
+            catalog_buy = self.input_cost[t]
+            catalog_sell = self.output_price[t]
+            # # check that the gontract has a good price
+            if (is_seller and u < 0.5 * catalog_sell) or (  # change 0.5->0.7
+                not is_seller and u > 1.5 * catalog_buy  # change 1.5->1.3
+            ):
+                continue
 
-            for contract, indx in contracts:
-                is_seller = contract.annotation["seller"] == self.id
-                q, u, t = (
-                    contract.agreement["quantity"],
-                    contract.agreement["unit_price"],
-                    contract.agreement["time"],
-                )
-                # check that the contract is executable in principle. The second
-                # condition checkes that the contract is negotiated and not exogenous
-                if t < s and len(contract.issues) == 3:
-                    continue
-                catalog_buy = self.input_cost[t]
-                catalog_sell = self.output_price[t]
-                # # check that the gontract has a good price
-                if (is_seller and u < 0.5 * catalog_sell) or (                        #change 0.5->0.7
-                    not is_seller and u > 1.5 * catalog_buy                           #change 1.5->1.3
-                ):
-                 continue
+            # if is_seller and (i - q) < i * 0.2:         #
+            #        continue
+            if not is_seller and (b - u * q) < b * 0.5:  #
+                continue
 
-                #if is_seller and (i - q) < i * 0.2:         #
-                #        continue
-                if not is_seller and (b - u * q) < b * 0.5:            #
-                        continue
+            if is_seller:
+                trange = (s, t - 1)
+                secured, needed = (self.outputs_secured, self.outputs_needed)
+                taken = sold
+            else:
+                trange = (t + 1, self.awi.n_steps - 1)
+                secured, needed = (self.inputs_secured, self.inputs_needed)
+                taken = bought
 
+            # check that I can produce the required quantities even in principle
+            steps, _ = self.awi.available_for_production(
+                q, trange, ANY_LINE, override=False, method="all"
+            )
+            if len(steps) - taken < q:
+                continue
+
+            if (
+                secured[trange[0] : trange[1] + 1].sum() + q + taken
+                <= needed[trange[0] : trange[1] + 1].sum()
+            ):
+                signatures[indx] = self.id
                 if is_seller:
-                    trange = (s, t - 1)
-                    secured, needed = (self.outputs_secured, self.outputs_needed)
-                    taken = sold
+                    sold += q
                 else:
-                    trange = (t + 1, self.awi.n_steps - 1)
-                    secured, needed = (self.inputs_secured, self.inputs_needed)
-                    taken = bought
+                    bought += q
+        return signatures
 
-                # check that I can produce the required quantities even in principle
-                steps, _ = self.awi.available_for_production(
-                    q, trange, ANY_LINE, override=False, method="all"
-                )
-                if len(steps) - taken < q:
-                    continue
 
-                if (
-                    secured[trange[0] : trange[1] + 1].sum() + q + taken
-                    <= needed[trange[0] : trange[1] + 1].sum()
-                ):
-                    signatures[indx] = self.id
-                    if is_seller:
-                        sold += q
-                    else:
-                        bought += q
-            return signatures
-
-class StingyAgent(MyNegotiationManager, MyTradingStrategy,
-              DemandDrivenProductionStrategy, SCML2020Agent):
+class StingyAgent(
+    MyNegotiationManager,
+    MyTradingStrategy,
+    DemandDrivenProductionStrategy,
+    SCML2020Agent,
+):
     def target_quantity(self, step: int, sell: bool) -> int:
         """A fixed target quantity of half my production capacity"""
         return self.awi.n_lines
 
     def acceptable_unit_price(self, step: int, sell: bool) -> int:
         """The catalog price seems OK"""
-        return self.awi.catalog_prices[self.awi.my_output_product] * 0.5 if sell else self.awi.catalog_prices[self.awi.my_input_product] * 1.2
+        return (
+            self.awi.catalog_prices[self.awi.my_output_product] * 0.5
+            if sell
+            else self.awi.catalog_prices[self.awi.my_input_product] * 1.2
+        )
 
     def create_ufun(self, is_seller: bool, issues=None, outcomes=None):
         """A utility function that penalizes high cost and late delivery for buying and and awards them for selling"""
         if is_seller:
             return LinearUtilityFunction((0, 0.25, 1))
         return LinearUtilityFunction((0, -0.5, -0.8))
+
 
 def run(
     competition="std",

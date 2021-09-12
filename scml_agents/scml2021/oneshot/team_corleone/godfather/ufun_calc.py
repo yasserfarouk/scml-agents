@@ -1,16 +1,14 @@
-from scml.oneshot.ufun import OneShotUFun
+import warnings
 from collections import namedtuple
 from copy import deepcopy
-import warnings
-from typing import Collection, Tuple, Union, List, Optional, Callable
+from typing import Callable, Collection, List, Optional, Tuple, Union
 
 from negmas import Contract
+from negmas.outcomes import Issue, Outcome
 from negmas.utilities import UtilityFunction, UtilityValue
-from negmas.outcomes import Outcome, Issue
+from scml.oneshot.ufun import OneShotUFun
+from scml.scml2020.common import QUANTITY, TIME, UNIT_PRICE, is_system_agent
 
-from scml.scml2020.common import is_system_agent
-
-from scml.scml2020.common import QUANTITY, UNIT_PRICE, TIME
 
 class UFunCalc:
     @staticmethod
@@ -25,17 +23,17 @@ class UFunCalc:
 
     @staticmethod
     def is_sorted(l: List, key: Callable):
-        return all(key(l[i]) <= key(l[i+1]) for i in range(len(l) - 1))
+        return all(key(l[i]) <= key(l[i + 1]) for i in range(len(l) - 1))
 
     @staticmethod
     def order(x):
         offer, is_output, is_exogenous = x
         return -offer[UNIT_PRICE] if is_output else offer[UNIT_PRICE]
-    
+
     @staticmethod
     def order_output(offer):
         return -offer[UNIT_PRICE]
-    
+
     @staticmethod
     def order_input(offer):
         return offer[UNIT_PRICE]
@@ -59,21 +57,21 @@ class UFunCalc:
 
         self.persistent_pin = 0
         self.persistent_qin = 0
-    
+
     def set_persistent_offers(self, persistent_offers: List[Tuple[int, ...]]):
         """Set the set of non-exogenous offers that will be included in all calculations"""
         offer_key = self.order_output if self.is_selling else self.order_input
         offers = sorted(persistent_offers, key=offer_key)
         self.persistent_offers = offers
-        if not self.is_selling: # input offers
-            self.persistent_p = sum(o[UNIT_PRICE] * o[QUANTITY] for o in self.persistent_offers)
+        if not self.is_selling:  # input offers
+            self.persistent_p = sum(
+                o[UNIT_PRICE] * o[QUANTITY] for o in self.persistent_offers
+            )
             self.persistent_q = sum(o[QUANTITY] for o in self.persistent_offers)
 
     def ufun_from_offer(
-            self,
-            new_offer: Optional[Tuple],
-            return_producible=False
-        ) -> Union[float, Tuple[float, int]]:
+        self, new_offer: Optional[Tuple], return_producible=False
+    ) -> Union[float, Tuple[float, int]]:
         """
         NOTES: speedups based on removing deecopy (so, will modify inputs)
         and requiring sorted offers on input
@@ -162,7 +160,7 @@ class UFunCalc:
         return self.from_aggregates(
             qin, qout, producible, pin, pout_bar, input_penalty, output_penalty
         )
-    
+
     def from_aggregates(
         self,
         qin: int,

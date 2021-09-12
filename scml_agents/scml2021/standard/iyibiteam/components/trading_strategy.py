@@ -1,11 +1,10 @@
+from typing import List, Optional
+
+import numpy as np
+from negmas import Contract
 from numpy.core.fromnumeric import take
 from scml.scml2020 import PredictionBasedTradingStrategy
-import numpy as np
-from typing import List, Optional
-from negmas import Contract
-from scml.scml2020.common import is_system_agent
-
-from scml.scml2020.common import ANY_LINE
+from scml.scml2020.common import ANY_LINE, is_system_agent
 
 
 class MyTradingStrategy(PredictionBasedTradingStrategy):
@@ -38,7 +37,11 @@ class MyTradingStrategy(PredictionBasedTradingStrategy):
         sold_count, bought_count = 0, 0
         for contract, idx in contracts:
             is_seller = contract.annotation["seller"] == self.id
-            t, u, q = contract.agreement["time"], contract.agreement["unit_price"],  contract.agreement["quantity"]
+            t, u, q = (
+                contract.agreement["time"],
+                contract.agreement["unit_price"],
+                contract.agreement["quantity"],
+            )
 
             if t > latest_production + 1 or t < earliest_production:
                 continue
@@ -50,9 +53,9 @@ class MyTradingStrategy(PredictionBasedTradingStrategy):
                 continue
 
             progress = self.awi.current_step / self.awi.n_steps
-            if (is_seller and u < max(progress, 0.8) * catalog_sell):
+            if is_seller and u < max(progress, 0.8) * catalog_sell:
                 continue
-            if (not is_seller and u > min(progress * 2, 1.2) * catalog_buy):
+            if not is_seller and u > min(progress * 2, 1.2) * catalog_buy:
                 continue
 
             trange = (step, t) if is_seller else (t + 1, self.awi.n_steps - 1)
@@ -68,9 +71,10 @@ class MyTradingStrategy(PredictionBasedTradingStrategy):
             needed = self.outputs_needed if is_seller else self.inputs_needed
 
             if (
-                secured[trange[0]: trange[1] + 1].sum() + q +
-                (sold_count if is_seller else bought_count)
-                <= needed[trange[0]: trange[1] + 1].sum()
+                secured[trange[0] : trange[1] + 1].sum()
+                + q
+                + (sold_count if is_seller else bought_count)
+                <= needed[trange[0] : trange[1] + 1].sum()
             ):
                 signatures[idx] = self.id
 
@@ -94,7 +98,7 @@ class MyTradingStrategy(PredictionBasedTradingStrategy):
         buy_count = 0
         for contract in signed:
             seller = contract.annotation["seller"] == self.id
-            t,  q = contract.agreement["time"], contract.agreement["quantity"]
+            t, q = contract.agreement["time"], contract.agreement["quantity"]
             if contract.annotation["caller"] == self.id:
                 continue
             if contract.annotation["product"] != self.awi.my_output_product:
@@ -103,26 +107,32 @@ class MyTradingStrategy(PredictionBasedTradingStrategy):
             if seller:
                 self.outputs_secured[t] += q
                 self.outputs_needed[t:] -= q
-                sell_surplus += self.output_price[step] - \
-                    self.awi.catalog_prices[self.awi.my_output_product]
+                sell_surplus += (
+                    self.output_price[step]
+                    - self.awi.catalog_prices[self.awi.my_output_product]
+                )
                 sell_count += 1
 
             else:
                 self.inputs_secured[t] += q
                 self.inputs_secured[t:] -= q
                 self.outputs_needed[t:] += q
-                buy_surplus += self.awi.catalog_prices[self.awi.my_input_product] - \
-                    self.input_cost[step]
+                buy_surplus += (
+                    self.awi.catalog_prices[self.awi.my_input_product]
+                    - self.input_cost[step]
+                )
                 buy_count += 1
 
         if sell_surplus and sell_count:
-            self.output_price[step:] = self.output_price[step] + \
-                (sell_surplus / sell_count)
+            self.output_price[step:] = self.output_price[step] + (
+                sell_surplus / sell_count
+            )
         else:
-            self.output_price[step:] = self.awi.catalog_prices[self.awi.my_output_product] * 0.95
+            self.output_price[step:] = (
+                self.awi.catalog_prices[self.awi.my_output_product] * 0.95
+            )
 
         if buy_surplus and buy_count:
-            self.input_cost[step:] = self.input_cost[step] - \
-                (buy_surplus / buy_count)
+            self.input_cost[step:] = self.input_cost[step] - (buy_surplus / buy_count)
         else:
             self.input_cost[step:] = self.input_cost[step:] * 1.05

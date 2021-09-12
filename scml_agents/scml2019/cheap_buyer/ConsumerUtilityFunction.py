@@ -1,6 +1,6 @@
-from negmas import UtilityValue
 from typing import Optional
 
+from negmas import UtilityValue
 from scml.scml2019 import SCMLAgreement
 from scml.scml2019.factory_managers.builtins import NegotiatorUtility
 

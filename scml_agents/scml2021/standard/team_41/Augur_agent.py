@@ -1,20 +1,22 @@
-'''
+"""
 SCM League 2021
 Augur agent
-'''
+"""
 
 from typing import List, Optional
+
 import numpy as np
 from negmas import Contract
 from scml.scml2020 import (
     SCML2020Agent,
-    TradingStrategy,
     StepNegotiationManager,
     SupplyDrivenProductionStrategy,
+    TradingStrategy,
 )
 from scml.scml2020.common import is_system_agent
 
 __all__ = ["AugurAgent"]
+
 
 class MyProductionStrategy(SupplyDrivenProductionStrategy):
     def on_contracts_finalized(
@@ -49,15 +51,20 @@ class MyProductionStrategy(SupplyDrivenProductionStrategy):
                 is_seller,
             )
 
+
 class MyTradingStrategy(TradingStrategy):
     def init(self):
         super().init()
-        self.pro_cost = np.max(self.awi.profile.costs[:, self.awi.my_input_product]) #calculate production cost
-        self.my_base_input_cost = self.awi.catalog_prices[self.awi.my_output_product] - self.pro_cost
-        self.my_base_output_cost = self.awi.catalog_prices[self.awi.my_input_product] + self.pro_cost
+        self.pro_cost = np.max(
+            self.awi.profile.costs[:, self.awi.my_input_product]
+        )  # calculate production cost
+        self.my_base_input_cost = (
+            self.awi.catalog_prices[self.awi.my_output_product] - self.pro_cost
+        )
+        self.my_base_output_cost = (
+            self.awi.catalog_prices[self.awi.my_input_product] + self.pro_cost
+        )
 
-class AugurAgent(
-    MyProductionStrategy,
-    SCML2020Agent
-):
+
+class AugurAgent(MyProductionStrategy, SCML2020Agent):
     pass

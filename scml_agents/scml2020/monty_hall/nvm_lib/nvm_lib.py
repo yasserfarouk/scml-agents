@@ -1,9 +1,9 @@
-from typing import Optional, List, Tuple
-
-import pandas as pd
+import json
 import os
 import time
-import json
+from typing import List, Optional, Tuple
+
+import pandas as pd
 
 
 class NVMPlan:
@@ -130,19 +130,15 @@ class NVMLib:
             # Compute the expected quantities
             self.q_inn_expected = {
                 t: sum(
-                    [
-                        int(i) * p
-                        for i, p in self.q_inn_uncertainty_model[str(t + 1)].items()
-                    ]
+                    int(i) * p
+                    for i, p in self.q_inn_uncertainty_model[str(t + 1)].items()
                 )
                 for t in range(0, game_length - 1)
             }
             self.q_out_expected = {
                 t: sum(
-                    [
-                        int(i) * p
-                        for i, p in self.q_out_uncertainty_model[str(t + 1)].items()
-                    ]
+                    int(i) * p
+                    for i, p in self.q_out_uncertainty_model[str(t + 1)].items()
                 )
                 for t in range(0, game_length - 1)
             }
@@ -179,7 +175,7 @@ class NVMLib:
         :param json_file_name:
         :return:
         """
-        with open(json_file_name, "r") as JSON:
+        with open(json_file_name) as JSON:
             return json.load(JSON)
 
     @staticmethod
@@ -258,14 +254,12 @@ class NVMLib:
         for row in the_feasible_sols.itertuples(index=False):
             # Compute the objective value
             candidate_sol_value = sum(
-                [
-                    the_prices_out[t]
-                    * the_expectations_q_min_out[t]["min_" + str(row[(t * 3) + 1])]
-                    - the_prices_in[t]
-                    * the_expectations_q_min_in[t]["min_" + str(row[t * 3])]
-                    - the_production_cost * row[(t * 3) + 2]
-                    for t in range(T)
-                ]
+                the_prices_out[t]
+                * the_expectations_q_min_out[t]["min_" + str(row[(t * 3) + 1])]
+                - the_prices_in[t]
+                * the_expectations_q_min_in[t]["min_" + str(row[t * 3])]
+                - the_production_cost * row[(t * 3) + 2]
+                for t in range(T)
             )
             # Keep track in case this solution improves on the optimal so far
             if candidate_sol_value > optimal_sol_revenue:

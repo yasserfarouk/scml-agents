@@ -1,16 +1,11 @@
+from typing import Iterable, List, Optional, Union
+
+import numpy as np
+from negmas import Contract
 from numpy.core.fromnumeric import take
 from scml.scml2020 import MarketAwareTradePredictionStrategy
-import numpy as np
-from typing import List, Optional
-from negmas import Contract
-from scml.scml2020.common import is_system_agent
-from typing import Iterable
-from typing import List
-from typing import Optional
-from typing import Union
+from scml.scml2020.common import ANY_LINE, is_system_agent
 from sklearn.linear_model import LinearRegression, LogisticRegression
-
-from scml.scml2020.common import ANY_LINE
 
 
 class PrintLogger:
@@ -54,6 +49,7 @@ class MyTradePredictionStrategy(MarketAwareTradePredictionStrategy):
                     return np.full(X.shape[0], self._single_class_label)
                 else:
                     return super().predict(X)
+
         return UpgradedPredictor
 
     def trade_prediction_init(self):
@@ -69,7 +65,7 @@ class MyTradePredictionStrategy(MarketAwareTradePredictionStrategy):
             if demand:
                 predicted[: inp + 1] = 0
             else:
-                predicted[inp - self.awi.n_processes:] = 0
+                predicted[inp - self.awi.n_processes :] = 0
             return predicted
 
         # adjust predicted demand and supply
@@ -93,10 +89,8 @@ class MyTradePredictionStrategy(MarketAwareTradePredictionStrategy):
             inputs_model = LinearSVC().fit(X.reshape(-1, 1), inputs.ravel())
             predicted_input = inputs_model.predict(np.array(b).reshape(-1, 1))
 
-            outputs_model = LinearSVC().fit(
-                X.reshape(-1, 1), outputs.ravel())
-            predicted_output = outputs_model.predict(
-                np.array(b).reshape(-1, 1))
+            outputs_model = LinearSVC().fit(X.reshape(-1, 1), outputs.ravel())
+            predicted_output = outputs_model.predict(np.array(b).reshape(-1, 1))
 
             self.expected_inputs[a:b] = predicted_input
             self.expected_outputs[a:b] = predicted_output

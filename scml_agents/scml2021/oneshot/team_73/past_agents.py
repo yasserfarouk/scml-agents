@@ -7,7 +7,7 @@ from typing import Iterable, Tuple, Union
 
 import matplotlib.colors
 from matplotlib import pyplot as plt
-from negmas import ResponseType, SAOResponse, MechanismState
+from negmas import MechanismState, ResponseType, SAOResponse
 from negmas.outcomes import Outcome
 from scml.oneshot import *
 
@@ -20,24 +20,25 @@ Accept = 1
 INF = 1000
 
 __all__ = [
-        "SimpleAgent",
-        "BetterAgent",
-        "AdaptiveAgent",
-        "AgentT064",
-        "AgentT063",
-        "AgentT062",
-        "AgentT061",
-        "AgentT060",
-        "AgentT056",
-        "AgentT055",
-        "AgentT054",
-        "AgentT053",
-        "AgentT052",
-        "AgentT051",
-        "AgentT050",
-        "AgentT049",
-        "AgentT048",
+    "SimpleAgent",
+    "BetterAgent",
+    "AdaptiveAgent",
+    "AgentT064",
+    "AgentT063",
+    "AgentT062",
+    "AgentT061",
+    "AgentT060",
+    "AgentT056",
+    "AgentT055",
+    "AgentT054",
+    "AgentT053",
+    "AgentT052",
+    "AgentT051",
+    "AgentT050",
+    "AgentT049",
+    "AgentT048",
 ]
+
 
 class SimpleAgent(OneShotAgent, ABC):
     """A greedy agent based on OneShotAgent"""
@@ -79,8 +80,7 @@ class SimpleAgent(OneShotAgent, ABC):
         unit_price_issue = ami.issues[UNIT_PRICE]
         offer = [-1] * 3
         offer[QUANTITY] = max(
-            min(my_needs, quantity_issue.max_value),
-            quantity_issue.min_value
+            min(my_needs, quantity_issue.max_value), quantity_issue.min_value
         )
         offer[TIME] = self.awi.current_step
         if self._is_selling(ami):
@@ -90,9 +90,11 @@ class SimpleAgent(OneShotAgent, ABC):
         return tuple(offer)
 
     def _needed(self, negotiator_id=None):
-        return self.awi.current_exogenous_input_quantity + \
-               self.awi.current_exogenous_output_quantity - \
-               self.secured
+        return (
+            self.awi.current_exogenous_input_quantity
+            + self.awi.current_exogenous_output_quantity
+            - self.secured
+        )
 
     def _is_selling(self, ami):
         return ami.annotation["product"] == self.awi.my_output_product
@@ -110,9 +112,7 @@ class BetterAgent(SimpleAgent, ABC):
         if not offer:
             return None
         offer = list(offer)
-        offer[UNIT_PRICE] = self._find_good_price(
-            self.get_ami(negotiator_id), state
-        )
+        offer[UNIT_PRICE] = self._find_good_price(self.get_ami(negotiator_id), state)
         return tuple(offer)
 
     def respond(self, negotiator_id, state, offer):
@@ -121,8 +121,8 @@ class BetterAgent(SimpleAgent, ABC):
             return response
         ami = self.get_ami(negotiator_id)
         return (
-            response if
-            self._is_good_price(ami, state, offer[UNIT_PRICE])
+            response
+            if self._is_good_price(ami, state, offer[UNIT_PRICE])
             else ResponseType.REJECT_OFFER
         )
 
@@ -195,17 +195,17 @@ class AgentT064(AdaptiveAgent, ABC):
     better_agent = BetterAgent(concession_exponent=0.2)
 
     def __init__(
-            self,
-            *args,
-            acc_price_slack=float("inf"),
-            step_price_slack=float("inf"),
-            opp_price_slack=0.0,
-            opp_acc_price_slack=0.2,
-            range_slack=0.03,
-            concession_exponent=0.1,
-            worst_opp_acc_price_slack=0.0,
-            first_offer_price_slack=INF,
-            **kwargs
+        self,
+        *args,
+        acc_price_slack=float("inf"),
+        step_price_slack=float("inf"),
+        opp_price_slack=0.0,
+        opp_acc_price_slack=0.2,
+        range_slack=0.03,
+        concession_exponent=0.1,
+        worst_opp_acc_price_slack=0.0,
+        first_offer_price_slack=INF,
+        **kwargs
     ):
         super().__init__(*args, **kwargs)
         self._e = concession_exponent
@@ -222,8 +222,12 @@ class AgentT064(AdaptiveAgent, ABC):
         self.new_price_selling, self.new_price_buying = float("inf"), 0.0  # 価格変化後の交渉価格
         self.new_price_slack = 0.05
         self.concession_threshold = 3  # 譲歩の変化率の閾値
-        self.worst_opp_acc_price_slack = worst_opp_acc_price_slack  # 相手にとって最も良い合意価格に関するSlack変数
-        self.first_offer_price_slack = first_offer_price_slack  # 合意のない相手に対するoffer価格に関するslack変数
+        self.worst_opp_acc_price_slack = (
+            worst_opp_acc_price_slack  # 相手にとって最も良い合意価格に関するSlack変数
+        )
+        self.first_offer_price_slack = (
+            first_offer_price_slack  # 合意のない相手に対するoffer価格に関するslack変数
+        )
 
         # 取引情報
         self.success_list = defaultdict(lambda: list())  # 交渉成功した際の取引データ
@@ -252,9 +256,13 @@ class AgentT064(AdaptiveAgent, ABC):
         is_selling = self._is_selling(self.get_ami(negotiator_id))
         ami = self.get_ami(negotiator_id)
         if is_selling:
-            self.nego_info["my_name"] = shorten_name(self.get_ami(negotiator_id).annotation["seller"])
+            self.nego_info["my_name"] = shorten_name(
+                self.get_ami(negotiator_id).annotation["seller"]
+            )
         else:
-            self.nego_info["my_name"] = shorten_name(self.get_ami(negotiator_id).annotation["buyer"])
+            self.nego_info["my_name"] = shorten_name(
+                self.get_ami(negotiator_id).annotation["buyer"]
+            )
 
     def on_negotiation_success(self, contract, mechanism):
         """Record sales/supplies secured"""
@@ -266,19 +274,33 @@ class AgentT064(AdaptiveAgent, ABC):
         if self._is_selling(mechanism):
             partner = contract.annotation["buyer"]
             self._best_acc_selling = max(up, self._best_acc_selling)
-            self._best_opp_acc_selling[partner] = max(up, self._best_opp_acc_selling[partner])
+            self._best_opp_acc_selling[partner] = max(
+                up, self._best_opp_acc_selling[partner]
+            )
         else:
             partner = contract.annotation["seller"]
             self._best_acc_buying = min(up, self._best_acc_buying)
-            self._best_opp_acc_buying[partner] = min(up, self._best_opp_acc_buying[partner])
+            self._best_opp_acc_buying[partner] = min(
+                up, self._best_opp_acc_buying[partner]
+            )
 
         # 取引データを記録
         if self._is_selling(mechanism):
             self.success_list[shorten_name(contract.partners[0])].append(
-                [contract.agreement["quantity"], self.awi.current_step, contract.agreement["unit_price"]])
+                [
+                    contract.agreement["quantity"],
+                    self.awi.current_step,
+                    contract.agreement["unit_price"],
+                ]
+            )
         else:
             self.success_list[shorten_name(contract.partners[1])].append(
-                [contract.agreement["quantity"], self.awi.current_step, contract.agreement["unit_price"]])
+                [
+                    contract.agreement["quantity"],
+                    self.awi.current_step,
+                    contract.agreement["unit_price"],
+                ]
+            )
         self.success_contracts.append(contract)
 
     def propose(self, negotiator_id: str, state) -> "Outcome":
@@ -304,7 +326,9 @@ class AgentT064(AdaptiveAgent, ABC):
     def respond(self, negotiator_id, state, offer):
         # find the quantity I still need and end negotiation if I need nothing more
         self.nego_info["negotiation_step"] = state.step  # 交渉ステップを記録
-        self._record_information({shorten_name(negotiator_id): offer}, False)  # offerの保存
+        self._record_information(
+            {shorten_name(negotiator_id): offer}, False
+        )  # offerの保存
 
         # update my current best price to use for limiting concession in other
         # negotiations
@@ -332,13 +356,23 @@ class AgentT064(AdaptiveAgent, ABC):
 
         # パラメタの設定
         name = ami.annotation["buyer"] if is_selling else ami.annotation["seller"]
-        success_agreements = opponent_agreements(ami, is_selling, self.success_contracts)
-        accept_agreements = [_ for _ in success_agreements
-                             if _.mechanism_state["current_proposer"] == self.nego_info["my_name"]]
-        offer_agreements = [_ for _ in success_agreements
-                            if _.mechanism_state["current_proposer"] != self.nego_info["my_name"]]
+        success_agreements = opponent_agreements(
+            ami, is_selling, self.success_contracts
+        )
+        accept_agreements = [
+            _
+            for _ in success_agreements
+            if _.mechanism_state["current_proposer"] == self.nego_info["my_name"]
+        ]
+        offer_agreements = [
+            _
+            for _ in success_agreements
+            if _.mechanism_state["current_proposer"] != self.nego_info["my_name"]
+        ]
         step = state.step
-        rank = opponent_rank(list(self.active_negotiators.keys()), is_selling, self.success_contracts)
+        rank = opponent_rank(
+            list(self.active_negotiators.keys()), is_selling, self.success_contracts
+        )
         good_price_range = self._good_price_range(ami)
         std = good_price_range["max"] if is_selling else good_price_range["min"]
         # std = (good_price_range["min"] + good_price_range["max"]) / 2
@@ -349,9 +383,13 @@ class AgentT064(AdaptiveAgent, ABC):
                 if success_agreements:
                     if accept_agreements:
                         pattern.append("accept_agreements")
-                        if price_comparison(is_selling,
-                                            worst_opp_acc_price(ami, is_selling, self.success_contracts),
-                                            std):
+                        if price_comparison(
+                            is_selling,
+                            worst_opp_acc_price(
+                                ami, is_selling, self.success_contracts
+                            ),
+                            std,
+                        ):
                             pattern.append("good")
                         else:
                             pattern.append("bad")
@@ -369,9 +407,13 @@ class AgentT064(AdaptiveAgent, ABC):
                 if success_agreements:
                     if accept_agreements:
                         pattern.append("accept_agreements")
-                        if price_comparison(is_selling,
-                                            worst_opp_acc_price(ami, is_selling, self.success_contracts),
-                                            std):
+                        if price_comparison(
+                            is_selling,
+                            worst_opp_acc_price(
+                                ami, is_selling, self.success_contracts
+                            ),
+                            std,
+                        ):
                             pattern.append("good")
                         else:
                             pattern.append("bad")
@@ -399,7 +441,9 @@ class AgentT064(AdaptiveAgent, ABC):
 
         # 相手の譲歩率に応じて判断
         name = ami.annotation["buyer"] if is_selling else ami.annotation["seller"]
-        success_agreements = opponent_agreements(ami, is_selling, self.success_contracts)
+        success_agreements = opponent_agreements(
+            ami, is_selling, self.success_contracts
+        )
         pattern = ["accept"]
         if self.nego_info["negotiation_step"] >= ami.n_steps - 1:
             # 譲歩率の変化
@@ -437,8 +481,12 @@ class AgentT064(AdaptiveAgent, ABC):
         mx = ami.issues[UNIT_PRICE].max_value
         mn = ami.issues[UNIT_PRICE].min_value
 
-        price_range = {"min": mn + AgentT064.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn),
-                       "max": mx - AgentT064.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn)}
+        price_range = {
+            "min": mn
+            + AgentT064.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn),
+            "max": mx
+            - AgentT064.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn),
+        }
 
         return price_range
 
@@ -461,7 +509,9 @@ class AgentT064(AdaptiveAgent, ABC):
         if time < th[0]:
             strong_degree = strong_range["max"]
         elif th[0] <= time <= th[1] or 0.5 < self._self_factor(ami):
-            strong_degree = strong_range["max"] - rng * min(time - th[0] / th[1] - th[0], 1)
+            strong_degree = strong_range["max"] - rng * min(
+                time - th[0] / th[1] - th[0], 1
+            )
         else:
             strong_degree = strong_range["min"] - 0.1
 
@@ -479,53 +529,63 @@ class AgentT064(AdaptiveAgent, ABC):
 
         if self._is_selling(ami):
             partner = ami.annotation["buyer"]
-            mn = min(mx * (1 - self._range_slack),
-                     # self.new_price_selling * (1 - self.new_price_slack),
-                     # min([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [float("inf")]),
-                     # min([_.agreement["unit_price"] for _ in success_agreements] + [float("inf")]),
-                     worst_opp_acc_price(ami, is_selling, self.success_contracts)
-                     * (1 + self.worst_opp_acc_price_slack),
-                     max(
-                         [mn]
-                         + [
-                             p * (1 - slack)
-                             for p, slack in (
-                                 (self._best_selling, self._step_price_slack),
-                                 # (self._best_acc_selling, self._acc_price_slack),
-                                 (self._best_opp_selling[partner], self._opp_price_slack),
-                                 (
-                                     self._best_opp_acc_selling[partner],
-                                     self._opp_acc_price_slack,
-                                 ),
-                                 (self._first_offer_price(name), self.first_offer_price_slack),
-                             )
-                         ]
-                     ))
+            mn = min(
+                mx * (1 - self._range_slack),
+                # self.new_price_selling * (1 - self.new_price_slack),
+                # min([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [float("inf")]),
+                # min([_.agreement["unit_price"] for _ in success_agreements] + [float("inf")]),
+                worst_opp_acc_price(ami, is_selling, self.success_contracts)
+                * (1 + self.worst_opp_acc_price_slack),
+                max(
+                    [mn]
+                    + [
+                        p * (1 - slack)
+                        for p, slack in (
+                            (self._best_selling, self._step_price_slack),
+                            # (self._best_acc_selling, self._acc_price_slack),
+                            (self._best_opp_selling[partner], self._opp_price_slack),
+                            (
+                                self._best_opp_acc_selling[partner],
+                                self._opp_acc_price_slack,
+                            ),
+                            (
+                                self._first_offer_price(name),
+                                self.first_offer_price_slack,
+                            ),
+                        )
+                    ]
+                ),
+            )
         else:
             partner = ami.annotation["seller"]
-            mx = max(mn * (1 + self._range_slack),
-                     # self.new_price_buying * (1 + self.new_price_slack),
-                     # max([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [0]),
-                     # max([_.agreement["unit_price"] for _ in success_agreements] + [0]),
-                     worst_opp_acc_price(ami, is_selling, self.success_contracts)
-                     * (1 - self.worst_opp_acc_price_slack),
-                     min(
-                         [mx]
-                         + [
-                             p * (1 + slack)
-                             for p, slack in (
-                                 (self._best_buying, self._step_price_slack),
-                                 # (self._best_acc_buying, self._acc_price_slack),
-                                 (self._best_opp_buying[partner], self._opp_price_slack),
-                                 (
-                                     self._best_opp_acc_buying[partner],
-                                     self._opp_acc_price_slack,
-                                 ),
-                                 # (self.opp_next_price(partner), self._opp_price_slack),
-                                 (self._first_offer_price(name), self.first_offer_price_slack),
-                             )
-                         ]
-                     ))
+            mx = max(
+                mn * (1 + self._range_slack),
+                # self.new_price_buying * (1 + self.new_price_slack),
+                # max([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [0]),
+                # max([_.agreement["unit_price"] for _ in success_agreements] + [0]),
+                worst_opp_acc_price(ami, is_selling, self.success_contracts)
+                * (1 - self.worst_opp_acc_price_slack),
+                min(
+                    [mx]
+                    + [
+                        p * (1 + slack)
+                        for p, slack in (
+                            (self._best_buying, self._step_price_slack),
+                            # (self._best_acc_buying, self._acc_price_slack),
+                            (self._best_opp_buying[partner], self._opp_price_slack),
+                            (
+                                self._best_opp_acc_buying[partner],
+                                self._opp_acc_price_slack,
+                            ),
+                            # (self.opp_next_price(partner), self._opp_price_slack),
+                            (
+                                self._first_offer_price(name),
+                                self.first_offer_price_slack,
+                            ),
+                        )
+                    ]
+                ),
+            )
         return mn, mx
 
     def _self_factor(self, ami):
@@ -538,15 +598,20 @@ class AgentT064(AdaptiveAgent, ABC):
         w_prev, w_good = param_normalization([w_prev, w_good])
 
         # これまでの交渉成功割合
-        success_agreements = [[_.agreement, _.mechanism_state["current_proposer"]] for _ in self.success_contracts]
+        success_agreements = [
+            [_.agreement, _.mechanism_state["current_proposer"]]
+            for _ in self.success_contracts
+        ]
         if success_agreements:
-            simulation_steps = set([lis[0]["time"] for lis in success_agreements])
-            prev_agreement = (len(simulation_steps) / (self.awi.current_step + 1))
+            simulation_steps = {lis[0]["time"] for lis in success_agreements}
+            prev_agreement = len(simulation_steps) / (self.awi.current_step + 1)
         else:
             prev_agreement = 1
 
         # 良い値段で合意できているか
-        success_agreements = opponent_agreements(ami, self._is_selling(ami), self.success_contracts)
+        success_agreements = opponent_agreements(
+            ami, self._is_selling(ami), self.success_contracts
+        )
         if success_agreements:
             tp = self.awi.trading_prices[1]
             prev_up = success_agreements[-1].agreement["unit_price"]
@@ -579,7 +644,11 @@ class AgentT064(AdaptiveAgent, ABC):
     def _opp_concession_rate_change(self, name: str):
         """相手の譲歩の変化率を計算"""
         ami = self.get_ami(name)
-        offers = [_ for _ in self.opp_offer_list[shorten_name(name)] if _[TIME] == self.awi.current_step]
+        offers = [
+            _
+            for _ in self.opp_offer_list[shorten_name(name)]
+            if _[TIME] == self.awi.current_step
+        ]
         if len(offers) >= 3:
             prev = offers[-2][UNIT_PRICE] - offers[-3][UNIT_PRICE]
             now = offers[-1][UNIT_PRICE] - offers[-2][UNIT_PRICE]
@@ -697,7 +766,11 @@ class AgentT064(AdaptiveAgent, ABC):
     def _opp_next_price(self, name):
         delta = 1
         ami = self.get_ami(name)
-        offers = [_ for _ in self.opp_offer_list[shorten_name(name)] if _[TIME] == self.awi.current_step]
+        offers = [
+            _
+            for _ in self.opp_offer_list[shorten_name(name)]
+            if _[TIME] == self.awi.current_step
+        ]
 
         if len(offers) == 0 or self.nego_info["negotiation_step"] == ami.n_steps:
             if self._is_selling(ami):
@@ -723,8 +796,10 @@ class AgentT064(AdaptiveAgent, ABC):
         # 最終ステップかつこれ以上相手のOfferがない場合は受け入れ
         ami = self.get_ami(name)
         is_selling = self._is_selling(ami)
-        if self.nego_info["negotiation_step"] >= ami.n_steps - 1 \
-                and len(self.failure_opp_list) == len(self.active_negotiators.keys()) - 1:
+        if (
+            self.nego_info["negotiation_step"] >= ami.n_steps - 1
+            and len(self.failure_opp_list) == len(self.active_negotiators.keys()) - 1
+        ):
             response = ResponseType.ACCEPT_OFFER
 
         # 受け入れない場合はリストに追加
@@ -761,9 +836,11 @@ class AgentT064(AdaptiveAgent, ABC):
         if self.awi.current_step == timing:
             if self.nego_info["negotiation_step"] < 2:
                 if is_selling:
-                    self.new_price_selling = \
-                        min(ami.issues[UNIT_PRICE].max_value * 0.9,
-                            min([_.agreement["unit_price"] for _ in self.success_contracts]) * (1 - slack))
+                    self.new_price_selling = min(
+                        ami.issues[UNIT_PRICE].max_value * 0.9,
+                        min(_.agreement["unit_price"] for _ in self.success_contracts)
+                        * (1 - slack),
+                    )
                     offer[UNIT_PRICE] = self.new_price_selling
                 # else:
                 #     self.new_price_buying = \
@@ -786,17 +863,17 @@ class AgentT063(AdaptiveAgent, ABC):
     better_agent = BetterAgent(concession_exponent=0.2)
 
     def __init__(
-            self,
-            *args,
-            acc_price_slack=float("inf"),
-            step_price_slack=float("inf"),
-            opp_price_slack=0.0,
-            opp_acc_price_slack=0.2,
-            range_slack=0.03,
-            concession_exponent=0.1,
-            worst_opp_acc_price_slack=0.0,
-            first_offer_price_slack=INF,
-            **kwargs
+        self,
+        *args,
+        acc_price_slack=float("inf"),
+        step_price_slack=float("inf"),
+        opp_price_slack=0.0,
+        opp_acc_price_slack=0.2,
+        range_slack=0.03,
+        concession_exponent=0.1,
+        worst_opp_acc_price_slack=0.0,
+        first_offer_price_slack=INF,
+        **kwargs
     ):
         super().__init__(*args, **kwargs)
         self._e = concession_exponent
@@ -813,8 +890,12 @@ class AgentT063(AdaptiveAgent, ABC):
         self.new_price_selling, self.new_price_buying = float("inf"), 0.0  # 価格変化後の交渉価格
         self.new_price_slack = 0.05
         self.concession_threshold = 3  # 譲歩の変化率の閾値
-        self.worst_opp_acc_price_slack = worst_opp_acc_price_slack  # 相手にとって最も良い合意価格に関するSlack変数
-        self.first_offer_price_slack = first_offer_price_slack  # 合意のない相手に対するoffer価格に関するslack変数
+        self.worst_opp_acc_price_slack = (
+            worst_opp_acc_price_slack  # 相手にとって最も良い合意価格に関するSlack変数
+        )
+        self.first_offer_price_slack = (
+            first_offer_price_slack  # 合意のない相手に対するoffer価格に関するslack変数
+        )
 
         # 取引情報
         self.success_list = defaultdict(lambda: list())  # 交渉成功した際の取引データ
@@ -843,9 +924,13 @@ class AgentT063(AdaptiveAgent, ABC):
         is_selling = self._is_selling(self.get_ami(negotiator_id))
         ami = self.get_ami(negotiator_id)
         if is_selling:
-            self.nego_info["my_name"] = shorten_name(self.get_ami(negotiator_id).annotation["seller"])
+            self.nego_info["my_name"] = shorten_name(
+                self.get_ami(negotiator_id).annotation["seller"]
+            )
         else:
-            self.nego_info["my_name"] = shorten_name(self.get_ami(negotiator_id).annotation["buyer"])
+            self.nego_info["my_name"] = shorten_name(
+                self.get_ami(negotiator_id).annotation["buyer"]
+            )
 
     def on_negotiation_success(self, contract, mechanism):
         """Record sales/supplies secured"""
@@ -857,19 +942,33 @@ class AgentT063(AdaptiveAgent, ABC):
         if self._is_selling(mechanism):
             partner = contract.annotation["buyer"]
             self._best_acc_selling = max(up, self._best_acc_selling)
-            self._best_opp_acc_selling[partner] = max(up, self._best_opp_acc_selling[partner])
+            self._best_opp_acc_selling[partner] = max(
+                up, self._best_opp_acc_selling[partner]
+            )
         else:
             partner = contract.annotation["seller"]
             self._best_acc_buying = min(up, self._best_acc_buying)
-            self._best_opp_acc_buying[partner] = min(up, self._best_opp_acc_buying[partner])
+            self._best_opp_acc_buying[partner] = min(
+                up, self._best_opp_acc_buying[partner]
+            )
 
         # 取引データを記録
         if self._is_selling(mechanism):
             self.success_list[shorten_name(contract.partners[0])].append(
-                [contract.agreement["quantity"], self.awi.current_step, contract.agreement["unit_price"]])
+                [
+                    contract.agreement["quantity"],
+                    self.awi.current_step,
+                    contract.agreement["unit_price"],
+                ]
+            )
         else:
             self.success_list[shorten_name(contract.partners[1])].append(
-                [contract.agreement["quantity"], self.awi.current_step, contract.agreement["unit_price"]])
+                [
+                    contract.agreement["quantity"],
+                    self.awi.current_step,
+                    contract.agreement["unit_price"],
+                ]
+            )
         self.success_contracts.append(contract)
 
     def propose(self, negotiator_id: str, state) -> "Outcome":
@@ -895,7 +994,9 @@ class AgentT063(AdaptiveAgent, ABC):
     def respond(self, negotiator_id, state, offer):
         # find the quantity I still need and end negotiation if I need nothing more
         self.nego_info["negotiation_step"] = state.step  # 交渉ステップを記録
-        self._record_information({shorten_name(negotiator_id): offer}, False)  # offerの保存
+        self._record_information(
+            {shorten_name(negotiator_id): offer}, False
+        )  # offerの保存
 
         # update my current best price to use for limiting concession in other
         # negotiations
@@ -931,13 +1032,23 @@ class AgentT063(AdaptiveAgent, ABC):
 
         # パラメタの設定
         name = ami.annotation["buyer"] if is_selling else ami.annotation["seller"]
-        success_agreements = opponent_agreements(ami, is_selling, self.success_contracts)
-        accept_agreements = [_ for _ in success_agreements
-                             if _.mechanism_state["current_proposer"] == self.nego_info["my_name"]]
-        offer_agreements = [_ for _ in success_agreements
-                            if _.mechanism_state["current_proposer"] != self.nego_info["my_name"]]
+        success_agreements = opponent_agreements(
+            ami, is_selling, self.success_contracts
+        )
+        accept_agreements = [
+            _
+            for _ in success_agreements
+            if _.mechanism_state["current_proposer"] == self.nego_info["my_name"]
+        ]
+        offer_agreements = [
+            _
+            for _ in success_agreements
+            if _.mechanism_state["current_proposer"] != self.nego_info["my_name"]
+        ]
         step = state.step
-        rank = opponent_rank(list(self.active_negotiators.keys()), is_selling, self.success_contracts)
+        rank = opponent_rank(
+            list(self.active_negotiators.keys()), is_selling, self.success_contracts
+        )
         good_price_range = self._good_price_range(ami)
         std = good_price_range["max"] if is_selling else good_price_range["min"]
         # std = (good_price_range["min"] + good_price_range["max"]) / 2
@@ -948,9 +1059,13 @@ class AgentT063(AdaptiveAgent, ABC):
                 if success_agreements:
                     if accept_agreements:
                         pattern.append("accept_agreements")
-                        if price_comparison(is_selling,
-                                            worst_opp_acc_price(ami, is_selling, self.success_contracts),
-                                            std):
+                        if price_comparison(
+                            is_selling,
+                            worst_opp_acc_price(
+                                ami, is_selling, self.success_contracts
+                            ),
+                            std,
+                        ):
                             pattern.append("good")
                         else:
                             pattern.append("bad")
@@ -968,9 +1083,13 @@ class AgentT063(AdaptiveAgent, ABC):
                 if success_agreements:
                     if accept_agreements:
                         pattern.append("accept_agreements")
-                        if price_comparison(is_selling,
-                                            worst_opp_acc_price(ami, is_selling, self.success_contracts),
-                                            std):
+                        if price_comparison(
+                            is_selling,
+                            worst_opp_acc_price(
+                                ami, is_selling, self.success_contracts
+                            ),
+                            std,
+                        ):
                             pattern.append("good")
                         else:
                             pattern.append("bad")
@@ -998,7 +1117,9 @@ class AgentT063(AdaptiveAgent, ABC):
 
         # 相手の譲歩率に応じて判断
         name = ami.annotation["buyer"] if is_selling else ami.annotation["seller"]
-        success_agreements = opponent_agreements(ami, is_selling, self.success_contracts)
+        success_agreements = opponent_agreements(
+            ami, is_selling, self.success_contracts
+        )
         pattern = ["accept"]
         if self.nego_info["negotiation_step"] >= ami.n_steps - 1:
             # 譲歩率の変化
@@ -1036,8 +1157,12 @@ class AgentT063(AdaptiveAgent, ABC):
         mx = ami.issues[UNIT_PRICE].max_value
         mn = ami.issues[UNIT_PRICE].min_value
 
-        price_range = {"min": mn + AgentT063.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn),
-                       "max": mx - AgentT063.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn)}
+        price_range = {
+            "min": mn
+            + AgentT063.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn),
+            "max": mx
+            - AgentT063.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn),
+        }
 
         return price_range
 
@@ -1071,7 +1196,9 @@ class AgentT063(AdaptiveAgent, ABC):
         if time < th[0]:
             strong_degree = strong_range["max"]
         elif th[0] <= time <= th[1] or 0.5 < self._self_factor(ami):
-            strong_degree = strong_range["max"] - rng * min(time - th[0] / th[1] - th[0], 1)
+            strong_degree = strong_range["max"] - rng * min(
+                time - th[0] / th[1] - th[0], 1
+            )
         else:
             strong_degree = strong_range["min"] - 0.1
 
@@ -1089,53 +1216,63 @@ class AgentT063(AdaptiveAgent, ABC):
 
         if self._is_selling(ami):
             partner = ami.annotation["buyer"]
-            mn = min(mx * (1 - self._range_slack),
-                     # self.new_price_selling * (1 - self.new_price_slack),
-                     # min([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [float("inf")]),
-                     # min([_.agreement["unit_price"] for _ in success_agreements] + [float("inf")]),
-                     worst_opp_acc_price(ami, is_selling, self.success_contracts)
-                     * (1 + self.worst_opp_acc_price_slack),
-                     max(
-                         [mn]
-                         + [
-                             p * (1 - slack)
-                             for p, slack in (
-                                 (self._best_selling, self._step_price_slack),
-                                 # (self._best_acc_selling, self._acc_price_slack),
-                                 (self._best_opp_selling[partner], self._opp_price_slack),
-                                 (
-                                     self._best_opp_acc_selling[partner],
-                                     self._opp_acc_price_slack,
-                                 ),
-                                 (self._first_offer_price(name), self.first_offer_price_slack),
-                             )
-                         ]
-                     ))
+            mn = min(
+                mx * (1 - self._range_slack),
+                # self.new_price_selling * (1 - self.new_price_slack),
+                # min([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [float("inf")]),
+                # min([_.agreement["unit_price"] for _ in success_agreements] + [float("inf")]),
+                worst_opp_acc_price(ami, is_selling, self.success_contracts)
+                * (1 + self.worst_opp_acc_price_slack),
+                max(
+                    [mn]
+                    + [
+                        p * (1 - slack)
+                        for p, slack in (
+                            (self._best_selling, self._step_price_slack),
+                            # (self._best_acc_selling, self._acc_price_slack),
+                            (self._best_opp_selling[partner], self._opp_price_slack),
+                            (
+                                self._best_opp_acc_selling[partner],
+                                self._opp_acc_price_slack,
+                            ),
+                            (
+                                self._first_offer_price(name),
+                                self.first_offer_price_slack,
+                            ),
+                        )
+                    ]
+                ),
+            )
         else:
             partner = ami.annotation["seller"]
-            mx = max(mn * (1 + self._range_slack),
-                     # self.new_price_buying * (1 + self.new_price_slack),
-                     # max([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [0]),
-                     # max([_.agreement["unit_price"] for _ in success_agreements] + [0]),
-                     worst_opp_acc_price(ami, is_selling, self.success_contracts)
-                     * (1 - self.worst_opp_acc_price_slack),
-                     min(
-                         [mx]
-                         + [
-                             p * (1 + slack)
-                             for p, slack in (
-                                 (self._best_buying, self._step_price_slack),
-                                 # (self._best_acc_buying, self._acc_price_slack),
-                                 (self._best_opp_buying[partner], self._opp_price_slack),
-                                 (
-                                     self._best_opp_acc_buying[partner],
-                                     self._opp_acc_price_slack,
-                                 ),
-                                 # (self.opp_next_price(partner), self._opp_price_slack),
-                                 (self._first_offer_price(name), self.first_offer_price_slack),
-                             )
-                         ]
-                     ))
+            mx = max(
+                mn * (1 + self._range_slack),
+                # self.new_price_buying * (1 + self.new_price_slack),
+                # max([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [0]),
+                # max([_.agreement["unit_price"] for _ in success_agreements] + [0]),
+                worst_opp_acc_price(ami, is_selling, self.success_contracts)
+                * (1 - self.worst_opp_acc_price_slack),
+                min(
+                    [mx]
+                    + [
+                        p * (1 + slack)
+                        for p, slack in (
+                            (self._best_buying, self._step_price_slack),
+                            # (self._best_acc_buying, self._acc_price_slack),
+                            (self._best_opp_buying[partner], self._opp_price_slack),
+                            (
+                                self._best_opp_acc_buying[partner],
+                                self._opp_acc_price_slack,
+                            ),
+                            # (self.opp_next_price(partner), self._opp_price_slack),
+                            (
+                                self._first_offer_price(name),
+                                self.first_offer_price_slack,
+                            ),
+                        )
+                    ]
+                ),
+            )
         return mn, mx
 
     def _self_factor(self, ami):
@@ -1148,15 +1285,20 @@ class AgentT063(AdaptiveAgent, ABC):
         w_prev, w_good = param_normalization([w_prev, w_good])
 
         # これまでの交渉成功割合
-        success_agreements = [[_.agreement, _.mechanism_state["current_proposer"]] for _ in self.success_contracts]
+        success_agreements = [
+            [_.agreement, _.mechanism_state["current_proposer"]]
+            for _ in self.success_contracts
+        ]
         if success_agreements:
-            simulation_steps = set([lis[0]["time"] for lis in success_agreements])
-            prev_agreement = (len(simulation_steps) / (self.awi.current_step + 1))
+            simulation_steps = {lis[0]["time"] for lis in success_agreements}
+            prev_agreement = len(simulation_steps) / (self.awi.current_step + 1)
         else:
             prev_agreement = 1
 
         # 良い値段で合意できているか
-        success_agreements = opponent_agreements(ami, self._is_selling(ami), self.success_contracts)
+        success_agreements = opponent_agreements(
+            ami, self._is_selling(ami), self.success_contracts
+        )
         if success_agreements:
             tp = self.awi.trading_prices[1]
             prev_up = success_agreements[-1].agreement["unit_price"]
@@ -1189,7 +1331,11 @@ class AgentT063(AdaptiveAgent, ABC):
     def _opp_concession_rate_change(self, name: str):
         """相手の譲歩の変化率を計算"""
         ami = self.get_ami(name)
-        offers = [_ for _ in self.opp_offer_list[shorten_name(name)] if _[TIME] == self.awi.current_step]
+        offers = [
+            _
+            for _ in self.opp_offer_list[shorten_name(name)]
+            if _[TIME] == self.awi.current_step
+        ]
         if len(offers) >= 3:
             prev = offers[-2][UNIT_PRICE] - offers[-3][UNIT_PRICE]
             now = offers[-1][UNIT_PRICE] - offers[-2][UNIT_PRICE]
@@ -1307,7 +1453,11 @@ class AgentT063(AdaptiveAgent, ABC):
     def _opp_next_price(self, name):
         delta = 1
         ami = self.get_ami(name)
-        offers = [_ for _ in self.opp_offer_list[shorten_name(name)] if _[TIME] == self.awi.current_step]
+        offers = [
+            _
+            for _ in self.opp_offer_list[shorten_name(name)]
+            if _[TIME] == self.awi.current_step
+        ]
 
         if len(offers) == 0 or self.nego_info["negotiation_step"] == ami.n_steps:
             if self._is_selling(ami):
@@ -1333,8 +1483,10 @@ class AgentT063(AdaptiveAgent, ABC):
         # 最終ステップかつこれ以上相手のOfferがない場合は受け入れ
         ami = self.get_ami(name)
         is_selling = self._is_selling(ami)
-        if self.nego_info["negotiation_step"] >= ami.n_steps - 1 \
-                and len(self.failure_opp_list) == len(self.active_negotiators.keys()) - 1:
+        if (
+            self.nego_info["negotiation_step"] >= ami.n_steps - 1
+            and len(self.failure_opp_list) == len(self.active_negotiators.keys()) - 1
+        ):
             response = ResponseType.ACCEPT_OFFER
 
         # 受け入れない場合はリストに追加
@@ -1371,9 +1523,11 @@ class AgentT063(AdaptiveAgent, ABC):
         if self.awi.current_step == timing:
             if self.nego_info["negotiation_step"] < 2:
                 if is_selling:
-                    self.new_price_selling = \
-                        min(ami.issues[UNIT_PRICE].max_value * 0.9,
-                            min([_.agreement["unit_price"] for _ in self.success_contracts]) * (1 - slack))
+                    self.new_price_selling = min(
+                        ami.issues[UNIT_PRICE].max_value * 0.9,
+                        min(_.agreement["unit_price"] for _ in self.success_contracts)
+                        * (1 - slack),
+                    )
                     offer[UNIT_PRICE] = self.new_price_selling
                 # else:
                 #     self.new_price_buying = \
@@ -1396,17 +1550,17 @@ class AgentT062(AdaptiveAgent, ABC):
     better_agent = BetterAgent(concession_exponent=0.2)
 
     def __init__(
-            self,
-            *args,
-            acc_price_slack=float("inf"),
-            step_price_slack=float("inf"),
-            opp_price_slack=0.0,
-            opp_acc_price_slack=0.2,
-            range_slack=0.03,
-            concession_exponent=0.1,
-            worst_opp_acc_price_slack=0.0,
-            first_offer_price_slack=INF,
-            **kwargs
+        self,
+        *args,
+        acc_price_slack=float("inf"),
+        step_price_slack=float("inf"),
+        opp_price_slack=0.0,
+        opp_acc_price_slack=0.2,
+        range_slack=0.03,
+        concession_exponent=0.1,
+        worst_opp_acc_price_slack=0.0,
+        first_offer_price_slack=INF,
+        **kwargs
     ):
         super().__init__(*args, **kwargs)
         self._e = concession_exponent
@@ -1423,8 +1577,12 @@ class AgentT062(AdaptiveAgent, ABC):
         self.new_price_selling, self.new_price_buying = float("inf"), 0.0  # 価格変化後の交渉価格
         self.new_price_slack = 0.05
         self.concession_threshold = 3  # 譲歩の変化率の閾値
-        self.worst_opp_acc_price_slack = worst_opp_acc_price_slack  # 相手にとって最も良い合意価格に関するSlack変数
-        self.first_offer_price_slack = first_offer_price_slack  # 合意のない相手に対するoffer価格に関するslack変数
+        self.worst_opp_acc_price_slack = (
+            worst_opp_acc_price_slack  # 相手にとって最も良い合意価格に関するSlack変数
+        )
+        self.first_offer_price_slack = (
+            first_offer_price_slack  # 合意のない相手に対するoffer価格に関するslack変数
+        )
 
         # 取引情報
         self.success_list = defaultdict(lambda: list())  # 交渉成功した際の取引データ
@@ -1453,9 +1611,13 @@ class AgentT062(AdaptiveAgent, ABC):
         is_selling = self._is_selling(self.get_ami(negotiator_id))
         ami = self.get_ami(negotiator_id)
         if is_selling:
-            self.nego_info["my_name"] = shorten_name(self.get_ami(negotiator_id).annotation["seller"])
+            self.nego_info["my_name"] = shorten_name(
+                self.get_ami(negotiator_id).annotation["seller"]
+            )
         else:
-            self.nego_info["my_name"] = shorten_name(self.get_ami(negotiator_id).annotation["buyer"])
+            self.nego_info["my_name"] = shorten_name(
+                self.get_ami(negotiator_id).annotation["buyer"]
+            )
 
     def on_negotiation_success(self, contract, mechanism):
         """Record sales/supplies secured"""
@@ -1467,19 +1629,33 @@ class AgentT062(AdaptiveAgent, ABC):
         if self._is_selling(mechanism):
             partner = contract.annotation["buyer"]
             self._best_acc_selling = max(up, self._best_acc_selling)
-            self._best_opp_acc_selling[partner] = max(up, self._best_opp_acc_selling[partner])
+            self._best_opp_acc_selling[partner] = max(
+                up, self._best_opp_acc_selling[partner]
+            )
         else:
             partner = contract.annotation["seller"]
             self._best_acc_buying = min(up, self._best_acc_buying)
-            self._best_opp_acc_buying[partner] = min(up, self._best_opp_acc_buying[partner])
+            self._best_opp_acc_buying[partner] = min(
+                up, self._best_opp_acc_buying[partner]
+            )
 
         # 取引データを記録
         if self._is_selling(mechanism):
             self.success_list[shorten_name(contract.partners[0])].append(
-                [contract.agreement["quantity"], self.awi.current_step, contract.agreement["unit_price"]])
+                [
+                    contract.agreement["quantity"],
+                    self.awi.current_step,
+                    contract.agreement["unit_price"],
+                ]
+            )
         else:
             self.success_list[shorten_name(contract.partners[1])].append(
-                [contract.agreement["quantity"], self.awi.current_step, contract.agreement["unit_price"]])
+                [
+                    contract.agreement["quantity"],
+                    self.awi.current_step,
+                    contract.agreement["unit_price"],
+                ]
+            )
         self.success_contracts.append(contract)
 
     def propose(self, negotiator_id: str, state) -> "Outcome":
@@ -1505,7 +1681,9 @@ class AgentT062(AdaptiveAgent, ABC):
     def respond(self, negotiator_id, state, offer):
         # find the quantity I still need and end negotiation if I need nothing more
         self.nego_info["negotiation_step"] = state.step  # 交渉ステップを記録
-        self._record_information({shorten_name(negotiator_id): offer}, False)  # offerの保存
+        self._record_information(
+            {shorten_name(negotiator_id): offer}, False
+        )  # offerの保存
 
         # update my current best price to use for limiting concession in other
         # negotiations
@@ -1541,13 +1719,23 @@ class AgentT062(AdaptiveAgent, ABC):
 
         # パラメタの設定
         name = ami.annotation["buyer"] if is_selling else ami.annotation["seller"]
-        success_agreements = opponent_agreements(ami, is_selling, self.success_contracts)
-        accept_agreements = [_ for _ in success_agreements
-                             if _.mechanism_state["current_proposer"] == self.nego_info["my_name"]]
-        offer_agreements = [_ for _ in success_agreements
-                            if _.mechanism_state["current_proposer"] != self.nego_info["my_name"]]
+        success_agreements = opponent_agreements(
+            ami, is_selling, self.success_contracts
+        )
+        accept_agreements = [
+            _
+            for _ in success_agreements
+            if _.mechanism_state["current_proposer"] == self.nego_info["my_name"]
+        ]
+        offer_agreements = [
+            _
+            for _ in success_agreements
+            if _.mechanism_state["current_proposer"] != self.nego_info["my_name"]
+        ]
         step = state.step
-        rank = opponent_rank(list(self.active_negotiators.keys()), is_selling, self.success_contracts)
+        rank = opponent_rank(
+            list(self.active_negotiators.keys()), is_selling, self.success_contracts
+        )
         good_price_range = self._good_price_range(ami)
         std = good_price_range["max"] if is_selling else good_price_range["min"]
         pattern = ["offer"]
@@ -1557,9 +1745,13 @@ class AgentT062(AdaptiveAgent, ABC):
                 if success_agreements:
                     if accept_agreements:
                         pattern.append("accept_agreements")
-                        if price_comparison(is_selling,
-                                            worst_opp_acc_price(ami, is_selling, self.success_contracts),
-                                            std):
+                        if price_comparison(
+                            is_selling,
+                            worst_opp_acc_price(
+                                ami, is_selling, self.success_contracts
+                            ),
+                            std,
+                        ):
                             pattern.append("good")
                         else:
                             pattern.append("bad")
@@ -1577,9 +1769,13 @@ class AgentT062(AdaptiveAgent, ABC):
                 if success_agreements:
                     if accept_agreements:
                         pattern.append("accept_agreements")
-                        if price_comparison(is_selling,
-                                            worst_opp_acc_price(ami, is_selling, self.success_contracts),
-                                            std):
+                        if price_comparison(
+                            is_selling,
+                            worst_opp_acc_price(
+                                ami, is_selling, self.success_contracts
+                            ),
+                            std,
+                        ):
                             pattern.append("good")
                         else:
                             pattern.append("bad")
@@ -1607,7 +1803,9 @@ class AgentT062(AdaptiveAgent, ABC):
 
         # 相手の譲歩率に応じて判断
         name = ami.annotation["buyer"] if is_selling else ami.annotation["seller"]
-        success_agreements = opponent_agreements(ami, is_selling, self.success_contracts)
+        success_agreements = opponent_agreements(
+            ami, is_selling, self.success_contracts
+        )
         pattern = ["accept"]
         if self.nego_info["negotiation_step"] >= ami.n_steps - 1:
             # 譲歩率の変化
@@ -1645,8 +1843,12 @@ class AgentT062(AdaptiveAgent, ABC):
         mx = ami.issues[UNIT_PRICE].max_value
         mn = ami.issues[UNIT_PRICE].min_value
 
-        price_range = {"min": mn + AgentT062.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn),
-                       "max": mx - AgentT062.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn)}
+        price_range = {
+            "min": mn
+            + AgentT062.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn),
+            "max": mx
+            - AgentT062.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn),
+        }
 
         return price_range
 
@@ -1680,7 +1882,9 @@ class AgentT062(AdaptiveAgent, ABC):
         if time < th[0]:
             strong_degree = strong_range["max"]
         elif th[0] <= time <= th[1] or 0.5 < self._self_factor(ami):
-            strong_degree = strong_range["max"] - rng * min(time - th[0] / th[1] - th[0], 1)
+            strong_degree = strong_range["max"] - rng * min(
+                time - th[0] / th[1] - th[0], 1
+            )
         else:
             strong_degree = strong_range["min"] - 0.1
 
@@ -1698,53 +1902,63 @@ class AgentT062(AdaptiveAgent, ABC):
 
         if self._is_selling(ami):
             partner = ami.annotation["buyer"]
-            mn = min(mx * (1 - self._range_slack),
-                     # self.new_price_selling * (1 - self.new_price_slack),
-                     # min([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [float("inf")]),
-                     # min([_.agreement["unit_price"] for _ in success_agreements] + [float("inf")]),
-                     worst_opp_acc_price(ami, is_selling, self.success_contracts)
-                     * (1 + self.worst_opp_acc_price_slack),
-                     max(
-                         [mn]
-                         + [
-                             p * (1 - slack)
-                             for p, slack in (
-                                 (self._best_selling, self._step_price_slack),
-                                 # (self._best_acc_selling, self._acc_price_slack),
-                                 (self._best_opp_selling[partner], self._opp_price_slack),
-                                 (
-                                     self._best_opp_acc_selling[partner],
-                                     self._opp_acc_price_slack,
-                                 ),
-                                 (self._first_offer_price(name), self.first_offer_price_slack),
-                             )
-                         ]
-                     ))
+            mn = min(
+                mx * (1 - self._range_slack),
+                # self.new_price_selling * (1 - self.new_price_slack),
+                # min([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [float("inf")]),
+                # min([_.agreement["unit_price"] for _ in success_agreements] + [float("inf")]),
+                worst_opp_acc_price(ami, is_selling, self.success_contracts)
+                * (1 + self.worst_opp_acc_price_slack),
+                max(
+                    [mn]
+                    + [
+                        p * (1 - slack)
+                        for p, slack in (
+                            (self._best_selling, self._step_price_slack),
+                            # (self._best_acc_selling, self._acc_price_slack),
+                            (self._best_opp_selling[partner], self._opp_price_slack),
+                            (
+                                self._best_opp_acc_selling[partner],
+                                self._opp_acc_price_slack,
+                            ),
+                            (
+                                self._first_offer_price(name),
+                                self.first_offer_price_slack,
+                            ),
+                        )
+                    ]
+                ),
+            )
         else:
             partner = ami.annotation["seller"]
-            mx = max(mn * (1 + self._range_slack),
-                     # self.new_price_buying * (1 + self.new_price_slack),
-                     # max([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [0]),
-                     # max([_.agreement["unit_price"] for _ in success_agreements] + [0]),
-                     worst_opp_acc_price(ami, is_selling, self.success_contracts)
-                     * (1 - self.worst_opp_acc_price_slack),
-                     min(
-                         [mx]
-                         + [
-                             p * (1 + slack)
-                             for p, slack in (
-                                 (self._best_buying, self._step_price_slack),
-                                 # (self._best_acc_buying, self._acc_price_slack),
-                                 (self._best_opp_buying[partner], self._opp_price_slack),
-                                 (
-                                     self._best_opp_acc_buying[partner],
-                                     self._opp_acc_price_slack,
-                                 ),
-                                 # (self.opp_next_price(partner), self._opp_price_slack),
-                                 (self._first_offer_price(name), self.first_offer_price_slack),
-                             )
-                         ]
-                     ))
+            mx = max(
+                mn * (1 + self._range_slack),
+                # self.new_price_buying * (1 + self.new_price_slack),
+                # max([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [0]),
+                # max([_.agreement["unit_price"] for _ in success_agreements] + [0]),
+                worst_opp_acc_price(ami, is_selling, self.success_contracts)
+                * (1 - self.worst_opp_acc_price_slack),
+                min(
+                    [mx]
+                    + [
+                        p * (1 + slack)
+                        for p, slack in (
+                            (self._best_buying, self._step_price_slack),
+                            # (self._best_acc_buying, self._acc_price_slack),
+                            (self._best_opp_buying[partner], self._opp_price_slack),
+                            (
+                                self._best_opp_acc_buying[partner],
+                                self._opp_acc_price_slack,
+                            ),
+                            # (self.opp_next_price(partner), self._opp_price_slack),
+                            (
+                                self._first_offer_price(name),
+                                self.first_offer_price_slack,
+                            ),
+                        )
+                    ]
+                ),
+            )
         return mn, mx
 
     def _self_factor(self, ami):
@@ -1757,15 +1971,20 @@ class AgentT062(AdaptiveAgent, ABC):
         w_prev, w_good = param_normalization([w_prev, w_good])
 
         # これまでの交渉成功割合
-        success_agreements = [[_.agreement, _.mechanism_state["current_proposer"]] for _ in self.success_contracts]
+        success_agreements = [
+            [_.agreement, _.mechanism_state["current_proposer"]]
+            for _ in self.success_contracts
+        ]
         if success_agreements:
-            simulation_steps = set([lis[0]["time"] for lis in success_agreements])
-            prev_agreement = (len(simulation_steps) / (self.awi.current_step + 1))
+            simulation_steps = {lis[0]["time"] for lis in success_agreements}
+            prev_agreement = len(simulation_steps) / (self.awi.current_step + 1)
         else:
             prev_agreement = 1
 
         # 良い値段で合意できているか
-        success_agreements = opponent_agreements(ami, self._is_selling(ami), self.success_contracts)
+        success_agreements = opponent_agreements(
+            ami, self._is_selling(ami), self.success_contracts
+        )
         if success_agreements:
             tp = self.awi.trading_prices[1]
             prev_up = success_agreements[-1].agreement["unit_price"]
@@ -1798,7 +2017,11 @@ class AgentT062(AdaptiveAgent, ABC):
     def _opp_concession_rate_change(self, name: str):
         """相手の譲歩の変化率を計算"""
         ami = self.get_ami(name)
-        offers = [_ for _ in self.opp_offer_list[shorten_name(name)] if _[TIME] == self.awi.current_step]
+        offers = [
+            _
+            for _ in self.opp_offer_list[shorten_name(name)]
+            if _[TIME] == self.awi.current_step
+        ]
         if len(offers) >= 3:
             prev = offers[-2][UNIT_PRICE] - offers[-3][UNIT_PRICE]
             now = offers[-1][UNIT_PRICE] - offers[-2][UNIT_PRICE]
@@ -1916,7 +2139,11 @@ class AgentT062(AdaptiveAgent, ABC):
     def _opp_next_price(self, name):
         delta = 1
         ami = self.get_ami(name)
-        offers = [_ for _ in self.opp_offer_list[shorten_name(name)] if _[TIME] == self.awi.current_step]
+        offers = [
+            _
+            for _ in self.opp_offer_list[shorten_name(name)]
+            if _[TIME] == self.awi.current_step
+        ]
 
         if len(offers) == 0 or self.nego_info["negotiation_step"] == ami.n_steps:
             if self._is_selling(ami):
@@ -1942,8 +2169,10 @@ class AgentT062(AdaptiveAgent, ABC):
         # 最終ステップかつこれ以上相手のOfferがない場合は受け入れ
         ami = self.get_ami(name)
         is_selling = self._is_selling(ami)
-        if self.nego_info["negotiation_step"] >= ami.n_steps - 1 \
-                and len(self.failure_opp_list) == len(self.active_negotiators.keys()) - 1:
+        if (
+            self.nego_info["negotiation_step"] >= ami.n_steps - 1
+            and len(self.failure_opp_list) == len(self.active_negotiators.keys()) - 1
+        ):
             response = ResponseType.ACCEPT_OFFER
 
         # 受け入れない場合はリストに追加
@@ -1980,9 +2209,11 @@ class AgentT062(AdaptiveAgent, ABC):
         if self.awi.current_step == timing:
             if self.nego_info["negotiation_step"] < 2:
                 if is_selling:
-                    self.new_price_selling = \
-                        min(ami.issues[UNIT_PRICE].max_value * 0.9,
-                            min([_.agreement["unit_price"] for _ in self.success_contracts]) * (1 - slack))
+                    self.new_price_selling = min(
+                        ami.issues[UNIT_PRICE].max_value * 0.9,
+                        min(_.agreement["unit_price"] for _ in self.success_contracts)
+                        * (1 - slack),
+                    )
                     offer[UNIT_PRICE] = self.new_price_selling
                 # else:
                 #     self.new_price_buying = \
@@ -2005,17 +2236,17 @@ class AgentT061(AdaptiveAgent, ABC):
     better_agent = BetterAgent(concession_exponent=0.2)
 
     def __init__(
-            self,
-            *args,
-            acc_price_slack=float("inf"),
-            step_price_slack=float("inf"),
-            opp_price_slack=0.0,
-            opp_acc_price_slack=0.2,
-            range_slack=0.03,
-            concession_exponent=0.1,
-            worst_opp_acc_price_slack=0.0,
-            first_offer_price_slack=INF,
-            **kwargs
+        self,
+        *args,
+        acc_price_slack=float("inf"),
+        step_price_slack=float("inf"),
+        opp_price_slack=0.0,
+        opp_acc_price_slack=0.2,
+        range_slack=0.03,
+        concession_exponent=0.1,
+        worst_opp_acc_price_slack=0.0,
+        first_offer_price_slack=INF,
+        **kwargs
     ):
         super().__init__(*args, **kwargs)
         self._e = concession_exponent
@@ -2032,8 +2263,12 @@ class AgentT061(AdaptiveAgent, ABC):
         self.new_price_selling, self.new_price_buying = float("inf"), 0.0  # 価格変化後の交渉価格
         self.new_price_slack = 0.05
         self.concession_threshold = 3  # 譲歩の変化率の閾値
-        self.worst_opp_acc_price_slack = worst_opp_acc_price_slack  # 相手にとって最も良い合意価格に関するSlack変数
-        self.first_offer_price_slack = first_offer_price_slack  # 合意のない相手に対するoffer価格に関するslack変数
+        self.worst_opp_acc_price_slack = (
+            worst_opp_acc_price_slack  # 相手にとって最も良い合意価格に関するSlack変数
+        )
+        self.first_offer_price_slack = (
+            first_offer_price_slack  # 合意のない相手に対するoffer価格に関するslack変数
+        )
 
         # 取引情報
         self.success_list = defaultdict(lambda: list())  # 交渉成功した際の取引データ
@@ -2062,9 +2297,13 @@ class AgentT061(AdaptiveAgent, ABC):
         is_selling = self._is_selling(self.get_ami(negotiator_id))
         ami = self.get_ami(negotiator_id)
         if is_selling:
-            self.nego_info["my_name"] = shorten_name(self.get_ami(negotiator_id).annotation["seller"])
+            self.nego_info["my_name"] = shorten_name(
+                self.get_ami(negotiator_id).annotation["seller"]
+            )
         else:
-            self.nego_info["my_name"] = shorten_name(self.get_ami(negotiator_id).annotation["buyer"])
+            self.nego_info["my_name"] = shorten_name(
+                self.get_ami(negotiator_id).annotation["buyer"]
+            )
 
     def on_negotiation_success(self, contract, mechanism):
         """Record sales/supplies secured"""
@@ -2076,19 +2315,33 @@ class AgentT061(AdaptiveAgent, ABC):
         if self._is_selling(mechanism):
             partner = contract.annotation["buyer"]
             self._best_acc_selling = max(up, self._best_acc_selling)
-            self._best_opp_acc_selling[partner] = max(up, self._best_opp_acc_selling[partner])
+            self._best_opp_acc_selling[partner] = max(
+                up, self._best_opp_acc_selling[partner]
+            )
         else:
             partner = contract.annotation["seller"]
             self._best_acc_buying = min(up, self._best_acc_buying)
-            self._best_opp_acc_buying[partner] = min(up, self._best_opp_acc_buying[partner])
+            self._best_opp_acc_buying[partner] = min(
+                up, self._best_opp_acc_buying[partner]
+            )
 
         # 取引データを記録
         if self._is_selling(mechanism):
             self.success_list[shorten_name(contract.partners[0])].append(
-                [contract.agreement["quantity"], self.awi.current_step, contract.agreement["unit_price"]])
+                [
+                    contract.agreement["quantity"],
+                    self.awi.current_step,
+                    contract.agreement["unit_price"],
+                ]
+            )
         else:
             self.success_list[shorten_name(contract.partners[1])].append(
-                [contract.agreement["quantity"], self.awi.current_step, contract.agreement["unit_price"]])
+                [
+                    contract.agreement["quantity"],
+                    self.awi.current_step,
+                    contract.agreement["unit_price"],
+                ]
+            )
         self.success_contracts.append(contract)
 
     def propose(self, negotiator_id: str, state) -> "Outcome":
@@ -2114,7 +2367,9 @@ class AgentT061(AdaptiveAgent, ABC):
     def respond(self, negotiator_id, state, offer):
         # find the quantity I still need and end negotiation if I need nothing more
         self.nego_info["negotiation_step"] = state.step  # 交渉ステップを記録
-        self._record_information({shorten_name(negotiator_id): offer}, False)  # offerの保存
+        self._record_information(
+            {shorten_name(negotiator_id): offer}, False
+        )  # offerの保存
 
         # update my current best price to use for limiting concession in other
         # negotiations
@@ -2150,13 +2405,23 @@ class AgentT061(AdaptiveAgent, ABC):
 
         # パラメタの設定
         name = ami.annotation["buyer"] if is_selling else ami.annotation["seller"]
-        success_agreements = opponent_agreements(ami, is_selling, self.success_contracts)
-        accept_agreements = [_ for _ in success_agreements
-                             if _.mechanism_state["current_proposer"] == self.nego_info["my_name"]]
-        offer_agreements = [_ for _ in success_agreements
-                            if _.mechanism_state["current_proposer"] != self.nego_info["my_name"]]
+        success_agreements = opponent_agreements(
+            ami, is_selling, self.success_contracts
+        )
+        accept_agreements = [
+            _
+            for _ in success_agreements
+            if _.mechanism_state["current_proposer"] == self.nego_info["my_name"]
+        ]
+        offer_agreements = [
+            _
+            for _ in success_agreements
+            if _.mechanism_state["current_proposer"] != self.nego_info["my_name"]
+        ]
         step = state.step
-        rank = opponent_rank(list(self.active_negotiators.keys()), is_selling, self.success_contracts)
+        rank = opponent_rank(
+            list(self.active_negotiators.keys()), is_selling, self.success_contracts
+        )
         good_price_range = self._good_price_range(ami)
         std = good_price_range["max"] if is_selling else good_price_range["min"]
         pattern = ["offer"]
@@ -2166,9 +2431,13 @@ class AgentT061(AdaptiveAgent, ABC):
                 if success_agreements:
                     if accept_agreements:
                         pattern.append("accept_agreements")
-                        if price_comparison(is_selling,
-                                            worst_opp_acc_price(ami, is_selling, self.success_contracts),
-                                            std):
+                        if price_comparison(
+                            is_selling,
+                            worst_opp_acc_price(
+                                ami, is_selling, self.success_contracts
+                            ),
+                            std,
+                        ):
                             pattern.append("good")
                         else:
                             pattern.append("bad")
@@ -2186,9 +2455,13 @@ class AgentT061(AdaptiveAgent, ABC):
                 if success_agreements:
                     if accept_agreements:
                         pattern.append("accept_agreements")
-                        if price_comparison(is_selling,
-                                            worst_opp_acc_price(ami, is_selling, self.success_contracts),
-                                            std):
+                        if price_comparison(
+                            is_selling,
+                            worst_opp_acc_price(
+                                ami, is_selling, self.success_contracts
+                            ),
+                            std,
+                        ):
                             pattern.append("good")
                         else:
                             pattern.append("bad")
@@ -2216,7 +2489,9 @@ class AgentT061(AdaptiveAgent, ABC):
 
         # 相手の譲歩率に応じて判断
         name = ami.annotation["buyer"] if is_selling else ami.annotation["seller"]
-        success_agreements = opponent_agreements(ami, is_selling, self.success_contracts)
+        success_agreements = opponent_agreements(
+            ami, is_selling, self.success_contracts
+        )
         pattern = ["accept"]
         if self.nego_info["negotiation_step"] >= ami.n_steps - 1:
             # 譲歩率の変化
@@ -2254,8 +2529,12 @@ class AgentT061(AdaptiveAgent, ABC):
         mx = ami.issues[UNIT_PRICE].max_value
         mn = ami.issues[UNIT_PRICE].min_value
 
-        price_range = {"min": mn + AgentT062.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn),
-                       "max": mx - AgentT062.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn)}
+        price_range = {
+            "min": mn
+            + AgentT062.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn),
+            "max": mx
+            - AgentT062.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn),
+        }
 
         return price_range
 
@@ -2289,7 +2568,9 @@ class AgentT061(AdaptiveAgent, ABC):
         if time < th[0]:
             strong_degree = strong_range["max"]
         elif th[0] <= time <= th[1] or 0.5 < self._self_factor(ami):
-            strong_degree = strong_range["max"] - rng * min(time - th[0] / th[1] - th[0], 1)
+            strong_degree = strong_range["max"] - rng * min(
+                time - th[0] / th[1] - th[0], 1
+            )
         else:
             strong_degree = strong_range["min"] - 0.1
 
@@ -2307,53 +2588,63 @@ class AgentT061(AdaptiveAgent, ABC):
 
         if self._is_selling(ami):
             partner = ami.annotation["buyer"]
-            mn = min(mx * (1 - self._range_slack),
-                     # self.new_price_selling * (1 - self.new_price_slack),
-                     # min([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [float("inf")]),
-                     # min([_.agreement["unit_price"] for _ in success_agreements] + [float("inf")]),
-                     worst_opp_acc_price(ami, is_selling, self.success_contracts)
-                     * (1 + self.worst_opp_acc_price_slack),
-                     max(
-                         [mn]
-                         + [
-                             p * (1 - slack)
-                             for p, slack in (
-                                 (self._best_selling, self._step_price_slack),
-                                 # (self._best_acc_selling, self._acc_price_slack),
-                                 (self._best_opp_selling[partner], self._opp_price_slack),
-                                 (
-                                     self._best_opp_acc_selling[partner],
-                                     self._opp_acc_price_slack,
-                                 ),
-                                 (self._first_offer_price(name), self.first_offer_price_slack),
-                             )
-                         ]
-                     ))
+            mn = min(
+                mx * (1 - self._range_slack),
+                # self.new_price_selling * (1 - self.new_price_slack),
+                # min([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [float("inf")]),
+                # min([_.agreement["unit_price"] for _ in success_agreements] + [float("inf")]),
+                worst_opp_acc_price(ami, is_selling, self.success_contracts)
+                * (1 + self.worst_opp_acc_price_slack),
+                max(
+                    [mn]
+                    + [
+                        p * (1 - slack)
+                        for p, slack in (
+                            (self._best_selling, self._step_price_slack),
+                            # (self._best_acc_selling, self._acc_price_slack),
+                            (self._best_opp_selling[partner], self._opp_price_slack),
+                            (
+                                self._best_opp_acc_selling[partner],
+                                self._opp_acc_price_slack,
+                            ),
+                            (
+                                self._first_offer_price(name),
+                                self.first_offer_price_slack,
+                            ),
+                        )
+                    ]
+                ),
+            )
         else:
             partner = ami.annotation["seller"]
-            mx = max(mn * (1 + self._range_slack),
-                     # self.new_price_buying * (1 + self.new_price_slack),
-                     # max([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [0]),
-                     # max([_.agreement["unit_price"] for _ in success_agreements] + [0]),
-                     worst_opp_acc_price(ami, is_selling, self.success_contracts)
-                     * (1 - self.worst_opp_acc_price_slack),
-                     min(
-                         [mx]
-                         + [
-                             p * (1 + slack)
-                             for p, slack in (
-                                 (self._best_buying, self._step_price_slack),
-                                 # (self._best_acc_buying, self._acc_price_slack),
-                                 (self._best_opp_buying[partner], self._opp_price_slack),
-                                 (
-                                     self._best_opp_acc_buying[partner],
-                                     self._opp_acc_price_slack,
-                                 ),
-                                 # (self.opp_next_price(partner), self._opp_price_slack),
-                                 (self._first_offer_price(name), self.first_offer_price_slack),
-                             )
-                         ]
-                     ))
+            mx = max(
+                mn * (1 + self._range_slack),
+                # self.new_price_buying * (1 + self.new_price_slack),
+                # max([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [0]),
+                # max([_.agreement["unit_price"] for _ in success_agreements] + [0]),
+                worst_opp_acc_price(ami, is_selling, self.success_contracts)
+                * (1 - self.worst_opp_acc_price_slack),
+                min(
+                    [mx]
+                    + [
+                        p * (1 + slack)
+                        for p, slack in (
+                            (self._best_buying, self._step_price_slack),
+                            # (self._best_acc_buying, self._acc_price_slack),
+                            (self._best_opp_buying[partner], self._opp_price_slack),
+                            (
+                                self._best_opp_acc_buying[partner],
+                                self._opp_acc_price_slack,
+                            ),
+                            # (self.opp_next_price(partner), self._opp_price_slack),
+                            (
+                                self._first_offer_price(name),
+                                self.first_offer_price_slack,
+                            ),
+                        )
+                    ]
+                ),
+            )
         return mn, mx
 
     def _self_factor(self, ami):
@@ -2366,15 +2657,20 @@ class AgentT061(AdaptiveAgent, ABC):
         w_prev, w_good = param_normalization([w_prev, w_good])
 
         # これまでの交渉成功割合
-        success_agreements = [[_.agreement, _.mechanism_state["current_proposer"]] for _ in self.success_contracts]
+        success_agreements = [
+            [_.agreement, _.mechanism_state["current_proposer"]]
+            for _ in self.success_contracts
+        ]
         if success_agreements:
-            simulation_steps = set([lis[0]["time"] for lis in success_agreements])
-            prev_agreement = (len(simulation_steps) / (self.awi.current_step + 1))
+            simulation_steps = {lis[0]["time"] for lis in success_agreements}
+            prev_agreement = len(simulation_steps) / (self.awi.current_step + 1)
         else:
             prev_agreement = 1
 
         # 良い値段で合意できているか
-        success_agreements = opponent_agreements(ami, self._is_selling(ami), self.success_contracts)
+        success_agreements = opponent_agreements(
+            ami, self._is_selling(ami), self.success_contracts
+        )
         if success_agreements:
             tp = self.awi.trading_prices[1]
             prev_up = success_agreements[-1].agreement["unit_price"]
@@ -2407,7 +2703,11 @@ class AgentT061(AdaptiveAgent, ABC):
     def _opp_concession_rate_change(self, name: str):
         """相手の譲歩の変化率を計算"""
         ami = self.get_ami(name)
-        offers = [_ for _ in self.opp_offer_list[shorten_name(name)] if _[TIME] == self.awi.current_step]
+        offers = [
+            _
+            for _ in self.opp_offer_list[shorten_name(name)]
+            if _[TIME] == self.awi.current_step
+        ]
         if len(offers) >= 3:
             prev = offers[-2][UNIT_PRICE] - offers[-3][UNIT_PRICE]
             now = offers[-1][UNIT_PRICE] - offers[-2][UNIT_PRICE]
@@ -2525,7 +2825,11 @@ class AgentT061(AdaptiveAgent, ABC):
     def _opp_next_price(self, name):
         delta = 1
         ami = self.get_ami(name)
-        offers = [_ for _ in self.opp_offer_list[shorten_name(name)] if _[TIME] == self.awi.current_step]
+        offers = [
+            _
+            for _ in self.opp_offer_list[shorten_name(name)]
+            if _[TIME] == self.awi.current_step
+        ]
 
         if len(offers) == 0 or self.nego_info["negotiation_step"] == ami.n_steps:
             if self._is_selling(ami):
@@ -2551,8 +2855,10 @@ class AgentT061(AdaptiveAgent, ABC):
         # 最終ステップかつこれ以上相手のOfferがない場合は受け入れ
         ami = self.get_ami(name)
         is_selling = self._is_selling(ami)
-        if self.nego_info["negotiation_step"] >= ami.n_steps - 1 \
-                and len(self.failure_opp_list) == len(self.active_negotiators.keys()) - 1:
+        if (
+            self.nego_info["negotiation_step"] >= ami.n_steps - 1
+            and len(self.failure_opp_list) == len(self.active_negotiators.keys()) - 1
+        ):
             response = ResponseType.ACCEPT_OFFER
 
         # 受け入れない場合はリストに追加
@@ -2589,9 +2895,11 @@ class AgentT061(AdaptiveAgent, ABC):
         if self.awi.current_step == timing:
             if self.nego_info["negotiation_step"] < 2:
                 if is_selling:
-                    self.new_price_selling = \
-                        min(ami.issues[UNIT_PRICE].max_value * 0.9,
-                            min([_.agreement["unit_price"] for _ in self.success_contracts]) * (1 - slack))
+                    self.new_price_selling = min(
+                        ami.issues[UNIT_PRICE].max_value * 0.9,
+                        min(_.agreement["unit_price"] for _ in self.success_contracts)
+                        * (1 - slack),
+                    )
                     offer[UNIT_PRICE] = self.new_price_selling
                 # else:
                 #     self.new_price_buying = \
@@ -2614,17 +2922,17 @@ class AgentT060(AdaptiveAgent, ABC):
     better_agent = BetterAgent(concession_exponent=0.2)
 
     def __init__(
-            self,
-            *args,
-            acc_price_slack=float("inf"),
-            step_price_slack=float("inf"),
-            opp_price_slack=0.0,
-            opp_acc_price_slack=0.2,
-            range_slack=0.03,
-            concession_exponent=0.1,
-            worst_opp_acc_price_slack=0.0,
-            first_offer_price_slack=INF,
-            **kwargs
+        self,
+        *args,
+        acc_price_slack=float("inf"),
+        step_price_slack=float("inf"),
+        opp_price_slack=0.0,
+        opp_acc_price_slack=0.2,
+        range_slack=0.03,
+        concession_exponent=0.1,
+        worst_opp_acc_price_slack=0.0,
+        first_offer_price_slack=INF,
+        **kwargs
     ):
         super().__init__(*args, **kwargs)
         self._e = concession_exponent
@@ -2641,8 +2949,12 @@ class AgentT060(AdaptiveAgent, ABC):
         self.new_price_selling, self.new_price_buying = float("inf"), 0.0  # 価格変化後の交渉価格
         self.new_price_slack = 0.05
         self.concession_threshold = 3  # 譲歩の変化率の閾値
-        self.worst_opp_acc_price_slack = worst_opp_acc_price_slack  # 相手にとって最も良い合意価格に関するSlack変数
-        self.first_offer_price_slack = first_offer_price_slack  # 合意のない相手に対するoffer価格に関するslack変数
+        self.worst_opp_acc_price_slack = (
+            worst_opp_acc_price_slack  # 相手にとって最も良い合意価格に関するSlack変数
+        )
+        self.first_offer_price_slack = (
+            first_offer_price_slack  # 合意のない相手に対するoffer価格に関するslack変数
+        )
 
         # 取引情報
         self.success_list = defaultdict(lambda: list())  # 交渉成功した際の取引データ
@@ -2671,9 +2983,13 @@ class AgentT060(AdaptiveAgent, ABC):
         is_selling = self._is_selling(self.get_ami(negotiator_id))
         ami = self.get_ami(negotiator_id)
         if is_selling:
-            self.nego_info["my_name"] = shorten_name(self.get_ami(negotiator_id).annotation["seller"])
+            self.nego_info["my_name"] = shorten_name(
+                self.get_ami(negotiator_id).annotation["seller"]
+            )
         else:
-            self.nego_info["my_name"] = shorten_name(self.get_ami(negotiator_id).annotation["buyer"])
+            self.nego_info["my_name"] = shorten_name(
+                self.get_ami(negotiator_id).annotation["buyer"]
+            )
 
     def on_negotiation_success(self, contract, mechanism):
         """Record sales/supplies secured"""
@@ -2685,19 +3001,33 @@ class AgentT060(AdaptiveAgent, ABC):
         if self._is_selling(mechanism):
             partner = contract.annotation["buyer"]
             self._best_acc_selling = max(up, self._best_acc_selling)
-            self._best_opp_acc_selling[partner] = max(up, self._best_opp_acc_selling[partner])
+            self._best_opp_acc_selling[partner] = max(
+                up, self._best_opp_acc_selling[partner]
+            )
         else:
             partner = contract.annotation["seller"]
             self._best_acc_buying = min(up, self._best_acc_buying)
-            self._best_opp_acc_buying[partner] = min(up, self._best_opp_acc_buying[partner])
+            self._best_opp_acc_buying[partner] = min(
+                up, self._best_opp_acc_buying[partner]
+            )
 
         # 取引データを記録
         if self._is_selling(mechanism):
             self.success_list[shorten_name(contract.partners[0])].append(
-                [contract.agreement["quantity"], self.awi.current_step, contract.agreement["unit_price"]])
+                [
+                    contract.agreement["quantity"],
+                    self.awi.current_step,
+                    contract.agreement["unit_price"],
+                ]
+            )
         else:
             self.success_list[shorten_name(contract.partners[1])].append(
-                [contract.agreement["quantity"], self.awi.current_step, contract.agreement["unit_price"]])
+                [
+                    contract.agreement["quantity"],
+                    self.awi.current_step,
+                    contract.agreement["unit_price"],
+                ]
+            )
         self.success_contracts.append(contract)
 
     def propose(self, negotiator_id: str, state) -> "Outcome":
@@ -2723,7 +3053,9 @@ class AgentT060(AdaptiveAgent, ABC):
     def respond(self, negotiator_id, state, offer):
         # find the quantity I still need and end negotiation if I need nothing more
         self.nego_info["negotiation_step"] = state.step  # 交渉ステップを記録
-        self._record_information({shorten_name(negotiator_id): offer}, False)  # offerの保存
+        self._record_information(
+            {shorten_name(negotiator_id): offer}, False
+        )  # offerの保存
 
         # update my current best price to use for limiting concession in other
         # negotiations
@@ -2759,13 +3091,23 @@ class AgentT060(AdaptiveAgent, ABC):
 
         # パラメタの設定
         name = ami.annotation["buyer"] if is_selling else ami.annotation["seller"]
-        success_agreements = opponent_agreements(ami, is_selling, self.success_contracts)
-        accept_agreements = [_ for _ in success_agreements
-                             if _.mechanism_state["current_proposer"] == self.nego_info["my_name"]]
-        offer_agreements = [_ for _ in success_agreements
-                            if _.mechanism_state["current_proposer"] != self.nego_info["my_name"]]
+        success_agreements = opponent_agreements(
+            ami, is_selling, self.success_contracts
+        )
+        accept_agreements = [
+            _
+            for _ in success_agreements
+            if _.mechanism_state["current_proposer"] == self.nego_info["my_name"]
+        ]
+        offer_agreements = [
+            _
+            for _ in success_agreements
+            if _.mechanism_state["current_proposer"] != self.nego_info["my_name"]
+        ]
         step = state.step
-        rank = opponent_rank(list(self.active_negotiators.keys()), is_selling, self.success_contracts)
+        rank = opponent_rank(
+            list(self.active_negotiators.keys()), is_selling, self.success_contracts
+        )
         good_price_range = self._good_price_range(ami)
         std = good_price_range["max"] if is_selling else good_price_range["min"]
         pattern = ["offer"]
@@ -2775,9 +3117,13 @@ class AgentT060(AdaptiveAgent, ABC):
                 if success_agreements:
                     if accept_agreements:
                         pattern.append("accept_agreements")
-                        if price_comparison(is_selling,
-                                            worst_opp_acc_price(ami, is_selling, self.success_contracts),
-                                            std):
+                        if price_comparison(
+                            is_selling,
+                            worst_opp_acc_price(
+                                ami, is_selling, self.success_contracts
+                            ),
+                            std,
+                        ):
                             pattern.append("good")
                         else:
                             pattern.append("bad")
@@ -2795,9 +3141,13 @@ class AgentT060(AdaptiveAgent, ABC):
                 if success_agreements:
                     if accept_agreements:
                         pattern.append("accept_agreements")
-                        if price_comparison(is_selling,
-                                            worst_opp_acc_price(ami, is_selling, self.success_contracts),
-                                            std):
+                        if price_comparison(
+                            is_selling,
+                            worst_opp_acc_price(
+                                ami, is_selling, self.success_contracts
+                            ),
+                            std,
+                        ):
                             pattern.append("good")
                         else:
                             pattern.append("bad")
@@ -2825,7 +3175,9 @@ class AgentT060(AdaptiveAgent, ABC):
 
         # 相手の譲歩率に応じて判断
         name = ami.annotation["buyer"] if is_selling else ami.annotation["seller"]
-        success_agreements = opponent_agreements(ami, is_selling, self.success_contracts)
+        success_agreements = opponent_agreements(
+            ami, is_selling, self.success_contracts
+        )
         pattern = ["accept"]
         if self.nego_info["negotiation_step"] >= ami.n_steps - 1:
             # 譲歩率の変化
@@ -2863,8 +3215,12 @@ class AgentT060(AdaptiveAgent, ABC):
         mx = ami.issues[UNIT_PRICE].max_value
         mn = ami.issues[UNIT_PRICE].min_value
 
-        price_range = {"min": mn + AgentT062.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn),
-                       "max": mx - AgentT062.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn)}
+        price_range = {
+            "min": mn
+            + AgentT062.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn),
+            "max": mx
+            - AgentT062.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn),
+        }
 
         return price_range
 
@@ -2898,7 +3254,9 @@ class AgentT060(AdaptiveAgent, ABC):
         if time < th[0]:
             strong_degree = strong_range["max"]
         elif th[0] <= time <= th[1] or 0.5 < self._self_factor(ami):
-            strong_degree = strong_range["max"] - rng * min(time - th[0] / th[1] - th[0], 1)
+            strong_degree = strong_range["max"] - rng * min(
+                time - th[0] / th[1] - th[0], 1
+            )
         else:
             strong_degree = strong_range["min"] - 0.1
 
@@ -2916,53 +3274,63 @@ class AgentT060(AdaptiveAgent, ABC):
 
         if self._is_selling(ami):
             partner = ami.annotation["buyer"]
-            mn = min(mx * (1 - self._range_slack),
-                     # self.new_price_selling * (1 - self.new_price_slack),
-                     # min([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [float("inf")]),
-                     # min([_.agreement["unit_price"] for _ in success_agreements] + [float("inf")]),
-                     worst_opp_acc_price(ami, is_selling, self.success_contracts)
-                     * (1 + self.worst_opp_acc_price_slack),
-                     max(
-                         [mn]
-                         + [
-                             p * (1 - slack)
-                             for p, slack in (
-                                 (self._best_selling, self._step_price_slack),
-                                 # (self._best_acc_selling, self._acc_price_slack),
-                                 (self._best_opp_selling[partner], self._opp_price_slack),
-                                 (
-                                     self._best_opp_acc_selling[partner],
-                                     self._opp_acc_price_slack,
-                                 ),
-                                 (self._first_offer_price(name), self.first_offer_price_slack),
-                             )
-                         ]
-                     ))
+            mn = min(
+                mx * (1 - self._range_slack),
+                # self.new_price_selling * (1 - self.new_price_slack),
+                # min([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [float("inf")]),
+                # min([_.agreement["unit_price"] for _ in success_agreements] + [float("inf")]),
+                worst_opp_acc_price(ami, is_selling, self.success_contracts)
+                * (1 + self.worst_opp_acc_price_slack),
+                max(
+                    [mn]
+                    + [
+                        p * (1 - slack)
+                        for p, slack in (
+                            (self._best_selling, self._step_price_slack),
+                            # (self._best_acc_selling, self._acc_price_slack),
+                            (self._best_opp_selling[partner], self._opp_price_slack),
+                            (
+                                self._best_opp_acc_selling[partner],
+                                self._opp_acc_price_slack,
+                            ),
+                            (
+                                self._first_offer_price(name),
+                                self.first_offer_price_slack,
+                            ),
+                        )
+                    ]
+                ),
+            )
         else:
             partner = ami.annotation["seller"]
-            mx = max(mn * (1 + self._range_slack),
-                     # self.new_price_buying * (1 + self.new_price_slack),
-                     # max([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [0]),
-                     # max([_.agreement["unit_price"] for _ in success_agreements] + [0]),
-                     worst_opp_acc_price(ami, is_selling, self.success_contracts)
-                     * (1 - self.worst_opp_acc_price_slack),
-                     min(
-                         [mx]
-                         + [
-                             p * (1 + slack)
-                             for p, slack in (
-                                 (self._best_buying, self._step_price_slack),
-                                 # (self._best_acc_buying, self._acc_price_slack),
-                                 (self._best_opp_buying[partner], self._opp_price_slack),
-                                 (
-                                     self._best_opp_acc_buying[partner],
-                                     self._opp_acc_price_slack,
-                                 ),
-                                 # (self.opp_next_price(partner), self._opp_price_slack),
-                                 (self._first_offer_price(name), self.first_offer_price_slack),
-                             )
-                         ]
-                     ))
+            mx = max(
+                mn * (1 + self._range_slack),
+                # self.new_price_buying * (1 + self.new_price_slack),
+                # max([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [0]),
+                # max([_.agreement["unit_price"] for _ in success_agreements] + [0]),
+                worst_opp_acc_price(ami, is_selling, self.success_contracts)
+                * (1 - self.worst_opp_acc_price_slack),
+                min(
+                    [mx]
+                    + [
+                        p * (1 + slack)
+                        for p, slack in (
+                            (self._best_buying, self._step_price_slack),
+                            # (self._best_acc_buying, self._acc_price_slack),
+                            (self._best_opp_buying[partner], self._opp_price_slack),
+                            (
+                                self._best_opp_acc_buying[partner],
+                                self._opp_acc_price_slack,
+                            ),
+                            # (self.opp_next_price(partner), self._opp_price_slack),
+                            (
+                                self._first_offer_price(name),
+                                self.first_offer_price_slack,
+                            ),
+                        )
+                    ]
+                ),
+            )
         return mn, mx
 
     def _self_factor(self, ami):
@@ -2975,15 +3343,20 @@ class AgentT060(AdaptiveAgent, ABC):
         w_prev, w_good = param_normalization([w_prev, w_good])
 
         # これまでの交渉成功割合
-        success_agreements = [[_.agreement, _.mechanism_state["current_proposer"]] for _ in self.success_contracts]
+        success_agreements = [
+            [_.agreement, _.mechanism_state["current_proposer"]]
+            for _ in self.success_contracts
+        ]
         if success_agreements:
-            simulation_steps = set([lis[0]["time"] for lis in success_agreements])
-            prev_agreement = (len(simulation_steps) / (self.awi.current_step + 1))
+            simulation_steps = {lis[0]["time"] for lis in success_agreements}
+            prev_agreement = len(simulation_steps) / (self.awi.current_step + 1)
         else:
             prev_agreement = 1
 
         # 良い値段で合意できているか
-        success_agreements = opponent_agreements(ami, self._is_selling(ami), self.success_contracts)
+        success_agreements = opponent_agreements(
+            ami, self._is_selling(ami), self.success_contracts
+        )
         if success_agreements:
             tp = self.awi.trading_prices[1]
             prev_up = success_agreements[-1].agreement["unit_price"]
@@ -3016,7 +3389,11 @@ class AgentT060(AdaptiveAgent, ABC):
     def _opp_concession_rate_change(self, name: str):
         """相手の譲歩の変化率を計算"""
         ami = self.get_ami(name)
-        offers = [_ for _ in self.opp_offer_list[shorten_name(name)] if _[TIME] == self.awi.current_step]
+        offers = [
+            _
+            for _ in self.opp_offer_list[shorten_name(name)]
+            if _[TIME] == self.awi.current_step
+        ]
         if len(offers) >= 3:
             prev = offers[-2][UNIT_PRICE] - offers[-3][UNIT_PRICE]
             now = offers[-1][UNIT_PRICE] - offers[-2][UNIT_PRICE]
@@ -3134,7 +3511,11 @@ class AgentT060(AdaptiveAgent, ABC):
     def _opp_next_price(self, name):
         delta = 1
         ami = self.get_ami(name)
-        offers = [_ for _ in self.opp_offer_list[shorten_name(name)] if _[TIME] == self.awi.current_step]
+        offers = [
+            _
+            for _ in self.opp_offer_list[shorten_name(name)]
+            if _[TIME] == self.awi.current_step
+        ]
 
         if len(offers) == 0 or self.nego_info["negotiation_step"] == ami.n_steps:
             if self._is_selling(ami):
@@ -3160,8 +3541,10 @@ class AgentT060(AdaptiveAgent, ABC):
         # 最終ステップかつこれ以上相手のOfferがない場合は受け入れ
         ami = self.get_ami(name)
         is_selling = self._is_selling(ami)
-        if self.nego_info["negotiation_step"] >= ami.n_steps - 1 \
-                and len(self.failure_opp_list) == len(self.active_negotiators.keys()) - 1:
+        if (
+            self.nego_info["negotiation_step"] >= ami.n_steps - 1
+            and len(self.failure_opp_list) == len(self.active_negotiators.keys()) - 1
+        ):
             response = ResponseType.ACCEPT_OFFER
 
         # 受け入れない場合はリストに追加
@@ -3198,9 +3581,11 @@ class AgentT060(AdaptiveAgent, ABC):
         if self.awi.current_step == timing:
             if self.nego_info["negotiation_step"] < 2:
                 if is_selling:
-                    self.new_price_selling = \
-                        min(ami.issues[UNIT_PRICE].max_value * 0.9,
-                            min([_.agreement["unit_price"] for _ in self.success_contracts]) * (1 - slack))
+                    self.new_price_selling = min(
+                        ami.issues[UNIT_PRICE].max_value * 0.9,
+                        min(_.agreement["unit_price"] for _ in self.success_contracts)
+                        * (1 - slack),
+                    )
                     offer[UNIT_PRICE] = self.new_price_selling
                 # else:
                 #     self.new_price_buying = \
@@ -3223,17 +3608,17 @@ class AgentT056(AdaptiveAgent, ABC):
     better_agent = BetterAgent(concession_exponent=0.2)
 
     def __init__(
-            self,
-            *args,
-            acc_price_slack=float("inf"),
-            step_price_slack=float("inf"),
-            opp_price_slack=0.0,
-            opp_acc_price_slack=0.2,
-            range_slack=0.03,
-            concession_exponent=0.1,
-            worst_opp_acc_price_slack=0.0,
-            first_offer_price_slack=INF,
-            **kwargs
+        self,
+        *args,
+        acc_price_slack=float("inf"),
+        step_price_slack=float("inf"),
+        opp_price_slack=0.0,
+        opp_acc_price_slack=0.2,
+        range_slack=0.03,
+        concession_exponent=0.1,
+        worst_opp_acc_price_slack=0.0,
+        first_offer_price_slack=INF,
+        **kwargs
     ):
         super().__init__(*args, **kwargs)
         self._e = concession_exponent
@@ -3250,8 +3635,12 @@ class AgentT056(AdaptiveAgent, ABC):
         self.new_price_selling, self.new_price_buying = float("inf"), 0.0  # 価格変化後の交渉価格
         self.new_price_slack = 0.05
         self.concession_threshold = 3  # 譲歩の変化率の閾値
-        self.worst_opp_acc_price_slack = worst_opp_acc_price_slack  # 相手にとって最も良い合意価格に関するSlack変数
-        self.first_offer_price_slack = first_offer_price_slack  # 合意のない相手に対するoffer価格に関するslack変数
+        self.worst_opp_acc_price_slack = (
+            worst_opp_acc_price_slack  # 相手にとって最も良い合意価格に関するSlack変数
+        )
+        self.first_offer_price_slack = (
+            first_offer_price_slack  # 合意のない相手に対するoffer価格に関するslack変数
+        )
 
         # 取引情報
         self.success_list = defaultdict(lambda: list())  # 交渉成功した際の取引データ
@@ -3280,9 +3669,13 @@ class AgentT056(AdaptiveAgent, ABC):
         is_selling = self._is_selling(self.get_ami(negotiator_id))
         ami = self.get_ami(negotiator_id)
         if is_selling:
-            self.nego_info["my_name"] = shorten_name(self.get_ami(negotiator_id).annotation["seller"])
+            self.nego_info["my_name"] = shorten_name(
+                self.get_ami(negotiator_id).annotation["seller"]
+            )
         else:
-            self.nego_info["my_name"] = shorten_name(self.get_ami(negotiator_id).annotation["buyer"])
+            self.nego_info["my_name"] = shorten_name(
+                self.get_ami(negotiator_id).annotation["buyer"]
+            )
 
     def on_negotiation_success(self, contract, mechanism):
         """Record sales/supplies secured"""
@@ -3294,19 +3687,33 @@ class AgentT056(AdaptiveAgent, ABC):
         if self._is_selling(mechanism):
             partner = contract.annotation["buyer"]
             self._best_acc_selling = max(up, self._best_acc_selling)
-            self._best_opp_acc_selling[partner] = max(up, self._best_opp_acc_selling[partner])
+            self._best_opp_acc_selling[partner] = max(
+                up, self._best_opp_acc_selling[partner]
+            )
         else:
             partner = contract.annotation["seller"]
             self._best_acc_buying = min(up, self._best_acc_buying)
-            self._best_opp_acc_buying[partner] = min(up, self._best_opp_acc_buying[partner])
+            self._best_opp_acc_buying[partner] = min(
+                up, self._best_opp_acc_buying[partner]
+            )
 
         # 取引データを記録
         if self._is_selling(mechanism):
             self.success_list[shorten_name(contract.partners[0])].append(
-                [contract.agreement["quantity"], self.awi.current_step, contract.agreement["unit_price"]])
+                [
+                    contract.agreement["quantity"],
+                    self.awi.current_step,
+                    contract.agreement["unit_price"],
+                ]
+            )
         else:
             self.success_list[shorten_name(contract.partners[1])].append(
-                [contract.agreement["quantity"], self.awi.current_step, contract.agreement["unit_price"]])
+                [
+                    contract.agreement["quantity"],
+                    self.awi.current_step,
+                    contract.agreement["unit_price"],
+                ]
+            )
         self.success_contracts.append(contract)
 
     def propose(self, negotiator_id: str, state) -> "Outcome":
@@ -3332,7 +3739,9 @@ class AgentT056(AdaptiveAgent, ABC):
     def respond(self, negotiator_id, state, offer):
         # find the quantity I still need and end negotiation if I need nothing more
         self.nego_info["negotiation_step"] = state.step  # 交渉ステップを記録
-        self._record_information({shorten_name(negotiator_id): offer}, False)  # offerの保存
+        self._record_information(
+            {shorten_name(negotiator_id): offer}, False
+        )  # offerの保存
 
         # update my current best price to use for limiting concession in other
         # negotiations
@@ -3368,13 +3777,23 @@ class AgentT056(AdaptiveAgent, ABC):
 
         # パラメタの設定
         name = ami.annotation["buyer"] if is_selling else ami.annotation["seller"]
-        success_agreements = opponent_agreements(ami, is_selling, self.success_contracts)
-        accept_agreements = [_ for _ in success_agreements
-                             if _.mechanism_state["current_proposer"] == self.nego_info["my_name"]]
-        offer_agreements = [_ for _ in success_agreements
-                            if _.mechanism_state["current_proposer"] != self.nego_info["my_name"]]
+        success_agreements = opponent_agreements(
+            ami, is_selling, self.success_contracts
+        )
+        accept_agreements = [
+            _
+            for _ in success_agreements
+            if _.mechanism_state["current_proposer"] == self.nego_info["my_name"]
+        ]
+        offer_agreements = [
+            _
+            for _ in success_agreements
+            if _.mechanism_state["current_proposer"] != self.nego_info["my_name"]
+        ]
         step = state.step
-        rank = opponent_rank(list(self.active_negotiators.keys()), is_selling, self.success_contracts)
+        rank = opponent_rank(
+            list(self.active_negotiators.keys()), is_selling, self.success_contracts
+        )
         good_price_range = self._good_price_range(ami)
         std = good_price_range["max"] if is_selling else good_price_range["min"]
         pattern = ["offer"]
@@ -3386,9 +3805,13 @@ class AgentT056(AdaptiveAgent, ABC):
                         pattern.append("offer_agreements")
                     else:
                         pattern.append("accept_agreements")
-                        if price_comparison(is_selling,
-                                            worst_opp_acc_price(ami, is_selling, self.success_contracts),
-                                            std):
+                        if price_comparison(
+                            is_selling,
+                            worst_opp_acc_price(
+                                ami, is_selling, self.success_contracts
+                            ),
+                            std,
+                        ):
                             pattern.append("good")
                         else:
                             pattern.append("bad")
@@ -3406,9 +3829,13 @@ class AgentT056(AdaptiveAgent, ABC):
                         pattern.append("offer_agreements")
                     else:
                         pattern.append("accept_agreements")
-                        if price_comparison(is_selling,
-                                            worst_opp_acc_price(ami, is_selling, self.success_contracts),
-                                            std):
+                        if price_comparison(
+                            is_selling,
+                            worst_opp_acc_price(
+                                ami, is_selling, self.success_contracts
+                            ),
+                            std,
+                        ):
                             pattern.append("good")
                         else:
                             pattern.append("bad")
@@ -3436,7 +3863,9 @@ class AgentT056(AdaptiveAgent, ABC):
 
         # 相手の譲歩率に応じて判断
         name = ami.annotation["buyer"] if is_selling else ami.annotation["seller"]
-        success_agreements = opponent_agreements(ami, is_selling, self.success_contracts)
+        success_agreements = opponent_agreements(
+            ami, is_selling, self.success_contracts
+        )
         pattern = ["accept"]
         if self.nego_info["negotiation_step"] >= ami.n_steps - 1:
             if self._opp_concession_rate_change(name):
@@ -3464,8 +3893,12 @@ class AgentT056(AdaptiveAgent, ABC):
         mx = ami.issues[UNIT_PRICE].max_value
         mn = ami.issues[UNIT_PRICE].min_value
 
-        price_range = {"min": mn + AgentT056.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn),
-                       "max": mx - AgentT056.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn)}
+        price_range = {
+            "min": mn
+            + AgentT056.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn),
+            "max": mx
+            - AgentT056.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn),
+        }
 
         return price_range
 
@@ -3499,7 +3932,9 @@ class AgentT056(AdaptiveAgent, ABC):
         if time < th[0]:
             strong_degree = strong_range["max"]
         elif th[0] <= time <= th[1] or 0.5 < self._self_factor(ami):
-            strong_degree = strong_range["max"] - rng * min(time - th[0] / th[1] - th[0], 1)
+            strong_degree = strong_range["max"] - rng * min(
+                time - th[0] / th[1] - th[0], 1
+            )
         else:
             strong_degree = strong_range["min"] - 0.1
 
@@ -3517,53 +3952,63 @@ class AgentT056(AdaptiveAgent, ABC):
 
         if self._is_selling(ami):
             partner = ami.annotation["buyer"]
-            mn = min(mx * (1 - self._range_slack),
-                     # self.new_price_selling * (1 - self.new_price_slack),
-                     # min([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [float("inf")]),
-                     # min([_.agreement["unit_price"] for _ in success_agreements] + [float("inf")]),
-                     worst_opp_acc_price(ami, is_selling, self.success_contracts)
-                     * (1 + self.worst_opp_acc_price_slack),
-                     max(
-                         [mn]
-                         + [
-                             p * (1 - slack)
-                             for p, slack in (
-                                 # (self._best_selling, self._step_price_slack),
-                                 # (self._best_acc_selling, self._acc_price_slack),
-                                 (self._best_opp_selling[partner], self._opp_price_slack),
-                                 (
-                                     self._best_opp_acc_selling[partner],
-                                     self._opp_acc_price_slack,
-                                 ),
-                                 (self._first_offer_price(name), self.first_offer_price_slack),
-                             )
-                         ]
-                     ))
+            mn = min(
+                mx * (1 - self._range_slack),
+                # self.new_price_selling * (1 - self.new_price_slack),
+                # min([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [float("inf")]),
+                # min([_.agreement["unit_price"] for _ in success_agreements] + [float("inf")]),
+                worst_opp_acc_price(ami, is_selling, self.success_contracts)
+                * (1 + self.worst_opp_acc_price_slack),
+                max(
+                    [mn]
+                    + [
+                        p * (1 - slack)
+                        for p, slack in (
+                            # (self._best_selling, self._step_price_slack),
+                            # (self._best_acc_selling, self._acc_price_slack),
+                            (self._best_opp_selling[partner], self._opp_price_slack),
+                            (
+                                self._best_opp_acc_selling[partner],
+                                self._opp_acc_price_slack,
+                            ),
+                            (
+                                self._first_offer_price(name),
+                                self.first_offer_price_slack,
+                            ),
+                        )
+                    ]
+                ),
+            )
         else:
             partner = ami.annotation["seller"]
-            mx = max(mn * (1 + self._range_slack),
-                     # self.new_price_buying * (1 + self.new_price_slack),
-                     # max([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [0]),
-                     # max([_.agreement["unit_price"] for _ in success_agreements] + [0]),
-                     worst_opp_acc_price(ami, is_selling, self.success_contracts)
-                     * (1 - self.worst_opp_acc_price_slack),
-                     min(
-                         [mx]
-                         + [
-                             p * (1 + slack)
-                             for p, slack in (
-                                 # (self._best_buying, self._step_price_slack),
-                                 # (self._best_acc_buying, self._acc_price_slack),
-                                 (self._best_opp_buying[partner], self._opp_price_slack),
-                                 (
-                                     self._best_opp_acc_buying[partner],
-                                     self._opp_acc_price_slack,
-                                 ),
-                                 # (self.opp_next_price(partner), self._opp_price_slack),
-                                 (self._first_offer_price(name), self.first_offer_price_slack),
-                             )
-                         ]
-                     ))
+            mx = max(
+                mn * (1 + self._range_slack),
+                # self.new_price_buying * (1 + self.new_price_slack),
+                # max([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [0]),
+                # max([_.agreement["unit_price"] for _ in success_agreements] + [0]),
+                worst_opp_acc_price(ami, is_selling, self.success_contracts)
+                * (1 - self.worst_opp_acc_price_slack),
+                min(
+                    [mx]
+                    + [
+                        p * (1 + slack)
+                        for p, slack in (
+                            # (self._best_buying, self._step_price_slack),
+                            # (self._best_acc_buying, self._acc_price_slack),
+                            (self._best_opp_buying[partner], self._opp_price_slack),
+                            (
+                                self._best_opp_acc_buying[partner],
+                                self._opp_acc_price_slack,
+                            ),
+                            # (self.opp_next_price(partner), self._opp_price_slack),
+                            (
+                                self._first_offer_price(name),
+                                self.first_offer_price_slack,
+                            ),
+                        )
+                    ]
+                ),
+            )
         return mn, mx
 
     def _self_factor(self, ami):
@@ -3576,15 +4021,20 @@ class AgentT056(AdaptiveAgent, ABC):
         w_prev, w_good = param_normalization([w_prev, w_good])
 
         # これまでの交渉成功割合
-        success_agreements = [[_.agreement, _.mechanism_state["current_proposer"]] for _ in self.success_contracts]
+        success_agreements = [
+            [_.agreement, _.mechanism_state["current_proposer"]]
+            for _ in self.success_contracts
+        ]
         if success_agreements:
-            simulation_steps = set([lis[0]["time"] for lis in success_agreements])
-            prev_agreement = (len(simulation_steps) / (self.awi.current_step + 1))
+            simulation_steps = {lis[0]["time"] for lis in success_agreements}
+            prev_agreement = len(simulation_steps) / (self.awi.current_step + 1)
         else:
             prev_agreement = 1
 
         # 良い値段で合意できているか
-        success_agreements = opponent_agreements(ami, self._is_selling(ami), self.success_contracts)
+        success_agreements = opponent_agreements(
+            ami, self._is_selling(ami), self.success_contracts
+        )
         if success_agreements:
             tp = self.awi.trading_prices[1]
             prev_up = success_agreements[-1].agreement["unit_price"]
@@ -3617,7 +4067,11 @@ class AgentT056(AdaptiveAgent, ABC):
     def _opp_concession_rate_change(self, name: str):
         """相手の譲歩の変化率を計算"""
         ami = self.get_ami(name)
-        offers = [_ for _ in self.opp_offer_list[shorten_name(name)] if _[TIME] == self.awi.current_step]
+        offers = [
+            _
+            for _ in self.opp_offer_list[shorten_name(name)]
+            if _[TIME] == self.awi.current_step
+        ]
         if len(offers) >= 3:
             prev = offers[-2][UNIT_PRICE] - offers[-3][UNIT_PRICE]
             now = offers[-1][UNIT_PRICE] - offers[-2][UNIT_PRICE]
@@ -3738,7 +4192,11 @@ class AgentT056(AdaptiveAgent, ABC):
     def _opp_next_price(self, name):
         delta = 1
         ami = self.get_ami(name)
-        offers = [_ for _ in self.opp_offer_list[shorten_name(name)] if _[TIME] == self.awi.current_step]
+        offers = [
+            _
+            for _ in self.opp_offer_list[shorten_name(name)]
+            if _[TIME] == self.awi.current_step
+        ]
 
         if len(offers) == 0 or self.nego_info["negotiation_step"] == ami.n_steps:
             if self._is_selling(ami):
@@ -3764,8 +4222,10 @@ class AgentT056(AdaptiveAgent, ABC):
         # 最終ステップかつこれ以上相手のOfferがない場合は受け入れ
         ami = self.get_ami(name)
         is_selling = self._is_selling(ami)
-        if self.nego_info["negotiation_step"] >= ami.n_steps - 1 \
-                and len(self.failure_opp_list) == len(self.active_negotiators.keys()) - 1:
+        if (
+            self.nego_info["negotiation_step"] >= ami.n_steps - 1
+            and len(self.failure_opp_list) == len(self.active_negotiators.keys()) - 1
+        ):
             response = ResponseType.ACCEPT_OFFER
 
         # 受け入れない場合はリストに追加
@@ -3802,9 +4262,11 @@ class AgentT056(AdaptiveAgent, ABC):
         if self.awi.current_step == timing:
             if self.nego_info["negotiation_step"] < 2:
                 if is_selling:
-                    self.new_price_selling = \
-                        min(ami.issues[UNIT_PRICE].max_value * 0.9,
-                            min([_.agreement["unit_price"] for _ in self.success_contracts]) * (1 - slack))
+                    self.new_price_selling = min(
+                        ami.issues[UNIT_PRICE].max_value * 0.9,
+                        min(_.agreement["unit_price"] for _ in self.success_contracts)
+                        * (1 - slack),
+                    )
                     offer[UNIT_PRICE] = self.new_price_selling
                 # else:
                 #     self.new_price_buying = \
@@ -3827,17 +4289,17 @@ class AgentT055(AdaptiveAgent, ABC):
     better_agent = BetterAgent(concession_exponent=0.2)
 
     def __init__(
-            self,
-            *args,
-            acc_price_slack=float("inf"),
-            step_price_slack=float("inf"),
-            opp_price_slack=0.0,
-            opp_acc_price_slack=0.2,
-            range_slack=0.03,
-            concession_exponent=0.1,
-            worst_opp_acc_price_slack=0.0,
-            first_offer_price_slack=INF,
-            **kwargs
+        self,
+        *args,
+        acc_price_slack=float("inf"),
+        step_price_slack=float("inf"),
+        opp_price_slack=0.0,
+        opp_acc_price_slack=0.2,
+        range_slack=0.03,
+        concession_exponent=0.1,
+        worst_opp_acc_price_slack=0.0,
+        first_offer_price_slack=INF,
+        **kwargs
     ):
         super().__init__(*args, **kwargs)
         self._e = concession_exponent
@@ -3854,8 +4316,12 @@ class AgentT055(AdaptiveAgent, ABC):
         self.new_price_selling, self.new_price_buying = float("inf"), 0.0  # 価格変化後の交渉価格
         self.new_price_slack = 0.05
         self.concession_threshold = 3  # 譲歩の変化率の閾値
-        self.worst_opp_acc_price_slack = worst_opp_acc_price_slack  # 相手にとって最も良い合意価格に関するSlack変数
-        self.first_offer_price_slack = first_offer_price_slack  # 合意のない相手に対するoffer価格に関するslack変数
+        self.worst_opp_acc_price_slack = (
+            worst_opp_acc_price_slack  # 相手にとって最も良い合意価格に関するSlack変数
+        )
+        self.first_offer_price_slack = (
+            first_offer_price_slack  # 合意のない相手に対するoffer価格に関するslack変数
+        )
 
         # 取引情報
         self.success_list = defaultdict(lambda: list())  # 交渉成功した際の取引データ
@@ -3884,9 +4350,13 @@ class AgentT055(AdaptiveAgent, ABC):
         is_selling = self._is_selling(self.get_ami(negotiator_id))
         ami = self.get_ami(negotiator_id)
         if is_selling:
-            self.nego_info["my_name"] = shorten_name(self.get_ami(negotiator_id).annotation["seller"])
+            self.nego_info["my_name"] = shorten_name(
+                self.get_ami(negotiator_id).annotation["seller"]
+            )
         else:
-            self.nego_info["my_name"] = shorten_name(self.get_ami(negotiator_id).annotation["buyer"])
+            self.nego_info["my_name"] = shorten_name(
+                self.get_ami(negotiator_id).annotation["buyer"]
+            )
 
     def on_negotiation_success(self, contract, mechanism):
         """Record sales/supplies secured"""
@@ -3898,19 +4368,33 @@ class AgentT055(AdaptiveAgent, ABC):
         if self._is_selling(mechanism):
             partner = contract.annotation["buyer"]
             self._best_acc_selling = max(up, self._best_acc_selling)
-            self._best_opp_acc_selling[partner] = max(up, self._best_opp_acc_selling[partner])
+            self._best_opp_acc_selling[partner] = max(
+                up, self._best_opp_acc_selling[partner]
+            )
         else:
             partner = contract.annotation["seller"]
             self._best_acc_buying = min(up, self._best_acc_buying)
-            self._best_opp_acc_buying[partner] = min(up, self._best_opp_acc_buying[partner])
+            self._best_opp_acc_buying[partner] = min(
+                up, self._best_opp_acc_buying[partner]
+            )
 
         # 取引データを記録
         if self._is_selling(mechanism):
             self.success_list[shorten_name(contract.partners[0])].append(
-                [contract.agreement["quantity"], self.awi.current_step, contract.agreement["unit_price"]])
+                [
+                    contract.agreement["quantity"],
+                    self.awi.current_step,
+                    contract.agreement["unit_price"],
+                ]
+            )
         else:
             self.success_list[shorten_name(contract.partners[1])].append(
-                [contract.agreement["quantity"], self.awi.current_step, contract.agreement["unit_price"]])
+                [
+                    contract.agreement["quantity"],
+                    self.awi.current_step,
+                    contract.agreement["unit_price"],
+                ]
+            )
         self.success_contracts.append(contract)
 
     def propose(self, negotiator_id: str, state) -> "Outcome":
@@ -3936,7 +4420,9 @@ class AgentT055(AdaptiveAgent, ABC):
     def respond(self, negotiator_id, state, offer):
         # find the quantity I still need and end negotiation if I need nothing more
         self.nego_info["negotiation_step"] = state.step  # 交渉ステップを記録
-        self._record_information({shorten_name(negotiator_id): offer}, False)  # offerの保存
+        self._record_information(
+            {shorten_name(negotiator_id): offer}, False
+        )  # offerの保存
 
         # update my current best price to use for limiting concession in other
         # negotiations
@@ -3972,13 +4458,23 @@ class AgentT055(AdaptiveAgent, ABC):
 
         # パラメタの設定
         name = ami.annotation["buyer"] if is_selling else ami.annotation["seller"]
-        success_agreements = opponent_agreements(ami, is_selling, self.success_contracts)
-        accept_agreements = [_ for _ in success_agreements
-                             if _.mechanism_state["current_proposer"] == self.nego_info["my_name"]]
-        offer_agreements = [_ for _ in success_agreements
-                            if _.mechanism_state["current_proposer"] != self.nego_info["my_name"]]
+        success_agreements = opponent_agreements(
+            ami, is_selling, self.success_contracts
+        )
+        accept_agreements = [
+            _
+            for _ in success_agreements
+            if _.mechanism_state["current_proposer"] == self.nego_info["my_name"]
+        ]
+        offer_agreements = [
+            _
+            for _ in success_agreements
+            if _.mechanism_state["current_proposer"] != self.nego_info["my_name"]
+        ]
         step = state.step
-        rank = opponent_rank(list(self.active_negotiators.keys()), is_selling, self.success_contracts)
+        rank = opponent_rank(
+            list(self.active_negotiators.keys()), is_selling, self.success_contracts
+        )
         good_price_range = self._good_price_range(ami)
         std = good_price_range["max"] if is_selling else good_price_range["min"]
         pattern = ["offer"]
@@ -3990,9 +4486,13 @@ class AgentT055(AdaptiveAgent, ABC):
                         pattern.append("offer_agreements")
                     else:
                         pattern.append("accept_agreements")
-                        if price_comparison(is_selling,
-                                            worst_opp_acc_price(ami, is_selling, self.success_contracts),
-                                            std):
+                        if price_comparison(
+                            is_selling,
+                            worst_opp_acc_price(
+                                ami, is_selling, self.success_contracts
+                            ),
+                            std,
+                        ):
                             pattern.append("good")
                         else:
                             pattern.append("bad")
@@ -4010,9 +4510,13 @@ class AgentT055(AdaptiveAgent, ABC):
                         pattern.append("offer_agreements")
                     else:
                         pattern.append("accept_agreements")
-                        if price_comparison(is_selling,
-                                            worst_opp_acc_price(ami, is_selling, self.success_contracts),
-                                            std):
+                        if price_comparison(
+                            is_selling,
+                            worst_opp_acc_price(
+                                ami, is_selling, self.success_contracts
+                            ),
+                            std,
+                        ):
                             pattern.append("good")
                         else:
                             pattern.append("bad")
@@ -4040,7 +4544,9 @@ class AgentT055(AdaptiveAgent, ABC):
 
         # 相手の譲歩率に応じて判断
         name = ami.annotation["buyer"] if is_selling else ami.annotation["seller"]
-        success_agreements = opponent_agreements(ami, is_selling, self.success_contracts)
+        success_agreements = opponent_agreements(
+            ami, is_selling, self.success_contracts
+        )
         pattern = ["accept"]
         if self.nego_info["negotiation_step"] >= ami.n_steps - 1:
             if self._opp_concession_rate_change(name):
@@ -4068,8 +4574,12 @@ class AgentT055(AdaptiveAgent, ABC):
         mx = ami.issues[UNIT_PRICE].max_value
         mn = ami.issues[UNIT_PRICE].min_value
 
-        price_range = {"min": mn + AgentT055.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn),
-                       "max": mx - AgentT055.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn)}
+        price_range = {
+            "min": mn
+            + AgentT055.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn),
+            "max": mx
+            - AgentT055.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn),
+        }
 
         return price_range
 
@@ -4103,7 +4613,9 @@ class AgentT055(AdaptiveAgent, ABC):
         if time < th[0]:
             strong_degree = strong_range["max"]
         elif th[0] <= time <= th[1] or 0.5 < self._self_factor(ami):
-            strong_degree = strong_range["max"] - rng * min(time - th[0] / th[1] - th[0], 1)
+            strong_degree = strong_range["max"] - rng * min(
+                time - th[0] / th[1] - th[0], 1
+            )
         else:
             strong_degree = strong_range["min"] - 0.1
 
@@ -4121,53 +4633,63 @@ class AgentT055(AdaptiveAgent, ABC):
 
         if self._is_selling(ami):
             partner = ami.annotation["buyer"]
-            mn = min(mx * (1 - self._range_slack),
-                     # self.new_price_selling * (1 - self.new_price_slack),
-                     # min([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [float("inf")]),
-                     # min([_.agreement["unit_price"] for _ in success_agreements] + [float("inf")]),
-                     worst_opp_acc_price(ami, is_selling, self.success_contracts)
-                     * (1 + self.worst_opp_acc_price_slack),
-                     max(
-                         [mn]
-                         + [
-                             p * (1 - slack)
-                             for p, slack in (
-                                 # (self._best_selling, self._step_price_slack),
-                                 # (self._best_acc_selling, self._acc_price_slack),
-                                 (self._best_opp_selling[partner], self._opp_price_slack),
-                                 (
-                                     self._best_opp_acc_selling[partner],
-                                     self._opp_acc_price_slack,
-                                 ),
-                                 (self._first_offer_price(name), self.first_offer_price_slack),
-                             )
-                         ]
-                     ))
+            mn = min(
+                mx * (1 - self._range_slack),
+                # self.new_price_selling * (1 - self.new_price_slack),
+                # min([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [float("inf")]),
+                # min([_.agreement["unit_price"] for _ in success_agreements] + [float("inf")]),
+                worst_opp_acc_price(ami, is_selling, self.success_contracts)
+                * (1 + self.worst_opp_acc_price_slack),
+                max(
+                    [mn]
+                    + [
+                        p * (1 - slack)
+                        for p, slack in (
+                            # (self._best_selling, self._step_price_slack),
+                            # (self._best_acc_selling, self._acc_price_slack),
+                            (self._best_opp_selling[partner], self._opp_price_slack),
+                            (
+                                self._best_opp_acc_selling[partner],
+                                self._opp_acc_price_slack,
+                            ),
+                            (
+                                self._first_offer_price(name),
+                                self.first_offer_price_slack,
+                            ),
+                        )
+                    ]
+                ),
+            )
         else:
             partner = ami.annotation["seller"]
-            mx = max(mn * (1 + self._range_slack),
-                     # self.new_price_buying * (1 + self.new_price_slack),
-                     # max([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [0]),
-                     # max([_.agreement["unit_price"] for _ in success_agreements] + [0]),
-                     worst_opp_acc_price(ami, is_selling, self.success_contracts)
-                     * (1 - self.worst_opp_acc_price_slack),
-                     min(
-                         [mx]
-                         + [
-                             p * (1 + slack)
-                             for p, slack in (
-                                 # (self._best_buying, self._step_price_slack),
-                                 # (self._best_acc_buying, self._acc_price_slack),
-                                 (self._best_opp_buying[partner], self._opp_price_slack),
-                                 (
-                                     self._best_opp_acc_buying[partner],
-                                     self._opp_acc_price_slack,
-                                 ),
-                                 # (self.opp_next_price(partner), self._opp_price_slack),
-                                 (self._first_offer_price(name), self.first_offer_price_slack),
-                             )
-                         ]
-                     ))
+            mx = max(
+                mn * (1 + self._range_slack),
+                # self.new_price_buying * (1 + self.new_price_slack),
+                # max([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [0]),
+                # max([_.agreement["unit_price"] for _ in success_agreements] + [0]),
+                worst_opp_acc_price(ami, is_selling, self.success_contracts)
+                * (1 - self.worst_opp_acc_price_slack),
+                min(
+                    [mx]
+                    + [
+                        p * (1 + slack)
+                        for p, slack in (
+                            # (self._best_buying, self._step_price_slack),
+                            # (self._best_acc_buying, self._acc_price_slack),
+                            (self._best_opp_buying[partner], self._opp_price_slack),
+                            (
+                                self._best_opp_acc_buying[partner],
+                                self._opp_acc_price_slack,
+                            ),
+                            # (self.opp_next_price(partner), self._opp_price_slack),
+                            (
+                                self._first_offer_price(name),
+                                self.first_offer_price_slack,
+                            ),
+                        )
+                    ]
+                ),
+            )
         return mn, mx
 
     def _self_factor(self, ami):
@@ -4180,15 +4702,20 @@ class AgentT055(AdaptiveAgent, ABC):
         w_prev, w_good = param_normalization([w_prev, w_good])
 
         # これまでの交渉成功割合
-        success_agreements = [[_.agreement, _.mechanism_state["current_proposer"]] for _ in self.success_contracts]
+        success_agreements = [
+            [_.agreement, _.mechanism_state["current_proposer"]]
+            for _ in self.success_contracts
+        ]
         if success_agreements:
-            simulation_steps = set([lis[0]["time"] for lis in success_agreements])
-            prev_agreement = (len(simulation_steps) / (self.awi.current_step + 1))
+            simulation_steps = {lis[0]["time"] for lis in success_agreements}
+            prev_agreement = len(simulation_steps) / (self.awi.current_step + 1)
         else:
             prev_agreement = 1
 
         # 良い値段で合意できているか
-        success_agreements = opponent_agreements(ami, self._is_selling(ami), self.success_contracts)
+        success_agreements = opponent_agreements(
+            ami, self._is_selling(ami), self.success_contracts
+        )
         if success_agreements:
             tp = self.awi.trading_prices[1]
             prev_up = success_agreements[-1].agreement["unit_price"]
@@ -4221,7 +4748,11 @@ class AgentT055(AdaptiveAgent, ABC):
     def _opp_concession_rate_change(self, name: str):
         """相手の譲歩の変化率を計算"""
         ami = self.get_ami(name)
-        offers = [_ for _ in self.opp_offer_list[shorten_name(name)] if _[TIME] == self.awi.current_step]
+        offers = [
+            _
+            for _ in self.opp_offer_list[shorten_name(name)]
+            if _[TIME] == self.awi.current_step
+        ]
         if len(offers) >= 3:
             prev = offers[-2][UNIT_PRICE] - offers[-3][UNIT_PRICE]
             now = offers[-1][UNIT_PRICE] - offers[-2][UNIT_PRICE]
@@ -4342,7 +4873,11 @@ class AgentT055(AdaptiveAgent, ABC):
     def _opp_next_price(self, name):
         delta = 1
         ami = self.get_ami(name)
-        offers = [_ for _ in self.opp_offer_list[shorten_name(name)] if _[TIME] == self.awi.current_step]
+        offers = [
+            _
+            for _ in self.opp_offer_list[shorten_name(name)]
+            if _[TIME] == self.awi.current_step
+        ]
 
         if len(offers) == 0 or self.nego_info["negotiation_step"] == ami.n_steps:
             if self._is_selling(ami):
@@ -4368,8 +4903,10 @@ class AgentT055(AdaptiveAgent, ABC):
         # 最終ステップかつこれ以上相手のOfferがない場合は受け入れ
         ami = self.get_ami(name)
         is_selling = self._is_selling(ami)
-        if self.nego_info["negotiation_step"] >= ami.n_steps - 1 \
-                and len(self.failure_opp_list) == len(self.active_negotiators.keys()) - 1:
+        if (
+            self.nego_info["negotiation_step"] >= ami.n_steps - 1
+            and len(self.failure_opp_list) == len(self.active_negotiators.keys()) - 1
+        ):
             response = ResponseType.ACCEPT_OFFER
 
         # 受け入れない場合はリストに追加
@@ -4406,9 +4943,11 @@ class AgentT055(AdaptiveAgent, ABC):
         if self.awi.current_step == timing:
             if self.nego_info["negotiation_step"] < 2:
                 if is_selling:
-                    self.new_price_selling = \
-                        min(ami.issues[UNIT_PRICE].max_value * 0.9,
-                            min([_.agreement["unit_price"] for _ in self.success_contracts]) * (1 - slack))
+                    self.new_price_selling = min(
+                        ami.issues[UNIT_PRICE].max_value * 0.9,
+                        min(_.agreement["unit_price"] for _ in self.success_contracts)
+                        * (1 - slack),
+                    )
                     offer[UNIT_PRICE] = self.new_price_selling
                 # else:
                 #     self.new_price_buying = \
@@ -4431,17 +4970,17 @@ class AgentT054(AdaptiveAgent, ABC):
     better_agent = BetterAgent(concession_exponent=0.2)
 
     def __init__(
-            self,
-            *args,
-            acc_price_slack=float("inf"),
-            step_price_slack=float("inf"),
-            opp_price_slack=0.0,
-            opp_acc_price_slack=0.2,
-            range_slack=0.03,
-            concession_exponent=0.1,
-            worst_opp_acc_price_slack=0.0,
-            first_offer_price_slack=INF,
-            **kwargs
+        self,
+        *args,
+        acc_price_slack=float("inf"),
+        step_price_slack=float("inf"),
+        opp_price_slack=0.0,
+        opp_acc_price_slack=0.2,
+        range_slack=0.03,
+        concession_exponent=0.1,
+        worst_opp_acc_price_slack=0.0,
+        first_offer_price_slack=INF,
+        **kwargs
     ):
         super().__init__(*args, **kwargs)
         self._e = concession_exponent
@@ -4458,8 +4997,12 @@ class AgentT054(AdaptiveAgent, ABC):
         self.new_price_selling, self.new_price_buying = float("inf"), 0.0  # 価格変化後の交渉価格
         self.new_price_slack = 0.05
         self.concession_threshold = 3  # 譲歩の変化率の閾値
-        self.worst_opp_acc_price_slack = worst_opp_acc_price_slack  # 相手にとって最も良い合意価格に関するSlack変数
-        self.first_offer_price_slack = first_offer_price_slack  # 合意のない相手に対するoffer価格に関するslack変数
+        self.worst_opp_acc_price_slack = (
+            worst_opp_acc_price_slack  # 相手にとって最も良い合意価格に関するSlack変数
+        )
+        self.first_offer_price_slack = (
+            first_offer_price_slack  # 合意のない相手に対するoffer価格に関するslack変数
+        )
 
         # 取引情報
         self.success_list = defaultdict(lambda: list())  # 交渉成功した際の取引データ
@@ -4488,9 +5031,13 @@ class AgentT054(AdaptiveAgent, ABC):
         is_selling = self._is_selling(self.get_ami(negotiator_id))
         ami = self.get_ami(negotiator_id)
         if is_selling:
-            self.nego_info["my_name"] = shorten_name(self.get_ami(negotiator_id).annotation["seller"])
+            self.nego_info["my_name"] = shorten_name(
+                self.get_ami(negotiator_id).annotation["seller"]
+            )
         else:
-            self.nego_info["my_name"] = shorten_name(self.get_ami(negotiator_id).annotation["buyer"])
+            self.nego_info["my_name"] = shorten_name(
+                self.get_ami(negotiator_id).annotation["buyer"]
+            )
 
     def on_negotiation_success(self, contract, mechanism):
         """Record sales/supplies secured"""
@@ -4502,19 +5049,33 @@ class AgentT054(AdaptiveAgent, ABC):
         if self._is_selling(mechanism):
             partner = contract.annotation["buyer"]
             self._best_acc_selling = max(up, self._best_acc_selling)
-            self._best_opp_acc_selling[partner] = max(up, self._best_opp_acc_selling[partner])
+            self._best_opp_acc_selling[partner] = max(
+                up, self._best_opp_acc_selling[partner]
+            )
         else:
             partner = contract.annotation["seller"]
             self._best_acc_buying = min(up, self._best_acc_buying)
-            self._best_opp_acc_buying[partner] = min(up, self._best_opp_acc_buying[partner])
+            self._best_opp_acc_buying[partner] = min(
+                up, self._best_opp_acc_buying[partner]
+            )
 
         # 取引データを記録
         if self._is_selling(mechanism):
             self.success_list[shorten_name(contract.partners[0])].append(
-                [contract.agreement["quantity"], self.awi.current_step, contract.agreement["unit_price"]])
+                [
+                    contract.agreement["quantity"],
+                    self.awi.current_step,
+                    contract.agreement["unit_price"],
+                ]
+            )
         else:
             self.success_list[shorten_name(contract.partners[1])].append(
-                [contract.agreement["quantity"], self.awi.current_step, contract.agreement["unit_price"]])
+                [
+                    contract.agreement["quantity"],
+                    self.awi.current_step,
+                    contract.agreement["unit_price"],
+                ]
+            )
         self.success_contracts.append(contract)
 
     def propose(self, negotiator_id: str, state) -> "Outcome":
@@ -4540,7 +5101,9 @@ class AgentT054(AdaptiveAgent, ABC):
     def respond(self, negotiator_id, state, offer):
         # find the quantity I still need and end negotiation if I need nothing more
         self.nego_info["negotiation_step"] = state.step  # 交渉ステップを記録
-        self._record_information({shorten_name(negotiator_id): offer}, False)  # offerの保存
+        self._record_information(
+            {shorten_name(negotiator_id): offer}, False
+        )  # offerの保存
 
         # update my current best price to use for limiting concession in other
         # negotiations
@@ -4576,13 +5139,23 @@ class AgentT054(AdaptiveAgent, ABC):
 
         # パラメタの設定
         name = ami.annotation["buyer"] if is_selling else ami.annotation["seller"]
-        success_agreements = opponent_agreements(ami, is_selling, self.success_contracts)
-        accept_agreements = [_ for _ in success_agreements
-                             if _.mechanism_state["current_proposer"] == self.nego_info["my_name"]]
-        offer_agreements = [_ for _ in success_agreements
-                            if _.mechanism_state["current_proposer"] != self.nego_info["my_name"]]
+        success_agreements = opponent_agreements(
+            ami, is_selling, self.success_contracts
+        )
+        accept_agreements = [
+            _
+            for _ in success_agreements
+            if _.mechanism_state["current_proposer"] == self.nego_info["my_name"]
+        ]
+        offer_agreements = [
+            _
+            for _ in success_agreements
+            if _.mechanism_state["current_proposer"] != self.nego_info["my_name"]
+        ]
         step = state.step
-        rank = opponent_rank(list(self.active_negotiators.keys()), is_selling, self.success_contracts)
+        rank = opponent_rank(
+            list(self.active_negotiators.keys()), is_selling, self.success_contracts
+        )
         good_price_range = self._good_price_range(ami)
         std = good_price_range["max"] if is_selling else good_price_range["min"]
         pattern = ["offer"]
@@ -4594,9 +5167,13 @@ class AgentT054(AdaptiveAgent, ABC):
                         pattern.append("offer_agreements")
                     else:
                         pattern.append("accept_agreements")
-                        if price_comparison(is_selling,
-                                            worst_opp_acc_price(ami, is_selling, self.success_contracts),
-                                            std):
+                        if price_comparison(
+                            is_selling,
+                            worst_opp_acc_price(
+                                ami, is_selling, self.success_contracts
+                            ),
+                            std,
+                        ):
                             pattern.append("good")
                         else:
                             pattern.append("bad")
@@ -4614,9 +5191,13 @@ class AgentT054(AdaptiveAgent, ABC):
                         pattern.append("offer_agreements")
                     else:
                         pattern.append("accept_agreements")
-                        if price_comparison(is_selling,
-                                            worst_opp_acc_price(ami, is_selling, self.success_contracts),
-                                            std):
+                        if price_comparison(
+                            is_selling,
+                            worst_opp_acc_price(
+                                ami, is_selling, self.success_contracts
+                            ),
+                            std,
+                        ):
                             pattern.append("good")
                         else:
                             pattern.append("bad")
@@ -4644,7 +5225,9 @@ class AgentT054(AdaptiveAgent, ABC):
 
         # 相手の譲歩率に応じて判断
         name = ami.annotation["buyer"] if is_selling else ami.annotation["seller"]
-        success_agreements = opponent_agreements(ami, is_selling, self.success_contracts)
+        success_agreements = opponent_agreements(
+            ami, is_selling, self.success_contracts
+        )
         pattern = ["accept"]
         if self.nego_info["negotiation_step"] >= ami.n_steps - 1:
             if self._opp_concession_rate_change(name):
@@ -4672,8 +5255,12 @@ class AgentT054(AdaptiveAgent, ABC):
         mx = ami.issues[UNIT_PRICE].max_value
         mn = ami.issues[UNIT_PRICE].min_value
 
-        price_range = {"min": mn + AgentT054.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn),
-                       "max": mx - AgentT054.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn)}
+        price_range = {
+            "min": mn
+            + AgentT054.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn),
+            "max": mx
+            - AgentT054.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn),
+        }
 
         return price_range
 
@@ -4707,7 +5294,9 @@ class AgentT054(AdaptiveAgent, ABC):
         if time < th[0]:
             strong_degree = strong_range["max"]
         elif th[0] <= time <= th[1] or 0.5 < self._self_factor(ami):
-            strong_degree = strong_range["max"] - rng * min(time - th[0] / th[1] - th[0], 1)
+            strong_degree = strong_range["max"] - rng * min(
+                time - th[0] / th[1] - th[0], 1
+            )
         else:
             strong_degree = strong_range["min"] - 0.1
 
@@ -4725,53 +5314,63 @@ class AgentT054(AdaptiveAgent, ABC):
 
         if self._is_selling(ami):
             partner = ami.annotation["buyer"]
-            mn = min(mx * (1 - self._range_slack),
-                     # self.new_price_selling * (1 - self.new_price_slack),
-                     # min([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [float("inf")]),
-                     # min([_.agreement["unit_price"] for _ in success_agreements] + [float("inf")]),
-                     worst_opp_acc_price(ami, is_selling, self.success_contracts)
-                     * (1 + self.worst_opp_acc_price_slack),
-                     max(
-                         [mn]
-                         + [
-                             p * (1 - slack)
-                             for p, slack in (
-                                 # (self._best_selling, self._step_price_slack),
-                                 # (self._best_acc_selling, self._acc_price_slack),
-                                 (self._best_opp_selling[partner], self._opp_price_slack),
-                                 (
-                                     self._best_opp_acc_selling[partner],
-                                     self._opp_acc_price_slack,
-                                 ),
-                                 (self._first_offer_price(name), self.first_offer_price_slack),
-                             )
-                         ]
-                     ))
+            mn = min(
+                mx * (1 - self._range_slack),
+                # self.new_price_selling * (1 - self.new_price_slack),
+                # min([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [float("inf")]),
+                # min([_.agreement["unit_price"] for _ in success_agreements] + [float("inf")]),
+                worst_opp_acc_price(ami, is_selling, self.success_contracts)
+                * (1 + self.worst_opp_acc_price_slack),
+                max(
+                    [mn]
+                    + [
+                        p * (1 - slack)
+                        for p, slack in (
+                            # (self._best_selling, self._step_price_slack),
+                            # (self._best_acc_selling, self._acc_price_slack),
+                            (self._best_opp_selling[partner], self._opp_price_slack),
+                            (
+                                self._best_opp_acc_selling[partner],
+                                self._opp_acc_price_slack,
+                            ),
+                            (
+                                self._first_offer_price(name),
+                                self.first_offer_price_slack,
+                            ),
+                        )
+                    ]
+                ),
+            )
         else:
             partner = ami.annotation["seller"]
-            mx = max(mn * (1 + self._range_slack),
-                     # self.new_price_buying * (1 + self.new_price_slack),
-                     # max([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [0]),
-                     # max([_.agreement["unit_price"] for _ in success_agreements] + [0]),
-                     worst_opp_acc_price(ami, is_selling, self.success_contracts)
-                     * (1 - self.worst_opp_acc_price_slack),
-                     min(
-                         [mx]
-                         + [
-                             p * (1 + slack)
-                             for p, slack in (
-                                 # (self._best_buying, self._step_price_slack),
-                                 # (self._best_acc_buying, self._acc_price_slack),
-                                 (self._best_opp_buying[partner], self._opp_price_slack),
-                                 (
-                                     self._best_opp_acc_buying[partner],
-                                     self._opp_acc_price_slack,
-                                 ),
-                                 # (self.opp_next_price(partner), self._opp_price_slack),
-                                 (self._first_offer_price(name), self.first_offer_price_slack),
-                             )
-                         ]
-                     ))
+            mx = max(
+                mn * (1 + self._range_slack),
+                # self.new_price_buying * (1 + self.new_price_slack),
+                # max([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [0]),
+                # max([_.agreement["unit_price"] for _ in success_agreements] + [0]),
+                worst_opp_acc_price(ami, is_selling, self.success_contracts)
+                * (1 - self.worst_opp_acc_price_slack),
+                min(
+                    [mx]
+                    + [
+                        p * (1 + slack)
+                        for p, slack in (
+                            # (self._best_buying, self._step_price_slack),
+                            # (self._best_acc_buying, self._acc_price_slack),
+                            (self._best_opp_buying[partner], self._opp_price_slack),
+                            (
+                                self._best_opp_acc_buying[partner],
+                                self._opp_acc_price_slack,
+                            ),
+                            # (self.opp_next_price(partner), self._opp_price_slack),
+                            (
+                                self._first_offer_price(name),
+                                self.first_offer_price_slack,
+                            ),
+                        )
+                    ]
+                ),
+            )
         return mn, mx
 
     def _self_factor(self, ami):
@@ -4784,15 +5383,20 @@ class AgentT054(AdaptiveAgent, ABC):
         w_prev, w_good = param_normalization([w_prev, w_good])
 
         # これまでの交渉成功割合
-        success_agreements = [[_.agreement, _.mechanism_state["current_proposer"]] for _ in self.success_contracts]
+        success_agreements = [
+            [_.agreement, _.mechanism_state["current_proposer"]]
+            for _ in self.success_contracts
+        ]
         if success_agreements:
-            simulation_steps = set([lis[0]["time"] for lis in success_agreements])
-            prev_agreement = (len(simulation_steps) / (self.awi.current_step + 1))
+            simulation_steps = {lis[0]["time"] for lis in success_agreements}
+            prev_agreement = len(simulation_steps) / (self.awi.current_step + 1)
         else:
             prev_agreement = 1
 
         # 良い値段で合意できているか
-        success_agreements = opponent_agreements(ami, self._is_selling(ami), self.success_contracts)
+        success_agreements = opponent_agreements(
+            ami, self._is_selling(ami), self.success_contracts
+        )
         if success_agreements:
             tp = self.awi.trading_prices[1]
             prev_up = success_agreements[-1].agreement["unit_price"]
@@ -4825,7 +5429,11 @@ class AgentT054(AdaptiveAgent, ABC):
     def _opp_concession_rate_change(self, name: str):
         """相手の譲歩の変化率を計算"""
         ami = self.get_ami(name)
-        offers = [_ for _ in self.opp_offer_list[shorten_name(name)] if _[TIME] == self.awi.current_step]
+        offers = [
+            _
+            for _ in self.opp_offer_list[shorten_name(name)]
+            if _[TIME] == self.awi.current_step
+        ]
         if len(offers) >= 3:
             prev = offers[-2][UNIT_PRICE] - offers[-3][UNIT_PRICE]
             now = offers[-1][UNIT_PRICE] - offers[-2][UNIT_PRICE]
@@ -4946,7 +5554,11 @@ class AgentT054(AdaptiveAgent, ABC):
     def _opp_next_price(self, name):
         delta = 1
         ami = self.get_ami(name)
-        offers = [_ for _ in self.opp_offer_list[shorten_name(name)] if _[TIME] == self.awi.current_step]
+        offers = [
+            _
+            for _ in self.opp_offer_list[shorten_name(name)]
+            if _[TIME] == self.awi.current_step
+        ]
 
         if len(offers) == 0 or self.nego_info["negotiation_step"] == ami.n_steps:
             if self._is_selling(ami):
@@ -4972,8 +5584,10 @@ class AgentT054(AdaptiveAgent, ABC):
         # 最終ステップかつこれ以上相手のOfferがない場合は受け入れ
         ami = self.get_ami(name)
         is_selling = self._is_selling(ami)
-        if self.nego_info["negotiation_step"] >= ami.n_steps - 1 \
-                and len(self.failure_opp_list) == len(self.active_negotiators.keys()) - 1:
+        if (
+            self.nego_info["negotiation_step"] >= ami.n_steps - 1
+            and len(self.failure_opp_list) == len(self.active_negotiators.keys()) - 1
+        ):
             response = ResponseType.ACCEPT_OFFER
 
         # 受け入れない場合はリストに追加
@@ -5010,9 +5624,11 @@ class AgentT054(AdaptiveAgent, ABC):
         if self.awi.current_step == timing:
             if self.nego_info["negotiation_step"] < 2:
                 if is_selling:
-                    self.new_price_selling = \
-                        min(ami.issues[UNIT_PRICE].max_value * 0.9,
-                            min([_.agreement["unit_price"] for _ in self.success_contracts]) * (1 - slack))
+                    self.new_price_selling = min(
+                        ami.issues[UNIT_PRICE].max_value * 0.9,
+                        min(_.agreement["unit_price"] for _ in self.success_contracts)
+                        * (1 - slack),
+                    )
                     offer[UNIT_PRICE] = self.new_price_selling
                 # else:
                 #     self.new_price_buying = \
@@ -5035,17 +5651,17 @@ class AgentT053(AdaptiveAgent, ABC):
     better_agent = BetterAgent(concession_exponent=0.2)
 
     def __init__(
-            self,
-            *args,
-            acc_price_slack=float("inf"),
-            step_price_slack=float("inf"),
-            opp_price_slack=0.0,
-            opp_acc_price_slack=0.2,
-            range_slack=0.03,
-            concession_exponent=0.1,
-            worst_opp_acc_price_slack=0.0,
-            first_offer_price_slack=INF,
-            **kwargs
+        self,
+        *args,
+        acc_price_slack=float("inf"),
+        step_price_slack=float("inf"),
+        opp_price_slack=0.0,
+        opp_acc_price_slack=0.2,
+        range_slack=0.03,
+        concession_exponent=0.1,
+        worst_opp_acc_price_slack=0.0,
+        first_offer_price_slack=INF,
+        **kwargs
     ):
         super().__init__(*args, **kwargs)
         self._e = concession_exponent
@@ -5062,8 +5678,12 @@ class AgentT053(AdaptiveAgent, ABC):
         self.new_price_selling, self.new_price_buying = float("inf"), 0.0  # 価格変化後の交渉価格
         self.new_price_slack = 0.05
         self.concession_threshold = 3  # 譲歩の変化率の閾値
-        self.worst_opp_acc_price_slack = worst_opp_acc_price_slack  # 相手にとって最も良い合意価格に関するSlack変数
-        self.first_offer_price_slack = first_offer_price_slack  # 合意のない相手に対するoffer価格に関するslack変数
+        self.worst_opp_acc_price_slack = (
+            worst_opp_acc_price_slack  # 相手にとって最も良い合意価格に関するSlack変数
+        )
+        self.first_offer_price_slack = (
+            first_offer_price_slack  # 合意のない相手に対するoffer価格に関するslack変数
+        )
 
         # 取引情報
         self.success_list = defaultdict(lambda: list())  # 交渉成功した際の取引データ
@@ -5092,9 +5712,13 @@ class AgentT053(AdaptiveAgent, ABC):
         is_selling = self._is_selling(self.get_ami(negotiator_id))
         ami = self.get_ami(negotiator_id)
         if is_selling:
-            self.nego_info["my_name"] = shorten_name(self.get_ami(negotiator_id).annotation["seller"])
+            self.nego_info["my_name"] = shorten_name(
+                self.get_ami(negotiator_id).annotation["seller"]
+            )
         else:
-            self.nego_info["my_name"] = shorten_name(self.get_ami(negotiator_id).annotation["buyer"])
+            self.nego_info["my_name"] = shorten_name(
+                self.get_ami(negotiator_id).annotation["buyer"]
+            )
 
     def on_negotiation_success(self, contract, mechanism):
         """Record sales/supplies secured"""
@@ -5106,19 +5730,33 @@ class AgentT053(AdaptiveAgent, ABC):
         if self._is_selling(mechanism):
             partner = contract.annotation["buyer"]
             self._best_acc_selling = max(up, self._best_acc_selling)
-            self._best_opp_acc_selling[partner] = max(up, self._best_opp_acc_selling[partner])
+            self._best_opp_acc_selling[partner] = max(
+                up, self._best_opp_acc_selling[partner]
+            )
         else:
             partner = contract.annotation["seller"]
             self._best_acc_buying = min(up, self._best_acc_buying)
-            self._best_opp_acc_buying[partner] = min(up, self._best_opp_acc_buying[partner])
+            self._best_opp_acc_buying[partner] = min(
+                up, self._best_opp_acc_buying[partner]
+            )
 
         # 取引データを記録
         if self._is_selling(mechanism):
             self.success_list[shorten_name(contract.partners[0])].append(
-                [contract.agreement["quantity"], self.awi.current_step, contract.agreement["unit_price"]])
+                [
+                    contract.agreement["quantity"],
+                    self.awi.current_step,
+                    contract.agreement["unit_price"],
+                ]
+            )
         else:
             self.success_list[shorten_name(contract.partners[1])].append(
-                [contract.agreement["quantity"], self.awi.current_step, contract.agreement["unit_price"]])
+                [
+                    contract.agreement["quantity"],
+                    self.awi.current_step,
+                    contract.agreement["unit_price"],
+                ]
+            )
         self.success_contracts.append(contract)
 
     def propose(self, negotiator_id: str, state) -> "Outcome":
@@ -5144,7 +5782,9 @@ class AgentT053(AdaptiveAgent, ABC):
     def respond(self, negotiator_id, state, offer):
         # find the quantity I still need and end negotiation if I need nothing more
         self.nego_info["negotiation_step"] = state.step  # 交渉ステップを記録
-        self._record_information({shorten_name(negotiator_id): offer}, False)  # offerの保存
+        self._record_information(
+            {shorten_name(negotiator_id): offer}, False
+        )  # offerの保存
 
         # update my current best price to use for limiting concession in other
         # negotiations
@@ -5180,13 +5820,23 @@ class AgentT053(AdaptiveAgent, ABC):
 
         # パラメタの設定
         name = ami.annotation["buyer"] if is_selling else ami.annotation["seller"]
-        success_agreements = opponent_agreements(ami, is_selling, self.success_contracts)
-        accept_agreements = [_ for _ in success_agreements
-                             if _.mechanism_state["current_proposer"] == self.nego_info["my_name"]]
-        offer_agreements = [_ for _ in success_agreements
-                            if _.mechanism_state["current_proposer"] != self.nego_info["my_name"]]
+        success_agreements = opponent_agreements(
+            ami, is_selling, self.success_contracts
+        )
+        accept_agreements = [
+            _
+            for _ in success_agreements
+            if _.mechanism_state["current_proposer"] == self.nego_info["my_name"]
+        ]
+        offer_agreements = [
+            _
+            for _ in success_agreements
+            if _.mechanism_state["current_proposer"] != self.nego_info["my_name"]
+        ]
         step = state.step
-        rank = opponent_rank(list(self.active_negotiators.keys()), is_selling, self.success_contracts)
+        rank = opponent_rank(
+            list(self.active_negotiators.keys()), is_selling, self.success_contracts
+        )
         good_price_range = self._good_price_range(ami)
         std = good_price_range["max"] if is_selling else good_price_range["min"]
         pattern = ["offer"]
@@ -5198,9 +5848,13 @@ class AgentT053(AdaptiveAgent, ABC):
                         pattern.append("offer_agreements")
                     else:
                         pattern.append("accept_agreements")
-                        if price_comparison(is_selling,
-                                            worst_opp_acc_price(ami, is_selling, self.success_contracts),
-                                            std):
+                        if price_comparison(
+                            is_selling,
+                            worst_opp_acc_price(
+                                ami, is_selling, self.success_contracts
+                            ),
+                            std,
+                        ):
                             pattern.append("good")
                         else:
                             pattern.append("bad")
@@ -5218,9 +5872,13 @@ class AgentT053(AdaptiveAgent, ABC):
                         pattern.append("offer_agreements")
                     else:
                         pattern.append("accept_agreements")
-                        if price_comparison(is_selling,
-                                            worst_opp_acc_price(ami, is_selling, self.success_contracts),
-                                            std):
+                        if price_comparison(
+                            is_selling,
+                            worst_opp_acc_price(
+                                ami, is_selling, self.success_contracts
+                            ),
+                            std,
+                        ):
                             pattern.append("good")
                         else:
                             pattern.append("bad")
@@ -5248,7 +5906,9 @@ class AgentT053(AdaptiveAgent, ABC):
 
         # 相手の譲歩率に応じて判断
         name = ami.annotation["buyer"] if is_selling else ami.annotation["seller"]
-        success_agreements = opponent_agreements(ami, is_selling, self.success_contracts)
+        success_agreements = opponent_agreements(
+            ami, is_selling, self.success_contracts
+        )
         pattern = ["accept"]
         if self.nego_info["negotiation_step"] >= ami.n_steps - 1:
             if self._opp_concession_rate_change(name):
@@ -5276,8 +5936,12 @@ class AgentT053(AdaptiveAgent, ABC):
         mx = ami.issues[UNIT_PRICE].max_value
         mn = ami.issues[UNIT_PRICE].min_value
 
-        price_range = {"min": mn + AgentT053.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn),
-                       "max": mx - AgentT053.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn)}
+        price_range = {
+            "min": mn
+            + AgentT053.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn),
+            "max": mx
+            - AgentT053.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn),
+        }
 
         return price_range
 
@@ -5311,7 +5975,9 @@ class AgentT053(AdaptiveAgent, ABC):
         if time < th[0]:
             strong_degree = strong_range["max"]
         elif th[0] <= time <= th[1] or 0.5 < self._self_factor(ami):
-            strong_degree = strong_range["max"] - rng * min(time - th[0] / th[1] - th[0], 1)
+            strong_degree = strong_range["max"] - rng * min(
+                time - th[0] / th[1] - th[0], 1
+            )
         else:
             strong_degree = strong_range["min"] - 0.1
 
@@ -5329,53 +5995,63 @@ class AgentT053(AdaptiveAgent, ABC):
 
         if self._is_selling(ami):
             partner = ami.annotation["buyer"]
-            mn = min(mx * (1 - self._range_slack),
-                     # self.new_price_selling * (1 - self.new_price_slack),
-                     # min([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [float("inf")]),
-                     # min([_.agreement["unit_price"] for _ in success_agreements] + [float("inf")]),
-                     worst_opp_acc_price(ami, is_selling, self.success_contracts)
-                     * (1 + self.worst_opp_acc_price_slack),
-                     max(
-                         [mn]
-                         + [
-                             p * (1 - slack)
-                             for p, slack in (
-                                 # (self._best_selling, self._step_price_slack),
-                                 # (self._best_acc_selling, self._acc_price_slack),
-                                 (self._best_opp_selling[partner], self._opp_price_slack),
-                                 (
-                                     self._best_opp_acc_selling[partner],
-                                     self._opp_acc_price_slack,
-                                 ),
-                                 (self._first_offer_price(name), self.first_offer_price_slack),
-                             )
-                         ]
-                     ))
+            mn = min(
+                mx * (1 - self._range_slack),
+                # self.new_price_selling * (1 - self.new_price_slack),
+                # min([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [float("inf")]),
+                # min([_.agreement["unit_price"] for _ in success_agreements] + [float("inf")]),
+                worst_opp_acc_price(ami, is_selling, self.success_contracts)
+                * (1 + self.worst_opp_acc_price_slack),
+                max(
+                    [mn]
+                    + [
+                        p * (1 - slack)
+                        for p, slack in (
+                            # (self._best_selling, self._step_price_slack),
+                            # (self._best_acc_selling, self._acc_price_slack),
+                            (self._best_opp_selling[partner], self._opp_price_slack),
+                            (
+                                self._best_opp_acc_selling[partner],
+                                self._opp_acc_price_slack,
+                            ),
+                            (
+                                self._first_offer_price(name),
+                                self.first_offer_price_slack,
+                            ),
+                        )
+                    ]
+                ),
+            )
         else:
             partner = ami.annotation["seller"]
-            mx = max(mn * (1 + self._range_slack),
-                     # self.new_price_buying * (1 + self.new_price_slack),
-                     # max([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [0]),
-                     # max([_.agreement["unit_price"] for _ in success_agreements] + [0]),
-                     worst_opp_acc_price(ami, is_selling, self.success_contracts)
-                     * (1 - self.worst_opp_acc_price_slack),
-                     min(
-                         [mx]
-                         + [
-                             p * (1 + slack)
-                             for p, slack in (
-                                 # (self._best_buying, self._step_price_slack),
-                                 # (self._best_acc_buying, self._acc_price_slack),
-                                 (self._best_opp_buying[partner], self._opp_price_slack),
-                                 (
-                                     self._best_opp_acc_buying[partner],
-                                     self._opp_acc_price_slack,
-                                 ),
-                                 # (self.opp_next_price(partner), self._opp_price_slack),
-                                 (self._first_offer_price(name), self.first_offer_price_slack),
-                             )
-                         ]
-                     ))
+            mx = max(
+                mn * (1 + self._range_slack),
+                # self.new_price_buying * (1 + self.new_price_slack),
+                # max([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [0]),
+                # max([_.agreement["unit_price"] for _ in success_agreements] + [0]),
+                worst_opp_acc_price(ami, is_selling, self.success_contracts)
+                * (1 - self.worst_opp_acc_price_slack),
+                min(
+                    [mx]
+                    + [
+                        p * (1 + slack)
+                        for p, slack in (
+                            # (self._best_buying, self._step_price_slack),
+                            # (self._best_acc_buying, self._acc_price_slack),
+                            (self._best_opp_buying[partner], self._opp_price_slack),
+                            (
+                                self._best_opp_acc_buying[partner],
+                                self._opp_acc_price_slack,
+                            ),
+                            # (self.opp_next_price(partner), self._opp_price_slack),
+                            (
+                                self._first_offer_price(name),
+                                self.first_offer_price_slack,
+                            ),
+                        )
+                    ]
+                ),
+            )
         return mn, mx
 
     def _self_factor(self, ami):
@@ -5388,15 +6064,20 @@ class AgentT053(AdaptiveAgent, ABC):
         w_prev, w_good = param_normalization([w_prev, w_good])
 
         # これまでの交渉成功割合
-        success_agreements = [[_.agreement, _.mechanism_state["current_proposer"]] for _ in self.success_contracts]
+        success_agreements = [
+            [_.agreement, _.mechanism_state["current_proposer"]]
+            for _ in self.success_contracts
+        ]
         if success_agreements:
-            simulation_steps = set([lis[0]["time"] for lis in success_agreements])
-            prev_agreement = (len(simulation_steps) / (self.awi.current_step + 1))
+            simulation_steps = {lis[0]["time"] for lis in success_agreements}
+            prev_agreement = len(simulation_steps) / (self.awi.current_step + 1)
         else:
             prev_agreement = 1
 
         # 良い値段で合意できているか
-        success_agreements = opponent_agreements(ami, self._is_selling(ami), self.success_contracts)
+        success_agreements = opponent_agreements(
+            ami, self._is_selling(ami), self.success_contracts
+        )
         if success_agreements:
             tp = self.awi.trading_prices[1]
             prev_up = success_agreements[-1].agreement["unit_price"]
@@ -5429,7 +6110,11 @@ class AgentT053(AdaptiveAgent, ABC):
     def _opp_concession_rate_change(self, name: str):
         """相手の譲歩の変化率を計算"""
         ami = self.get_ami(name)
-        offers = [_ for _ in self.opp_offer_list[shorten_name(name)] if _[TIME] == self.awi.current_step]
+        offers = [
+            _
+            for _ in self.opp_offer_list[shorten_name(name)]
+            if _[TIME] == self.awi.current_step
+        ]
         if len(offers) >= 3:
             prev = offers[-2][UNIT_PRICE] - offers[-3][UNIT_PRICE]
             now = offers[-1][UNIT_PRICE] - offers[-2][UNIT_PRICE]
@@ -5550,7 +6235,11 @@ class AgentT053(AdaptiveAgent, ABC):
     def _opp_next_price(self, name):
         delta = 1
         ami = self.get_ami(name)
-        offers = [_ for _ in self.opp_offer_list[shorten_name(name)] if _[TIME] == self.awi.current_step]
+        offers = [
+            _
+            for _ in self.opp_offer_list[shorten_name(name)]
+            if _[TIME] == self.awi.current_step
+        ]
 
         if len(offers) == 0 or self.nego_info["negotiation_step"] == ami.n_steps:
             if self._is_selling(ami):
@@ -5576,8 +6265,10 @@ class AgentT053(AdaptiveAgent, ABC):
         # 最終ステップかつこれ以上相手のOfferがない場合は受け入れ
         ami = self.get_ami(name)
         is_selling = self._is_selling(ami)
-        if self.nego_info["negotiation_step"] >= ami.n_steps - 1 \
-                and len(self.failure_opp_list) == len(self.active_negotiators.keys()) - 1:
+        if (
+            self.nego_info["negotiation_step"] >= ami.n_steps - 1
+            and len(self.failure_opp_list) == len(self.active_negotiators.keys()) - 1
+        ):
             response = ResponseType.ACCEPT_OFFER
 
         # 受け入れない場合はリストに追加
@@ -5614,9 +6305,11 @@ class AgentT053(AdaptiveAgent, ABC):
         if self.awi.current_step == timing:
             if self.nego_info["negotiation_step"] < 2:
                 if is_selling:
-                    self.new_price_selling = \
-                        min(ami.issues[UNIT_PRICE].max_value * 0.9,
-                            min([_.agreement["unit_price"] for _ in self.success_contracts]) * (1 - slack))
+                    self.new_price_selling = min(
+                        ami.issues[UNIT_PRICE].max_value * 0.9,
+                        min(_.agreement["unit_price"] for _ in self.success_contracts)
+                        * (1 - slack),
+                    )
                     offer[UNIT_PRICE] = self.new_price_selling
                 # else:
                 #     self.new_price_buying = \
@@ -5639,17 +6332,17 @@ class AgentT052(AdaptiveAgent, ABC):
     better_agent = BetterAgent(concession_exponent=0.2)
 
     def __init__(
-            self,
-            *args,
-            acc_price_slack=float("inf"),
-            step_price_slack=float("inf"),
-            opp_price_slack=0.0,
-            opp_acc_price_slack=0.2,
-            range_slack=0.03,
-            concession_exponent=0.1,
-            worst_opp_acc_price_slack=0.0,
-            first_offer_price_slack=INF,
-            **kwargs
+        self,
+        *args,
+        acc_price_slack=float("inf"),
+        step_price_slack=float("inf"),
+        opp_price_slack=0.0,
+        opp_acc_price_slack=0.2,
+        range_slack=0.03,
+        concession_exponent=0.1,
+        worst_opp_acc_price_slack=0.0,
+        first_offer_price_slack=INF,
+        **kwargs
     ):
         super().__init__(*args, **kwargs)
         self._e = concession_exponent
@@ -5666,8 +6359,12 @@ class AgentT052(AdaptiveAgent, ABC):
         self.new_price_selling, self.new_price_buying = float("inf"), 0.0  # 価格変化後の交渉価格
         self.new_price_slack = 0.05
         self.concession_threshold = 3  # 譲歩の変化率の閾値
-        self.worst_opp_acc_price_slack = worst_opp_acc_price_slack  # 相手にとって最も良い合意価格に関するSlack変数
-        self.first_offer_price_slack = first_offer_price_slack  # 合意のない相手に対するoffer価格に関するslack変数
+        self.worst_opp_acc_price_slack = (
+            worst_opp_acc_price_slack  # 相手にとって最も良い合意価格に関するSlack変数
+        )
+        self.first_offer_price_slack = (
+            first_offer_price_slack  # 合意のない相手に対するoffer価格に関するslack変数
+        )
 
         # 取引情報
         self.success_list = defaultdict(lambda: list())  # 交渉成功した際の取引データ
@@ -5696,9 +6393,13 @@ class AgentT052(AdaptiveAgent, ABC):
         is_selling = self._is_selling(self.get_ami(negotiator_id))
         ami = self.get_ami(negotiator_id)
         if is_selling:
-            self.nego_info["my_name"] = shorten_name(self.get_ami(negotiator_id).annotation["seller"])
+            self.nego_info["my_name"] = shorten_name(
+                self.get_ami(negotiator_id).annotation["seller"]
+            )
         else:
-            self.nego_info["my_name"] = shorten_name(self.get_ami(negotiator_id).annotation["buyer"])
+            self.nego_info["my_name"] = shorten_name(
+                self.get_ami(negotiator_id).annotation["buyer"]
+            )
 
     def on_negotiation_success(self, contract, mechanism):
         """Record sales/supplies secured"""
@@ -5710,19 +6411,33 @@ class AgentT052(AdaptiveAgent, ABC):
         if self._is_selling(mechanism):
             partner = contract.annotation["buyer"]
             self._best_acc_selling = max(up, self._best_acc_selling)
-            self._best_opp_acc_selling[partner] = max(up, self._best_opp_acc_selling[partner])
+            self._best_opp_acc_selling[partner] = max(
+                up, self._best_opp_acc_selling[partner]
+            )
         else:
             partner = contract.annotation["seller"]
             self._best_acc_buying = min(up, self._best_acc_buying)
-            self._best_opp_acc_buying[partner] = min(up, self._best_opp_acc_buying[partner])
+            self._best_opp_acc_buying[partner] = min(
+                up, self._best_opp_acc_buying[partner]
+            )
 
         # 取引データを記録
         if self._is_selling(mechanism):
             self.success_list[shorten_name(contract.partners[0])].append(
-                [contract.agreement["quantity"], self.awi.current_step, contract.agreement["unit_price"]])
+                [
+                    contract.agreement["quantity"],
+                    self.awi.current_step,
+                    contract.agreement["unit_price"],
+                ]
+            )
         else:
             self.success_list[shorten_name(contract.partners[1])].append(
-                [contract.agreement["quantity"], self.awi.current_step, contract.agreement["unit_price"]])
+                [
+                    contract.agreement["quantity"],
+                    self.awi.current_step,
+                    contract.agreement["unit_price"],
+                ]
+            )
         self.success_contracts.append(contract)
 
     def propose(self, negotiator_id: str, state) -> "Outcome":
@@ -5748,7 +6463,9 @@ class AgentT052(AdaptiveAgent, ABC):
     def respond(self, negotiator_id, state, offer):
         # find the quantity I still need and end negotiation if I need nothing more
         self.nego_info["negotiation_step"] = state.step  # 交渉ステップを記録
-        self._record_information({shorten_name(negotiator_id): offer}, False)  # offerの保存
+        self._record_information(
+            {shorten_name(negotiator_id): offer}, False
+        )  # offerの保存
 
         # update my current best price to use for limiting concession in other
         # negotiations
@@ -5784,13 +6501,23 @@ class AgentT052(AdaptiveAgent, ABC):
 
         # パラメタの設定
         name = ami.annotation["buyer"] if is_selling else ami.annotation["seller"]
-        success_agreements = opponent_agreements(ami, is_selling, self.success_contracts)
-        accept_agreements = [_ for _ in success_agreements
-                             if _.mechanism_state["current_proposer"] == self.nego_info["my_name"]]
-        offer_agreements = [_ for _ in success_agreements
-                            if _.mechanism_state["current_proposer"] != self.nego_info["my_name"]]
+        success_agreements = opponent_agreements(
+            ami, is_selling, self.success_contracts
+        )
+        accept_agreements = [
+            _
+            for _ in success_agreements
+            if _.mechanism_state["current_proposer"] == self.nego_info["my_name"]
+        ]
+        offer_agreements = [
+            _
+            for _ in success_agreements
+            if _.mechanism_state["current_proposer"] != self.nego_info["my_name"]
+        ]
         step = state.step
-        rank = opponent_rank(list(self.active_negotiators.keys()), is_selling, self.success_contracts)
+        rank = opponent_rank(
+            list(self.active_negotiators.keys()), is_selling, self.success_contracts
+        )
         good_price_range = self._good_price_range(ami)
         std = good_price_range["max"] if is_selling else good_price_range["min"]
         pattern = ["offer"]
@@ -5802,9 +6529,13 @@ class AgentT052(AdaptiveAgent, ABC):
                         pattern.append("offer_agreements")
                     else:
                         pattern.append("accept_agreements")
-                        if price_comparison(is_selling,
-                                            worst_opp_acc_price(ami, is_selling, self.success_contracts),
-                                            std):
+                        if price_comparison(
+                            is_selling,
+                            worst_opp_acc_price(
+                                ami, is_selling, self.success_contracts
+                            ),
+                            std,
+                        ):
                             pattern.append("good")
                         else:
                             pattern.append("bad")
@@ -5822,9 +6553,13 @@ class AgentT052(AdaptiveAgent, ABC):
                         pattern.append("offer_agreements")
                     else:
                         pattern.append("accept_agreements")
-                        if price_comparison(is_selling,
-                                            worst_opp_acc_price(ami, is_selling, self.success_contracts),
-                                            std):
+                        if price_comparison(
+                            is_selling,
+                            worst_opp_acc_price(
+                                ami, is_selling, self.success_contracts
+                            ),
+                            std,
+                        ):
                             pattern.append("good")
                         else:
                             pattern.append("bad")
@@ -5852,7 +6587,9 @@ class AgentT052(AdaptiveAgent, ABC):
 
         # 相手の譲歩率に応じて判断
         name = ami.annotation["buyer"] if is_selling else ami.annotation["seller"]
-        success_agreements = opponent_agreements(ami, is_selling, self.success_contracts)
+        success_agreements = opponent_agreements(
+            ami, is_selling, self.success_contracts
+        )
         pattern = ["accept"]
         if self.nego_info["negotiation_step"] >= ami.n_steps - 1:
             if self._opp_concession_rate_change(name):
@@ -5880,8 +6617,12 @@ class AgentT052(AdaptiveAgent, ABC):
         mx = ami.issues[UNIT_PRICE].max_value
         mn = ami.issues[UNIT_PRICE].min_value
 
-        price_range = {"min": mn + AgentT052.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn),
-                       "max": mx - AgentT052.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn)}
+        price_range = {
+            "min": mn
+            + AgentT052.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn),
+            "max": mx
+            - AgentT052.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn),
+        }
 
         return price_range
 
@@ -5915,7 +6656,9 @@ class AgentT052(AdaptiveAgent, ABC):
         if time < th[0]:
             strong_degree = strong_range["max"]
         elif th[0] <= time <= th[1] or 0.5 < self._self_factor(ami):
-            strong_degree = strong_range["max"] - rng * min(time - th[0] / th[1] - th[0], 1)
+            strong_degree = strong_range["max"] - rng * min(
+                time - th[0] / th[1] - th[0], 1
+            )
         else:
             strong_degree = strong_range["min"] - 0.1
 
@@ -5933,53 +6676,63 @@ class AgentT052(AdaptiveAgent, ABC):
 
         if self._is_selling(ami):
             partner = ami.annotation["buyer"]
-            mn = min(mx * (1 - self._range_slack),
-                     # self.new_price_selling * (1 - self.new_price_slack),
-                     # min([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [float("inf")]),
-                     # min([_.agreement["unit_price"] for _ in success_agreements] + [float("inf")]),
-                     worst_opp_acc_price(ami, is_selling, self.success_contracts)
-                     * (1 + self.worst_opp_acc_price_slack),
-                     max(
-                         [mn]
-                         + [
-                             p * (1 - slack)
-                             for p, slack in (
-                                 # (self._best_selling, self._step_price_slack),
-                                 # (self._best_acc_selling, self._acc_price_slack),
-                                 (self._best_opp_selling[partner], self._opp_price_slack),
-                                 (
-                                     self._best_opp_acc_selling[partner],
-                                     self._opp_acc_price_slack,
-                                 ),
-                                 (self._first_offer_price(name), self.first_offer_price_slack),
-                             )
-                         ]
-                     ))
+            mn = min(
+                mx * (1 - self._range_slack),
+                # self.new_price_selling * (1 - self.new_price_slack),
+                # min([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [float("inf")]),
+                # min([_.agreement["unit_price"] for _ in success_agreements] + [float("inf")]),
+                worst_opp_acc_price(ami, is_selling, self.success_contracts)
+                * (1 + self.worst_opp_acc_price_slack),
+                max(
+                    [mn]
+                    + [
+                        p * (1 - slack)
+                        for p, slack in (
+                            # (self._best_selling, self._step_price_slack),
+                            # (self._best_acc_selling, self._acc_price_slack),
+                            (self._best_opp_selling[partner], self._opp_price_slack),
+                            (
+                                self._best_opp_acc_selling[partner],
+                                self._opp_acc_price_slack,
+                            ),
+                            (
+                                self._first_offer_price(name),
+                                self.first_offer_price_slack,
+                            ),
+                        )
+                    ]
+                ),
+            )
         else:
             partner = ami.annotation["seller"]
-            mx = max(mn * (1 + self._range_slack),
-                     # self.new_price_buying * (1 + self.new_price_slack),
-                     # max([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [0]),
-                     # max([_.agreement["unit_price"] for _ in success_agreements] + [0]),
-                     worst_opp_acc_price(ami, is_selling, self.success_contracts)
-                     * (1 - self.worst_opp_acc_price_slack),
-                     min(
-                         [mx]
-                         + [
-                             p * (1 + slack)
-                             for p, slack in (
-                                 # (self._best_buying, self._step_price_slack),
-                                 # (self._best_acc_buying, self._acc_price_slack),
-                                 (self._best_opp_buying[partner], self._opp_price_slack),
-                                 (
-                                     self._best_opp_acc_buying[partner],
-                                     self._opp_acc_price_slack,
-                                 ),
-                                 # (self.opp_next_price(partner), self._opp_price_slack),
-                                 (self._first_offer_price(name), self.first_offer_price_slack),
-                             )
-                         ]
-                     ))
+            mx = max(
+                mn * (1 + self._range_slack),
+                # self.new_price_buying * (1 + self.new_price_slack),
+                # max([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [0]),
+                # max([_.agreement["unit_price"] for _ in success_agreements] + [0]),
+                worst_opp_acc_price(ami, is_selling, self.success_contracts)
+                * (1 - self.worst_opp_acc_price_slack),
+                min(
+                    [mx]
+                    + [
+                        p * (1 + slack)
+                        for p, slack in (
+                            # (self._best_buying, self._step_price_slack),
+                            # (self._best_acc_buying, self._acc_price_slack),
+                            (self._best_opp_buying[partner], self._opp_price_slack),
+                            (
+                                self._best_opp_acc_buying[partner],
+                                self._opp_acc_price_slack,
+                            ),
+                            # (self.opp_next_price(partner), self._opp_price_slack),
+                            (
+                                self._first_offer_price(name),
+                                self.first_offer_price_slack,
+                            ),
+                        )
+                    ]
+                ),
+            )
         return mn, mx
 
     def _self_factor(self, ami):
@@ -5992,15 +6745,20 @@ class AgentT052(AdaptiveAgent, ABC):
         w_prev, w_good = param_normalization([w_prev, w_good])
 
         # これまでの交渉成功割合
-        success_agreements = [[_.agreement, _.mechanism_state["current_proposer"]] for _ in self.success_contracts]
+        success_agreements = [
+            [_.agreement, _.mechanism_state["current_proposer"]]
+            for _ in self.success_contracts
+        ]
         if success_agreements:
-            simulation_steps = set([lis[0]["time"] for lis in success_agreements])
-            prev_agreement = (len(simulation_steps) / (self.awi.current_step + 1))
+            simulation_steps = {lis[0]["time"] for lis in success_agreements}
+            prev_agreement = len(simulation_steps) / (self.awi.current_step + 1)
         else:
             prev_agreement = 1
 
         # 良い値段で合意できているか
-        success_agreements = opponent_agreements(ami, self._is_selling(ami), self.success_contracts)
+        success_agreements = opponent_agreements(
+            ami, self._is_selling(ami), self.success_contracts
+        )
         if success_agreements:
             tp = self.awi.trading_prices[1]
             prev_up = success_agreements[-1].agreement["unit_price"]
@@ -6033,7 +6791,11 @@ class AgentT052(AdaptiveAgent, ABC):
     def _opp_concession_rate_change(self, name: str):
         """相手の譲歩の変化率を計算"""
         ami = self.get_ami(name)
-        offers = [_ for _ in self.opp_offer_list[shorten_name(name)] if _[TIME] == self.awi.current_step]
+        offers = [
+            _
+            for _ in self.opp_offer_list[shorten_name(name)]
+            if _[TIME] == self.awi.current_step
+        ]
         if len(offers) >= 3:
             prev = offers[-2][UNIT_PRICE] - offers[-3][UNIT_PRICE]
             now = offers[-1][UNIT_PRICE] - offers[-2][UNIT_PRICE]
@@ -6154,7 +6916,11 @@ class AgentT052(AdaptiveAgent, ABC):
     def _opp_next_price(self, name):
         delta = 1
         ami = self.get_ami(name)
-        offers = [_ for _ in self.opp_offer_list[shorten_name(name)] if _[TIME] == self.awi.current_step]
+        offers = [
+            _
+            for _ in self.opp_offer_list[shorten_name(name)]
+            if _[TIME] == self.awi.current_step
+        ]
 
         if len(offers) == 0 or self.nego_info["negotiation_step"] == ami.n_steps:
             if self._is_selling(ami):
@@ -6180,8 +6946,10 @@ class AgentT052(AdaptiveAgent, ABC):
         # 最終ステップかつこれ以上相手のOfferがない場合は受け入れ
         ami = self.get_ami(name)
         is_selling = self._is_selling(ami)
-        if self.nego_info["negotiation_step"] >= ami.n_steps - 1 \
-                and len(self.failure_opp_list) == len(self.active_negotiators.keys()) - 1:
+        if (
+            self.nego_info["negotiation_step"] >= ami.n_steps - 1
+            and len(self.failure_opp_list) == len(self.active_negotiators.keys()) - 1
+        ):
             response = ResponseType.ACCEPT_OFFER
 
         # 受け入れない場合はリストに追加
@@ -6218,9 +6986,11 @@ class AgentT052(AdaptiveAgent, ABC):
         if self.awi.current_step == timing:
             if self.nego_info["negotiation_step"] < 2:
                 if is_selling:
-                    self.new_price_selling = \
-                        min(ami.issues[UNIT_PRICE].max_value * 0.9,
-                            min([_.agreement["unit_price"] for _ in self.success_contracts]) * (1 - slack))
+                    self.new_price_selling = min(
+                        ami.issues[UNIT_PRICE].max_value * 0.9,
+                        min(_.agreement["unit_price"] for _ in self.success_contracts)
+                        * (1 - slack),
+                    )
                     offer[UNIT_PRICE] = self.new_price_selling
                 # else:
                 #     self.new_price_buying = \
@@ -6243,17 +7013,17 @@ class AgentT051(AdaptiveAgent, ABC):
     better_agent = BetterAgent(concession_exponent=0.2)
 
     def __init__(
-            self,
-            *args,
-            acc_price_slack=float("inf"),
-            step_price_slack=float("inf"),
-            opp_price_slack=0.0,
-            opp_acc_price_slack=0.2,
-            range_slack=0.03,
-            concession_exponent=0.1,
-            worst_opp_acc_price_slack=0.0,
-            first_offer_price_slack=INF,
-            **kwargs
+        self,
+        *args,
+        acc_price_slack=float("inf"),
+        step_price_slack=float("inf"),
+        opp_price_slack=0.0,
+        opp_acc_price_slack=0.2,
+        range_slack=0.03,
+        concession_exponent=0.1,
+        worst_opp_acc_price_slack=0.0,
+        first_offer_price_slack=INF,
+        **kwargs
     ):
         super().__init__(*args, **kwargs)
         self._e = concession_exponent
@@ -6270,8 +7040,12 @@ class AgentT051(AdaptiveAgent, ABC):
         self.new_price_selling, self.new_price_buying = float("inf"), 0.0  # 価格変化後の交渉価格
         self.new_price_slack = 0.05
         self.concession_threshold = 3  # 譲歩の変化率の閾値
-        self.worst_opp_acc_price_slack = worst_opp_acc_price_slack  # 相手にとって最も良い合意価格に関するSlack変数
-        self.first_offer_price_slack = first_offer_price_slack  # 合意のない相手に対するoffer価格に関するslack変数
+        self.worst_opp_acc_price_slack = (
+            worst_opp_acc_price_slack  # 相手にとって最も良い合意価格に関するSlack変数
+        )
+        self.first_offer_price_slack = (
+            first_offer_price_slack  # 合意のない相手に対するoffer価格に関するslack変数
+        )
 
         # 取引情報
         self.success_list = defaultdict(lambda: list())  # 交渉成功した際の取引データ
@@ -6300,9 +7074,13 @@ class AgentT051(AdaptiveAgent, ABC):
         is_selling = self._is_selling(self.get_ami(negotiator_id))
         ami = self.get_ami(negotiator_id)
         if is_selling:
-            self.nego_info["my_name"] = shorten_name(self.get_ami(negotiator_id).annotation["seller"])
+            self.nego_info["my_name"] = shorten_name(
+                self.get_ami(negotiator_id).annotation["seller"]
+            )
         else:
-            self.nego_info["my_name"] = shorten_name(self.get_ami(negotiator_id).annotation["buyer"])
+            self.nego_info["my_name"] = shorten_name(
+                self.get_ami(negotiator_id).annotation["buyer"]
+            )
 
     def on_negotiation_success(self, contract, mechanism):
         """Record sales/supplies secured"""
@@ -6314,19 +7092,33 @@ class AgentT051(AdaptiveAgent, ABC):
         if self._is_selling(mechanism):
             partner = contract.annotation["buyer"]
             self._best_acc_selling = max(up, self._best_acc_selling)
-            self._best_opp_acc_selling[partner] = max(up, self._best_opp_acc_selling[partner])
+            self._best_opp_acc_selling[partner] = max(
+                up, self._best_opp_acc_selling[partner]
+            )
         else:
             partner = contract.annotation["seller"]
             self._best_acc_buying = min(up, self._best_acc_buying)
-            self._best_opp_acc_buying[partner] = min(up, self._best_opp_acc_buying[partner])
+            self._best_opp_acc_buying[partner] = min(
+                up, self._best_opp_acc_buying[partner]
+            )
 
         # 取引データを記録
         if self._is_selling(mechanism):
             self.success_list[shorten_name(contract.partners[0])].append(
-                [contract.agreement["quantity"], self.awi.current_step, contract.agreement["unit_price"]])
+                [
+                    contract.agreement["quantity"],
+                    self.awi.current_step,
+                    contract.agreement["unit_price"],
+                ]
+            )
         else:
             self.success_list[shorten_name(contract.partners[1])].append(
-                [contract.agreement["quantity"], self.awi.current_step, contract.agreement["unit_price"]])
+                [
+                    contract.agreement["quantity"],
+                    self.awi.current_step,
+                    contract.agreement["unit_price"],
+                ]
+            )
         self.success_contracts.append(contract)
 
     def propose(self, negotiator_id: str, state) -> "Outcome":
@@ -6352,7 +7144,9 @@ class AgentT051(AdaptiveAgent, ABC):
     def respond(self, negotiator_id, state, offer):
         # find the quantity I still need and end negotiation if I need nothing more
         self.nego_info["negotiation_step"] = state.step  # 交渉ステップを記録
-        self._record_information({shorten_name(negotiator_id): offer}, False)  # offerの保存
+        self._record_information(
+            {shorten_name(negotiator_id): offer}, False
+        )  # offerの保存
 
         # update my current best price to use for limiting concession in other
         # negotiations
@@ -6388,13 +7182,23 @@ class AgentT051(AdaptiveAgent, ABC):
 
         # パラメタの設定
         name = ami.annotation["buyer"] if is_selling else ami.annotation["seller"]
-        success_agreements = opponent_agreements(ami, is_selling, self.success_contracts)
-        accept_agreements = [_ for _ in success_agreements
-                             if _.mechanism_state["current_proposer"] == self.nego_info["my_name"]]
-        offer_agreements = [_ for _ in success_agreements
-                            if _.mechanism_state["current_proposer"] != self.nego_info["my_name"]]
+        success_agreements = opponent_agreements(
+            ami, is_selling, self.success_contracts
+        )
+        accept_agreements = [
+            _
+            for _ in success_agreements
+            if _.mechanism_state["current_proposer"] == self.nego_info["my_name"]
+        ]
+        offer_agreements = [
+            _
+            for _ in success_agreements
+            if _.mechanism_state["current_proposer"] != self.nego_info["my_name"]
+        ]
         step = state.step
-        rank = opponent_rank(list(self.active_negotiators.keys()), is_selling, self.success_contracts)
+        rank = opponent_rank(
+            list(self.active_negotiators.keys()), is_selling, self.success_contracts
+        )
         good_price_range = self._good_price_range(ami)
         std = good_price_range["max"] if is_selling else good_price_range["min"]
         pattern = ["offer"]
@@ -6406,9 +7210,13 @@ class AgentT051(AdaptiveAgent, ABC):
                         pattern.append("offer_agreements")
                     else:
                         pattern.append("accept_agreements")
-                        if price_comparison(is_selling,
-                                            worst_opp_acc_price(ami, is_selling, self.success_contracts),
-                                            std):
+                        if price_comparison(
+                            is_selling,
+                            worst_opp_acc_price(
+                                ami, is_selling, self.success_contracts
+                            ),
+                            std,
+                        ):
                             pattern.append("good")
                         else:
                             pattern.append("bad")
@@ -6426,9 +7234,13 @@ class AgentT051(AdaptiveAgent, ABC):
                         pattern.append("offer_agreements")
                     else:
                         pattern.append("accept_agreements")
-                        if price_comparison(is_selling,
-                                            worst_opp_acc_price(ami, is_selling, self.success_contracts),
-                                            std):
+                        if price_comparison(
+                            is_selling,
+                            worst_opp_acc_price(
+                                ami, is_selling, self.success_contracts
+                            ),
+                            std,
+                        ):
                             pattern.append("good")
                         else:
                             pattern.append("bad")
@@ -6456,7 +7268,9 @@ class AgentT051(AdaptiveAgent, ABC):
 
         # 相手の譲歩率に応じて判断
         name = ami.annotation["buyer"] if is_selling else ami.annotation["seller"]
-        success_agreements = opponent_agreements(ami, is_selling, self.success_contracts)
+        success_agreements = opponent_agreements(
+            ami, is_selling, self.success_contracts
+        )
         pattern = ["accept"]
         if self.nego_info["negotiation_step"] >= ami.n_steps - 1:
             if self._opp_concession_rate_change(name):
@@ -6484,8 +7298,12 @@ class AgentT051(AdaptiveAgent, ABC):
         mx = ami.issues[UNIT_PRICE].max_value
         mn = ami.issues[UNIT_PRICE].min_value
 
-        price_range = {"min": mn + AgentT051.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn),
-                       "max": mx - AgentT051.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn)}
+        price_range = {
+            "min": mn
+            + AgentT051.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn),
+            "max": mx
+            - AgentT051.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn),
+        }
 
         return price_range
 
@@ -6519,7 +7337,9 @@ class AgentT051(AdaptiveAgent, ABC):
         if time < th[0]:
             strong_degree = strong_range["max"]
         elif th[0] <= time <= th[1] or 0.5 < self._self_factor(ami):
-            strong_degree = strong_range["max"] - rng * min(time - th[0] / th[1] - th[0], 1)
+            strong_degree = strong_range["max"] - rng * min(
+                time - th[0] / th[1] - th[0], 1
+            )
         else:
             strong_degree = strong_range["min"] - 0.1
 
@@ -6537,53 +7357,63 @@ class AgentT051(AdaptiveAgent, ABC):
 
         if self._is_selling(ami):
             partner = ami.annotation["buyer"]
-            mn = min(mx * (1 - self._range_slack),
-                     # self.new_price_selling * (1 - self.new_price_slack),
-                     # min([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [float("inf")]),
-                     # min([_.agreement["unit_price"] for _ in success_agreements] + [float("inf")]),
-                     worst_opp_acc_price(ami, is_selling, self.success_contracts)
-                     * (1 + self.worst_opp_acc_price_slack),
-                     max(
-                         [mn]
-                         + [
-                             p * (1 - slack)
-                             for p, slack in (
-                                 # (self._best_selling, self._step_price_slack),
-                                 # (self._best_acc_selling, self._acc_price_slack),
-                                 (self._best_opp_selling[partner], self._opp_price_slack),
-                                 (
-                                     self._best_opp_acc_selling[partner],
-                                     self._opp_acc_price_slack,
-                                 ),
-                                 (self._first_offer_price(name), self.first_offer_price_slack),
-                             )
-                         ]
-                     ))
+            mn = min(
+                mx * (1 - self._range_slack),
+                # self.new_price_selling * (1 - self.new_price_slack),
+                # min([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [float("inf")]),
+                # min([_.agreement["unit_price"] for _ in success_agreements] + [float("inf")]),
+                worst_opp_acc_price(ami, is_selling, self.success_contracts)
+                * (1 + self.worst_opp_acc_price_slack),
+                max(
+                    [mn]
+                    + [
+                        p * (1 - slack)
+                        for p, slack in (
+                            # (self._best_selling, self._step_price_slack),
+                            # (self._best_acc_selling, self._acc_price_slack),
+                            (self._best_opp_selling[partner], self._opp_price_slack),
+                            (
+                                self._best_opp_acc_selling[partner],
+                                self._opp_acc_price_slack,
+                            ),
+                            (
+                                self._first_offer_price(name),
+                                self.first_offer_price_slack,
+                            ),
+                        )
+                    ]
+                ),
+            )
         else:
             partner = ami.annotation["seller"]
-            mx = max(mn * (1 + self._range_slack),
-                     # self.new_price_buying * (1 + self.new_price_slack),
-                     # max([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [0]),
-                     # max([_.agreement["unit_price"] for _ in success_agreements] + [0]),
-                     worst_opp_acc_price(ami, is_selling, self.success_contracts)
-                     * (1 - self.worst_opp_acc_price_slack),
-                     min(
-                         [mx]
-                         + [
-                             p * (1 + slack)
-                             for p, slack in (
-                                 # (self._best_buying, self._step_price_slack),
-                                 # (self._best_acc_buying, self._acc_price_slack),
-                                 (self._best_opp_buying[partner], self._opp_price_slack),
-                                 (
-                                     self._best_opp_acc_buying[partner],
-                                     self._opp_acc_price_slack,
-                                 ),
-                                 # (self.opp_next_price(partner), self._opp_price_slack),
-                                 (self._first_offer_price(name), self.first_offer_price_slack),
-                             )
-                         ]
-                     ))
+            mx = max(
+                mn * (1 + self._range_slack),
+                # self.new_price_buying * (1 + self.new_price_slack),
+                # max([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [0]),
+                # max([_.agreement["unit_price"] for _ in success_agreements] + [0]),
+                worst_opp_acc_price(ami, is_selling, self.success_contracts)
+                * (1 - self.worst_opp_acc_price_slack),
+                min(
+                    [mx]
+                    + [
+                        p * (1 + slack)
+                        for p, slack in (
+                            # (self._best_buying, self._step_price_slack),
+                            # (self._best_acc_buying, self._acc_price_slack),
+                            (self._best_opp_buying[partner], self._opp_price_slack),
+                            (
+                                self._best_opp_acc_buying[partner],
+                                self._opp_acc_price_slack,
+                            ),
+                            # (self.opp_next_price(partner), self._opp_price_slack),
+                            (
+                                self._first_offer_price(name),
+                                self.first_offer_price_slack,
+                            ),
+                        )
+                    ]
+                ),
+            )
         return mn, mx
 
     def _self_factor(self, ami):
@@ -6596,15 +7426,20 @@ class AgentT051(AdaptiveAgent, ABC):
         w_prev, w_good = param_normalization([w_prev, w_good])
 
         # これまでの交渉成功割合
-        success_agreements = [[_.agreement, _.mechanism_state["current_proposer"]] for _ in self.success_contracts]
+        success_agreements = [
+            [_.agreement, _.mechanism_state["current_proposer"]]
+            for _ in self.success_contracts
+        ]
         if success_agreements:
-            simulation_steps = set([lis[0]["time"] for lis in success_agreements])
-            prev_agreement = (len(simulation_steps) / (self.awi.current_step + 1))
+            simulation_steps = {lis[0]["time"] for lis in success_agreements}
+            prev_agreement = len(simulation_steps) / (self.awi.current_step + 1)
         else:
             prev_agreement = 1
 
         # 良い値段で合意できているか
-        success_agreements = opponent_agreements(ami, self._is_selling(ami), self.success_contracts)
+        success_agreements = opponent_agreements(
+            ami, self._is_selling(ami), self.success_contracts
+        )
         if success_agreements:
             tp = self.awi.trading_prices[1]
             prev_up = success_agreements[-1].agreement["unit_price"]
@@ -6637,7 +7472,11 @@ class AgentT051(AdaptiveAgent, ABC):
     def _opp_concession_rate_change(self, name: str):
         """相手の譲歩の変化率を計算"""
         ami = self.get_ami(name)
-        offers = [_ for _ in self.opp_offer_list[shorten_name(name)] if _[TIME] == self.awi.current_step]
+        offers = [
+            _
+            for _ in self.opp_offer_list[shorten_name(name)]
+            if _[TIME] == self.awi.current_step
+        ]
         if len(offers) >= 3:
             prev = offers[-2][UNIT_PRICE] - offers[-3][UNIT_PRICE]
             now = offers[-1][UNIT_PRICE] - offers[-2][UNIT_PRICE]
@@ -6758,7 +7597,11 @@ class AgentT051(AdaptiveAgent, ABC):
     def _opp_next_price(self, name):
         delta = 1
         ami = self.get_ami(name)
-        offers = [_ for _ in self.opp_offer_list[shorten_name(name)] if _[TIME] == self.awi.current_step]
+        offers = [
+            _
+            for _ in self.opp_offer_list[shorten_name(name)]
+            if _[TIME] == self.awi.current_step
+        ]
 
         if len(offers) == 0 or self.nego_info["negotiation_step"] == ami.n_steps:
             if self._is_selling(ami):
@@ -6784,8 +7627,10 @@ class AgentT051(AdaptiveAgent, ABC):
         # 最終ステップかつこれ以上相手のOfferがない場合は受け入れ
         ami = self.get_ami(name)
         is_selling = self._is_selling(ami)
-        if self.nego_info["negotiation_step"] >= ami.n_steps - 1 \
-                and len(self.failure_opp_list) == len(self.active_negotiators.keys()) - 1:
+        if (
+            self.nego_info["negotiation_step"] >= ami.n_steps - 1
+            and len(self.failure_opp_list) == len(self.active_negotiators.keys()) - 1
+        ):
             response = ResponseType.ACCEPT_OFFER
 
         # 受け入れない場合はリストに追加
@@ -6822,9 +7667,11 @@ class AgentT051(AdaptiveAgent, ABC):
         if self.awi.current_step == timing:
             if self.nego_info["negotiation_step"] < 2:
                 if is_selling:
-                    self.new_price_selling = \
-                        min(ami.issues[UNIT_PRICE].max_value * 0.9,
-                            min([_.agreement["unit_price"] for _ in self.success_contracts]) * (1 - slack))
+                    self.new_price_selling = min(
+                        ami.issues[UNIT_PRICE].max_value * 0.9,
+                        min(_.agreement["unit_price"] for _ in self.success_contracts)
+                        * (1 - slack),
+                    )
                     offer[UNIT_PRICE] = self.new_price_selling
                 # else:
                 #     self.new_price_buying = \
@@ -6847,17 +7694,17 @@ class AgentT050(AdaptiveAgent, ABC):
     better_agent = BetterAgent(concession_exponent=0.2)
 
     def __init__(
-            self,
-            *args,
-            acc_price_slack=float("inf"),
-            step_price_slack=float("inf"),
-            opp_price_slack=0.0,
-            opp_acc_price_slack=0.2,
-            range_slack=0.03,
-            concession_exponent=0.1,
-            worst_opp_acc_price_slack=0.0,
-            first_offer_price_slack=INF,
-            **kwargs
+        self,
+        *args,
+        acc_price_slack=float("inf"),
+        step_price_slack=float("inf"),
+        opp_price_slack=0.0,
+        opp_acc_price_slack=0.2,
+        range_slack=0.03,
+        concession_exponent=0.1,
+        worst_opp_acc_price_slack=0.0,
+        first_offer_price_slack=INF,
+        **kwargs
     ):
         super().__init__(*args, **kwargs)
         self._e = concession_exponent
@@ -6874,8 +7721,12 @@ class AgentT050(AdaptiveAgent, ABC):
         self.new_price_selling, self.new_price_buying = float("inf"), 0.0  # 価格変化後の交渉価格
         self.new_price_slack = 0.05
         self.concession_threshold = 3  # 譲歩の変化率の閾値
-        self.worst_opp_acc_price_slack = worst_opp_acc_price_slack  # 相手にとって最も良い合意価格に関するSlack変数
-        self.first_offer_price_slack = first_offer_price_slack  # 合意のない相手に対するoffer価格に関するslack変数
+        self.worst_opp_acc_price_slack = (
+            worst_opp_acc_price_slack  # 相手にとって最も良い合意価格に関するSlack変数
+        )
+        self.first_offer_price_slack = (
+            first_offer_price_slack  # 合意のない相手に対するoffer価格に関するslack変数
+        )
 
         # 取引情報
         self.success_list = defaultdict(lambda: list())  # 交渉成功した際の取引データ
@@ -6904,9 +7755,13 @@ class AgentT050(AdaptiveAgent, ABC):
         is_selling = self._is_selling(self.get_ami(negotiator_id))
         ami = self.get_ami(negotiator_id)
         if is_selling:
-            self.nego_info["my_name"] = shorten_name(self.get_ami(negotiator_id).annotation["seller"])
+            self.nego_info["my_name"] = shorten_name(
+                self.get_ami(negotiator_id).annotation["seller"]
+            )
         else:
-            self.nego_info["my_name"] = shorten_name(self.get_ami(negotiator_id).annotation["buyer"])
+            self.nego_info["my_name"] = shorten_name(
+                self.get_ami(negotiator_id).annotation["buyer"]
+            )
 
     def on_negotiation_success(self, contract, mechanism):
         """Record sales/supplies secured"""
@@ -6918,19 +7773,33 @@ class AgentT050(AdaptiveAgent, ABC):
         if self._is_selling(mechanism):
             partner = contract.annotation["buyer"]
             self._best_acc_selling = max(up, self._best_acc_selling)
-            self._best_opp_acc_selling[partner] = max(up, self._best_opp_acc_selling[partner])
+            self._best_opp_acc_selling[partner] = max(
+                up, self._best_opp_acc_selling[partner]
+            )
         else:
             partner = contract.annotation["seller"]
             self._best_acc_buying = min(up, self._best_acc_buying)
-            self._best_opp_acc_buying[partner] = min(up, self._best_opp_acc_buying[partner])
+            self._best_opp_acc_buying[partner] = min(
+                up, self._best_opp_acc_buying[partner]
+            )
 
         # 取引データを記録
         if self._is_selling(mechanism):
             self.success_list[shorten_name(contract.partners[0])].append(
-                [contract.agreement["quantity"], self.awi.current_step, contract.agreement["unit_price"]])
+                [
+                    contract.agreement["quantity"],
+                    self.awi.current_step,
+                    contract.agreement["unit_price"],
+                ]
+            )
         else:
             self.success_list[shorten_name(contract.partners[1])].append(
-                [contract.agreement["quantity"], self.awi.current_step, contract.agreement["unit_price"]])
+                [
+                    contract.agreement["quantity"],
+                    self.awi.current_step,
+                    contract.agreement["unit_price"],
+                ]
+            )
         self.success_contracts.append(contract)
 
     def propose(self, negotiator_id: str, state) -> "Outcome":
@@ -6956,7 +7825,9 @@ class AgentT050(AdaptiveAgent, ABC):
     def respond(self, negotiator_id, state, offer):
         # find the quantity I still need and end negotiation if I need nothing more
         self.nego_info["negotiation_step"] = state.step  # 交渉ステップを記録
-        self._record_information({shorten_name(negotiator_id): offer}, False)  # offerの保存
+        self._record_information(
+            {shorten_name(negotiator_id): offer}, False
+        )  # offerの保存
 
         # update my current best price to use for limiting concession in other
         # negotiations
@@ -6992,13 +7863,23 @@ class AgentT050(AdaptiveAgent, ABC):
 
         # パラメタの設定
         name = ami.annotation["buyer"] if is_selling else ami.annotation["seller"]
-        success_agreements = opponent_agreements(ami, is_selling, self.success_contracts)
-        accept_agreements = [_ for _ in success_agreements
-                             if _.mechanism_state["current_proposer"] == self.nego_info["my_name"]]
-        offer_agreements = [_ for _ in success_agreements
-                            if _.mechanism_state["current_proposer"] != self.nego_info["my_name"]]
+        success_agreements = opponent_agreements(
+            ami, is_selling, self.success_contracts
+        )
+        accept_agreements = [
+            _
+            for _ in success_agreements
+            if _.mechanism_state["current_proposer"] == self.nego_info["my_name"]
+        ]
+        offer_agreements = [
+            _
+            for _ in success_agreements
+            if _.mechanism_state["current_proposer"] != self.nego_info["my_name"]
+        ]
         step = state.step
-        rank = opponent_rank(list(self.active_negotiators.keys()), is_selling, self.success_contracts)
+        rank = opponent_rank(
+            list(self.active_negotiators.keys()), is_selling, self.success_contracts
+        )
         good_price_range = self._good_price_range(ami)
         std = good_price_range["max"] if is_selling else good_price_range["min"]
         pattern = ["offer"]
@@ -7010,9 +7891,13 @@ class AgentT050(AdaptiveAgent, ABC):
                         pattern.append("offer_agreements")
                     else:
                         pattern.append("accept_agreements")
-                        if price_comparison(is_selling,
-                                            worst_opp_acc_price(ami, is_selling, self.success_contracts),
-                                            std):
+                        if price_comparison(
+                            is_selling,
+                            worst_opp_acc_price(
+                                ami, is_selling, self.success_contracts
+                            ),
+                            std,
+                        ):
                             pattern.append("good")
                         else:
                             pattern.append("bad")
@@ -7028,9 +7913,13 @@ class AgentT050(AdaptiveAgent, ABC):
                         pattern.append("offer_agreements")
                     else:
                         pattern.append("accept_agreements")
-                        if price_comparison(is_selling,
-                                            worst_opp_acc_price(ami, is_selling, self.success_contracts),
-                                            std):
+                        if price_comparison(
+                            is_selling,
+                            worst_opp_acc_price(
+                                ami, is_selling, self.success_contracts
+                            ),
+                            std,
+                        ):
                             pattern.append("good")
                         else:
                             pattern.append("bad")
@@ -7056,7 +7945,9 @@ class AgentT050(AdaptiveAgent, ABC):
 
         # 相手の譲歩率に応じて判断
         name = ami.annotation["buyer"] if is_selling else ami.annotation["seller"]
-        success_agreements = opponent_agreements(ami, is_selling, self.success_contracts)
+        success_agreements = opponent_agreements(
+            ami, is_selling, self.success_contracts
+        )
         pattern = ["accept"]
         if self.nego_info["negotiation_step"] >= ami.n_steps - 1:
             if self._opp_concession_rate_change(name) > self.concession_threshold:
@@ -7084,8 +7975,12 @@ class AgentT050(AdaptiveAgent, ABC):
         mx = ami.issues[UNIT_PRICE].max_value
         mn = ami.issues[UNIT_PRICE].min_value
 
-        price_range = {"min": mn + AgentT050.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn),
-                       "max": mx - AgentT050.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn)}
+        price_range = {
+            "min": mn
+            + AgentT050.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn),
+            "max": mx
+            - AgentT050.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn),
+        }
 
         return price_range
 
@@ -7119,7 +8014,9 @@ class AgentT050(AdaptiveAgent, ABC):
         if time < th[0]:
             strong_degree = 0.0
         elif th[0] <= time <= th[1] or 0.5 < self._self_factor(ami):
-            strong_degree = strong_range["max"] - rng * min(time - th[0] / th[1] - th[0], 1)
+            strong_degree = strong_range["max"] - rng * min(
+                time - th[0] / th[1] - th[0], 1
+            )
         else:
             strong_degree = strong_range["min"] - 0.1
 
@@ -7137,53 +8034,63 @@ class AgentT050(AdaptiveAgent, ABC):
 
         if self._is_selling(ami):
             partner = ami.annotation["buyer"]
-            mn = min(mx * (1 - self._range_slack),
-                     # self.new_price_selling * (1 - self.new_price_slack),
-                     # min([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [float("inf")]),
-                     # min([_.agreement["unit_price"] for _ in success_agreements] + [float("inf")]),
-                     worst_opp_acc_price(ami, is_selling, self.success_contracts)
-                     * (1 + self.worst_opp_acc_price_slack),
-                     max(
-                         [mn]
-                         + [
-                             p * (1 - slack)
-                             for p, slack in (
-                                 # (self._best_selling, self._step_price_slack),
-                                 # (self._best_acc_selling, self._acc_price_slack),
-                                 (self._best_opp_selling[partner], self._opp_price_slack),
-                                 (
-                                     self._best_opp_acc_selling[partner],
-                                     self._opp_acc_price_slack,
-                                 ),
-                                 (self._first_offer_price(name), self.first_offer_price_slack),
-                             )
-                         ]
-                     ))
+            mn = min(
+                mx * (1 - self._range_slack),
+                # self.new_price_selling * (1 - self.new_price_slack),
+                # min([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [float("inf")]),
+                # min([_.agreement["unit_price"] for _ in success_agreements] + [float("inf")]),
+                worst_opp_acc_price(ami, is_selling, self.success_contracts)
+                * (1 + self.worst_opp_acc_price_slack),
+                max(
+                    [mn]
+                    + [
+                        p * (1 - slack)
+                        for p, slack in (
+                            # (self._best_selling, self._step_price_slack),
+                            # (self._best_acc_selling, self._acc_price_slack),
+                            (self._best_opp_selling[partner], self._opp_price_slack),
+                            (
+                                self._best_opp_acc_selling[partner],
+                                self._opp_acc_price_slack,
+                            ),
+                            (
+                                self._first_offer_price(name),
+                                self.first_offer_price_slack,
+                            ),
+                        )
+                    ]
+                ),
+            )
         else:
             partner = ami.annotation["seller"]
-            mx = max(mn * (1 + self._range_slack),
-                     # self.new_price_buying * (1 + self.new_price_slack),
-                     # max([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [0]),
-                     # max([_.agreement["unit_price"] for _ in success_agreements] + [0]),
-                     worst_opp_acc_price(ami, is_selling, self.success_contracts)
-                     * (1 - self.worst_opp_acc_price_slack),
-                     min(
-                         [mx]
-                         + [
-                             p * (1 + slack)
-                             for p, slack in (
-                                 # (self._best_buying, self._step_price_slack),
-                                 # (self._best_acc_buying, self._acc_price_slack),
-                                 (self._best_opp_buying[partner], self._opp_price_slack),
-                                 (
-                                     self._best_opp_acc_buying[partner],
-                                     self._opp_acc_price_slack,
-                                 ),
-                                 # (self.opp_next_price(partner), self._opp_price_slack),
-                                 (self._first_offer_price(name), self.first_offer_price_slack),
-                             )
-                         ]
-                     ))
+            mx = max(
+                mn * (1 + self._range_slack),
+                # self.new_price_buying * (1 + self.new_price_slack),
+                # max([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [0]),
+                # max([_.agreement["unit_price"] for _ in success_agreements] + [0]),
+                worst_opp_acc_price(ami, is_selling, self.success_contracts)
+                * (1 - self.worst_opp_acc_price_slack),
+                min(
+                    [mx]
+                    + [
+                        p * (1 + slack)
+                        for p, slack in (
+                            # (self._best_buying, self._step_price_slack),
+                            # (self._best_acc_buying, self._acc_price_slack),
+                            (self._best_opp_buying[partner], self._opp_price_slack),
+                            (
+                                self._best_opp_acc_buying[partner],
+                                self._opp_acc_price_slack,
+                            ),
+                            # (self.opp_next_price(partner), self._opp_price_slack),
+                            (
+                                self._first_offer_price(name),
+                                self.first_offer_price_slack,
+                            ),
+                        )
+                    ]
+                ),
+            )
         return mn, mx
 
     def _self_factor(self, ami):
@@ -7196,15 +8103,20 @@ class AgentT050(AdaptiveAgent, ABC):
         w_prev, w_good = param_normalization([w_prev, w_good])
 
         # これまでの交渉成功割合
-        success_agreements = [[_.agreement, _.mechanism_state["current_proposer"]] for _ in self.success_contracts]
+        success_agreements = [
+            [_.agreement, _.mechanism_state["current_proposer"]]
+            for _ in self.success_contracts
+        ]
         if success_agreements:
-            simulation_steps = set([lis[0]["time"] for lis in success_agreements])
-            prev_agreement = (len(simulation_steps) / (self.awi.current_step + 1))
+            simulation_steps = {lis[0]["time"] for lis in success_agreements}
+            prev_agreement = len(simulation_steps) / (self.awi.current_step + 1)
         else:
             prev_agreement = 1
 
         # 良い値段で合意できているか
-        success_agreements = opponent_agreements(ami, self._is_selling(ami), self.success_contracts)
+        success_agreements = opponent_agreements(
+            ami, self._is_selling(ami), self.success_contracts
+        )
         if success_agreements:
             tp = self.awi.trading_prices[1]
             prev_up = success_agreements[-1].agreement["unit_price"]
@@ -7235,7 +8147,11 @@ class AgentT050(AdaptiveAgent, ABC):
 
     def _opp_concession_rate_change(self, name: str):
         """相手の譲歩の変化率を計算"""
-        offers = [_ for _ in self.opp_offer_list[shorten_name(name)] if _[TIME] == self.awi.current_step]
+        offers = [
+            _
+            for _ in self.opp_offer_list[shorten_name(name)]
+            if _[TIME] == self.awi.current_step
+        ]
         if len(offers) >= 3:
             prev = offers[-2][UNIT_PRICE] - offers[-3][UNIT_PRICE]
             now = offers[-1][UNIT_PRICE] - offers[-2][UNIT_PRICE]
@@ -7353,7 +8269,11 @@ class AgentT050(AdaptiveAgent, ABC):
     def _opp_next_price(self, name):
         delta = 1
         ami = self.get_ami(name)
-        offers = [_ for _ in self.opp_offer_list[shorten_name(name)] if _[TIME] == self.awi.current_step]
+        offers = [
+            _
+            for _ in self.opp_offer_list[shorten_name(name)]
+            if _[TIME] == self.awi.current_step
+        ]
 
         if len(offers) == 0 or self.nego_info["negotiation_step"] == ami.n_steps:
             if self._is_selling(ami):
@@ -7379,8 +8299,10 @@ class AgentT050(AdaptiveAgent, ABC):
         # 最終ステップかつこれ以上相手のOfferがない場合は受け入れ
         ami = self.get_ami(name)
         is_selling = self._is_selling(ami)
-        if self.nego_info["negotiation_step"] >= ami.n_steps - 1 \
-                and len(self.failure_opp_list) == len(self.active_negotiators.keys()) - 1:
+        if (
+            self.nego_info["negotiation_step"] >= ami.n_steps - 1
+            and len(self.failure_opp_list) == len(self.active_negotiators.keys()) - 1
+        ):
             response = ResponseType.ACCEPT_OFFER
 
         # 受け入れない場合はリストに追加
@@ -7417,9 +8339,11 @@ class AgentT050(AdaptiveAgent, ABC):
         if self.awi.current_step == timing:
             if self.nego_info["negotiation_step"] < 2:
                 if is_selling:
-                    self.new_price_selling = \
-                        min(ami.issues[UNIT_PRICE].max_value * 0.9,
-                            min([_.agreement["unit_price"] for _ in self.success_contracts]) * (1 - slack))
+                    self.new_price_selling = min(
+                        ami.issues[UNIT_PRICE].max_value * 0.9,
+                        min(_.agreement["unit_price"] for _ in self.success_contracts)
+                        * (1 - slack),
+                    )
                     offer[UNIT_PRICE] = self.new_price_selling
                 # else:
                 #     self.new_price_buying = \
@@ -7440,16 +8364,16 @@ class AgentT050(AdaptiveAgent, ABC):
 
 class AgentT049(AdaptiveAgent, ABC):
     def __init__(
-            self,
-            *args,
-            acc_price_slack=float("inf"),
-            step_price_slack=float("inf"),
-            opp_price_slack=0.0,
-            opp_acc_price_slack=0.2,
-            range_slack=0.03,
-            concession_exponent=0.1,
-            worst_opp_acc_price_slack=0.00,
-            **kwargs
+        self,
+        *args,
+        acc_price_slack=float("inf"),
+        step_price_slack=float("inf"),
+        opp_price_slack=0.0,
+        opp_acc_price_slack=0.2,
+        range_slack=0.03,
+        concession_exponent=0.1,
+        worst_opp_acc_price_slack=0.00,
+        **kwargs
     ):
         super().__init__(*args, **kwargs)
         self._e = concession_exponent
@@ -7466,7 +8390,9 @@ class AgentT049(AdaptiveAgent, ABC):
         self.new_price_selling, self.new_price_buying = float("inf"), 0.0  # 価格変化後の交渉価格
         self.new_price_slack = 0.05
         self.concession_threshold = 3  # 譲歩の変化率の閾値
-        self.worst_opp_acc_price_slack = worst_opp_acc_price_slack  # 相手にとって最も良い合意価格に関するSlack変数
+        self.worst_opp_acc_price_slack = (
+            worst_opp_acc_price_slack  # 相手にとって最も良い合意価格に関するSlack変数
+        )
 
         # 取引情報
         self.success_list = defaultdict(lambda: list())  # 交渉成功した際の取引データ
@@ -7491,9 +8417,13 @@ class AgentT049(AdaptiveAgent, ABC):
         is_selling = self._is_selling(self.get_ami(negotiator_id))
         ami = self.get_ami(negotiator_id)
         if is_selling:
-            self.nego_info["my_name"] = shorten_name(self.get_ami(negotiator_id).annotation["seller"])
+            self.nego_info["my_name"] = shorten_name(
+                self.get_ami(negotiator_id).annotation["seller"]
+            )
         else:
-            self.nego_info["my_name"] = shorten_name(self.get_ami(negotiator_id).annotation["buyer"])
+            self.nego_info["my_name"] = shorten_name(
+                self.get_ami(negotiator_id).annotation["buyer"]
+            )
 
     def on_negotiation_success(self, contract, mechanism):
         """Record sales/supplies secured"""
@@ -7505,19 +8435,33 @@ class AgentT049(AdaptiveAgent, ABC):
         if self._is_selling(mechanism):
             partner = contract.annotation["buyer"]
             self._best_acc_selling = max(up, self._best_acc_selling)
-            self._best_opp_acc_selling[partner] = max(up, self._best_opp_acc_selling[partner])
+            self._best_opp_acc_selling[partner] = max(
+                up, self._best_opp_acc_selling[partner]
+            )
         else:
             partner = contract.annotation["seller"]
             self._best_acc_buying = min(up, self._best_acc_buying)
-            self._best_opp_acc_buying[partner] = min(up, self._best_opp_acc_buying[partner])
+            self._best_opp_acc_buying[partner] = min(
+                up, self._best_opp_acc_buying[partner]
+            )
 
         # 取引データを記録
         if self._is_selling(mechanism):
             self.success_list[shorten_name(contract.partners[0])].append(
-                [contract.agreement["quantity"], self.awi.current_step, contract.agreement["unit_price"]])
+                [
+                    contract.agreement["quantity"],
+                    self.awi.current_step,
+                    contract.agreement["unit_price"],
+                ]
+            )
         else:
             self.success_list[shorten_name(contract.partners[1])].append(
-                [contract.agreement["quantity"], self.awi.current_step, contract.agreement["unit_price"]])
+                [
+                    contract.agreement["quantity"],
+                    self.awi.current_step,
+                    contract.agreement["unit_price"],
+                ]
+            )
         self.success_contracts.append(contract)
 
     def propose(self, negotiator_id: str, state) -> "Outcome":
@@ -7592,13 +8536,23 @@ class AgentT049(AdaptiveAgent, ABC):
 
         # パラメタの設定
         name = ami.annotation["buyer"] if is_selling else ami.annotation["seller"]
-        success_agreements = opponent_agreements(ami, is_selling, self.success_contracts)
-        accept_agreements = [_ for _ in success_agreements
-                             if _.mechanism_state["current_proposer"] == self.nego_info["my_name"]]
-        offer_agreements = [_ for _ in success_agreements
-                            if _.mechanism_state["current_proposer"] != self.nego_info["my_name"]]
+        success_agreements = opponent_agreements(
+            ami, is_selling, self.success_contracts
+        )
+        accept_agreements = [
+            _
+            for _ in success_agreements
+            if _.mechanism_state["current_proposer"] == self.nego_info["my_name"]
+        ]
+        offer_agreements = [
+            _
+            for _ in success_agreements
+            if _.mechanism_state["current_proposer"] != self.nego_info["my_name"]
+        ]
         step = state.step
-        rank = opponent_rank(list(self.active_negotiators.keys()), is_selling, self.success_contracts)
+        rank = opponent_rank(
+            list(self.active_negotiators.keys()), is_selling, self.success_contracts
+        )
         std = mean(list(self.good_price_range(ami).values()))
         pattern = ["offer"]
         if self.nego_info["negotiation_step"] >= ami.n_steps - 1:
@@ -7609,9 +8563,13 @@ class AgentT049(AdaptiveAgent, ABC):
                         pattern.append("offer_agreements")
                     else:
                         pattern.append("accept_agreements")
-                        if price_comparison(is_selling,
-                                            worst_opp_acc_price(ami, is_selling, self.success_contracts),
-                                            std):
+                        if price_comparison(
+                            is_selling,
+                            worst_opp_acc_price(
+                                ami, is_selling, self.success_contracts
+                            ),
+                            std,
+                        ):
                             pattern.append("good")
                         else:
                             pattern.append("bad")
@@ -7627,9 +8585,13 @@ class AgentT049(AdaptiveAgent, ABC):
                         pattern.append("offer_agreements")
                     else:
                         pattern.append("accept_agreements")
-                        if price_comparison(is_selling,
-                                            worst_opp_acc_price(ami, is_selling, self.success_contracts),
-                                            std):
+                        if price_comparison(
+                            is_selling,
+                            worst_opp_acc_price(
+                                ami, is_selling, self.success_contracts
+                            ),
+                            std,
+                        ):
                             pattern.append("good")
                         else:
                             pattern.append("bad")
@@ -7655,7 +8617,9 @@ class AgentT049(AdaptiveAgent, ABC):
 
         # 相手の譲歩率に応じて判断
         name = ami.annotation["buyer"] if is_selling else ami.annotation["seller"]
-        success_agreements = opponent_agreements(ami, is_selling, self.success_contracts)
+        success_agreements = opponent_agreements(
+            ami, is_selling, self.success_contracts
+        )
         pattern = ["accept"]
         if self.nego_info["negotiation_step"] >= ami.n_steps - 1:
             if self.opp_concession_rate_change(name) > self.concession_threshold:
@@ -7683,8 +8647,10 @@ class AgentT049(AdaptiveAgent, ABC):
         mx = ami.issues[UNIT_PRICE].max_value
         mn = ami.issues[UNIT_PRICE].min_value
 
-        price_range = {"min": mn + self._th(ami.n_steps - 2, ami.n_steps) * (mx - mn),
-                       "max": mx - self._th(ami.n_steps - 2, ami.n_steps) * (mx - mn)}
+        price_range = {
+            "min": mn + self._th(ami.n_steps - 2, ami.n_steps) * (mx - mn),
+            "max": mx - self._th(ami.n_steps - 2, ami.n_steps) * (mx - mn),
+        }
 
         return price_range
 
@@ -7718,51 +8684,55 @@ class AgentT049(AdaptiveAgent, ABC):
 
         if self._is_selling(ami):
             partner = ami.annotation["buyer"]
-            mn = min(mx * (1 - self._range_slack),
-                     # self.new_price_selling * (1 - self.new_price_slack),
-                     # min([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [float("inf")]),
-                     # min([_.agreement["unit_price"] for _ in success_agreements] + [float("inf")]),
-                     worst_opp_acc_price(ami, is_selling, self.success_contracts)
-                     * (1 + self.worst_opp_acc_price_slack),
-                     max(
-                         [mn]
-                         + [
-                             p * (1 - slack)
-                             for p, slack in (
-                                 (self._best_selling, self._step_price_slack),
-                                 # (self._best_acc_selling, self._acc_price_slack),
-                                 (self._best_opp_selling[partner], self._opp_price_slack),
-                                 (
-                                     self._best_opp_acc_selling[partner],
-                                     self._opp_acc_price_slack,
-                                 ),
-                             )
-                         ]
-                     ))
+            mn = min(
+                mx * (1 - self._range_slack),
+                # self.new_price_selling * (1 - self.new_price_slack),
+                # min([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [float("inf")]),
+                # min([_.agreement["unit_price"] for _ in success_agreements] + [float("inf")]),
+                worst_opp_acc_price(ami, is_selling, self.success_contracts)
+                * (1 + self.worst_opp_acc_price_slack),
+                max(
+                    [mn]
+                    + [
+                        p * (1 - slack)
+                        for p, slack in (
+                            (self._best_selling, self._step_price_slack),
+                            # (self._best_acc_selling, self._acc_price_slack),
+                            (self._best_opp_selling[partner], self._opp_price_slack),
+                            (
+                                self._best_opp_acc_selling[partner],
+                                self._opp_acc_price_slack,
+                            ),
+                        )
+                    ]
+                ),
+            )
         else:
             partner = ami.annotation["seller"]
-            mx = max(mn * (1 + self._range_slack),
-                     # self.new_price_buying * (1 + self.new_price_slack),
-                     # max([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [0]),
-                     # max([_.agreement["unit_price"] for _ in success_agreements] + [0]),
-                     worst_opp_acc_price(ami, is_selling, self.success_contracts)
-                     * (1 - self.worst_opp_acc_price_slack),
-                     min(
-                         [mx]
-                         + [
-                             p * (1 + slack)
-                             for p, slack in (
-                                 (self._best_buying, self._step_price_slack),
-                                 # (self._best_acc_buying, self._acc_price_slack),
-                                 (self._best_opp_buying[partner], self._opp_price_slack),
-                                 (
-                                     self._best_opp_acc_buying[partner],
-                                     self._opp_acc_price_slack,
-                                 ),
-                                 # (self.opp_next_price(partner), self._opp_price_slack),
-                             )
-                         ]
-                     ))
+            mx = max(
+                mn * (1 + self._range_slack),
+                # self.new_price_buying * (1 + self.new_price_slack),
+                # max([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [0]),
+                # max([_.agreement["unit_price"] for _ in success_agreements] + [0]),
+                worst_opp_acc_price(ami, is_selling, self.success_contracts)
+                * (1 - self.worst_opp_acc_price_slack),
+                min(
+                    [mx]
+                    + [
+                        p * (1 + slack)
+                        for p, slack in (
+                            (self._best_buying, self._step_price_slack),
+                            # (self._best_acc_buying, self._acc_price_slack),
+                            (self._best_opp_buying[partner], self._opp_price_slack),
+                            (
+                                self._best_opp_acc_buying[partner],
+                                self._opp_acc_price_slack,
+                            ),
+                            # (self.opp_next_price(partner), self._opp_price_slack),
+                        )
+                    ]
+                ),
+            )
         return mn, mx
 
     def self_factor(self, ami):
@@ -7775,15 +8745,20 @@ class AgentT049(AdaptiveAgent, ABC):
         w_prev, w_good = param_normalization([w_prev, w_good])
 
         # これまでの交渉成功割合
-        success_agreements = [[_.agreement, _.mechanism_state["current_proposer"]] for _ in self.success_contracts]
+        success_agreements = [
+            [_.agreement, _.mechanism_state["current_proposer"]]
+            for _ in self.success_contracts
+        ]
         if success_agreements:
-            simulation_steps = set([lis[0]["time"] for lis in success_agreements])
-            prev_agreement = (len(simulation_steps) / (self.awi.current_step + 1))
+            simulation_steps = {lis[0]["time"] for lis in success_agreements}
+            prev_agreement = len(simulation_steps) / (self.awi.current_step + 1)
         else:
             prev_agreement = 1
 
         # 良い値段で合意できているか
-        success_agreements = opponent_agreements(ami, self._is_selling(ami), self.success_contracts)
+        success_agreements = opponent_agreements(
+            ami, self._is_selling(ami), self.success_contracts
+        )
         if success_agreements:
             tp = self.awi.trading_prices[1]
             prev_up = success_agreements[-1].agreement["unit_price"]
@@ -7814,7 +8789,11 @@ class AgentT049(AdaptiveAgent, ABC):
 
     def opp_concession_rate_change(self, name: str):
         """相手の譲歩の変化率を計算"""
-        offers = [_ for _ in self.opp_offer_list[shorten_name(name)] if _[TIME] == self.awi.current_step]
+        offers = [
+            _
+            for _ in self.opp_offer_list[shorten_name(name)]
+            if _[TIME] == self.awi.current_step
+        ]
         if len(offers) >= 3:
             prev = offers[-2][UNIT_PRICE] - offers[-3][UNIT_PRICE]
             now = offers[-1][UNIT_PRICE] - offers[-2][UNIT_PRICE]
@@ -7911,7 +8890,11 @@ class AgentT049(AdaptiveAgent, ABC):
     def opp_next_price(self, name):
         delta = 1
         ami = self.get_ami(name)
-        offers = [_ for _ in self.opp_offer_list[shorten_name(name)] if _[TIME] == self.awi.current_step]
+        offers = [
+            _
+            for _ in self.opp_offer_list[shorten_name(name)]
+            if _[TIME] == self.awi.current_step
+        ]
 
         if len(offers) == 0 or self.nego_info["negotiation_step"] == ami.n_steps:
             if self._is_selling(ami):
@@ -7937,8 +8920,10 @@ class AgentT049(AdaptiveAgent, ABC):
         # 最終ステップかつこれ以上相手のOfferがない場合は受け入れ
         ami = self.get_ami(name)
         is_selling = self._is_selling(ami)
-        if self.nego_info["negotiation_step"] >= ami.n_steps - 1 \
-                and len(self.failure_opp_list) == len(self.active_negotiators.keys()) - 1:
+        if (
+            self.nego_info["negotiation_step"] >= ami.n_steps - 1
+            and len(self.failure_opp_list) == len(self.active_negotiators.keys()) - 1
+        ):
             response = ResponseType.ACCEPT_OFFER
 
         # 受け入れない場合はリストに追加
@@ -7975,9 +8960,11 @@ class AgentT049(AdaptiveAgent, ABC):
         if self.awi.current_step == timing:
             if self.nego_info["negotiation_step"] < 2:
                 if is_selling:
-                    self.new_price_selling = \
-                        min(ami.issues[UNIT_PRICE].max_value * 0.9,
-                            min([_.agreement["unit_price"] for _ in self.success_contracts]) * (1 - slack))
+                    self.new_price_selling = min(
+                        ami.issues[UNIT_PRICE].max_value * 0.9,
+                        min(_.agreement["unit_price"] for _ in self.success_contracts)
+                        * (1 - slack),
+                    )
                     offer[UNIT_PRICE] = self.new_price_selling
                 # else:
                 #     self.new_price_buying = \
@@ -7998,15 +8985,15 @@ class AgentT049(AdaptiveAgent, ABC):
 
 class AgentT048(AdaptiveAgent, ABC):
     def __init__(
-            self,
-            *args,
-            acc_price_slack=float("inf"),
-            step_price_slack=float("inf"),
-            opp_price_slack=0.0,
-            opp_acc_price_slack=0.2,
-            range_slack=0.03,
-            concession_exponent=0.1,
-            **kwargs
+        self,
+        *args,
+        acc_price_slack=float("inf"),
+        step_price_slack=float("inf"),
+        opp_price_slack=0.0,
+        opp_acc_price_slack=0.2,
+        range_slack=0.03,
+        concession_exponent=0.1,
+        **kwargs
     ):
         super().__init__(*args, **kwargs)
         self._e = concession_exponent
@@ -8047,9 +9034,13 @@ class AgentT048(AdaptiveAgent, ABC):
         is_selling = self._is_selling(self.get_ami(negotiator_id))
         ami = self.get_ami(negotiator_id)
         if is_selling:
-            self.nego_info["my_name"] = shorten_name(self.get_ami(negotiator_id).annotation["seller"])
+            self.nego_info["my_name"] = shorten_name(
+                self.get_ami(negotiator_id).annotation["seller"]
+            )
         else:
-            self.nego_info["my_name"] = shorten_name(self.get_ami(negotiator_id).annotation["buyer"])
+            self.nego_info["my_name"] = shorten_name(
+                self.get_ami(negotiator_id).annotation["buyer"]
+            )
 
     def on_negotiation_success(self, contract, mechanism):
         """Record sales/supplies secured"""
@@ -8061,19 +9052,33 @@ class AgentT048(AdaptiveAgent, ABC):
         if self._is_selling(mechanism):
             partner = contract.annotation["buyer"]
             self._best_acc_selling = max(up, self._best_acc_selling)
-            self._best_opp_acc_selling[partner] = max(up, self._best_opp_acc_selling[partner])
+            self._best_opp_acc_selling[partner] = max(
+                up, self._best_opp_acc_selling[partner]
+            )
         else:
             partner = contract.annotation["seller"]
             self._best_acc_buying = min(up, self._best_acc_buying)
-            self._best_opp_acc_buying[partner] = min(up, self._best_opp_acc_buying[partner])
+            self._best_opp_acc_buying[partner] = min(
+                up, self._best_opp_acc_buying[partner]
+            )
 
         # 取引データを記録
         if self._is_selling(mechanism):
             self.success_list[shorten_name(contract.partners[0])].append(
-                [contract.agreement["quantity"], self.awi.current_step, contract.agreement["unit_price"]])
+                [
+                    contract.agreement["quantity"],
+                    self.awi.current_step,
+                    contract.agreement["unit_price"],
+                ]
+            )
         else:
             self.success_list[shorten_name(contract.partners[1])].append(
-                [contract.agreement["quantity"], self.awi.current_step, contract.agreement["unit_price"]])
+                [
+                    contract.agreement["quantity"],
+                    self.awi.current_step,
+                    contract.agreement["unit_price"],
+                ]
+            )
         self.success_contracts.append(contract)
 
     def propose(self, negotiator_id: str, state) -> "Outcome":
@@ -8147,11 +9152,19 @@ class AgentT048(AdaptiveAgent, ABC):
 
         # パラメタの設定
         name = ami.annotation["buyer"] if is_selling else ami.annotation["seller"]
-        success_agreements = opponent_agreements(ami, is_selling, self.success_contracts)
-        accept_agreements = [_ for _ in success_agreements
-                             if _.mechanism_state["current_proposer"] == self.nego_info["my_name"]]
-        offer_agreements = [_ for _ in success_agreements
-                            if _.mechanism_state["current_proposer"] != self.nego_info["my_name"]]
+        success_agreements = opponent_agreements(
+            ami, is_selling, self.success_contracts
+        )
+        accept_agreements = [
+            _
+            for _ in success_agreements
+            if _.mechanism_state["current_proposer"] == self.nego_info["my_name"]
+        ]
+        offer_agreements = [
+            _
+            for _ in success_agreements
+            if _.mechanism_state["current_proposer"] != self.nego_info["my_name"]
+        ]
         step = state.step
         if self.nego_info["negotiation_step"] >= ami.n_steps - 1:
             if self.environment_factor(ami) >= 0.5:
@@ -8187,7 +9200,9 @@ class AgentT048(AdaptiveAgent, ABC):
 
         # 相手の譲歩率に応じて判断
         name = ami.annotation["buyer"] if is_selling else ami.annotation["seller"]
-        success_agreements = opponent_agreements(ami, is_selling, self.success_contracts)
+        success_agreements = opponent_agreements(
+            ami, is_selling, self.success_contracts
+        )
         if self.nego_info["negotiation_step"] >= ami.n_steps - 1:
             if self.opp_concession_rate_change(name) > self.concession_threshold:
                 # self._step_price_slack = 0.1
@@ -8218,11 +9233,15 @@ class AgentT048(AdaptiveAgent, ABC):
         mn = ami.issues[UNIT_PRICE].min_value
 
         if is_selling:
-            price_range = {"min": mn + self._th(ami.n_steps - 3, ami.n_steps) * (mx - mn),
-                           "max": mx - self._th(ami.n_steps - 2, ami.n_steps) * (mx - mn)}
+            price_range = {
+                "min": mn + self._th(ami.n_steps - 3, ami.n_steps) * (mx - mn),
+                "max": mx - self._th(ami.n_steps - 2, ami.n_steps) * (mx - mn),
+            }
         else:
-            price_range = {"min": mn + self._th(ami.n_steps - 2, ami.n_steps) * (mx - mn),
-                           "max": mx - self._th(ami.n_steps - 3, ami.n_steps) * (mx - mn)}
+            price_range = {
+                "min": mn + self._th(ami.n_steps - 2, ami.n_steps) * (mx - mn),
+                "max": mx - self._th(ami.n_steps - 3, ami.n_steps) * (mx - mn),
+            }
 
         return price_range
 
@@ -8251,51 +9270,60 @@ class AgentT048(AdaptiveAgent, ABC):
         mn = ami.issues[UNIT_PRICE].min_value
         mx = ami.issues[UNIT_PRICE].max_value
         concession_degree = 1 - self.strong_degree(ami)
-        success_agreements = opponent_agreements(ami, self._is_selling(ami), self.success_contracts)
+        success_agreements = opponent_agreements(
+            ami, self._is_selling(ami), self.success_contracts
+        )
 
         if self._is_selling(ami):
             partner = ami.annotation["buyer"]
-            mn = min(mx * (1 - self._range_slack),
-                     # self.new_price_selling * (1 - self.new_price_slack),
-                     # min([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [float("inf")]),
-                     min([_.agreement["unit_price"] for _ in success_agreements] + [float("inf")]),
-                     max(
-                         [mn]
-                         + [
-                             p * (1 - slack)
-                             for p, slack in (
-                                 (self._best_selling, self._step_price_slack),
-                                 # (self._best_acc_selling, self._acc_price_slack),
-                                 (self._best_opp_selling[partner], self._opp_price_slack),
-                                 (
-                                     self._best_opp_acc_selling[partner],
-                                     self._opp_acc_price_slack,
-                                 ),
-                             )
-                         ]
-                     ))
+            mn = min(
+                mx * (1 - self._range_slack),
+                # self.new_price_selling * (1 - self.new_price_slack),
+                # min([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [float("inf")]),
+                min(
+                    [_.agreement["unit_price"] for _ in success_agreements]
+                    + [float("inf")]
+                ),
+                max(
+                    [mn]
+                    + [
+                        p * (1 - slack)
+                        for p, slack in (
+                            (self._best_selling, self._step_price_slack),
+                            # (self._best_acc_selling, self._acc_price_slack),
+                            (self._best_opp_selling[partner], self._opp_price_slack),
+                            (
+                                self._best_opp_acc_selling[partner],
+                                self._opp_acc_price_slack,
+                            ),
+                        )
+                    ]
+                ),
+            )
         else:
             partner = ami.annotation["seller"]
-            mx = max(mn * (1 + self._range_slack),
-                     # self.new_price_buying * (1 + self.new_price_slack),
-                     # max([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [0]),
-                     max([_.agreement["unit_price"] for _ in success_agreements] + [0]),
-                     min(
-                         [mx]
-                         + [
-                             p * (1 + slack)
-                             for p, slack in (
-                                 (self._best_buying, self._step_price_slack),
-                                 # (self._best_acc_buying, self._acc_price_slack),
-                                 (self._best_opp_buying[partner], self._opp_price_slack),
-                                 (
-                                     self._best_opp_acc_buying[partner],
-                                     self._opp_acc_price_slack,
-                                 ),
-                                 # (self.opp_next_price(partner), self._opp_price_slack),
-                             )
-                         ]
-                     ))
+            mx = max(
+                mn * (1 + self._range_slack),
+                # self.new_price_buying * (1 + self.new_price_slack),
+                # max([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [0]),
+                max([_.agreement["unit_price"] for _ in success_agreements] + [0]),
+                min(
+                    [mx]
+                    + [
+                        p * (1 + slack)
+                        for p, slack in (
+                            (self._best_buying, self._step_price_slack),
+                            # (self._best_acc_buying, self._acc_price_slack),
+                            (self._best_opp_buying[partner], self._opp_price_slack),
+                            (
+                                self._best_opp_acc_buying[partner],
+                                self._opp_acc_price_slack,
+                            ),
+                            # (self.opp_next_price(partner), self._opp_price_slack),
+                        )
+                    ]
+                ),
+            )
         return mn, mx
 
     def strong_degree(self, ami):
@@ -8318,15 +9346,20 @@ class AgentT048(AdaptiveAgent, ABC):
         w_prev, w_good = param_normalization([w_prev, w_good])
 
         # これまでの交渉成功割合
-        success_agreements = [[_.agreement, _.mechanism_state["current_proposer"]] for _ in self.success_contracts]
+        success_agreements = [
+            [_.agreement, _.mechanism_state["current_proposer"]]
+            for _ in self.success_contracts
+        ]
         if success_agreements:
-            simulation_steps = set([lis[0]["time"] for lis in success_agreements])
-            prev_agreement = (len(simulation_steps) / (self.awi.current_step + 1))
+            simulation_steps = {lis[0]["time"] for lis in success_agreements}
+            prev_agreement = len(simulation_steps) / (self.awi.current_step + 1)
         else:
             prev_agreement = 1
 
         # 良い値段で合意できているか
-        success_agreements = opponent_agreements(ami, self._is_selling(ami), self.success_contracts)
+        success_agreements = opponent_agreements(
+            ami, self._is_selling(ami), self.success_contracts
+        )
         if success_agreements:
             tp = self.awi.trading_prices[1]
             prev_up = success_agreements[-1].agreement["unit_price"]
@@ -8358,7 +9391,11 @@ class AgentT048(AdaptiveAgent, ABC):
     def opp_next_price(self, name):
         delta = 1
         ami = self.get_ami(name)
-        offers = [_ for _ in self.opp_offer_list[shorten_name(name)] if _[TIME] == self.awi.current_step]
+        offers = [
+            _
+            for _ in self.opp_offer_list[shorten_name(name)]
+            if _[TIME] == self.awi.current_step
+        ]
 
         if len(offers) == 0 or self.nego_info["negotiation_step"] == ami.n_steps:
             if self._is_selling(ami):
@@ -8382,7 +9419,11 @@ class AgentT048(AdaptiveAgent, ABC):
 
     def opp_concession_rate_change(self, name: str):
         """相手の譲歩の変化率を計算"""
-        offers = [_ for _ in self.opp_offer_list[shorten_name(name)] if _[TIME] == self.awi.current_step]
+        offers = [
+            _
+            for _ in self.opp_offer_list[shorten_name(name)]
+            if _[TIME] == self.awi.current_step
+        ]
         if len(offers) >= 3:
             prev = offers[-2][UNIT_PRICE] - offers[-3][UNIT_PRICE]
             now = offers[-1][UNIT_PRICE] - offers[-2][UNIT_PRICE]
@@ -8396,8 +9437,10 @@ class AgentT048(AdaptiveAgent, ABC):
         # 最終ステップかつこれ以上相手のOfferがない場合は受け入れ
         ami = self.get_ami(name)
         is_selling = self._is_selling(ami)
-        if self.nego_info["negotiation_step"] >= ami.n_steps - 1 \
-                and len(self.failure_opp_list) == len(self.active_negotiators.keys()) - 1:
+        if (
+            self.nego_info["negotiation_step"] >= ami.n_steps - 1
+            and len(self.failure_opp_list) == len(self.active_negotiators.keys()) - 1
+        ):
             response = ResponseType.ACCEPT_OFFER
 
         # 受け入れない場合はリストに追加
@@ -8448,9 +9491,11 @@ class AgentT048(AdaptiveAgent, ABC):
         if self.awi.current_step == timing:
             if self.nego_info["negotiation_step"] < 2:
                 if is_selling:
-                    self.new_price_selling = \
-                        min(ami.issues[UNIT_PRICE].max_value * 0.9,
-                            min([_.agreement["unit_price"] for _ in self.success_contracts]) * (1 - slack))
+                    self.new_price_selling = min(
+                        ami.issues[UNIT_PRICE].max_value * 0.9,
+                        min(_.agreement["unit_price"] for _ in self.success_contracts)
+                        * (1 - slack),
+                    )
                     offer[UNIT_PRICE] = self.new_price_selling
                 # else:
                 #     self.new_price_buying = \

@@ -1,17 +1,18 @@
-import pandas as pd
-import data
 import os
+
+import data
+import pandas as pd
 
 game_length = 50
 num_intermediate_products = 3
 
 """
-A synthetic example of what the game's log might look like. 
+A synthetic example of what the game's log might look like.
 The NVM code needs the game log's to be a dataframe where each row has at least
     Time, Product, Quantity, Price
-Any other column is ignored. 
-The interpretation of a row is a transaction that occur between to agents at 
-simulation Time for Product for Quantity at Price (unit price). 
+Any other column is ignored.
+The interpretation of a row is a transaction that occur between to agents at
+simulation Time for Product for Quantity at Price (unit price).
 """
 # TODO explain this example.
 # dummy_game_log = pd.DataFrame([{'time': 1, 'product': 'p0', 'quantity': 1, 'price': 1110.23},
@@ -205,7 +206,7 @@ for file in os.listdir(directory):
 """
 Save quantity uncertainty model.
 The model is saved to json file data/dict_qtty_num_intermediate_products_{num_intermediate_products}.json
-The model is read as product -> time -> quantity -> probability of observing the quantity of the product traded at the time. 
+The model is read as product -> time -> quantity -> probability of observing the quantity of the product traded at the time.
 """
 data.save_json_qytt_uncertainty_model(
     json_file_name=f"dict_qtty_num_intermediate_products_{num_intermediate_products}",

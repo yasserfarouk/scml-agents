@@ -1,45 +1,18 @@
-from collections import defaultdict
-from scml.oneshot import OneShotAgent
-from matplotlib import pyplot as plt
-# required for typing
-from typing import Any, Dict, List, Optional
-
-import numpy as np
-from negmas import (
-    AgentMechanismInterface,
-    Breach,
-    Contract,
-    Issue,
-    MechanismState,
-    Negotiator,
-    ResponseType,
-)
-from negmas.helpers import humanize_time
-
-
 # required for running tournaments and printing
 import math
-import time
-from tabulate import tabulate
-from scml.scml2020.utils import anac2021_collusion, anac2021_oneshot, anac2021_std
-from scml.oneshot.agents import (
-    RandomOneShotAgent,
-    SyncRandomOneShotAgent,
-)
-from collections import defaultdict
 import random
-from negmas import ResponseType
-from scml.oneshot import *
-from scml.scml2020 import is_system_agent
+
+# required for running tournaments and printing
+import time
+from collections import defaultdict
 from pprint import pprint
-# required for development
-#from pandas._libs.internals import defaultdict
-from scml.oneshot import OneShotAgent
-from scml.scml2020 import is_system_agent
+
+# required for typing
 # required for typing
 from typing import Any, Dict, List, Optional
 
 import numpy as np
+from matplotlib import pyplot as plt
 from negmas import (
     AgentMechanismInterface,
     Breach,
@@ -51,19 +24,21 @@ from negmas import (
 )
 from negmas.helpers import humanize_time
 
-
-# required for running tournaments and printing
-import time
-from tabulate import tabulate
+# required for development
+# from pandas._libs.internals import defaultdict
+from scml.oneshot import *
+from scml.oneshot import OneShotAgent
+from scml.oneshot.agents import RandomOneShotAgent, SyncRandomOneShotAgent
+from scml.scml2020 import is_system_agent
 from scml.scml2020.utils import anac2021_collusion, anac2021_oneshot, anac2021_std
-from scml.oneshot.agents import (
-    RandomOneShotAgent,
-    SyncRandomOneShotAgent,
+from tabulate import tabulate
 
-)
-
-
-__all__ = [ "SimpleAgent", "BetterAgent", "AdaptiveAgent", "LearningAgent", ]
+__all__ = [
+    "SimpleAgent",
+    "BetterAgent",
+    "AdaptiveAgent",
+    "LearningAgent",
+]
 
 
 class SimpleAgent(OneShotAgent):
@@ -71,6 +46,7 @@ class SimpleAgent(OneShotAgent):
 
     def init(self):
         self.secured = 0
+
     def step(self):
         self.secured = 0
 
@@ -101,8 +77,7 @@ class SimpleAgent(OneShotAgent):
         unit_price_issue = ami.issues[UNIT_PRICE]
         offer = [-1] * 3
         offer[QUANTITY] = max(
-            min(my_needs, quantity_issue.max_value),
-            quantity_issue.min_value
+            min(my_needs, quantity_issue.max_value), quantity_issue.min_value
         )
         offer[TIME] = self.awi.current_step
         if self._is_selling(ami):
@@ -112,9 +87,11 @@ class SimpleAgent(OneShotAgent):
         return tuple(offer)
 
     def _needed(self, negotiator_id=None):
-        return self.awi.current_exogenous_input_quantity + \
-               self.awi.current_exogenous_output_quantity - \
-               self.secured
+        return (
+            self.awi.current_exogenous_input_quantity
+            + self.awi.current_exogenous_output_quantity
+            - self.secured
+        )
 
     def _is_selling(self, ami):
         return ami.annotation["product"] == self.awi.my_output_product
@@ -129,13 +106,11 @@ class BetterAgent(SimpleAgent):
 
     def propose(self, negotiator_id: str, state) -> "Outcome":
         offer = super().propose(negotiator_id, state)
-        #print("I propose")
+        # print("I propose")
         if not offer:
             return None
         offer = list(offer)
-        offer[UNIT_PRICE] = self._find_good_price(
-            self.get_ami(negotiator_id), state
-        )
+        offer[UNIT_PRICE] = self._find_good_price(self.get_ami(negotiator_id), state)
 
         return tuple(offer)
 
@@ -145,8 +120,8 @@ class BetterAgent(SimpleAgent):
             return response
         ami = self.get_ami(negotiator_id)
         return (
-            response if
-            self._is_good_price(ami, state, offer[UNIT_PRICE])
+            response
+            if self._is_good_price(ami, state, offer[UNIT_PRICE])
             else ResponseType.REJECT_OFFER
         )
 
@@ -215,14 +190,14 @@ class AdaptiveAgent(BetterAgent):
 
 class LearningAgent(AdaptiveAgent):
     def __init__(
-            self,
-            *args,
-            acc_price_slack=float("inf"),
-            step_price_slack=0.0,
-            opp_price_slack=0.0,
-            opp_acc_price_slack=0.2,
-            range_slack=0.03,
-            **kwargs
+        self,
+        *args,
+        acc_price_slack=float("inf"),
+        step_price_slack=0.0,
+        opp_price_slack=0.0,
+        opp_acc_price_slack=0.2,
+        range_slack=0.03,
+        **kwargs
     ):
         super().__init__(*args, **kwargs)
         self._acc_price_slack = acc_price_slack
@@ -256,11 +231,15 @@ class LearningAgent(AdaptiveAgent):
         if self._is_selling(mechanism):
             partner = contract.annotation["buyer"]
             self._best_acc_selling = max(up, self._best_acc_selling)
-            self._best_opp_acc_selling[partner] = max(up, self._best_opp_acc_selling[partner])
+            self._best_opp_acc_selling[partner] = max(
+                up, self._best_opp_acc_selling[partner]
+            )
         else:
             partner = contract.annotation["seller"]
             self._best_acc_buying = min(up, self._best_acc_buying)
-            self._best_opp_acc_buying[partner] = min(up, self._best_opp_acc_buying[partner])
+            self._best_opp_acc_buying[partner] = min(
+                up, self._best_opp_acc_buying[partner]
+            )
 
     def respond(self, negotiator_id, state, offer):
         # find the quantity I still need and end negotiation if I need nothing more
@@ -275,7 +254,7 @@ class LearningAgent(AdaptiveAgent):
         else:
             partner = ami.annotation["seller"]
             self._best_opp_buying[partner] = min(up, self._best_buying)
-        #print(self.awi.profile)
+        # print(self.awi.profile)
         return response
 
     def _price_range(self, ami):
@@ -284,37 +263,43 @@ class LearningAgent(AdaptiveAgent):
         mx = ami.issues[UNIT_PRICE].max_value
         if self._is_selling(ami):
             partner = ami.annotation["buyer"]
-            mn = min(mx * (1 - self._range_slack), max(
-                [mn]
-                + [
-                    p * (1 - slack)
-                    for p, slack in (
-                        (self._best_selling, self._step_price_slack),
-                        (self._best_acc_selling, self._acc_price_slack),
-                        (self._best_opp_selling[partner], self._opp_price_slack),
-                        (
-                            self._best_opp_acc_selling[partner],
-                            self._opp_acc_price_slack,
-                        ),
-                    )
-                ]
-            ))
+            mn = min(
+                mx * (1 - self._range_slack),
+                max(
+                    [mn]
+                    + [
+                        p * (1 - slack)
+                        for p, slack in (
+                            (self._best_selling, self._step_price_slack),
+                            (self._best_acc_selling, self._acc_price_slack),
+                            (self._best_opp_selling[partner], self._opp_price_slack),
+                            (
+                                self._best_opp_acc_selling[partner],
+                                self._opp_acc_price_slack,
+                            ),
+                        )
+                    ]
+                ),
+            )
         else:
             partner = ami.annotation["seller"]
-            mx = max(mn * (1 + self._range_slack), min(
-                [mx]
-                + [
-                    p * (1 + slack)
-                    for p, slack in (
-                        (self._best_buying, self._step_price_slack),
-                        (self._best_acc_buying, self._acc_price_slack),
-                        (self._best_opp_buying[partner], self._opp_price_slack),
-                        (
-                            self._best_opp_acc_buying[partner],
-                            self._opp_acc_price_slack,
-                        ),
-                    )
-                ]
-            ))
-        #print(mn,mx)
+            mx = max(
+                mn * (1 + self._range_slack),
+                min(
+                    [mx]
+                    + [
+                        p * (1 + slack)
+                        for p, slack in (
+                            (self._best_buying, self._step_price_slack),
+                            (self._best_acc_buying, self._acc_price_slack),
+                            (self._best_opp_buying[partner], self._opp_price_slack),
+                            (
+                                self._best_opp_acc_buying[partner],
+                                self._opp_acc_price_slack,
+                            ),
+                        )
+                    ]
+                ),
+            )
+        # print(mn,mx)
         return mn, mx

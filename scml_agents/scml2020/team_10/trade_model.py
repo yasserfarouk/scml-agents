@@ -1,14 +1,15 @@
-import os, sys
+import os
+import sys
 
 sys.path.append(os.path.dirname(__file__))
 
+from random import shuffle
+
+import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-import matplotlib.pyplot as plt
-from random import shuffle
-
 from hyperparameters import *
 
 
@@ -19,7 +20,7 @@ class Model(nn.Module):
         hidden_dim=TRADE_HIDDEN_SIZE,
         output_dim=TRADE_OUTPUT_DIM,
     ):
-        super(Model, self).__init__()
+        super().__init__()
         self.input_dim = input_dim
         self.hidden_dim = hidden_dim
         self.output_dim = output_dim

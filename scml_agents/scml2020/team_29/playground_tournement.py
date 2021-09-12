@@ -1,8 +1,7 @@
-from scml.scml2020.utils import anac2020_std
-from scml.scml2020 import *
 import matplotlib.pyplot as plt
 import numpy as np
-
+from scml.scml2020 import *
+from scml.scml2020.utils import anac2020_std
 
 # to run collusion tournament from scml.scml2020.utils import anac2020_collusion
 

@@ -1,15 +1,12 @@
-import numpy as np
 from pprint import pformat
 from typing import List, Optional
 
+import numpy as np
 from negmas import Contract
-
-from scml.scml2020.components import FixedTradePredictionStrategy, SignAllPossible
-from scml.scml2020.common import is_system_agent
-from scml.scml2020.common import ANY_LINE
-from scml.scml2020.components.prediction import MeanERPStrategy
-
 from scml.scml2020 import TradingStrategy
+from scml.scml2020.common import ANY_LINE, is_system_agent
+from scml.scml2020.components import FixedTradePredictionStrategy, SignAllPossible
+from scml.scml2020.components.prediction import MeanERPStrategy
 
 
 class MyPredictionBasedTradingStrategy(
@@ -85,7 +82,7 @@ class MyPredictionBasedTradingStrategy(
     def sign_all_contracts(self, contracts: List[Contract]) -> List[Optional[str]]:
         # sort contracts by time and then put system contracts first within each time-step
         signatures = [None] * len(contracts)
-        max_price = max([x.agreement["unit_price"] for x in contracts])
+        max_price = max(x.agreement["unit_price"] for x in contracts)
         contracts = sorted(
             zip(contracts, range(len(contracts))),
             key=lambda x: (

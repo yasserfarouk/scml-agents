@@ -3,33 +3,33 @@
 *Authors* type-your-team-member-names-with-their-emails here
 
 
-This code is free to use or update given that proper attribution is given to 
-the authors and the ANAC 2020 SCML. 
+This code is free to use or update given that proper attribution is given to
+the authors and the ANAC 2020 SCML.
 
-This module implements a factory manager for the SCM 2020 league of ANAC 2019 
-competition. This version will not use subcomponents. Please refer to the 
-[game description](http://www.yasserm.com/scml/scml2020.pdf) for all the 
+This module implements a factory manager for the SCM 2020 league of ANAC 2019
+competition. This version will not use subcomponents. Please refer to the
+[game description](http://www.yasserm.com/scml/scml2020.pdf) for all the
 callbacks and subcomponents available.
 
-Your agent can learn about the state of the world and itself by accessing 
+Your agent can learn about the state of the world and itself by accessing
 properties in the AWI it has. For example:
 
-- The number of simulation steps (days): self.awi.n_steps  
+- The number of simulation steps (days): self.awi.n_steps
 - The current step (day): self.awi.current_steps
 - The factory state: self.awi.state
 - Availability for producton: self.awi.available_for_production
 
 
-Your agent can act in the world by calling methods in the AWI it has. 
+Your agent can act in the world by calling methods in the AWI it has.
 For example:
 
 - *self.awi.request_negotiation(...)*  # requests a negotiation with one partner
 - *self.awi.request_negotiations(...)* # requests a set of negotiations
 
- 
+
 You can access the full list of these capabilities on the documentation.
 
-- For properties/methods available only to SCM agents, check the list 
+- For properties/methods available only to SCM agents, check the list
   [here](https://scml.readthedocs.io/en/latest/api/scml.scml2020.AWI.html)
 
 """
@@ -50,7 +50,7 @@ from negmas import (
     Negotiator,
 )
 from negmas.helpers import humanize_time
-from scml.scml2020 import SCML2020Agent
+from scml.scml2020 import Failure, SCML2020Agent
 
 # required for development
 from scml.scml2020.agents import (
@@ -59,16 +59,15 @@ from scml.scml2020.agents import (
     DoNothingAgent,
 )
 from scml.scml2020.utils import anac2020_collusion, anac2020_std
-from scml.scml2020 import Failure
 from tabulate import tabulate
 
 
 class Ashgent(SCML2020Agent):
     """
-    This is the only class you *need* to implement. The current skeleton has a 
+    This is the only class you *need* to implement. The current skeleton has a
     basic do-nothing implementation.
-    You can modify any parts of it as you need. You can act in the world by 
-    calling methods in the agent-world-interface instantiated as `self.awi` 
+    You can modify any parts of it as you need. You can act in the world by
+    calling methods in the agent-world-interface instantiated as `self.awi`
     in your agent. See the documentation for more details
 
     """
@@ -95,7 +94,7 @@ class Ashgent(SCML2020Agent):
         annotation: Dict[str, Any],
         mechanism: AgentMechanismInterface,
     ) -> Optional[Negotiator]:
-        """Called whenever an agent requests a negotiation with you. 
+        """Called whenever an agent requests a negotiation with you.
         Return either a negotiator to accept or None (default) to reject it"""
 
     def on_negotiation_failure(
@@ -105,13 +104,13 @@ class Ashgent(SCML2020Agent):
         mechanism: AgentMechanismInterface,
         state: MechanismState,
     ) -> None:
-        """Called when a negotiation the agent is a party of ends without 
+        """Called when a negotiation the agent is a party of ends without
         agreement"""
 
     def on_negotiation_success(
         self, contract: Contract, mechanism: AgentMechanismInterface
     ) -> None:
-        """Called when a negotiation the agent is a party of ends with 
+        """Called when a negotiation the agent is a party of ends with
         agreement"""
 
     # =============================
@@ -119,7 +118,7 @@ class Ashgent(SCML2020Agent):
     # =============================
 
     def sign_all_contracts(self, contracts: List[Contract]) -> List[Optional[str]]:
-        """Called to ask you to sign all contracts that were concluded in 
+        """Called to ask you to sign all contracts that were concluded in
         one step (day)"""
         return [self.id] * len(contracts)
 
@@ -129,7 +128,7 @@ class Ashgent(SCML2020Agent):
         cancelled: List[Contract],
         rejectors: List[List[str]],
     ) -> None:
-        """Called to inform you about the final status of all contracts in 
+        """Called to inform you about the final status of all contracts in
         a step (day)"""
 
     def on_contract_executed(self, contract: Contract) -> None:
@@ -138,7 +137,7 @@ class Ashgent(SCML2020Agent):
     def on_contract_breached(
         self, contract: Contract, breaches: List[Breach], resolution: Optional[Contract]
     ) -> None:
-        """Called when a breach occur. In 2020, there will be no resolution 
+        """Called when a breach occur. In 2020, there will be no resolution
         (i.e. resoluion is None)"""
 
     # ====================
@@ -149,13 +148,13 @@ class Ashgent(SCML2020Agent):
         self, commands: np.ndarray, balance: int, inventory: np.ndarray
     ) -> np.ndarray:
         """
-        Called just before production starts at every step allowing the 
-        agent to change what is to be produced in its factory on that step.        
+        Called just before production starts at every step allowing the
+        agent to change what is to be produced in its factory on that step.
         """
         return commands
 
     def on_failures(self, failures: List[Failure]) -> None:
-        """Called when production fails. If you are careful in 
+        """Called when production fails. If you are careful in
         what you order in `confirm_production`, you should never see that."""
 
     # ==========================
@@ -185,10 +184,10 @@ def run(
     **Not needed for submission.** You can use this function to test your agent.
 
     Args:
-        competition: The competition type to run (possibilities are std, 
-                     collusion).        
+        competition: The competition type to run (possibilities are std,
+                     collusion).
         n_steps:     The number of simulation steps.
-        n_configs:   Number of different world configurations to try. 
+        n_configs:   Number of different world configurations to try.
                      Different world configurations will correspond to
                      different number of factories, profiles
                      , production graphs etc
@@ -200,7 +199,7 @@ def run(
     Remarks:
 
         - This function will take several minutes to run.
-        - To speed it up, use a smaller `n_step` value        
+        - To speed it up, use a smaller `n_step` value
 
     """
     competitors = [Ashgent, DecentralizingAgent, BuyCheapSellExpensiveAgent]

@@ -1,9 +1,9 @@
-from scml.scml2020 import TIME, QUANTITY, UNIT_PRICE
-from negmas import ResponseType, outcome_is_valid
-from negmas.sao import SAOResponse
-from typing import List, Dict, Optional, Tuple, Any
-from negmas import SAOSyncController
+from typing import Any, Dict, List, Optional, Tuple
+
 import numpy as np
+from negmas import ResponseType, SAOSyncController, outcome_is_valid
+from negmas.sao import SAOResponse
+from scml.scml2020 import QUANTITY, TIME, UNIT_PRICE
 
 
 class SyncController(SAOSyncController):

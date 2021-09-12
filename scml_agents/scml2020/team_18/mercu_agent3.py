@@ -35,21 +35,40 @@ You can access the full list of these capabilities on the documentation.
 
 """
 
+import csv
+import functools
+import math
+import random
+
 # required for running the test tournament
 import time
-import numpy as np
-import math
-import functools
-import random
-import csv
-from collections import defaultdict
-from typing import Any, Dict, List, Optional, Iterable, Union, Tuple, Callable, Type
 from abc import abstractmethod
-from dataclasses import dataclass, asdict
+from collections import defaultdict
+from dataclasses import asdict, dataclass
 from pprint import pformat
-from tabulate import tabulate
+from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Type, Union
 
-from scml.scml2020 import SCML2020Agent
+import numpy as np
+from negmas import (
+    AgentMechanismInterface,
+    AgentWorldInterface,
+    AspirationMixin,
+    AspirationNegotiator,
+    Breach,
+    Contract,
+    Issue,
+    LinearUtilityFunction,
+    MechanismState,
+    Negotiator,
+    PassThroughNegotiator,
+    ResponseType,
+    SAONegotiator,
+    UtilityFunction,
+)
+from negmas.events import Notification, Notifier
+from negmas.helpers import get_class, humanize_time, instantiate
+from negmas.sao import SAOController
+from scml.scml2020 import Failure, SCML2020Agent
 from scml.scml2020.agents import (
     BuyCheapSellExpensiveAgent,
     DecentralizingAgent,
@@ -58,40 +77,20 @@ from scml.scml2020.agents import (
     MovingRangeAgent,
     ReactiveAgent,
 )
-from scml.scml2020.utils import anac2020_collusion, anac2020_std
-from scml.scml2020 import Failure
-from scml.scml2020.common import is_system_agent, ANY_LINE, NO_COMMAND, TIME, QUANTITY
-from scml.scml2020.components.production import ProductionStrategy
+from scml.scml2020.common import ANY_LINE, NO_COMMAND, QUANTITY, TIME, is_system_agent
 from scml.scml2020.components.negotiation import (
     NegotiationManager,
     StepNegotiationManager,
 )
-from scml.scml2020.components.trading import TradingStrategy
 from scml.scml2020.components.prediction import (
     ExecutionRatePredictionStrategy,
     MeanERPStrategy,
 )
+from scml.scml2020.components.production import ProductionStrategy
+from scml.scml2020.components.trading import TradingStrategy
 from scml.scml2020.services.controllers import StepController, SyncController
-
-from negmas import LinearUtilityFunction
-from negmas import (
-    AspirationMixin,
-    AgentWorldInterface,
-    PassThroughNegotiator,
-    ResponseType,
-    SAONegotiator,
-    AspirationNegotiator,
-    AgentMechanismInterface,
-    Breach,
-    Contract,
-    Issue,
-    MechanismState,
-    Negotiator,
-    UtilityFunction,
-)
-from negmas.sao import SAOController
-from negmas.events import Notifier, Notification
-from negmas.helpers import humanize_time, get_class, instantiate
+from scml.scml2020.utils import anac2020_collusion, anac2020_std
+from tabulate import tabulate
 
 __all__ = ["MercuAgent"]
 
@@ -124,7 +123,14 @@ class MyNegotiator(SAONegotiator):
         if self._Negotiator__parent:
             return self._Negotiator__parent.on_negotiation_end(self.id, state)
 
-    def join(self, ami, state, *, ufun=None, role="agent",) -> bool:
+    def join(
+        self,
+        ami,
+        state,
+        *,
+        ufun=None,
+        role="agent",
+    ) -> bool:
         """
         Joins a negotiation.
 
@@ -1038,10 +1044,10 @@ def run(
     **Not needed for submission.** You can use this function to test your agent.
 
     Args:
-        competition: The competition type to run (possibilities are std, 
-                     collusion).        
+        competition: The competition type to run (possibilities are std,
+                     collusion).
         n_steps:     The number of simulation steps.
-        n_configs:   Number of different world configurations to try. 
+        n_configs:   Number of different world configurations to try.
                      Different world configurations will correspond to
                      different number of factories, profiles
                      , production graphs etc
@@ -1053,7 +1059,7 @@ def run(
     Remarks:
 
         - This function will take several minutes to run.
-        - To speed it up, use a smaller `n_step` value        
+        - To speed it up, use a smaller `n_step` value
 
     """
     competitors = [MercuAgent, DecentralizingAgent, BuyCheapSellExpensiveAgent]

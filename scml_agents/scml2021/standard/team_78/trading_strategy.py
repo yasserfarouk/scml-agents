@@ -1,39 +1,53 @@
 # required for development
-from scml.scml2020.agents import DoNothingAgent
+import pathlib
+import pickle as pkl
 
 # required for running the test tournament
 import time
-import sklearn
-import pickle as pkl
-from tabulate import tabulate
-import pathlib
-
-from scml.scml2020.utils import anac2020_std, anac2020_collusion
-from scml.scml2020.agents import DecentralizingAgent, BuyCheapSellExpensiveAgent
-from negmas.helpers import humanize_time
 
 # required for typing
-from typing import List, Optional, Dict, Any
+from typing import Any, Dict, List, Optional
+
 import numpy as np
+import sklearn
 from negmas import (
-    Issue, AgentMechanismInterface, Contract, Negotiator,
-    MechanismState, Breach,
+    AgentMechanismInterface,
+    Breach,
+    Contract,
+    Issue,
+    MechanismState,
+    Negotiator,
 )
+from negmas.helpers import humanize_time
+from scml.scml2020 import (
+    MovingRangeNegotiationManager,
+    PredictionBasedTradingStrategy,
+    SCML2020Agent,
+    TradeDrivenProductionStrategy,
+    TradePredictionStrategy,
+)
+from scml.scml2020.agents import (
+    BuyCheapSellExpensiveAgent,
+    DecentralizingAgent,
+    DoNothingAgent,
+)
+from scml.scml2020.utils import anac2020_collusion, anac2020_std
 from scml.scml2020.world import Failure
-from scml.scml2020 import SCML2020Agent
-from scml.scml2020 import PredictionBasedTradingStrategy
-from scml.scml2020 import MovingRangeNegotiationManager
-from scml.scml2020 import TradeDrivenProductionStrategy
-from scml.scml2020 import TradePredictionStrategy
+from tabulate import tabulate
 
-models_dir = pathlib.Path(__file__).parent / 'models'
+models_dir = pathlib.Path(__file__).parent / "models"
 
-class SklearnTradePredictionStrategy(TradePredictionStrategy): 
+
+class SklearnTradePredictionStrategy(TradePredictionStrategy):
     def trade_prediction_init(self):
         inp = self.awi.my_input_product
-        with open(models_dir / f'sold_quantity_{min(inp, 5)}_predictor_init.pkl', 'rb') as file:
+        with open(
+            models_dir / f"sold_quantity_{min(inp, 5)}_predictor_init.pkl", "rb"
+        ) as file:
             self.input_quantity_model = pkl.load(file)
-        with open(models_dir / f'sold_quantity_{min(inp+1, 5)}_predictor_init.pkl', 'rb') as file:
+        with open(
+            models_dir / f"sold_quantity_{min(inp+1, 5)}_predictor_init.pkl", "rb"
+        ) as file:
             self.output_quantity_model = pkl.load(file)
 
         frac_time_steps = np.linspace(0, 1, self.awi.n_steps, endpoint=False)
@@ -56,7 +70,6 @@ class SklearnTradePredictionStrategy(TradePredictionStrategy):
         self.expected_outputs = adjust(self.expected_outputs, True)
         self.expected_inputs = adjust(self.expected_inputs, False)
 
-    
     def trade_prediction_step(self):
         pass
 

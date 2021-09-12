@@ -1,17 +1,18 @@
-from negmas import (
-    Issue,
-    AgentMechanismInterface,
-    Negotiator,
-    MechanismState,
-    Contract,
-    Breach,
-    SAOController,
-    AspirationNegotiator,
-)
-from scml.scml2020 import SCML2020Agent, AWI, FactoryState, Failure
-import numpy as np
 import logging
-from typing import List, Dict, Any, Optional, Union, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
+
+import numpy as np
+from negmas import (
+    AgentMechanismInterface,
+    AspirationNegotiator,
+    Breach,
+    Contract,
+    Issue,
+    MechanismState,
+    Negotiator,
+    SAOController,
+)
+from scml.scml2020 import AWI, FactoryState, Failure, SCML2020Agent
 
 __all__ = ["PrintingAgent", "PrintingSAOController"]
 
@@ -33,7 +34,7 @@ class PrintingAgent(SCML2020Agent):
             # if target_agent.split("@")[-1] == str(printing_target):
             target_agent = self.id
             logger.setLevel(50 - 30 * self.is_debug)
-            logger.log(30, "Printing target: {}".format(self.id))
+            logger.log(30, f"Printing target: {self.id}")
         if target_agent == self.id or force:
             if logs != last_log:
                 logger.log(30, logs)
@@ -95,13 +96,11 @@ class PrintingAgent(SCML2020Agent):
         super().init(*agrs, **kwargs)
         awi = self.awi  # type: AWI
         self.i_step_step_base: int = -1
-        self.print("I am {}".format(self.name), force=True)
-        self.print("My lines: {}".format(awi.state.n_lines), force=True)
-        self.print("Production cost: {}".format(min(awi.profile.costs[0])), force=True)
-        self.print("Catalog price: {}".format(awi.catalog_prices))
-        self.print(
-            "Class inheritance:\n{}".format(self.__class__.__mro__).replace(",", "\n")
-        )
+        self.print(f"I am {self.name}", force=True)
+        self.print(f"My lines: {awi.state.n_lines}", force=True)
+        self.print(f"Production cost: {min(awi.profile.costs[0])}", force=True)
+        self.print(f"Catalog price: {awi.catalog_prices}")
+        self.print(f"Class inheritance:\n{self.__class__.__mro__}".replace(",", "\n"))
         pass
 
     def step(self, *args, **kwargs):
@@ -110,16 +109,16 @@ class PrintingAgent(SCML2020Agent):
         factory_state = awi.state  # type: FactoryState
         self.i_step_step_base += 1
         self.print("-------------")
-        self.print("I am {}".format(self.name))
-        self.print("Step:{}/{}".format(self.awi.current_step, self.awi.n_steps))
-        self.print("My inventory: {}".format(factory_state.inventory))
-        self.print("My balance: {}".format(factory_state.balance))
+        self.print(f"I am {self.name}")
+        self.print(f"Step:{self.awi.current_step}/{self.awi.n_steps}")
+        self.print(f"My inventory: {factory_state.inventory}")
+        self.print(f"My balance: {factory_state.balance}")
         self.print("My lines are to work:")
         line_usage_list: List[int] = []
         for i in range(awi.n_steps):
             i_line_working = factory_state.commands[i]
             line_usage_list.append(-sum(i_line_working == -1) + factory_state.n_lines)
-        self.print("line usage: {}".format(line_usage_list))
+        self.print(f"line usage: {line_usage_list}")
         if self.awi.current_step >= 1:
             self.print("Financial Report:")
             fr_list = awi.reports_at_step(
@@ -220,7 +219,7 @@ class PrintingAgent(SCML2020Agent):
         self.print(
             "<|>{} Negotiation failure w/ {}: ID({}) issue{}".format(
                 "Sell" if annotation["seller"] == self.id else "Buy",
-                list(set(partners) - set([self.id]))[0],
+                list(set(partners) - {self.id})[0],
                 mechanism["id"][:4],
                 str(mechanism["issues"]),
             )
@@ -235,7 +234,7 @@ class PrintingAgent(SCML2020Agent):
         self.print(
             "|||{} Negotiation success w/ {}: ID({}) Agreement{} issue{}".format(
                 "Sell" if contract.annotation["seller"] == self.id else "Buy",
-                list(set(contract["partners"]) - set([self.id]))[0],
+                list(set(contract["partners"]) - {self.id})[0],
                 mechanism["id"][:4],
                 contract["agreement"],
                 str(mechanism["issues"]),
@@ -304,7 +303,7 @@ class PrintingAgent(SCML2020Agent):
     ) -> None:
         """Called whenever any agent goes bankrupt. It informs you about changes
         in future contracts you have with you (if any)."""
-        self.print(")))Agent {} bankrupt".format(agent))
+        self.print(f")))Agent {agent} bankrupt")
         super().on_agent_bankrupt(agent, contracts, quantities, compensation_money)
 
 
@@ -320,7 +319,7 @@ class PrintingSAOController(SAOController):
         *,
         ufun: Optional["UtilityFunction"] = None,
         role: str = "agent",
-        **kwargs
+        **kwargs,
     ) -> bool:
         """
         Called by children negotiators to get permission to join negotiations
@@ -348,7 +347,7 @@ class PrintingSAOController(SAOController):
         state: MechanismState,
         *,
         ufun: Optional["UtilityFunction"] = None,
-        role: str = "agent"
+        role: str = "agent",
     ) -> None:
         """
         Called by children negotiators after joining a negotiation to inform

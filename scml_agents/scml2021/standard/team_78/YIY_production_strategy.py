@@ -1,9 +1,9 @@
+from typing import List
+
+import numpy as np
 from negmas import Contract
 from scml import NO_COMMAND
 from scml.scml2020.components.production import ProductionStrategy
-
-from typing import List
-import numpy as np
 
 
 class YIYProductionStrategy(ProductionStrategy):
@@ -13,7 +13,12 @@ class YIYProductionStrategy(ProductionStrategy):
         production_cost = np.max(self.awi.profile.costs[:, self.awi.my_input_product])
         return (product_out_price / 2) > (product_in_price / 2) + production_cost
 
-    def on_contracts_finalized(self, signed: List[Contract], cancelled: List[Contract], rejectors: List[List[str]]):
+    def on_contracts_finalized(
+        self,
+        signed: List[Contract],
+        cancelled: List[Contract],
+        rejectors: List[List[str]],
+    ):
         super().on_contracts_finalized(signed, cancelled, rejectors)
         for signed_contract in signed:
             is_seller = signed_contract.annotation["seller"] == self.id

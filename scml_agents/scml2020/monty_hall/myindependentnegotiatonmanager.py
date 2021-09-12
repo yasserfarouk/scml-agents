@@ -6,7 +6,6 @@ from dataclasses import dataclass
 
 # required for typing
 from pprint import pprint
-
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
@@ -16,15 +15,13 @@ from negmas import (
     Breach,
     Contract,
     Issue,
+    LinearUtilityFunction,
     MechanismState,
     Negotiator,
     SAONegotiator,
-    LinearUtilityFunction,
 )
-
 from negmas.helpers import get_class, humanize_time, instantiate
 from scml.scml2020 import AWI, SCML2020Agent, SCML2020World
-
 from scml.scml2020.common import TIME
 from scml.scml2020.services.controllers import StepController, SyncController
 
@@ -65,7 +62,11 @@ class MyIndependentNegotiationManager:
         if s < self.data.n_steps - 1:
             self.start_negotiations(s, True)
 
-    def start_negotiations(self, step: int, is_seller: bool,) -> None:
+    def start_negotiations(
+        self,
+        step: int,
+        is_seller: bool,
+    ) -> None:
         """
         Starts a set of negotiations to by/sell the product with the given limits
 

@@ -1,8 +1,7 @@
-from negmas import Contract
-from negmas import Negotiator
-from negmas.sao import NiceNegotiator
 from typing import Optional
 
+from negmas import Contract, Negotiator
+from negmas.sao import NiceNegotiator
 from scml.scml2019.common import CFP
 from scml.scml2019.factory_managers.builtins import GreedyFactoryManager
 

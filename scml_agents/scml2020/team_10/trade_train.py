@@ -1,14 +1,12 @@
-from scml import SCML2020World
-import numpy as np
-from tqdm import tqdm
 from random import shuffle
 
-from hyperparameters import *
-
-from patches import *
+import numpy as np
 from agent import *
+from hyperparameters import *
+from patches import *
+from scml import SCML2020World
+from tqdm import tqdm
 from trade_model import Model, load_trade_model
-
 
 # def train(world):
 #     tags = []

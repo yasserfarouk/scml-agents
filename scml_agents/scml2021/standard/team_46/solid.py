@@ -33,7 +33,7 @@ To test this template do the following:
 On Linux/Mac:
     >> source .venv/bin/activate
 On Windows:
-    >> \.venv\Scripts\activate.bat
+    >> \\.venv\\Scripts\activate.bat
 
 3. Update pip just in case (recommended)
 
@@ -55,6 +55,10 @@ You should see a short tournament running and results reported.
 """
 
 
+# required for development
+# required for running the test tournament
+import time
+
 # required for typing
 from typing import Any, Dict, List, Optional
 
@@ -68,34 +72,30 @@ from negmas import (
     Negotiator,
 )
 from negmas.helpers import humanize_time
-from scml.scml2020 import Failure
-
-# required for development
-# required for running the test tournament
-import time
-from tabulate import tabulate
-from scml.scml2020.utils import anac2021_collusion, anac2021_std, anac2021_oneshot
-from scml.scml2020 import SCML2020Agent
+from scml import is_system_agent
+from scml.scml2020 import Failure, SCML2020Agent
 from scml.scml2020.agents import (
     BuyCheapSellExpensiveAgent,
     DecentralizingAgent,
     DoNothingAgent,
-    MarketAwareIndependentNegotiationsAgent
+    MarketAwareIndependentNegotiationsAgent,
 )
-
-
-from scml.scml2020.components.trading import PredictionBasedTradingStrategy
-from scml.scml2020.components.production import DemandDrivenProductionStrategy, SupplyDrivenProductionStrategy, ProductionStrategy
-from scml import is_system_agent
-
 from scml.scml2020.common import ANY_LINE
+from scml.scml2020.components.production import (
+    DemandDrivenProductionStrategy,
+    ProductionStrategy,
+    SupplyDrivenProductionStrategy,
+)
+from scml.scml2020.components.trading import PredictionBasedTradingStrategy
+from scml.scml2020.utils import anac2021_collusion, anac2021_oneshot, anac2021_std
+from tabulate import tabulate
 
-
-__all__ = [ "SolidAgent", ]
+__all__ = [
+    "SolidAgent",
+]
 
 
 class MyTradingStrategy(PredictionBasedTradingStrategy):
-
     def sign_all_contracts(self, contracts: List[Contract]) -> List[Optional[str]]:
         signatures = [None] * len(contracts)
         # sort contracts by goodness of price, time and then put system contracts first within each time-step
@@ -167,19 +167,22 @@ class MyTradingStrategy(PredictionBasedTradingStrategy):
         return signatures
 
 
-
 from negmas import SAOSyncController
-'''
-print(SAOSyncController.__doc__)
-'''
 
-from scml.scml2020 import TIME, QUANTITY, UNIT_PRICE
-from negmas import ResponseType, outcome_is_valid, UtilityFunction
+"""
+print(SAOSyncController.__doc__)
+"""
+
+from typing import Any, Dict, List, Optional, Tuple
+
+from negmas import ResponseType, UtilityFunction, outcome_is_valid
 from negmas.sao import SAOResponse
-from typing import List, Dict, Optional, Tuple, Any
+from scml.scml2020 import QUANTITY, TIME, UNIT_PRICE
+
 
 class ControllerUFun(UtilityFunction):
     """A utility function for the controller"""
+
     def __init__(self, controller=None):
         super().__init__(outcome_type=tuple)
         self.controller = controller
@@ -223,8 +226,7 @@ class SyncController(SAOSyncController):
         self._utility_threshold = utility_threshold
         self.utility_function = ControllerUFun(controller=self)
 
-
-    #ここで
+    # ここで
     def utility(self, offer: "Outcome") -> float:
         """A simple utility function
 
@@ -237,7 +239,7 @@ class SyncController(SAOSyncController):
         """
 
         # get my needs and secured amounts arrays
-        #ニーズと確保した量を配列で取得
+        # ニーズと確保した量を配列で取得
         if self._is_seller:
             _needed, _secured = (
                 self.__parent.outputs_needed,
@@ -250,34 +252,34 @@ class SyncController(SAOSyncController):
             )
 
         # invalide offers have no utility
-        #妥当でないオファーは効用を持たない（実用ではない）
+        # 妥当でないオファーは効用を持たない（実用ではない）
         if offer is None:
             return -1000
 
         # offers for contracts that can never be executed have no utility
-        #決して実行されない契約のオファーに効用なし
-        #納期が現在のステップより小さい、もしくは最終日より大きいとき
+        # 決して実行されない契約のオファーに効用なし
+        # 納期が現在のステップより小さい、もしくは最終日より大きいとき
         t = offer[TIME]
         if t < self.__parent.awi.current_step or t > self.__parent.awi.n_steps - 1:
             return -1000.0
 
         # offers that exceed my needs have no utility (that can be improved)
-        #ニーズを超えるオファーは実用的ではない（改善できる）
-        #オファーされた量と確保している量がニーズを超えなければいい
+        # ニーズを超えるオファーは実用的ではない（改善できる）
+        # オファーされた量と確保している量がニーズを超えなければいい
         q = _needed[offer[TIME]] - (offer[QUANTITY] + _secured[t])
-        if q < 0: #ニーズを上回ったとき
+        if q < 0:  # ニーズを上回ったとき
             return -1000.0
 
         # The utility of any offer is a linear combination of its price and how
         # much it satisfy my needs
-        #自分が売り手なら　0.7*price+0.3*q (price>0, q>=0)　より高い値段で売る
-        #自分か買い手なら　0.7*price+0.3*q (price<0, q>=0)　より安い値段で買う
+        # 自分が売り手なら　0.7*price+0.3*q (price>0, q>=0)　より高い値段で売る
+        # 自分か買い手なら　0.7*price+0.3*q (price<0, q>=0)　より安い値段で買う
         price = offer[UNIT_PRICE] if self._is_seller else -offer[UNIT_PRICE]
         return self._price_weight * price + (1 - self._price_weight) * q
 
     def is_valid(self, negotiator_id: str, offer: "Outcome") -> bool:
         """Is this a valid offer for that negotiation"""
-        #交渉に関して妥当なオファーかどうか
+        # 交渉に関して妥当なオファーかどうか
         issues = self.negotiators[negotiator_id][0].ami.issues
         return outcome_is_valid(offer, issues)
 
@@ -308,7 +310,7 @@ class SyncController(SAOSyncController):
         best_proposals = self.first_proposals()
 
         # if the best offer is still so bad just reject everything
-        #全てのオファーがよくないき全て拒否
+        # 全てのオファーがよくないき全て拒否
         if best_utility < 0:
             return {
                 k: SAOResponse(ResponseType.REJECT_OFFER, best_proposals[k])
@@ -318,7 +320,7 @@ class SyncController(SAOSyncController):
         relative_time = min(_.relative_time for _ in states.values())
 
         # if this is good enough or the negotiation is about to end accept the best offer
-        #十分良いかベストなオファーが受け入れられ得たとき
+        # 十分良いかベストなオファーが受け入れられ得たとき
         if (
             best_utility
             >= self._utility_threshold * self.utility(best_proposals[best_partner])
@@ -335,7 +337,7 @@ class SyncController(SAOSyncController):
             return responses
 
         # send the best offer to everyone else and try to improve it
-        #全員にベストオファーを送る
+        # 全員にベストオファーを送る
         responses = {
             k: SAOResponse(
                 ResponseType.REJECT_OFFER,
@@ -350,7 +352,7 @@ class SyncController(SAOSyncController):
 
     def on_negotiation_end(self, negotiator_id: str, state: "MechanismState") -> None:
         """Update the secured quantities whenever a negotiation ends"""
-        #交渉がおわったら確保している量を更新する
+        # 交渉がおわったら確保している量を更新する
         if state.agreement is None:
             return
 
@@ -359,7 +361,6 @@ class SyncController(SAOSyncController):
             self.__parent.outputs_secured[t] += q
         else:
             self.__parent.inputs_secured[t] += q
-
 
 
 class MyNegotiationManager:
@@ -372,7 +373,7 @@ class MyNegotiationManager:
         time_range: The time-range for each controller as a fraction of the number of simulation steps
     """
 
-    #コンストラクタ
+    # コンストラクタ
     def __init__(
         self,
         *args,
@@ -411,11 +412,11 @@ class MyNegotiationManager:
         super().step()
 
         # find the range of steps about which we plan to negotiate
-        step = self.awi.current_step #現在のステップ数
-        self._current_start = step + 1 #開始日は翌日
-        self._current_end = min( #終了日？
-            self.awi.n_steps - 1, #最終日
-            self._current_start + max(1, int(self.time_horizon * self.awi.n_steps)), #
+        step = self.awi.current_step  # 現在のステップ数
+        self._current_start = step + 1  # 開始日は翌日
+        self._current_end = min(  # 終了日？
+            self.awi.n_steps - 1,  # 最終日
+            self._current_start + max(1, int(self.time_horizon * self.awi.n_steps)),  #
         )
 
         if self._current_start >= self._current_end:
@@ -431,7 +432,7 @@ class MyNegotiationManager:
             ),
         ]:
             # find the maximum amount needed at any time-step in the given range
-            #与えられた期間内でのタイムステップごとに最大のニーズを求める
+            # 与えられた期間内でのタイムステップごとに最大のニーズを求める
             needs = np.max(
                 needed[self._current_start : self._current_end]
                 - secured[self._current_start : self._current_end]
@@ -442,16 +443,16 @@ class MyNegotiationManager:
             # set a range of prices
             if seller:
                 # for selling set a price that is at least the catalog price
-                #売り手なら最低でもカタログ価格で売る
-                #価格範囲は最小値〜最小値の2倍の価格
+                # 売り手なら最低でもカタログ価格で売る
+                # 価格範囲は最小値〜最小値の2倍の価格
                 min_price = self.awi.catalog_prices[product]
                 price_range = (min_price, 2 * min_price)
             else:
                 # for buying sell a price that is at most the catalog price
-                #買い手なら価格範囲は０〜カタログ価格
+                # 買い手なら価格範囲は０〜カタログ価格
                 price_range = (0, self.awi.catalog_prices[product])
 
-            if seller and step < 0.5 * self.awi.n_steps: #前半はoutputしない
+            if seller and step < 0.5 * self.awi.n_steps:  # 前半はoutputしない
                 continue
 
             self.awi.request_negotiations(
@@ -461,15 +462,18 @@ class MyNegotiationManager:
                 price_range,
                 time=(self._current_start, self._current_end),
                 controller=self.controllers[seller],
- #               controller = SAOMetaNegotiatorController(ufun=LinearUtilityFunction({
- #                  TIME: 0.0, QUANTITY: (1-x), UNIT_PRICE: x if seller else -x
- #             }))
+                #               controller = SAOMetaNegotiatorController(ufun=LinearUtilityFunction({
+                #                  TIME: 0.0, QUANTITY: (1-x), UNIT_PRICE: x if seller else -x
+                #             }))
             )
 
 
-
-class SolidAgent(MyNegotiationManager, MyTradingStrategy,
-              DemandDrivenProductionStrategy, SCML2020Agent):
+class SolidAgent(
+    MyNegotiationManager,
+    MyTradingStrategy,
+    DemandDrivenProductionStrategy,
+    SCML2020Agent,
+):
     pass
 
 

@@ -1,12 +1,11 @@
-import time
 import sys
+import time
 
 import pandas as pd
 
 MY_PATH = "/".join(__file__.split("/")[:-1])
 
 from . import pydata
-
 
 # Generate all uncertainty models
 if __name__ == "__main__":

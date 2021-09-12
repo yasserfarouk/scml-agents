@@ -3,69 +3,68 @@
 *Authors* type-your-team-member-names-with-their-emails here
 
 
-This code is free to use or update given that proper attribution is given to 
-the authors and the ANAC 2020 SCML. 
+This code is free to use or update given that proper attribution is given to
+the authors and the ANAC 2020 SCML.
 
-This module implements a factory manager for the SCM 2020 league of ANAC 2019 
-competition. This version will not use subcomponents. Please refer to the 
-[game description](http://www.yasserm.com/scml/scml2020.pdf) for all the 
+This module implements a factory manager for the SCM 2020 league of ANAC 2019
+competition. This version will not use subcomponents. Please refer to the
+[game description](http://www.yasserm.com/scml/scml2020.pdf) for all the
 callbacks and subcomponents available.
 
-Your agent can learn about the state of the world and itself by accessing 
+Your agent can learn about the state of the world and itself by accessing
 properties in the AWI it has. For example:
 
-- The number of simulation steps (days): self.awi.n_steps  
+- The number of simulation steps (days): self.awi.n_steps
 - The current step (day): self.awi.current_steps
 - The factory state: self.awi.state
 - Availability for producton: self.awi.available_for_production
 
 
-Your agent can act in the world by calling methods in the AWI it has. 
+Your agent can act in the world by calling methods in the AWI it has.
 For example:
 
 - *self.awi.request_negotiation(...)*  # requests a negotiation with one partner
 - *self.awi.request_negotiations(...)* # requests a set of negotiations
 
- 
+
 You can access the full list of these capabilities on the documentation.
 
-- For properties/methods available only to SCM agents, check the list 
+- For properties/methods available only to SCM agents, check the list
   [here](https://scml.readthedocs.io/en/latest/api/scml.scml2020.AWI.html)
 
 """
 
-# required for running the test tournament
-import time
-
-# required for typing
-from typing import Any, Dict, List, Optional, Type, Tuple
-
-import numpy as np
 import copy
-from itertools import chain, combinations
-from random import randint, sample
 import math
 
+# required for running the test tournament
+import time
+from itertools import chain, combinations
+from random import randint, sample
+
+# required for typing
+from typing import Any, Dict, List, Optional, Tuple, Type
+
+import numpy as np
 from negmas import (
     AgentMechanismInterface,
+    AspirationNegotiator,
     Breach,
     Contract,
     Issue,
     MechanismState,
     Negotiator,
-    UtilityFunction,
-    SAONegotiator,
-    AspirationNegotiator,
-    UtilityValue,
     Outcome,
+    SAONegotiator,
+    UtilityFunction,
+    UtilityValue,
 )
 from negmas.helpers import humanize_time
-from scml.scml2020 import SCML2020Agent
+from scml.scml2020 import AWI, Failure, SCML2020Agent
 
 # required for development
 from scml.scml2020.agents import BuyCheapSellExpensiveAgent, DecentralizingAgent
 from scml.scml2020.utils import anac2020_collusion, anac2020_std
-from scml.scml2020 import Failure, AWI
 from tabulate import tabulate
 
 __all__ = ["GreedyFactoryManager2"]
@@ -73,10 +72,10 @@ __all__ = ["GreedyFactoryManager2"]
 
 class GFM2(SCML2020Agent):
     """
-    This is the only class you *need* to implement. The current skeleton has a 
+    This is the only class you *need* to implement. The current skeleton has a
     basic do-nothing implementation.
-    You can modify any parts of it as you need. You can act in the world by 
-    calling methods in the agent-world-interface instantiated as `self.awi` 
+    You can modify any parts of it as you need. You can act in the world by
+    calling methods in the agent-world-interface instantiated as `self.awi`
     in your agent. See the documentation for more details
 
     """
@@ -379,7 +378,7 @@ class GFM2(SCML2020Agent):
             return -1000000.0
 
         if min(est_stock_cap) < 0:
-            return sum([s for s in est_stock_cap if s < 0])
+            return sum(s for s in est_stock_cap if s < 0)
 
         # 各要素に対する評価値 [0,1]
         # 生産ライン
@@ -408,7 +407,7 @@ class GFM2(SCML2020Agent):
     def simulate_set(
         self, buy_conts: List[Contract], sell_conts: List[Contract]
     ) -> Tuple[Optional[List[int]], Optional[List[int]], Optional[int]]:
-        """ returns (estimated_line_cap, profit, estimated_stock_cap) """
+        """returns (estimated_line_cap, profit, estimated_stock_cap)"""
 
         profit = 0
         est_line_cap = self.line_cap

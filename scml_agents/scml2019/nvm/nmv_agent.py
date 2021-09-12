@@ -5,25 +5,25 @@ import math
 import os
 import random
 import string
-from typing import Optional, List, Dict, Any, Union, Type
+import sys
+from typing import Any, Dict, List, Optional, Type, Union
 
 import matplotlib.pyplot as plt
 from negmas import (
-    Contract,
-    Negotiator,
-    AgentMechanismInterface,
-    MappingUtilityFunction,
     INVALID_UTILITY,
+    AgentMechanismInterface,
+    Contract,
+    MappingUtilityFunction,
+    MechanismState,
+    Negotiator,
 )
-from negmas import MechanismState
-from scml.scml2019.common import CFP, Job, ProductionFailure
-from scml.scml2019.simulators import FactorySimulator, FastFactorySimulator
-from scml.scml2019.factory_managers.builtins import DoNothingFactoryManager
 from negmas.sao import AspirationNegotiator
 from prettytable import PrettyTable
+from scml.scml2019.common import CFP, Job, ProductionFailure
+from scml.scml2019.factory_managers.builtins import DoNothingFactoryManager
+from scml.scml2019.simulators import FactorySimulator, FastFactorySimulator
 
 from .agent_brain import AgentBrain
-import sys
 
 sys.path.append("/".join(__file__.split("/")[:-1]))
 
@@ -442,7 +442,7 @@ class NVMFactoryManager(DoNothingFactoryManager):
     # =============================
 
     def sign_contract(self, contract: Contract) -> Optional[str]:
-        """Called after the signing delay from contract conclusion to sign the contract. Contracts become binding only after they are signed. """
+        """Called after the signing delay from contract conclusion to sign the contract. Contracts become binding only after they are signed."""
         sign = False
 
         # We don't sign contracts at the end or beyond.
@@ -494,10 +494,8 @@ class NVMFactoryManager(DoNothingFactoryManager):
                 ]
                 <= self.limit_number_sales_contracts_at_t
                 and sum(
-                    [
-                        self.contracted_buys_at_t[self.input_index][t]
-                        for t in range(0, contract.agreement["time"] - 1)
-                    ]
+                    self.contracted_buys_at_t[self.input_index][t]
+                    for t in range(0, contract.agreement["time"] - 1)
                 )
                 >= contract.agreement["quantity"]
             ):
@@ -527,15 +525,13 @@ class NVMFactoryManager(DoNothingFactoryManager):
                 and self.awi.state.storage[contract.annotation["cfp"].product]
                 <= self.limit_sign_storage
                 and sum(
-                    [
-                        self.contracted_buys_at_t[self.input_index][
-                            t
-                        ]  # @todo warning. I am trying to limit the amount of stuff we buy, sometimes we get too much stuff.
-                        for t in range(
-                            max(0, contract.agreement["time"] - 10),
-                            contract.agreement["time"] - 1,
-                        )
-                    ]
+                    self.contracted_buys_at_t[self.input_index][
+                        t
+                    ]  # @todo warning. I am trying to limit the amount of stuff we buy, sometimes we get too much stuff.
+                    for t in range(
+                        max(0, contract.agreement["time"] - 10),
+                        contract.agreement["time"] - 1,
+                    )
                 )
                 <= self.limit_sign_storage
             ):
@@ -605,7 +601,7 @@ class NVMFactoryManager(DoNothingFactoryManager):
         return True
 
     def on_new_cfp(self, cfp: "CFP"):
-        """Call whenever a CFP is posted. """
+        """Call whenever a CFP is posted."""
         if cfp.publisher != self.id:
             self.request_negotiation(
                 cfp=cfp,
@@ -663,11 +659,7 @@ class NVMFactoryManager(DoNothingFactoryManager):
             table.add_row(
                 [
                     f"ST_{p}"
-                    + (
-                        str("*")
-                        if p == self.input_index or p == self.output_index
-                        else str("_")
-                    )
+                    + ("*" if p == self.input_index or p == self.output_index else "_")
                 ]
                 + self.storage_history[p][start:]
             )
@@ -676,11 +668,7 @@ class NVMFactoryManager(DoNothingFactoryManager):
             table.add_row(
                 [
                     f"CO_{p}"
-                    + (
-                        str("*")
-                        if p == self.input_index or p == self.output_index
-                        else str("_")
-                    )
+                    + ("*" if p == self.input_index or p == self.output_index else "_")
                 ]
                 + [
                     (self.contracted_buys_at_t[p][t], self.contracted_sales_at_t[p][t])

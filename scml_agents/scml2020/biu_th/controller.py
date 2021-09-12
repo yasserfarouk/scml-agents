@@ -1,11 +1,11 @@
 from collections import defaultdict
-from typing import Tuple, List, Callable, Any, Dict
+from typing import Any, Callable, Dict, List, Tuple
 
 import numpy
 from negmas import (
-    SAONegotiator,
     AgentWorldInterface,
     NonlinearHyperRectangleUtilityFunction,
+    SAONegotiator,
 )
 from negmas.helpers import instantiate
 from scml.scml2020.services import StepController

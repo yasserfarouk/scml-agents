@@ -1,7 +1,8 @@
-from qtty_feasible_domain_cp import get_zip_location, solve_cp, generate_and_save_sol_df
-import time
-import os
 import multiprocessing
+import os
+import time
+
+from qtty_feasible_domain_cp import generate_and_save_sol_df, get_zip_location, solve_cp
 
 
 def generate_domain(

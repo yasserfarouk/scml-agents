@@ -1,19 +1,17 @@
-from typing import List, Optional
-from negmas import Contract
-from scml.scml2020.components.trading import TradingStrategy
-from .nego_strategy import *
-import matplotlib.pyplot as plt
-from scml.scml2020.components import FixedTradePredictionStrategy, SignAllPossible
-from scml.scml2020.common import is_system_agent
-from scml.scml2020.common import ANY_LINE
-from scml.scml2020.components.prediction import MeanERPStrategy, TradePredictionStrategy
-from negmas import Contract, Breach
-from typing import Union, Iterable, List, Optional
-from sklearn import svm
-import pickle
 import math
-import numpy as np
+import pickle
+from typing import Iterable, List, Optional, Union
 
+import matplotlib.pyplot as plt
+import numpy as np
+from negmas import Breach, Contract
+from scml.scml2020.common import ANY_LINE, is_system_agent
+from scml.scml2020.components import FixedTradePredictionStrategy, SignAllPossible
+from scml.scml2020.components.prediction import MeanERPStrategy, TradePredictionStrategy
+from scml.scml2020.components.trading import TradingStrategy
+from sklearn import svm
+
+from .nego_strategy import *
 
 USE_DATA_COLLECTION = False
 TEAM_AGENT_DEBUG_FLAG = False

@@ -1,14 +1,15 @@
-from negmas import (
-    Negotiator,
-    Contract,
-    Breach,
-    RenegotiationRequest,
-    AgentMechanismInterface,
-    MechanismState,
-)
-from typing import Optional, List, Dict, Any
+from typing import Any, Dict, List, Optional
 
-from scml.scml2019 import SCML2019Agent, FinancialReport, Loan
+from negmas import (
+    AgentMechanismInterface,
+    Breach,
+    Contract,
+    MechanismState,
+    Negotiator,
+    RenegotiationRequest,
+)
+from scml.scml2019 import FinancialReport, Loan, SCML2019Agent
+
 from .ConsumerUtilityFunction import ConsumerUtilityFunction
 from .MyNegotiator2 import MyNegotiator2
 
@@ -23,7 +24,7 @@ class MyConsumer(SCML2019Agent):
         self.negotiators = {}
         self.NEGOTIATOR_ID_FIXED_PART = "NEGOTIATOR_ID_BUYER"
         self._reserved_val = 1
-        super(MyConsumer, self).__init__(name=name)
+        super().__init__(name=name)
 
     def step(self):
         pass

@@ -1,28 +1,26 @@
 # required for typing
-import numpy as np
-from pprint import pformat
+from pprint import pformat, pprint
 from typing import List, Optional
 
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import seaborn as sns
+from negmas import *
 from negmas import Contract
-
+from scml.scml2020 import *
+from scml.scml2020.common import ANY_LINE, is_system_agent
 from scml.scml2020.components import FixedTradePredictionStrategy, SignAllPossible
-from scml.scml2020.common import is_system_agent
-from scml.scml2020.common import ANY_LINE
 from scml.scml2020.components.prediction import MeanERPStrategy
 
 # my need
 from scml.scml2020.components.trading import *
-from scml.scml2020 import *
-from negmas import *
-import matplotlib.pyplot as plt
-from pprint import pprint
-import pandas as pd
-import seaborn as sns
-from .prediction import MyTradePredictor, MyERPredictor
+
+from .prediction import MyERPredictor, MyTradePredictor
 
 
 class MyTrader(MyTradePredictor, MyERPredictor, TradingStrategy):  # MyERPredictorいる？？？
-    """ super().on_contracts_finalizedとか，二重で処理しちゃいそうだから以下のクラスを直接オーバライドはしない
+    """super().on_contracts_finalizedとか，二重で処理しちゃいそうだから以下のクラスを直接オーバライドはしない
     TradingStrategy
     ReactiveTradingStrategy
     *PredictionBasedTradingStrategy

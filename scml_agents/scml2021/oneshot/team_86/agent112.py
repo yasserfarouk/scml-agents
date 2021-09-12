@@ -1,18 +1,19 @@
 #!/usr/bin/env python
 import statistics
+
 from scml.oneshot import OneShotAgent
 
 QUANTITY = 0
 TIME = 1
 UNIT_PRICE = 2
 
-from negmas import (
-    Outcome,
-    ResponseType,
-)
+from negmas import Outcome, ResponseType
 
-
-__all__ = [ "SimpleAgent", "BetterAgent", "Agent112", ]
+__all__ = [
+    "SimpleAgent",
+    "BetterAgent",
+    "Agent112",
+]
 
 
 class SimpleAgent(OneShotAgent):
@@ -48,8 +49,7 @@ class SimpleAgent(OneShotAgent):
         unit_price_issue = ami.issues[UNIT_PRICE]
         offer = [-1] * 3
         offer[QUANTITY] = max(
-            min(my_needs, quantity_issue.max_value),
-            quantity_issue.min_value
+            min(my_needs, quantity_issue.max_value), quantity_issue.min_value
         )
         offer[TIME] = self.awi.current_step
         if self._is_selling(ami):
@@ -59,15 +59,17 @@ class SimpleAgent(OneShotAgent):
         return tuple(offer)
 
     def _needed(self, negotiator_id=None):
-        return self.awi.current_exogenous_input_quantity + \
-               self.awi.current_exogenous_output_quantity - \
-               self.secured
+        return (
+            self.awi.current_exogenous_input_quantity
+            + self.awi.current_exogenous_output_quantity
+            - self.secured
+        )
 
     def _is_selling(self, ami):
         return ami.annotation["product"] == self.awi.my_output_product
 
-class BetterAgent(SimpleAgent):
 
+class BetterAgent(SimpleAgent):
     def __init__(self, *args, concession_exponent=0.2, **kwargs):
         super().__init__(*args, **kwargs)
         self._e = concession_exponent
@@ -77,9 +79,7 @@ class BetterAgent(SimpleAgent):
         if not offer:
             return None
         offer = list(offer)
-        offer[UNIT_PRICE] = self._find_good_price(
-            self.get_ami(negotiator_id), state
-        )
+        offer[UNIT_PRICE] = self._find_good_price(self.get_ami(negotiator_id), state)
         return tuple(offer)
 
     def respond(self, negotiator_id, state, offer):
@@ -88,8 +88,8 @@ class BetterAgent(SimpleAgent):
             return response
         ami = self.get_ami(negotiator_id)
         return (
-            response if
-            self._is_good_price(ami, state, offer[UNIT_PRICE])
+            response
+            if self._is_good_price(ami, state, offer[UNIT_PRICE])
             else ResponseType.REJECT_OFFER
         )
 
@@ -123,8 +123,8 @@ class BetterAgent(SimpleAgent):
         """calculates a descending threshold (0 <= th <= 1)"""
         return ((n_steps - step - 1) / (n_steps - 1)) ** self._e
 
-class Agent112(BetterAgent):
 
+class Agent112(BetterAgent):
     def before_step(self):
         super().before_step()
         # Save the last buying/selling prices
@@ -157,6 +157,7 @@ class Agent112(BetterAgent):
         else:
             mx = min(mx, average(self._best_buying, mx))
         return mn, mx
+
 
 def average(list_items, n):
     if len(list_items) == 0:

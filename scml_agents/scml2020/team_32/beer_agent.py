@@ -2,40 +2,41 @@
 **Submitted to ANAC 2020 SCML**
 *Authors* Benjamin Wexler <benwex93@gmail.com> Elad <eladna812@gmail.com>
 """
-from scml.scml2020.agents import DoNothingAgent
-
 # from scml.scml2020 import SCML2020World
 # import matplotlib.pyplot as plt
 # required for running the test tournament
 import time
-from tabulate import tabulate
-from scml.scml2020.utils import anac2020_std, anac2020_collusion
+
+# required for typing
+from typing import Any, Dict, List, Optional, Tuple
+
+import numpy as np
+from negmas import (
+    AgentMechanismInterface,
+    Breach,
+    Contract,
+    Issue,
+    LinearUtilityFunction,
+    MechanismState,
+    Negotiator,
+)
+from negmas.helpers import humanize_time
+from scml.scml2020 import IndependentNegotiationsManager
 from scml.scml2020.agents import (
-    DecentralizingAgent,
     BuyCheapSellExpensiveAgent,
+    DecentralizingAgent,
+    DoNothingAgent,
     IndDecentralizingAgent,
     RandomAgent,
 )
-from negmas.helpers import humanize_time
-
-# required for typing
-from typing import List, Optional, Dict, Any
-import numpy as np
-from negmas import (
-    Issue,
-    AgentMechanismInterface,
-    Contract,
-    Negotiator,
-    MechanismState,
-    Breach,
-    LinearUtilityFunction,
-)
-from scml.scml2020.components.production import DemandDrivenProductionStrategy
-from scml.scml2020.components.production import SupplyDrivenProductionStrategy
-from scml.scml2020.components.trading import PredictionBasedTradingStrategy
 from scml.scml2020.components import TradePredictionStrategy
-from scml.scml2020 import IndependentNegotiationsManager
-from typing import Tuple
+from scml.scml2020.components.production import (
+    DemandDrivenProductionStrategy,
+    SupplyDrivenProductionStrategy,
+)
+from scml.scml2020.components.trading import PredictionBasedTradingStrategy
+from scml.scml2020.utils import anac2020_collusion, anac2020_std
+from tabulate import tabulate
 
 __all__ = ["BeerAgent"]
 
@@ -102,10 +103,10 @@ def run(
     **Not needed for submission.** You can use this function to test your agent.
 
     Args:
-        competition: The competition type to run (possibilities are std, 
-                     collusion).        
+        competition: The competition type to run (possibilities are std,
+                     collusion).
         n_steps:     The number of simulation steps.
-        n_configs:   Number of different world configurations to try. 
+        n_configs:   Number of different world configurations to try.
                      Different world configurations will correspond to
                      different number of factories, profiles
                      , production graphs etc
@@ -117,7 +118,7 @@ def run(
     Remarks:
 
         - This function will take several minutes to run.
-        - To speed it up, use a smaller `n_step` value        
+        - To speed it up, use a smaller `n_step` value
 
     """
     # competitors = [BeerAgent, DecentralizingAgent]

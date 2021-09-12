@@ -1,21 +1,18 @@
 from typing import (
-    Dict,
-    Iterable,
     Any,
     Callable,
     Collection,
-    Type,
+    Dict,
+    Iterable,
     List,
     Optional,
+    Type,
     Union,
 )
+
 import negmas
-from negmas import (
-    Contract,
-    Negotiator,
-)
-from scml.scml2019 import CFP
-from scml.scml2019 import DoNothingFactoryManager
+from negmas import Contract, Negotiator
+from scml.scml2019 import CFP, DoNothingFactoryManager
 from scml.scml2019.factory_managers.builtins import PessimisticNegotiatorUtility
 
 

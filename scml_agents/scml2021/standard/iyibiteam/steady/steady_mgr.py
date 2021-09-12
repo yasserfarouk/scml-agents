@@ -4,13 +4,14 @@
 """
 # Libraries
 from typing import List, Optional
+
 import numpy as np
 from negmas import Contract
 from scml.scml2020 import (
     SCML2020Agent,
-    TradingStrategy,
     StepNegotiationManager,
     SupplyDrivenProductionStrategy,
+    TradingStrategy,
 )
 from scml.scml2020.common import is_system_agent
 
@@ -20,17 +21,14 @@ __all__ = ["SteadyMgr"]
 class MyTradingStrategy(TradingStrategy):
     def init(self):
         super().init()
-        production_cost = np.max(
-            self.awi.profile.costs[:, self.awi.my_input_product])
+        production_cost = np.max(self.awi.profile.costs[:, self.awi.my_input_product])
 
         # Calculate the initial price (catalog price ± production cost)
         self.input_cost = (
-            self.awi.catalog_prices[self.awi.my_output_product] -
-            production_cost
+            self.awi.catalog_prices[self.awi.my_output_product] - production_cost
         ) * np.ones(self.awi.n_steps, dtype=int)
         self.output_price = (
-            self.awi.catalog_prices[self.awi.my_input_product] +
-            production_cost
+            self.awi.catalog_prices[self.awi.my_input_product] + production_cost
         ) * np.ones(self.awi.n_steps, dtype=int)
 
         # Maximum number of products that can be produced
@@ -79,7 +77,7 @@ class MyTradingStrategy(TradingStrategy):
                     t:
                 ] -= q  # Subtract the number of units that need to buy after t
                 self.outputs_needed[
-                    t + 1:
+                    t + 1 :
                 ] += q  # Add 'outputs_needed' as many as buys
                 bought += 1
 
@@ -158,8 +156,7 @@ class MyTradingStrategy(TradingStrategy):
                 est = 0  # Estimated number of products
                 # Calculate the maximum production possible before delivery date
                 for i in range(1, t - s + 1):
-                    est += min(self.inputs_secured[t - i],
-                               i * self.awi.n_lines)
+                    est += min(self.inputs_secured[t - i], i * self.awi.n_lines)
                 est = min(est, (t - s) * self.awi.n_lines)
 
                 available = (
@@ -209,7 +206,7 @@ class MyTradingStrategy(TradingStrategy):
             if contract.annotation["seller"] == self.id:
                 self.outputs_secured[t] -= missing
                 if t > 0:
-                    self.outputs_needed[t - 1:] += missing
+                    self.outputs_needed[t - 1 :] += missing
             else:
                 self.inputs_secured[t] -= missing
                 self.inputs_needed[t:] += missing

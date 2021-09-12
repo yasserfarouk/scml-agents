@@ -1,33 +1,32 @@
 # required for typing
 import random
 from collections import defaultdict
-from typing import Tuple, List, Dict, Any, Callable, Union, Type, Optional
+from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union
 
+import numpy as np
 from negmas import (
+    AgentWorldInterface,
     AspirationMixin,
+    Issue,
     LinearUtilityFunction,
-    PassThroughNegotiator,
     MechanismState,
+    Outcome,
+    PassThroughNegotiator,
     ResponseType,
     UtilityFunction,
-    AgentWorldInterface,
     outcome_is_valid,
-    Outcome,
 )
-from negmas.events import Notifier, Notification
-from negmas.helpers import instantiate
 from negmas.common import AgentMechanismInterface
+from negmas.events import Notification, Notifier
+from negmas.helpers import instantiate
 from negmas.sao import (
     SAOController,
     SAONegotiator,
+    SAOResponse,
+    SAOState,
     SAOSyncController,
 )
-
-import numpy as np
-from typing import Dict, Tuple, List
-from negmas import ResponseType, Issue
-from negmas.sao import SAOState, SAOResponse
-from scml.scml2020.common import TIME, QUANTITY, UNIT_PRICE
+from scml.scml2020.common import QUANTITY, TIME, UNIT_PRICE
 
 
 class SyncController(SAOSyncController):

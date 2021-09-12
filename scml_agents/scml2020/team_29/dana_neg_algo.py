@@ -1,54 +1,50 @@
+import functools
 import math
 import random
 from collections import defaultdict
-from typing import Tuple, List, Dict, Any, Callable, Union, Type, Optional
+from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union
 
-from negmas import (
-    AspirationMixin,
-    LinearUtilityFunction,
-    PassThroughNegotiator,
-    MechanismState,
-    ResponseType,
-    UtilityFunction,
-    AgentWorldInterface,
-    outcome_is_valid,
-    Outcome,
-)
-from negmas.events import Notifier, Notification
-
-import functools
-from negmas.events import Notifier
-from negmas.helpers import instantiate
-from scml import SCML2020Agent
-from scml.scml2020.agents.decentralizing import _NegotiationCallbacks
-from scml.scml2020.components.negotiation import ControllerInfo
-from scml.scml2020.services import StepController, SyncController
-from typing import Any, Dict, List, Optional, Union, Tuple
 import numpy as np
 from negmas import (
+    INVALID_UTILITY,
     AgentMechanismInterface,
+    AgentWorldInterface,
+    AspirationMixin,
+    AspirationNegotiator,
     Breach,
     Contract,
     Issue,
+    LinearUtilityFunction,
+    MappingUtilityFunction,
     MechanismState,
     Negotiator,
-    SAONegotiator,
-    AspirationNegotiator,
-    LinearUtilityFunction,
+    Outcome,
+    PassThroughNegotiator,
+    ResponseType,
     SAOController,
-    AspirationMixin,
-    AgentWorldInterface,
-    SAOSyncController,
+    SAONegotiator,
     SAOResponse,
     SAOState,
+    SAOSyncController,
+    UtilityFunction,
     UtilityValue,
-    MappingUtilityFunction,
-    INVALID_UTILITY,
+    outcome_is_valid,
 )
-from scml.scml2020 import SCML2020Agent, PredictionBasedTradingStrategy
-
-from scml.scml2020 import Failure, QUANTITY, UNIT_PRICE, TIME, FinancialReport
-
+from negmas.events import Notification, Notifier
+from negmas.helpers import instantiate
+from scml import SCML2020Agent
+from scml.scml2020 import (
+    QUANTITY,
+    TIME,
+    UNIT_PRICE,
+    Failure,
+    FinancialReport,
+    PredictionBasedTradingStrategy,
+    SCML2020Agent,
+)
+from scml.scml2020.agents.decentralizing import _NegotiationCallbacks
+from scml.scml2020.components.negotiation import ControllerInfo
+from scml.scml2020.services import StepController, SyncController
 
 """
 improvements:
@@ -57,7 +53,7 @@ improvements:
 """
 
 
-class CalcTrustworthiness(object):
+class CalcTrustworthiness:
     _awi = None
     _ami = None
     breach_level_w = 0.2
@@ -128,7 +124,7 @@ class CalcTrustworthiness(object):
         return u
 
 
-class UpdateUfunc(object):
+class UpdateUfunc:
     def set_ufun_members(self, negotiator_id: str):
         self.ufun.ami = self.negotiators[negotiator_id][0]._ami
         self.ufun.awi = self.awi

@@ -33,7 +33,7 @@ To test this template do the following:
 On Linux/Mac:
     >> source .venv/bin/activate
 On Windows:
-    >> \.venv\Scripts\activate.bat
+    >> \\.venv\\Scripts\activate.bat
 
 3. Update pip just in case (recommended)
 
@@ -55,10 +55,15 @@ You should see a short tournament running and results reported.
 """
 
 
+# required for development
+# required for running the test tournament
+import time
+
 # required for typing
 from typing import Any, Dict, List, Optional
 
 import numpy as np
+from myagent2 import StagHunterV2
 from negmas import (
     AgentMechanismInterface,
     Breach,
@@ -68,22 +73,16 @@ from negmas import (
     Negotiator,
 )
 from negmas.helpers import humanize_time
-from scml.scml2020 import Failure
-import scml_agents
-# required for development
-# required for running the test tournament
-import time
-from tabulate import tabulate
-from scml.scml2020.utils import anac2021_collusion, anac2021_std, anac2021_oneshot
-from scml.scml2020 import SCML2020Agent
+from scml.scml2020 import Failure, SCML2020Agent
 from scml.scml2020.agents import (
     BuyCheapSellExpensiveAgent,
     DecentralizingAgent,
     DoNothingAgent,
 )
-from myagent2 import StagHunterV2
-import scml_agents
+from scml.scml2020.utils import anac2021_collusion, anac2021_oneshot, anac2021_std
+from tabulate import tabulate
 
+import scml_agents
 
 
 def run(
@@ -114,9 +113,11 @@ def run(
 
     """
 
-    #competitors = [scml_agents.scml2020.team_may.mmm.MMM,scml_agents.scml2020.team_15.steady_mgr.SteadyMgr,scml_agents.scml2020.team_20.crescent_agent.CrescentAgent,scml_agents.scml2020.team_25.team_agent.Agent30] + [StagHunterV2]
+    # competitors = [scml_agents.scml2020.team_may.mmm.MMM,scml_agents.scml2020.team_15.steady_mgr.SteadyMgr,scml_agents.scml2020.team_20.crescent_agent.CrescentAgent,scml_agents.scml2020.team_25.team_agent.Agent30] + [StagHunterV2]
 
-    competitors = list(scml_agents.get_agents(2020, track="std", winners_only=True)) + [StagHunterV2]
+    competitors = list(scml_agents.get_agents(2020, track="std", winners_only=True)) + [
+        StagHunterV2
+    ]
     start = time.perf_counter()
     if competition == "std":
         results = anac2021_std(

@@ -1,16 +1,15 @@
 import random
+from typing import Optional
 
 from negmas import ResponseType
 from negmas.common import MechanismState
 from negmas.sao import AspirationNegotiator
-from typing import Optional
-
 from scml.scml2019.common import INVALID_UTILITY
 
 
 class MyTestnegotiator(AspirationNegotiator):
     def __init__(self, name, ufun):
-        super(MyTestnegotiator, self).__init__(name=name, ufun=ufun)
+        super().__init__(name=name, ufun=ufun)
 
     def respond(self, state: MechanismState, offer: "Outcome") -> "ResponseType":
         # print("RESPONSE CALLED")
@@ -94,7 +93,7 @@ class MyTestnegotiator(AspirationNegotiator):
         super().on_ufun_changed()
         outcomes = self._ami.discrete_outcomes()
         self.ordered_outcomes = sorted(
-            [(self._utility_function(outcome), outcome) for outcome in outcomes],
+            ((self._utility_function(outcome), outcome) for outcome in outcomes),
             key=lambda x: x[0],
             reverse=True,
         )

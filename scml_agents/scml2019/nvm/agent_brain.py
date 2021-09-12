@@ -1,16 +1,14 @@
-from typing import Optional
 import sys
+from typing import Optional
 
 MY_PATH = "/".join(__file__.split("/")[:-1])
 sys.path.append(MY_PATH)
-from negmas import Contract
-
-from . import pydata
-from . import mp_nvp
-from . import mp_nvp_lp
-from . import newsvendor
 import os
 import time
+
+from negmas import Contract
+
+from . import mp_nvp, mp_nvp_lp, newsvendor, pydata
 
 
 class AgentBrain:
@@ -91,19 +89,15 @@ class AgentBrain:
             # Compute the expected quantities
             self.q_inn_expected = {
                 t: sum(
-                    [
-                        int(i) * p
-                        for i, p in self.q_inn_uncertainty_model[str(t + 1)].items()
-                    ]
+                    int(i) * p
+                    for i, p in self.q_inn_uncertainty_model[str(t + 1)].items()
                 )
                 for t in range(0, game_length - 1)
             }
             self.q_out_expected = {
                 t: sum(
-                    [
-                        int(i) * p
-                        for i, p in self.q_out_uncertainty_model[str(t + 1)].items()
-                    ]
+                    int(i) * p
+                    for i, p in self.q_out_uncertainty_model[str(t + 1)].items()
                 )
                 for t in range(0, game_length - 1)
             }

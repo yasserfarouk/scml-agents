@@ -1,44 +1,43 @@
-from scml.scml2020.agents.bcse import BuyCheapSellExpensiveAgent
+import time
+from pprint import pformat
+from typing import Optional
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import time
-from tabulate import tabulate
-from pprint import pformat
-from typing import Optional
-from scml.scml2020.common import is_system_agent
-from scml.scml2020.common import ANY_LINE
-from scml.scml2020.utils import anac2021_std, anac2021_collusion, anac2021_oneshot
-from scml.scml2020.agents import DecentralizingAgent, BuyCheapSellExpensiveAgent
 from negmas.helpers import humanize_time
 from scml.scml2020 import (
-    SCML2020Agent,
-    PredictionBasedTradingStrategy,
-    StepNegotiationManager,
-    SupplyDrivenProductionStrategy,
     FixedTradePredictionStrategy,
     MeanERPStrategy,
+    PredictionBasedTradingStrategy,
+    SCML2020Agent,
+    StepNegotiationManager,
+    SupplyDrivenProductionStrategy,
     TradingStrategy,
 )
+from scml.scml2020.agents import BuyCheapSellExpensiveAgent, DecentralizingAgent
+from scml.scml2020.agents.bcse import BuyCheapSellExpensiveAgent
+from scml.scml2020.common import ANY_LINE, is_system_agent
+from scml.scml2020.utils import anac2021_collusion, anac2021_oneshot, anac2021_std
+from tabulate import tabulate
 
-__all__ = [ "SorceryAgent" ]
+__all__ = ["SorceryAgent"]
 
-from typing import Dict
-from typing import List
-from typing import Tuple
+from typing import Dict, List, Tuple
 
 import numpy as np
 from negmas import Contract
-
-from scml.scml2020.common import NO_COMMAND
-
-
 from scml.scml2020 import SCML2020Agent, SCML2021World
-
+from scml.scml2020.agents import (
+    DecentralizingAgent,
+    MarketAwareDecentralizingAgent,
+    RandomAgent,
+)
+from scml.scml2020.common import NO_COMMAND
 
 #####仮エージェント#####
 
-from scml.scml2020.agents import RandomAgent, MarketAwareDecentralizingAgent, DecentralizingAgent
+
 ComparisonAgent = MarketAwareDecentralizingAgent
 
 
@@ -103,7 +102,7 @@ class PredictionBasedTradingStrategy(
         rejectors: List[List[str]],
     ) -> None:
         self.awi.logdebug_agent(
-            #f"Enter Contracts Finalized:\n"
+            # f"Enter Contracts Finalized:\n"
             f"Signed {pformat([self._format(_) for _ in signed])}\n"
             f"Cancelled {pformat([self._format(_) for _ in cancelled])}\n"
             f"{pformat(self.internal_state)}"
@@ -237,16 +236,12 @@ class PredictionBasedTradingStrategy(
                 #     self.outputs_needed[t + 1] -= missing
 
 
-
-
-
-
 class SorceryAgent(
     SupplyDrivenProductionStrategy,
     StepNegotiationManager,
     PredictionBasedTradingStrategy,
-    SCML2020Agent):
-
+    SCML2020Agent,
+):
     def acceptable_unit_price(self, step: int, sell: bool) -> int:
         if sell:
             return self.output_price[step]
@@ -292,6 +287,7 @@ def show_agent_scores(world):
 show_agent_scores(world)
 """
 
+
 def run(
     competition="std",
     reveal_names=True,
@@ -323,7 +319,7 @@ def run(
         MyAgent,
         DecentralizingAgent,
         BuyCheapSellExpensiveAgent,
-        RandomAgent
+        RandomAgent,
     ]
     start = time.perf_counter()
     if competition == "std":
@@ -363,8 +359,8 @@ def run(
         "."
     ).str[-1]
     # show results
-    #print(tabulate(results.total_scores, headers="keys", tablefmt="psql"))
-    #print(f"Finished in {humanize_time(time.perf_counter() - start)}")
+    # print(tabulate(results.total_scores, headers="keys", tablefmt="psql"))
+    # print(f"Finished in {humanize_time(time.perf_counter() - start)}")
 
 
 if __name__ == "__main__":

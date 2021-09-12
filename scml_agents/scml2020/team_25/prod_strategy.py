@@ -2,22 +2,27 @@
 # 328612304
 
 import sys
+
+import matplotlib.pyplot as plt
+import numpy as np
+from scml.scml2020 import (
+    DecentralizingAgent,
+    MovingRangeNegotiationManager,
+    RandomAgent,
+    SCML2020Agent,
+    SCML2020World,
+)
 from scml.scml2020.components.production import (
+    NO_COMMAND,
+    DemandDrivenProductionStrategy,
     ProductionStrategy,
     SupplyDrivenProductionStrategy,
-    DemandDrivenProductionStrategy,
 )
-from scml.scml2020.components.production import NO_COMMAND
 from scml.scml2020.components.trading import PredictionBasedTradingStrategy
-from scml.scml2020 import SCML2020Agent, SCML2020World, RandomAgent, DecentralizingAgent
-from scml.scml2020 import MovingRangeNegotiationManager
-from .nego_strategy import SyncController, MyNegotiationManager
 
 # from new_neg import StepBuyBestSellNegManager, _NegotiationCallbacks
 from .mixed_neg import StepBuyBestSellNegManager, _NegotiationCallbacks
-import matplotlib.pyplot as plt
-import numpy as np
-
+from .nego_strategy import MyNegotiationManager, SyncController
 
 # class for production strategy that will integrate the best of supply and best of demand driven production strategies
 # one strategy, Production has cost so over production may not be a good idea. On the other hand, the inventory is

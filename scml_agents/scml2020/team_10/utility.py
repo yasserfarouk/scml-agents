@@ -1,21 +1,21 @@
-import os, sys
+import os
+import sys
 
 sys.path.append(os.path.dirname(__file__))
 
-from scml.scml2020 import TIME, QUANTITY, UNIT_PRICE
-from negmas.utilities import UtilityFunction, UtilityValue
-from negmas import Issue
-from negmas.outcomes import Outcome
-from typing import List, Any
+from typing import Any, List
+
 import numpy as np
 import torch
-
 from hyperparameters import *
-
+from negmas import Issue
+from negmas.outcomes import Outcome
+from negmas.utilities import UtilityFunction, UtilityValue
+from scml.scml2020 import QUANTITY, TIME, UNIT_PRICE
 from utility_model import (
     UtilityModel,
-    load_seller_utiltiy_model,
     load_buyer_utility_model,
+    load_seller_utiltiy_model,
 )
 
 

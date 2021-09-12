@@ -3,36 +3,33 @@ import functools
 import math
 from abc import abstractmethod
 from dataclasses import dataclass
-from pprint import pformat
+from pprint import pformat, pprint
+from typing import Any, Dict, List, Optional, Tuple, Union
 
-from typing import Tuple, List, Union, Any, Optional, Dict
-
+import matplotlib.pyplot as plt
 import numpy as np
-
+import pandas as pd
+import seaborn as sns
+from negmas import *
 from negmas import (
-    SAONegotiator,
-    AspirationNegotiator,
-    Issue,
     AgentMechanismInterface,
-    Negotiator,
-    UtilityFunction,
+    AspirationNegotiator,
     Contract,
+    Issue,
+    Negotiator,
+    SAONegotiator,
+    UtilityFunction,
 )
 from negmas.helpers import get_class, instantiate
-
+from scml.scml2020 import *
 from scml.scml2020 import AWI
-from scml.scml2020.components.prediction import MeanERPStrategy
-from scml.scml2020.services.controllers import StepController, SyncController
 from scml.scml2020.common import TIME
 
 # my need
 from scml.scml2020.components.negotiation import *
-from scml.scml2020 import *
-from negmas import *
-import matplotlib.pyplot as plt
-from pprint import pprint
-import pandas as pd
-import seaborn as sns
+from scml.scml2020.components.prediction import MeanERPStrategy
+from scml.scml2020.services.controllers import StepController, SyncController
+
 from .prediction import MyERPredictor
 
 

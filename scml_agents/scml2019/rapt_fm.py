@@ -1,46 +1,50 @@
 import warnings
 from collections import defaultdict
 
-from scml.scml2019.common import ProductionReport
-from scml.scml2019.common import SCMLAgreement, INVALID_UTILITY, ProductionFailure
+from scml.scml2019.common import (
+    INVALID_UTILITY,
+    ProductionFailure,
+    ProductionReport,
+    SCMLAgreement,
+)
 from scml.scml2019.consumers import ConsumptionProfile
-from scml.scml2019.schedulers import Scheduler, ScheduleInfo, GreedyScheduler
-from scml.scml2019.simulators import FactorySimulator, FastFactorySimulator
-from scml.scml2019.simulators import temporary_transaction
-from scml.scml2019.factory_managers.builtins import NegotiatorUtility
 from scml.scml2019.factory_managers.builtins import (
-    PessimisticNegotiatorUtility,
-    OptimisticNegotiatorUtility,
     AveragingNegotiatorUtility,
+    NegotiatorUtility,
+    OptimisticNegotiatorUtility,
+    PessimisticNegotiatorUtility,
+)
+from scml.scml2019.schedulers import GreedyScheduler, ScheduleInfo, Scheduler
+from scml.scml2019.simulators import (
+    FactorySimulator,
+    FastFactorySimulator,
+    temporary_transaction,
 )
 
 if True:
-    from typing import Dict, Any, Callable, Collection, Type, List, Optional, Union
+    from typing import Any, Callable, Collection, Dict, List, Optional, Type, Union
 
 __all__ = ["RaptFactoryManager"]
 import functools
 import itertools
+import math
 from typing import TYPE_CHECKING
 
-from numpy.random import dirichlet
-
+import numpy as np
 from negmas import AgentMechanismInterface, MechanismState
-from scml.scml2019.common import DEFAULT_NEGOTIATOR
 from negmas.events import Notification
 from negmas.helpers import get_class
 from negmas.negotiators import Negotiator
-from negmas.situated import Contract, Breach
-from negmas.situated import RenegotiationRequest
+from negmas.situated import Breach, Contract, RenegotiationRequest
 from negmas.utilities import ComplexWeightedUtilityFunction, MappingUtilityFunction
-from scml.scml2019.common import CFP
+from numpy.random import dirichlet
+from scml.scml2019.common import CFP, DEFAULT_NEGOTIATOR
+from scml.scml2019.factory_managers.builtins import GreedyFactoryManager
 from scml.scml2019.helpers import pos_gauss
 
-from scml.scml2019.factory_managers.builtins import GreedyFactoryManager
-import math
-import numpy as np
-
 if True:  #
-    from typing import Dict, Any, List, Optional, Union
+    from typing import Any, Dict, List, Optional, Union
+
     from scml.scml2019.common import Loan
 
 if TYPE_CHECKING:
@@ -350,8 +354,10 @@ class RaptFactoryManager(GreedyFactoryManager):
         elif optimism > 1 - 1e-6:
             self.ufun_factory = OptimisticNegotiatorUtility
         else:
-            self.ufun_factory: NegotiatorUtility = lambda agent, annotation: AveragingNegotiatorUtility(
-                agent=agent, annotation=annotation, optimism=self.optimism
+            self.ufun_factory: NegotiatorUtility = (
+                lambda agent, annotation: AveragingNegotiatorUtility(
+                    agent=agent, annotation=annotation, optimism=self.optimism
+                )
             )
         if max_insurance_premium < 0.0:
             warnings.warn(
@@ -373,9 +379,9 @@ class RaptFactoryManager(GreedyFactoryManager):
             scheduler_type, scope=globals()
         )
         self.scheduler: Scheduler = None
-        self.scheduler_params: Dict[
-            str, Any
-        ] = scheduler_params if scheduler_params is not None else {}
+        self.scheduler_params: Dict[str, Any] = (
+            scheduler_params if scheduler_params is not None else {}
+        )
 
     def total_utility(self, contracts: Collection[Contract] = ()) -> float:
         """Calculates the total utility for the agent of a collection of contracts"""

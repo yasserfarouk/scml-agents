@@ -32,7 +32,7 @@ To test this template do the following:
 On Linux/Mac:
     >> source .venv/bin/activate
 On Windows:
-    >> \.venv\Scripts\activate.bat
+    >> \\.venv\\Scripts\activate.bat
 
 3. Update pip just in case (recommended)
 
@@ -53,19 +53,15 @@ On Windows:
 You should see a short tournament running and results reported.
 """
 
-# required for development
-from scml.scml2020 import (
-    SCML2020Agent,
-    PredictionBasedTradingStrategy,
-    MovingRangeNegotiationManager,
-    TradeDrivenProductionStrategy,
-    DemandDrivenProductionStrategy,
-    SupplyDrivenProductionStrategy,
-    FixedTradePredictionStrategy,
-    MeanERPStrategy,
-    TradingStrategy,
-)
-from negmas.sao import SAONegotiator, SAOState, SAOAMI
+import math
+import time
+from collections import defaultdict
+from copy import deepcopy
+
+# required for running the test tournament
+from typing import Any, Dict, List, Optional
+
+import numpy as np
 from negmas import (
     AgentMechanismInterface,
     Breach,
@@ -73,25 +69,33 @@ from negmas import (
     Issue,
     MechanismState,
     Negotiator,
-    ResponseType,
     Outcome,
-    SAOResponse
+    ResponseType,
+    SAOResponse,
 )
-# required for running the test tournament
-from typing import Any, Dict, List, Optional
-from collections import defaultdict
-import time
-from tabulate import tabulate
-from scml.scml2020.utils import anac2021_std, anac2021_collusion, anac2021_oneshot
-from scml.scml2020.agents import DecentralizingAgent, BuyCheapSellExpensiveAgent
-from scml.scml2020.common import QUANTITY, UNIT_PRICE, TIME, is_system_agent, ANY_LINE
 from negmas.helpers import humanize_time
-from copy import deepcopy
-import numpy as np
-import math
+from negmas.sao import SAOAMI, SAONegotiator, SAOState
 
+# required for development
+from scml.scml2020 import (
+    DemandDrivenProductionStrategy,
+    FixedTradePredictionStrategy,
+    MeanERPStrategy,
+    MovingRangeNegotiationManager,
+    PredictionBasedTradingStrategy,
+    SCML2020Agent,
+    SupplyDrivenProductionStrategy,
+    TradeDrivenProductionStrategy,
+    TradingStrategy,
+)
+from scml.scml2020.agents import BuyCheapSellExpensiveAgent, DecentralizingAgent
+from scml.scml2020.common import ANY_LINE, QUANTITY, TIME, UNIT_PRICE, is_system_agent
+from scml.scml2020.utils import anac2021_collusion, anac2021_oneshot, anac2021_std
+from tabulate import tabulate
 
-__all__ = [ "BlueWolf", ]
+__all__ = [
+    "BlueWolf",
+]
 
 
 class ObedientNegotiator(SAONegotiator):
@@ -146,14 +150,13 @@ class BlueWolf(
     3. A production strategy that decides what to produce
     """
 
-
     def init(self):
 
         super().init()
 
         self._prev_oppo_agg_prices = defaultdict(lambda: [])
 
-        self._supplier_agg_price = defaultdict(lambda: [float('inf')])
+        self._supplier_agg_price = defaultdict(lambda: [float("inf")])
 
         self._consumer_agg_price = defaultdict(lambda: [0])
 
@@ -173,14 +176,15 @@ class BlueWolf(
 
         self._e = defaultdict(lambda: 1)
 
-
     def before_step(self):
         super().before_step()
         self._prev_oppo_encounter_prices = defaultdict(lambda: [])
         self._prev_oppo_encounter_quantities = defaultdict(lambda: [])
-        self._cur_best_selling, self._cur_best_buying = 0, float('inf')
-        self._cur_oppo_best_selling, self._cur_oppo_best_buying = defaultdict(lambda: 0), defaultdict(lambda: float('inf'))
-
+        self._cur_best_selling, self._cur_best_buying = 0, float("inf")
+        self._cur_oppo_best_selling, self._cur_oppo_best_buying = (
+            defaultdict(lambda: 0),
+            defaultdict(lambda: float("inf")),
+        )
 
         self._cur_inputs_needed = deepcopy(self.inputs_needed)
         self._cur_outputs_needed = deepcopy(self.outputs_needed)
@@ -200,50 +204,64 @@ class BlueWolf(
 
     def step(self):
         super().step()
-        if(self.awi.current_step == self.awi.n_steps - 1):
+        if self.awi.current_step == self.awi.n_steps - 1:
             return
-        if(self.awi.is_first_level):
-            needs = np.max(self.outputs_needed[self.awi.current_step + 1: self.awi.current_step + 4] - self.outputs_secured[self.awi.current_step + 1: self.awi.current_step + 4])
+        if self.awi.is_first_level:
+            needs = np.max(
+                self.outputs_needed[
+                    self.awi.current_step + 1 : self.awi.current_step + 4
+                ]
+                - self.outputs_secured[
+                    self.awi.current_step + 1 : self.awi.current_step + 4
+                ]
+            )
             price = self.awi.trading_prices[self.awi.my_output_product]
             for oppo_id in self.awi.my_consumers:
                 self.awi.request_negotiation(
                     True,
                     self.awi.my_output_product,
                     (1, needs),
-                    (price/2, price * 2),
+                    (price / 2, price * 2),
                     time=(self.awi.current_step + 1, self.awi.current_step + 4),
                     negotiator=ObedientNegotiator(
                         selling=True,
                         requested=True,
                         name=f"{self.id}>{oppo_id}",
                     ),
-                    partner = oppo_id,
+                    partner=oppo_id,
                 )
-        if(self.awi.is_last_level):
-            needs = np.max(self.inputs_needed[self.awi.current_step + 1: self.awi.current_step + 4] - self.inputs_secured[self.awi.current_step + 1: self.awi.current_step + 4])
+        if self.awi.is_last_level:
+            needs = np.max(
+                self.inputs_needed[
+                    self.awi.current_step + 1 : self.awi.current_step + 4
+                ]
+                - self.inputs_secured[
+                    self.awi.current_step + 1 : self.awi.current_step + 4
+                ]
+            )
             price = self.awi.trading_prices[self.awi.my_input_product]
             for oppo_id in self.awi.my_suppliers:
                 self.awi.request_negotiation(
                     False,
                     self.awi.my_input_product,
                     (1, needs),
-                    (price/2, price * 2),
+                    (price / 2, price * 2),
                     time=(self.awi.current_step + 1, self.awi.current_step + 4),
                     negotiator=ObedientNegotiator(
                         selling=False,
                         requested=True,
                         name=f"{self.id}>{oppo_id}",
                     ),
-                    partner = oppo_id,
+                    partner=oppo_id,
                 )
 
-
-
-    def respond_to_negotiation_request(
-        self, initiator, issues, annotation, mechanism):
-        if(self.awi.is_middle_level):
+    def respond_to_negotiation_request(self, initiator, issues, annotation, mechanism):
+        if self.awi.is_middle_level:
             return None
-        if(issues[TIME].max_value < self.awi.current_step + 1 or issues[TIME].min_value > self.awi.current_step + 4):
+        if (
+            issues[TIME].max_value < self.awi.current_step + 1
+            or issues[TIME].min_value > self.awi.current_step + 4
+        ):
             return None
         else:
             return ObedientNegotiator(
@@ -252,59 +270,81 @@ class BlueWolf(
                 name=f"{initiator}>{self.id}",
             )
 
-
-    def propose(self, state: SAOState, ami: SAOAMI, is_selling: bool, is_requested: bool):
-        partner_id = ami.annotation["buyer"] if ami.annotation["seller"] == self.id else ami.annotation["seller"]
+    def propose(
+        self, state: SAOState, ami: SAOAMI, is_selling: bool, is_requested: bool
+    ):
+        partner_id = (
+            ami.annotation["buyer"]
+            if ami.annotation["seller"] == self.id
+            else ami.annotation["seller"]
+        )
         is_selling = ami.annotation["seller"] == self.id
         offer = [-1] * 3
-        offer[TIME] = min(np.random.randint(low=self.awi.current_step + 1, high=self.awi.current_step + 4), self.awi.n_steps-1)
-        offer[TIME] = min(max(offer[TIME], ami.issues[TIME].min_value), ami.issues[TIME].max_value)
+        offer[TIME] = min(
+            np.random.randint(
+                low=self.awi.current_step + 1, high=self.awi.current_step + 4
+            ),
+            self.awi.n_steps - 1,
+        )
+        offer[TIME] = min(
+            max(offer[TIME], ami.issues[TIME].min_value), ami.issues[TIME].max_value
+        )
 
         offer[UNIT_PRICE] = self._find_good_price(ami, state, offer)
-        if(is_selling):
-            offer[QUANTITY] = int(2/3 * self._cur_outputs_needed[offer[TIME]])
+        if is_selling:
+            offer[QUANTITY] = int(2 / 3 * self._cur_outputs_needed[offer[TIME]])
         else:
-            offer[QUANTITY] = int(2/3 * self._cur_inputs_needed[offer[TIME]])
+            offer[QUANTITY] = int(2 / 3 * self._cur_inputs_needed[offer[TIME]])
 
-        if(len(self._prev_oppo_encounter_quantities[partner_id])):
-            offer[QUANTITY] = min(offer[QUANTITY], np.min(self._prev_oppo_encounter_quantities[partner_id][-3:]))
+        if len(self._prev_oppo_encounter_quantities[partner_id]):
+            offer[QUANTITY] = min(
+                offer[QUANTITY],
+                np.min(self._prev_oppo_encounter_quantities[partner_id][-3:]),
+            )
 
-        offer[QUANTITY] = max(min(offer[QUANTITY], ami.issues[QUANTITY].max_value), ami.issues[QUANTITY].min_value)
+        offer[QUANTITY] = max(
+            min(offer[QUANTITY], ami.issues[QUANTITY].max_value),
+            ami.issues[QUANTITY].min_value,
+        )
 
         return tuple(offer)
-
 
     def respond(self, state, ami, offer, is_selling, is_requested):
         offer = list(offer)
 
-        partner_id = ami.annotation["buyer"] if ami.annotation["seller"] == self.id else ami.annotation["seller"]
+        partner_id = (
+            ami.annotation["buyer"]
+            if ami.annotation["seller"] == self.id
+            else ami.annotation["seller"]
+        )
         is_selling = ami.annotation["seller"] == self.id
         self._prev_oppo_encounter_prices[partner_id].append(offer[UNIT_PRICE])
         self._prev_oppo_encounter_quantities[partner_id].append(offer[QUANTITY])
 
-        if(is_selling):
+        if is_selling:
             self._cur_best_selling = max(self._cur_best_selling, offer[UNIT_PRICE])
-            self._cur_oppo_best_selling[partner_id] = max(self._cur_oppo_best_selling[partner_id], offer[UNIT_PRICE])
+            self._cur_oppo_best_selling[partner_id] = max(
+                self._cur_oppo_best_selling[partner_id], offer[UNIT_PRICE]
+            )
         else:
             self._cur_best_buying = min(self._cur_best_buying, offer[UNIT_PRICE])
-            self._cur_oppo_best_buying[partner_id] = min(self._cur_oppo_best_buying[partner_id], offer[UNIT_PRICE])
+            self._cur_oppo_best_buying[partner_id] = min(
+                self._cur_oppo_best_buying[partner_id], offer[UNIT_PRICE]
+            )
 
-
-        if(offer[TIME] > self.awi.current_step + 3):
+        if offer[TIME] > self.awi.current_step + 3:
             return ResponseType.REJECT_OFFER
 
-        if(self._is_good_price(ami, state, offer)):
+        if self._is_good_price(ami, state, offer):
             return ResponseType.ACCEPT_OFFER
 
         else:
             return ResponseType.REJECT_OFFER
 
-
     def _is_selling(self, ami):
         if not ami:
             return None
         return ami.annotation["product"] == self.awi.my_output_product
-
 
     def _is_good_price(self, ami, state, offer):
         """Checks if a given price is good enough at this stage"""
@@ -356,17 +396,21 @@ class BlueWolf(
                         p * (1 - slack)
                         for p, slack in (
                             (self._cur_best_selling, self._step_price_slack),
-                            #(self._best_acc_selling, self._acc_price_slack),
-                            (self._cur_oppo_best_selling[partner], self._opp_price_slack),
-                            (np.max(self._consumer_agg_price[partner][-3:]), self._acc_oppo_slack),
-                            #(self._best_opp_acc_selling[partner], self._opp_acc_price_slack),
-                            #(self._cur_best_price, self._step_agg_price_slack),
+                            # (self._best_acc_selling, self._acc_price_slack),
+                            (
+                                self._cur_oppo_best_selling[partner],
+                                self._opp_price_slack,
+                            ),
+                            (
+                                np.max(self._consumer_agg_price[partner][-3:]),
+                                self._acc_oppo_slack,
+                            ),
+                            # (self._best_opp_acc_selling[partner], self._opp_acc_price_slack),
+                            # (self._cur_best_price, self._step_agg_price_slack),
                         )
                     ]
                 ),
             )
-
-
 
         else:
             partner = ami.annotation["seller"]
@@ -394,11 +438,17 @@ class BlueWolf(
                         p * (1 + slack)
                         for p, slack in (
                             (self._cur_best_buying, self._step_price_slack),
-                            #(self._best_acc_buying, self._acc_price_slack),
-                            (self._cur_oppo_best_buying[partner], self._opp_price_slack),
-                            (np.min(self._supplier_agg_price[partner][-3:]), self._acc_oppo_slack),
-                            #(self._best_opp_acc_buying[partner],self._opp_acc_price_slack),
-                            #(self._cur_best_price, self._step_agg_price_slack),
+                            # (self._best_acc_buying, self._acc_price_slack),
+                            (
+                                self._cur_oppo_best_buying[partner],
+                                self._opp_price_slack,
+                            ),
+                            (
+                                np.min(self._supplier_agg_price[partner][-3:]),
+                                self._acc_oppo_slack,
+                            ),
+                            # (self._best_opp_acc_buying[partner],self._opp_acc_price_slack),
+                            # (self._cur_best_price, self._step_agg_price_slack),
                         )
                     ]
                 ),
@@ -408,10 +458,12 @@ class BlueWolf(
 
     def _th(self, step, n_steps, ami):
         """calculates a descending threshold (0 <= th <= 1)"""
-        partner = ami.annotation["buyer"] if self._is_selling(ami) else ami.annotation["seller"]
+        partner = (
+            ami.annotation["buyer"]
+            if self._is_selling(ami)
+            else ami.annotation["seller"]
+        )
         return ((n_steps - step - 1) / (n_steps - 1)) ** self._e[partner]
-
-
 
     def on_negotiation_success(self, contract, mechanism):
         """Record sales/supplies secured"""
@@ -419,39 +471,34 @@ class BlueWolf(
 
         # update my current best price to use for limiting concession in other
         # negotiations
-        #self._secured += contract.agreement["quantity"]
-
-
+        # self._secured += contract.agreement["quantity"]
 
         offer = [None for _ in range(3)]
         offer[QUANTITY] = contract.agreement["quantity"]
         offer[UNIT_PRICE] = contract.agreement["unit_price"]
         offer[TIME] = contract.agreement["time"]
 
-
         up = contract.agreement["unit_price"]
         if contract.annotation["product"] == self.awi.my_output_product:
             partner = contract.annotation["buyer"]
-            #self._cur_best_price = max(self._cur_best_price, up)
-            #self._best_acc_selling = max(self._best_acc_selling, self._cur_best_price)
+            # self._cur_best_price = max(self._cur_best_price, up)
+            # self._best_acc_selling = max(self._best_acc_selling, self._cur_best_price)
             self._cur_outputs_needed[offer[TIME]] -= offer[QUANTITY]
             self._consumer_agg_price[partner].append(up)
 
         else:
             partner = contract.annotation["seller"]
-            #self._cur_best_price = min(self._cur_best_price, up)
-            #self._best_acc_buying = min(self._best_acc_buying, self._cur_best_price)
+            # self._cur_best_price = min(self._cur_best_price, up)
+            # self._best_acc_buying = min(self._best_acc_buying, self._cur_best_price)
             self._cur_inputs_needed[offer[TIME]] -= offer[QUANTITY]
 
             self._supplier_agg_price[partner].append(up)
 
-        #self.cur_offer_list[partner] = offer
-
-
+        # self.cur_offer_list[partner] = offer
 
     def on_negotiation_failure(self, partners, annotation, mechanism, state):
-        #self._quantity_slack = (1 + 2 * self._quantity_slack)/3
-        if(self.awi.is_first_level):
+        # self._quantity_slack = (1 + 2 * self._quantity_slack)/3
+        if self.awi.is_first_level:
             partner = annotation["buyer"]
             self._consumer_agg_price[partner].append(0)
         else:

@@ -1,5 +1,5 @@
-from constraint import *
 import pandas as pd
+from constraint import *
 
 
 def set_to_zero_constraint(x):
@@ -19,8 +19,8 @@ def storage_constraint(*args):
     :return:
     """
     middle = int(len(args) / 2) + 1
-    return args[0] <= sum([args[h] for h in range(1, middle)]) - sum(
-        [args[h] for h in range(middle, len(args))]
+    return args[0] <= sum(args[h] for h in range(1, middle)) - sum(
+        args[h] for h in range(middle, len(args))
     )
 
 
@@ -31,8 +31,8 @@ def first_sum_leq_second_sum(*args):
     :return:
     """
     middle = int(len(args) / 2)
-    return sum([args[h] for h in range(middle)]) <= sum(
-        [args[h] for h in range(middle, len(args))]
+    return sum(args[h] for h in range(middle)) <= sum(
+        args[h] for h in range(middle, len(args))
     )
 
 

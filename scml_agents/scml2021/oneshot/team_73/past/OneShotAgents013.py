@@ -49,8 +49,7 @@ class SimpleAgent(OneShotAgent, ABC):
         unit_price_issue = ami.issues[UNIT_PRICE]
         offer = [-1] * 3
         offer[QUANTITY] = max(
-            min(my_needs, quantity_issue.max_value),
-            quantity_issue.min_value
+            min(my_needs, quantity_issue.max_value), quantity_issue.min_value
         )
         offer[TIME] = self.awi.current_step
         if self._is_selling(ami):
@@ -60,9 +59,11 @@ class SimpleAgent(OneShotAgent, ABC):
         return tuple(offer)
 
     def _needed(self, negotiator_id=None):
-        return self.awi.current_exogenous_input_quantity + \
-               self.awi.current_exogenous_output_quantity - \
-               self.secured
+        return (
+            self.awi.current_exogenous_input_quantity
+            + self.awi.current_exogenous_output_quantity
+            - self.secured
+        )
 
     def _is_selling(self, ami):
         return ami.annotation["product"] == self.awi.my_output_product
@@ -80,9 +81,7 @@ class BetterAgent(SimpleAgent, ABC):
         if not offer:
             return None
         offer = list(offer)
-        offer[UNIT_PRICE] = self._find_good_price(
-            self.get_ami(negotiator_id), state
-        )
+        offer[UNIT_PRICE] = self._find_good_price(self.get_ami(negotiator_id), state)
         return tuple(offer)
 
     def respond(self, negotiator_id, state, offer):
@@ -91,8 +90,8 @@ class BetterAgent(SimpleAgent, ABC):
             return response
         ami = self.get_ami(negotiator_id)
         return (
-            response if
-            self._is_good_price(ami, state, offer[UNIT_PRICE])
+            response
+            if self._is_good_price(ami, state, offer[UNIT_PRICE])
             else ResponseType.REJECT_OFFER
         )
 
@@ -163,14 +162,14 @@ class AdaptiveAgent(BetterAgent, ABC):
 
 class LearningAgent(AdaptiveAgent, ABC):
     def __init__(
-            self,
-            *args,
-            acc_price_slack=float("inf"),
-            step_price_slack=0.0,
-            opp_price_slack=0.0,
-            opp_acc_price_slack=0.2,
-            range_slack=0.03,
-            **kwargs
+        self,
+        *args,
+        acc_price_slack=float("inf"),
+        step_price_slack=0.0,
+        opp_price_slack=0.0,
+        opp_acc_price_slack=0.2,
+        range_slack=0.03,
+        **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self._acc_price_slack = acc_price_slack
@@ -204,11 +203,15 @@ class LearningAgent(AdaptiveAgent, ABC):
         if self._is_selling(mechanism):
             partner = contract.annotation["buyer"]
             self._best_acc_selling = max(up, self._best_acc_selling)
-            self._best_opp_acc_selling[partner] = max(up, self._best_opp_acc_selling[partner])
+            self._best_opp_acc_selling[partner] = max(
+                up, self._best_opp_acc_selling[partner]
+            )
         else:
             partner = contract.annotation["seller"]
             self._best_acc_buying = min(up, self._best_acc_buying)
-            self._best_opp_acc_buying[partner] = min(up, self._best_opp_acc_buying[partner])
+            self._best_opp_acc_buying[partner] = min(
+                up, self._best_opp_acc_buying[partner]
+            )
 
     def respond(self, negotiator_id, state, offer):
         # find the quantity I still need and end negotiation if I need nothing more
@@ -231,38 +234,44 @@ class LearningAgent(AdaptiveAgent, ABC):
         mx = ami.issues[UNIT_PRICE].max_value
         if self._is_selling(ami):
             partner = ami.annotation["buyer"]
-            mn = min(mx * (1 - self._range_slack), max(
-                [mn]
-                + [
-                    p * (1 - slack)
-                    for p, slack in (
-                        (self._best_selling, self._step_price_slack),
-                        (self._best_acc_selling, self._acc_price_slack),
-                        (self._best_opp_selling[partner], self._opp_price_slack),
-                        (
-                            self._best_opp_acc_selling[partner],
-                            self._opp_acc_price_slack,
-                        ),
-                    )
-                ]
-            ))
+            mn = min(
+                mx * (1 - self._range_slack),
+                max(
+                    [mn]
+                    + [
+                        p * (1 - slack)
+                        for p, slack in (
+                            (self._best_selling, self._step_price_slack),
+                            (self._best_acc_selling, self._acc_price_slack),
+                            (self._best_opp_selling[partner], self._opp_price_slack),
+                            (
+                                self._best_opp_acc_selling[partner],
+                                self._opp_acc_price_slack,
+                            ),
+                        )
+                    ]
+                ),
+            )
         else:
             partner = ami.annotation["seller"]
-            mx = max(mn * (1 + self._range_slack), min(
-                [mx]
-                + [
-                    p * (1 + slack)
-                    for p, slack in (
-                        (self._best_buying, self._step_price_slack),
-                        (self._best_acc_buying, self._acc_price_slack),
-                        (self._best_opp_buying[partner], self._opp_price_slack),
-                        (
-                            self._best_opp_acc_buying[partner],
-                            self._opp_acc_price_slack,
-                        ),
-                    )
-                ]
-            ))
+            mx = max(
+                mn * (1 + self._range_slack),
+                min(
+                    [mx]
+                    + [
+                        p * (1 + slack)
+                        for p, slack in (
+                            (self._best_buying, self._step_price_slack),
+                            (self._best_acc_buying, self._acc_price_slack),
+                            (self._best_opp_buying[partner], self._opp_price_slack),
+                            (
+                                self._best_opp_acc_buying[partner],
+                                self._opp_acc_price_slack,
+                            ),
+                        )
+                    ]
+                ),
+            )
         return mn, mx
 
 
@@ -273,19 +282,21 @@ class LearningSyncAgent(OneShotSyncAgent, LearningAgent, ABC):
     def first_proposals(self):
         """Decide a first proposal on every negotiation.
         Returning None for a negotiation means ending it."""
-        return dict(zip(
-            self.negotiators.keys(),
-            (self.best_offer(_) for _ in self.negotiators.keys())
-        ))
+        return dict(
+            zip(
+                self.negotiators.keys(),
+                (self.best_offer(_) for _ in self.negotiators.keys()),
+            )
+        )
 
     def init(self):
-        super(LearningSyncAgent, self).init()
+        super().init()
 
     def step(self):
-        super(LearningSyncAgent, self).step()
+        super().step()
 
     def on_negotiation_success(self, contract, mechanism):
-        super(LearningSyncAgent, self).on_negotiation_success(contract, mechanism)
+        super().on_negotiation_success(contract, mechanism)
 
     def counter_all(self, offers, states):
         """Respond to a set of offers given the negotiation state of each."""
@@ -294,16 +305,23 @@ class LearningSyncAgent(OneShotSyncAgent, LearningAgent, ABC):
         my_needs = self._needed()
         if my_needs <= 0:
             # my_needsを満たしているときは交渉終了
-            responses = dict(zip(
-                [str(k) for k in offers.keys()],
-                [SAOResponse(ResponseType.END_NEGOTIATION, None) for _ in offers.keys()]
-            ))
+            responses = dict(
+                zip(
+                    [str(k) for k in offers.keys()],
+                    [
+                        SAOResponse(ResponseType.END_NEGOTIATION, None)
+                        for _ in offers.keys()
+                    ],
+                )
+            )
             return responses
 
         counter_offers = {}
         for name, offer in offers.items():
             counter_offer = super(LearningAgent, self).propose(name, states[name])
-            list(counter_offer)[QUANTITY] = min(self.awi.profile.n_lines, counter_offer[QUANTITY])
+            list(counter_offer)[QUANTITY] = min(
+                self.awi.profile.n_lines, counter_offer[QUANTITY]
+            )
             counter_offers[name] = tuple(counter_offer)
 
         responses = {
@@ -313,7 +331,7 @@ class LearningSyncAgent(OneShotSyncAgent, LearningAgent, ABC):
         is_selling = (self._is_selling(self.get_ami(_)) for _ in offers.keys())
         sorted_offers = sorted(
             zip(offers.values(), is_selling),
-            key=lambda x: (- x[0][UNIT_PRICE]) if x[1] else x[0][UNIT_PRICE]
+            key=lambda x: (-x[0][UNIT_PRICE]) if x[1] else x[0][UNIT_PRICE],
         )
         secured, outputs, chosen = 0, [], dict()
         for i, k in enumerate(offers.keys()):
@@ -337,6 +355,5 @@ def print_log(names, values, on=False):
             print(f"{names}:{values}")
         if type(names) == list:
             for name, value in dict(zip(names, values)).items():
-                print(f"{name}:{value}", end=' ')
+                print(f"{name}:{value}", end=" ")
             print()
-

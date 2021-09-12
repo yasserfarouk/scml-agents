@@ -37,42 +37,41 @@ import itertools
 import math
 from collections import defaultdict
 from operator import attrgetter
+from typing import Any, Callable, Collection, Dict, List, Optional, Type, Union
 
 from negmas import (
-    Contract,
-    Breach,
-    RenegotiationRequest,
-    Negotiator,
     AgentMechanismInterface,
+    Breach,
+    Contract,
+    MechanismState,
+    Negotiator,
+    RenegotiationRequest,
 )
-from negmas import MechanismState
 from negmas.events import Notification
 from negmas.helpers import get_class
 from negmas.sao import AspirationNegotiator
 from negmas.utilities import normalize
-from typing import Dict, Any, Callable, Collection, Type, List, Optional, Union
-
 from scml.scml2019.awi import SCMLAWI
 from scml.scml2019.common import (
-    SCMLAgreement,
-    INVALID_UTILITY,
     CFP,
+    INVALID_UTILITY,
     Loan,
     ProductionFailure,
+    SCMLAgreement,
 )
-from scml.scml2019.consumers import ScheduleDrivenConsumer, ConsumptionProfile
-from scml.scml2019.schedulers import Scheduler, ScheduleInfo, GreedyScheduler
+from scml.scml2019.consumers import ConsumptionProfile, ScheduleDrivenConsumer
+from scml.scml2019.factory_managers.builtins import (
+    AveragingNegotiatorUtility,
+    DoNothingFactoryManager,
+    NegotiatorUtility,
+    OptimisticNegotiatorUtility,
+    PessimisticNegotiatorUtility,
+)
+from scml.scml2019.schedulers import GreedyScheduler, ScheduleInfo, Scheduler
 from scml.scml2019.simulators import (
     FactorySimulator,
     FastFactorySimulator,
     temporary_transaction,
-)
-from scml.scml2019.factory_managers.builtins import (
-    DoNothingFactoryManager,
-    NegotiatorUtility,
-    PessimisticNegotiatorUtility,
-    OptimisticNegotiatorUtility,
-    AveragingNegotiatorUtility,
 )
 
 
@@ -169,8 +168,10 @@ class SAHAFactoryManager(DoNothingFactoryManager):
         elif optimism > 1 - 1e-6:
             self.ufun_factory = OptimisticNegotiatorUtility
         else:
-            self.ufun_factory: NegotiatorUtility = lambda agent, annotation: AveragingNegotiatorUtility(
-                agent=agent, annotation=annotation, optimism=self.optimism
+            self.ufun_factory: NegotiatorUtility = (
+                lambda agent, annotation: AveragingNegotiatorUtility(
+                    agent=agent, annotation=annotation, optimism=self.optimism
+                )
             )
         self.max_insurance_premium = max_insurance_premium
         self.n_retrials = n_retrials
@@ -186,9 +187,9 @@ class SAHAFactoryManager(DoNothingFactoryManager):
             scheduler_type, scope=globals()
         )
         self.scheduler: Scheduler = None
-        self.scheduler_params: Dict[
-            str, Any
-        ] = scheduler_params if scheduler_params is not None else {}
+        self.scheduler_params: Dict[str, Any] = (
+            scheduler_params if scheduler_params is not None else {}
+        )
         self.cfp_records = {}
         self.maxdebt = 0
         self.firstArrival = -1
@@ -615,10 +616,10 @@ class SAHAFactoryManager(DoNothingFactoryManager):
     def on_contract_executed(self, contract: Contract):
 
         """print("contract executed!!!. Seller: ", contract.annotation['seller'], " buyer: ", contract.annotation['buyer'],
-              " quantity: ", contract.agreement['quantity'], " product: ", contract.annotation['cfp'].product,
-              " price: ", contract.agreement['unit_price'], " time: ", contract.agreement['time'],
-              " step: ", self.awi.current_step)
-              """
+        " quantity: ", contract.agreement['quantity'], " product: ", contract.annotation['cfp'].product,
+        " price: ", contract.agreement['unit_price'], " time: ", contract.agreement['time'],
+        " step: ", self.awi.current_step)
+        """
 
         if self.cfp_records[contract.annotation["cfp"].product].transformable:
             for i in range(min([contract.agreement["quantity"], 10])):

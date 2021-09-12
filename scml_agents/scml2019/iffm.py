@@ -39,40 +39,39 @@ The SCML2019Agent class itself has some helper properties/methods that internall
 """
 import math
 import random
+from typing import Any, Callable, Collection, Dict, List, Optional, Type, Union
 
 import negmas
 from negmas import (
-    Contract,
-    Breach,
-    MechanismState,
     AgentMechanismInterface,
+    Breach,
+    Contract,
+    MechanismState,
     RenegotiationRequest,
 )
 from negmas.helpers import get_class
-from negmas.negotiators import Negotiator, Controller
+from negmas.negotiators import Controller, Negotiator
 from negmas.outcomes import Outcome, ResponseType
-from typing import Dict, Any, Callable, Collection, Type, List, Optional, Union
-
 from scml.scml2019.awi import SCMLAWI
 from scml.scml2019.common import (
-    ProductionReport,
-    SCMLAgreement,
     CFP,
+    FinancialReport,
     Loan,
     ProductionFailure,
-    FinancialReport,
+    ProductionReport,
+    SCMLAgreement,
 )
-from scml.scml2019.schedulers import Scheduler, ScheduleInfo, GreedyScheduler
+from scml.scml2019.factory_managers.builtins import (
+    DoNothingFactoryManager,
+    NegotiatorUtility,
+    OptimisticNegotiatorUtility,
+    PessimisticNegotiatorUtility,
+)
+from scml.scml2019.schedulers import GreedyScheduler, ScheduleInfo, Scheduler
 from scml.scml2019.simulators import (
     FactorySimulator,
     FastFactorySimulator,
     temporary_transaction,
-)
-from scml.scml2019.factory_managers.builtins import (
-    PessimisticNegotiatorUtility,
-    NegotiatorUtility,
-    OptimisticNegotiatorUtility,
-    DoNothingFactoryManager,
 )
 
 
@@ -111,9 +110,9 @@ class PrintingFactoryManager(DoNothingFactoryManager):
             scheduler_type, scope=globals()
         )
         self.scheduler: Scheduler = None
-        self.scheduler_params: Dict[
-            str, Any
-        ] = scheduler_params if scheduler_params is not None else {}
+        self.scheduler_params: Dict[str, Any] = (
+            scheduler_params if scheduler_params is not None else {}
+        )
 
     def step(self, *args, **kwargs):
         super().step(*args, **kwargs)
@@ -163,7 +162,7 @@ class PrintingFactoryManager(DoNothingFactoryManager):
 
         self._agent_layer_min = min(self.consuming.keys())
         self._agent_layer_max = min(self.producing.keys()) - 1
-        self._max_layer = max([i.id for i in self.products])
+        self._max_layer = max(i.id for i in self.products)
         self._running_last_step = max(
             self.awi.n_steps - 1 - (self._max_layer - self._agent_layer_max), 0
         )
@@ -419,28 +418,21 @@ class PrintingFactoryManager(DoNothingFactoryManager):
             self.awi.current_step - self._agent_layer_max - 1, 0
         )
         self._total_production = sum(
-            [
-                sum(
-                    [
-                        self._process_stat[i][j] != 0
-                        and self._process_stat[i][j][3:] == "D"
-                        for j in range(self.awi.current_step)
-                    ]
-                )
-                for i in range(self.scheduler.n_lines)
-            ]
+            sum(
+                self._process_stat[i][j] != 0 and self._process_stat[i][j][3:] == "D"
+                for j in range(self.awi.current_step)
+            )
+            for i in range(self.scheduler.n_lines)
         )
         self._buy_offer_before = sum(
-            [sum(self.buy[i][: self.awi.current_step]) for i in self.consuming.keys()]
+            sum(self.buy[i][: self.awi.current_step]) for i in self.consuming.keys()
         )
         self._buy_offer_before_10 = sum(
-            [
-                sum(self.buy[i][(self.awi.current_step - 10) : self.awi.current_step])
-                for i in self.consuming.keys()
-            ]
+            sum(self.buy[i][(self.awi.current_step - 10) : self.awi.current_step])
+            for i in self.consuming.keys()
         )
         self._material_bought = self._total_production + sum(
-            [self.awi.state.storage[i] for i in self.consuming.keys()]
+            self.awi.state.storage[i] for i in self.consuming.keys()
         )
         if self._material_bought != 0 and self._step_first_material_came == 0:
             self._step_first_material_came = self.awi.current_step
@@ -448,13 +440,11 @@ class PrintingFactoryManager(DoNothingFactoryManager):
             self._material_bought * 1.0 / (self._buy_offer_before + 1e-6)
         )
         self._buy_offer_after = sum(
-            [sum(self.buy[i][self.awi.current_step :]) for i in self.consuming.keys()]
+            sum(self.buy[i][self.awi.current_step :]) for i in self.consuming.keys()
         )
         self._buy_offer_after_10 = sum(
-            [
-                sum(self.buy[i][self.awi.current_step : self.awi.current_step + 10])
-                for i in self.consuming.keys()
-            ]
+            sum(self.buy[i][self.awi.current_step : self.awi.current_step + 10])
+            for i in self.consuming.keys()
         )
         self._buy_offer_before_ave = (
             self._buy_offer_before * 1.0 / (self._total_buy_steps + 1e-6)
@@ -477,13 +467,13 @@ class PrintingFactoryManager(DoNothingFactoryManager):
             * self._running_steps_left
         )
         self._sell_offer_before = sum(
-            [sum(self.sell[i][: self.awi.current_step]) for i in self.producing.keys()]
+            sum(self.sell[i][: self.awi.current_step]) for i in self.producing.keys()
         )
         self._sell_offer_after = sum(
-            [sum(self.sell[i][self.awi.current_step :]) for i in self.producing.keys()]
+            sum(self.sell[i][self.awi.current_step :]) for i in self.producing.keys()
         )
         self._products_sold = self._total_production - sum(
-            [self.awi.state.storage[i] for i in self.producing.keys()]
+            self.awi.state.storage[i] for i in self.producing.keys()
         )
         if self._is_print and self._print_depth >= 1:
             print("Money:\t\t" + str(self.awi.state.wallet))
@@ -781,8 +771,10 @@ class NonDemandDrivenAgent(PrintingFactoryManager):
         elif optimism > 1 - 1e-6:
             self.ufun_factory = OptimisticNegotiatorUtility
         else:
-            self.ufun_factory: NegotiatorUtility = lambda agent, annotation: AveragingNegotiatorUtility(
-                agent=agent, annotation=annotation, optimism=self.optimism
+            self.ufun_factory: NegotiatorUtility = (
+                lambda agent, annotation: AveragingNegotiatorUtility(
+                    agent=agent, annotation=annotation, optimism=self.optimism
+                )
             )
         self.negotiator_type = get_class(negotiator_type, scope=globals())
         self.negotiator_params = (
@@ -834,18 +826,12 @@ class NonDemandDrivenAgent(PrintingFactoryManager):
 
         co = (
             sum(
-                [
-                    sum(
-                        self.sell[i][self.awi.current_step : self.awi.current_step + 10]
-                    )
-                    for i in self.producing.keys()
-                ]
+                sum(self.sell[i][self.awi.current_step : self.awi.current_step + 10])
+                for i in self.producing.keys()
             )
             * 0.1
         )
-        storage = sum(
-            [_n_stocks for _p_id, _n_stocks in self.awi.state.storage.items()]
-        )
+        storage = sum(_n_stocks for _p_id, _n_stocks in self.awi.state.storage.items())
         mu = max(co - storage * 0.1, 0)
 
         hatL = 10

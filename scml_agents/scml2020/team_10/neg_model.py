@@ -1,15 +1,16 @@
-import os, sys
+import os
+import sys
 
 sys.path.append(os.path.dirname(__file__))
 
+from random import shuffle
+
+import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch import autograd
-import matplotlib.pyplot as plt
-from random import shuffle
-
 from hyperparameters import *
+from torch import autograd
 
 
 def printnormforward(self, input, output):
@@ -53,7 +54,7 @@ class NegModel(nn.Module, autograd.Function):
         hidden_dim=NEG_HIDDEN_SIZE,
         output_dim=NEG_OUTPUT_DIM,
     ):
-        super(NegModel, self).__init__()
+        super().__init__()
         self.is_seller = is_seller
 
         self.input_dim = input_dim

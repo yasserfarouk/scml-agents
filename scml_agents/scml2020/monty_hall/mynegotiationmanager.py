@@ -7,7 +7,6 @@ from dataclasses import dataclass
 
 # required for typing
 from pprint import pprint
-
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import numpy as np
@@ -23,7 +22,6 @@ from negmas import (
 )
 from negmas.helpers import get_class, humanize_time
 from scml.scml2020 import AWI, SCML2020Agent, SCML2020World
-
 from scml.scml2020.common import TIME
 from scml.scml2020.services.controllers import StepController, SyncController
 
@@ -254,7 +252,11 @@ class MyNegotiationManager:
         # create a controller for the time-step if one does not exist or use the one already running
         if controller_info.controller is None:
             controller = self.add_controller(
-                is_seller, target, self._urange(is_seller), target, step,
+                is_seller,
+                target,
+                self._urange(is_seller),
+                target,
+                step,
             )
         else:
             controller = controller_info.controller

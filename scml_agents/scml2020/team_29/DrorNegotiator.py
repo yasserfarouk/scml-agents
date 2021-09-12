@@ -1,36 +1,40 @@
-from statistics import mean
-
-from scml.scml2020 import SCML2020Agent, SCML2020World, DecentralizingAgent
-from scml.scml2020.components.production import SupplyDrivenProductionStrategy
-from scml.scml2020.components.trading import PredictionBasedTradingStrategy
+import functools
+import math
+from abc import abstractmethod
 from collections import defaultdict
-from scml.scml2020.components.prediction import (
-    MeanERPStrategy,
-    ExecutionRatePredictionStrategy,
-)
-from scml.scml2020.services.controllers import StepController, SyncController
-from scml.scml2020 import AWI, IndDecentralizingAgent
-from scml.scml2020.common import TIME
-from negmas import (
-    SAONegotiator,
-    AspirationNegotiator,
-    Issue,
-    AgentMechanismInterface,
-    Negotiator,
-    UtilityFunction,
-    Contract,
-    Breach,
-)
-from negmas.helpers import get_class
+from dataclasses import dataclass
+from pprint import pformat
+from statistics import mean
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
-from dataclasses import dataclass
-from abc import abstractmethod
-from pprint import pformat
-from typing import Tuple, List, Union, Any, Optional, Dict
-import functools
-import math
+from negmas import (
+    AgentMechanismInterface,
+    AspirationNegotiator,
+    Breach,
+    Contract,
+    Issue,
+    Negotiator,
+    SAONegotiator,
+    UtilityFunction,
+)
+from negmas.helpers import get_class
+from scml.scml2020 import (
+    AWI,
+    DecentralizingAgent,
+    IndDecentralizingAgent,
+    SCML2020Agent,
+    SCML2020World,
+)
+from scml.scml2020.common import TIME
+from scml.scml2020.components.prediction import (
+    ExecutionRatePredictionStrategy,
+    MeanERPStrategy,
+)
+from scml.scml2020.components.production import SupplyDrivenProductionStrategy
+from scml.scml2020.components.trading import PredictionBasedTradingStrategy
+from scml.scml2020.services.controllers import StepController, SyncController
 
 
 class DrorMeanERPStrategy(ExecutionRatePredictionStrategy):

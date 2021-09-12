@@ -1,5 +1,5 @@
-from pulp import *
 from prettytable import PrettyTable
+from pulp import *
 
 
 def solve_mp_nvp_lp(
@@ -55,9 +55,9 @@ def solve_mp_nvp_lp(
     # Add all the constraints
     for t in range(0, time_horizon):
         # Sell constraints
-        mpnvp_lp += y[t] <= sum([z[k] - y[k] for k in range(0, t)])
+        mpnvp_lp += y[t] <= sum(z[k] - y[k] for k in range(0, t))
         # Production Capacity constraints
-        mpnvp_lp += z[t] <= sum([x[k] - z[k] for k in range(0, t)])
+        mpnvp_lp += z[t] <= sum(x[k] - z[k] for k in range(0, t))
         # Output storage capacity
         mpnvp_lp += z[t] <= production_capacity
 

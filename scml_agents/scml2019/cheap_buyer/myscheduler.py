@@ -1,24 +1,22 @@
 import math
+from typing import Any, Callable, Collection, Dict, List, Optional
 
 from negmas import Contract
-from typing import Collection, Optional, List, Callable, Dict, Any
-
 from scml.scml2019.common import (
     NO_PRODUCTION,
     Job,
-    ProductionNeed,
     ManufacturingProfileCompiled,
-    ProductManufacturingInfo,
     Process,
     Product,
+    ProductionNeed,
+    ProductManufacturingInfo,
 )
 from scml.scml2019.factory_managers.builtins import (
-    ScheduleInfo,
     FactorySimulator,
+    ScheduleInfo,
     SCMLAgreement,
 )
-from scml.scml2019.schedulers import Scheduler
-from scml.scml2019.schedulers import transaction
+from scml.scml2019.schedulers import Scheduler, transaction
 
 INVALID_UTILITY = float("-inf")
 

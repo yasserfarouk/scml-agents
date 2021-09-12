@@ -1,10 +1,10 @@
-from scml import TradePredictionStrategy
-import numpy as np
 from typing import Iterable
+
+import numpy as np
+from scml import TradePredictionStrategy
 
 
 class MLBasedTradePredictionStrategy(TradePredictionStrategy):
-
     def trade_prediction_init(self):
         inp = self.awi.my_input_product
 
@@ -18,7 +18,7 @@ class MLBasedTradePredictionStrategy(TradePredictionStrategy):
             if demand:
                 predicted[: inp + 1] = 0
             else:
-                predicted[inp - self.awi.n_processes:] = 0
+                predicted[inp - self.awi.n_processes :] = 0
             return predicted
 
         # adjust predicted demand and supply
@@ -35,7 +35,7 @@ class MLBasedTradePredictionStrategy(TradePredictionStrategy):
             self.awi.n_products,
             self.awi.current_balance,
             self.awi.current_inventory[self.awi.my_input_product],
-            self.awi.current_inventory[self.awi.my_output_product]
+            self.awi.current_inventory[self.awi.my_output_product],
         ]
 
         input = np.array(input)
