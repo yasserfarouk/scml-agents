@@ -16,13 +16,14 @@ Getting lists of agents
 You can get any specific subset of the agents in the library using `get_agents()`. This function
 has the following parameters:
 
-* version: Either a competition year (2019, 2020, 2021, ....) or the value "contrib" for all other agents
-* track: The track (any, collusion, std, sabotage[only for 2019]).
+* version: Either a competition year (2019, 2020, 2021, ....) or the value "contrib" for all other agents. You can also pass "all" or "any" to get all agents.
+* track: The track (any, collusion, std, sabotage[only for 2019], oneshot [from 2021]).
 * qualified_only: If true, only agents that were submitted to SCML and ran in the qualifications round will be
                   returned
 * finalists_only: If true, only agents that were submitted to SCML and passed qualifications will be
                   returned
 * winners_only: If true, only winners of SCML (the given version) will be returned.
+* bird_only: If true, only winners the bird award are returned (new in 2021)
 * top_only: Either a fraction of finalists or the top n finalists with highest scores in the finals of
             SCML
 * as_class: If true, the agent classes will be returned otherwise their full class names.
@@ -30,7 +31,7 @@ has the following parameters:
 
 For example, to get the top 10% of the Oneshot track finalists in year 2021 as strings, you can use:
 
->>> get_agents(version=2021, track="oneshot", finalists_only=True, as_class=False)
+>>> get_agents(version=2021, track="oneshot", finalists_only=True, top_only=0.1, as_class=False)
 
 Winners of the SCML 2021 Competition
 ====================================
