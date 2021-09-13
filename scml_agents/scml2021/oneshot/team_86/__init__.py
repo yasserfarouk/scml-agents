@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from .agent112 import *
 
 MAIN_AGENT = Agent112

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from .whagent import *
 
 __all__ = whagent.__all__

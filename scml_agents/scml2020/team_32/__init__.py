@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from .beer_agent import *
 
 __all__ = beer_agent.__all__

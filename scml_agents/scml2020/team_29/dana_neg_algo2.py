@@ -47,11 +47,9 @@ from scml.scml2020.agents.decentralizing import _NegotiationCallbacks
 from scml.scml2020.components.negotiation import ControllerInfo
 from scml.scml2020.services import StepController, SyncController
 
-"""
-improvements:
-1. (Utility) consider agent's financial reports.
-2. (Negotiator) param change.
-"""
+# improvements:
+# 1. (Utility) consider agent's financial reports.
+# 2. (Negotiator) param change.
 
 
 class CalcTrustworthiness:

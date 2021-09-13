@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from .my_paibiu import *
 
 MAIN_AGENT = MyPaibiuAgent

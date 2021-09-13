@@ -20,12 +20,12 @@ from scml_agents.scml2020.monty_hall import MontyHall
 
 @mark.parametrize("fm", get_agents(2020, as_class=True))
 def test_can_run(fm):
-    n_steps = 5 if fm != MontyHall else 50
+    n_steps = 5 if issubclass(fm, MontyHall) else 50
     world = SCML2020World(
         **SCML2020World.generate(
             agent_types=["scml.scml2020.DecentralizingAgent", fm],
             n_steps=n_steps,
-            n_processes=3 if fm == MontyHall else None
+            n_processes=(3, 4) if issubclass(fm, MontyHall) else 2,
         )
     )
     world.run()

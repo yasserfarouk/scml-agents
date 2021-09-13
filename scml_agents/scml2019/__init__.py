@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from .cheap_buyer.cheapbuyer import CheapBuyerFactoryManager
 from .fj2 import FJ2FactoryManager
 from .iffm import InsuranceFraudFactoryManager

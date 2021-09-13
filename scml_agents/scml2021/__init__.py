@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from .oneshot import *
 from .standard import *
 

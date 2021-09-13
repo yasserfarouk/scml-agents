@@ -2,9 +2,8 @@ import sys
 from inspect import ismodule
 from typing import Optional, Tuple, Union
 
+from negmas.helpers import get_class, get_full_type_name
 from negmas.situated import Agent
-
-from negmas.helpers import get_full_type_name
 
 import scml_agents.scml2019 as scml2019
 import scml_agents.scml2020 as scml2020
@@ -186,7 +185,10 @@ def get_agents(
                 sum(
                     (
                         [f"{_.__name__}.{a}" for a in _.__all__]
-                        for _ in (scml2020.team_15, scml2020.team_25,)
+                        for _ in (
+                            scml2020.team_15,
+                            scml2020.team_25,
+                        )
                     ),
                     [],
                 )
@@ -211,7 +213,10 @@ def get_agents(
                 sum(
                     (
                         [f"{_.__name__}.{a}" for a in _.__all__]
-                        for _ in (scml2020.team_may, scml2020.a_sengupta,)
+                        for _ in (
+                            scml2020.team_may,
+                            scml2020.a_sengupta,
+                        )
                     ),
                     [],
                 )
@@ -427,7 +432,9 @@ def get_agents(
         raise ValueError(
             f"The version {version} is unknown. Valid versions are 2019, 2020 (as ints), 'contrib' as a string"
         )
-    if not as_class:
+    if as_class:
+        classes = tuple(get_class(_) for _ in classes)
+    else:
         classes = tuple(get_full_type_name(_) for _ in classes)
 
     if top_only is not None:

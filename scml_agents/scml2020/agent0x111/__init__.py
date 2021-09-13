@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from .agent import *
 
 __all__ = agent.__all__

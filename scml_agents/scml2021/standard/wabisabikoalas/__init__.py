@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from .artisan_kangaroo import *
 
 MAIN_AGENT = ArtisanKangaroo

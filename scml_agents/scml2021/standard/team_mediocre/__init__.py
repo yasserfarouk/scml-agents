@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from .mediocre import *
 
 MAIN_AGENT = Mediocre

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from .a_sengupta import *
 from .agent0x111 import *
 from .bargent import *

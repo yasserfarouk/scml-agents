@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from .agent97 import *
 from .learning_agent import *
 

@@ -1,6 +1,3 @@
-import pdb
-import sys
-
 import numpy as np
 from scml.scml2020.common import QUANTITY, TIME, UNIT_PRICE
 

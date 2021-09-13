@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from .run import *
 
 MAIN_AGENT = PDPSyncAgent

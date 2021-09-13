@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from .staghunter import *
 from .team_50 import *
 from .team_51 import *

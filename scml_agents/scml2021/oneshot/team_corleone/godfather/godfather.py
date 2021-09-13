@@ -1,14 +1,13 @@
 import copy
 import cProfile
-import datetime
 import inspect
 import math
 import pathlib
-import pdb
 import random
 import sys
 import warnings
 from collections import defaultdict
+from datetime import datetime
 from time import sleep
 from typing import Callable, Collection, Dict, Iterable, List, Optional, Set, Tuple
 
@@ -137,7 +136,7 @@ class GodfatherAgent(AspirationMixin, OneShotSyncAgent):
                 "entering {} while call {} already in progress; time since step {}".format(
                     caller,
                     self._call_in_progress,
-                    datetime.datetime.now() - self.step_start_time,
+                    datetime.now() - self.step_start_time,
                 )
             )
         self._call_in_progress = caller
@@ -153,7 +152,7 @@ class GodfatherAgent(AspirationMixin, OneShotSyncAgent):
         if call_idx != self._current_call:
             warnings.warn(
                 "aborting {} bc no longer current call; time since step {}".format(
-                    caller, datetime.datetime.now() - self.step_start_time
+                    caller, datetime.now() - self.step_start_time
                 )
             )
         return call_idx == self._current_call
@@ -178,7 +177,7 @@ class GodfatherAgent(AspirationMixin, OneShotSyncAgent):
         )
         self._history = SCMLHistory(world_info)
         self.log("initing new Godfather agent")
-        self.step_start_time = datetime.datetime.now()
+        self.step_start_time = datetime.now()
 
     def _get_model(self, opp_id: str) -> Model:
         """Will need to be overloaded based on model type"""
@@ -210,7 +209,7 @@ class GodfatherAgent(AspirationMixin, OneShotSyncAgent):
 
     def step(self) -> None:
         call_idx, was_in_progress = self._enter_call()
-        self.step_start_time = datetime.datetime.now()
+        self.step_start_time = datetime.now()
 
         if was_in_progress:
             # before proceeding, clean up
@@ -269,7 +268,7 @@ class GodfatherAgent(AspirationMixin, OneShotSyncAgent):
         """Decide a first proposal on every negotiation. (Defers to _counter.)"""
         call_idx, _ = self._enter_call()
 
-        first_proposals_time = datetime.datetime.now()
+        first_proposals_time = datetime.now()
 
         # self.log('first proposals beginning')
         if not self._f_opponents_initialized:
@@ -286,7 +285,7 @@ class GodfatherAgent(AspirationMixin, OneShotSyncAgent):
             # self.log("first move", move, "against", opp_id)
             self._history.my_move(opp_id, move)
 
-        # self.log("first prop time", datetime.datetime.now() - first_proposals_time)
+        # self.log("first prop time", datetime.now() - first_proposals_time)
         return self._exit_call(
             {
                 opp_id: move.to_negmas(self.awi.current_step)
@@ -300,7 +299,7 @@ class GodfatherAgent(AspirationMixin, OneShotSyncAgent):
         call_idx, _ = self._enter_call()
         # self.log("negotiation time: ", self.get_ami(list(offers.keys())[0]).state.time)
 
-        counter_time = datetime.datetime.now()
+        counter_time = datetime.now()
 
         if not hasattr(self, "_models"):
             warnings.warn(
@@ -343,7 +342,7 @@ class GodfatherAgent(AspirationMixin, OneShotSyncAgent):
         for opp_id, move in move_dict.items():
             self._history.my_move(opp_id, move)
 
-        # self.log("counter time", datetime.datetime.now() - counter_time)
+        # self.log("counter time", datetime.now() - counter_time)
         return self._exit_call(
             {
                 opp_id: MoveSpace.move_to_sao_response(move, self.awi.current_step)
@@ -355,7 +354,7 @@ class GodfatherAgent(AspirationMixin, OneShotSyncAgent):
         if not self.enable_profiling:
             return self._counter(opponents_to_counter)
         else:
-            self.counter_start_time = datetime.datetime.now()
+            self.counter_start_time = datetime.now()
             cProfile.runctx(
                 "self._counter_profile_res = self._counter(opponents_to_counter)",
                 globals(),

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from .yiy_agent import *
 
 MAIN_AGENT = YIYAgent

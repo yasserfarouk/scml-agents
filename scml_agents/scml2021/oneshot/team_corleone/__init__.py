@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from .godfather import *
 
 MAIN_AGENT = GoldfishParetoEmpiricalGodfatherAgent

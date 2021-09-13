@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from .oneshot_agents import *
 from .past_agents import *
 

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from .myagent import *
 from .myagent2 import *
 

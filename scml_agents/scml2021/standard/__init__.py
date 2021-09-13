@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from .bossagent import *
 from .iyibiteam import *
 from .team_41 import *

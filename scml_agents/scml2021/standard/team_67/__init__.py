@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from .polymorphic_agent import *
 
 MAIN_AGENT = PolymorphicAgent

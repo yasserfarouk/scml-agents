@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from .solid import *
 
 MAIN_AGENT = SolidAgent

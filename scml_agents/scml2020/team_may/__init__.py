@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from .mmm import *
 
 __all__ = mmm.__all__
