@@ -1,6 +1,8 @@
 import os
 import sys
 
+from negmas.outcomes.base_issue import make_issue
+
 sys.path.append(os.path.dirname(__file__))
 
 from math import ceil, floor
@@ -20,9 +22,9 @@ from negmas import (
 )
 from negmas.common import MechanismState
 from negmas.helpers import get_class, instantiate
-from negmas.outcomes import Outcome
+from negmas.outcomes import Outcome, enumerate_issues
+from negmas.preferences import UtilityFunction
 from negmas.sao import SAONegotiator, SAOResponse
-from negmas.utilities import UtilityFunction
 from scml.scml2020 import QUANTITY, TIME, UNIT_PRICE
 from scml.scml2020.components.negotiation import (
     AspirationNegotiator,
@@ -633,9 +635,9 @@ class MyUtilityNegotiationManager(NegotiationManager):
         # negotiate with all suppliers of the input product I need to produce
 
         issues = [
-            Issue(qvalues, name="quantity"),
-            Issue(tvalues, name="time"),
-            Issue(uvalues, name="uvalues"),
+            make_issue(qvalues, name="quantity"),
+            make_issue(tvalues, name="time"),
+            make_issue(uvalues, name="uvalues"),
         ]
 
         for partner in partners:
@@ -671,9 +673,7 @@ class MyUtilityNegotiationManager(NegotiationManager):
 
     def negotiator(self, is_seller: bool, issues=None, outcomes=None) -> SAONegotiator:
         """Creates a negotiator"""
-        if outcomes is None and (
-            issues is None or not Issue.enumerate(issues, astype=tuple)
-        ):
+        if outcomes is None and (issues is None or not enumerate_issues(issues)):
             return None
         params = self.negotiator_params
         params["ufun"] = self.create_ufun(

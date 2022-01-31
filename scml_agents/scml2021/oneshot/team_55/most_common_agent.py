@@ -112,7 +112,7 @@ class ZilberanBackup(OneShotAgent):
             "connect_to_oneshot_adapter",
             "connect_to_2021_adapter",
             "make_ufun",
-            "on_ufun_changed",
+            "on_preferences_changed",
         ]
 
         for attribute in dir(self):

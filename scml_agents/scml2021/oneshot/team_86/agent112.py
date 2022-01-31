@@ -42,7 +42,7 @@ class SimpleAgent(OneShotAgent):
         my_needs = self._needed(negotiator_id)
         if my_needs <= 0:
             return None
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         if not ami:
             return None
         quantity_issue = ami.issues[QUANTITY]
@@ -79,14 +79,14 @@ class BetterAgent(SimpleAgent):
         if not offer:
             return None
         offer = list(offer)
-        offer[UNIT_PRICE] = self._find_good_price(self.get_ami(negotiator_id), state)
+        offer[UNIT_PRICE] = self._find_good_price(self.get_nmi(negotiator_id), state)
         return tuple(offer)
 
     def respond(self, negotiator_id, state, offer):
         response = super().respond(negotiator_id, state, offer)
         if response != ResponseType.ACCEPT_OFFER:
             return response
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         return (
             response
             if self._is_good_price(ami, state, offer[UNIT_PRICE])
@@ -133,7 +133,7 @@ class Agent112(BetterAgent):
 
     def respond(self, negotiator_id, state, offer):
         response = super().respond(negotiator_id, state, offer)
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         if self._is_selling(ami):
             if len(self._best_selling) > 0:
                 val = max(offer[UNIT_PRICE], max(self._best_selling))

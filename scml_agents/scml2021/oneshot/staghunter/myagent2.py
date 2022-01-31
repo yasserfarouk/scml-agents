@@ -82,6 +82,7 @@ from negmas import (
 )
 from negmas.helpers import humanize_time
 from negmas.outcomes import Issue
+from negmas.preferences import UtilityFunction
 from negmas.sao import (
     AspirationNegotiator,
     NaiveTitForTatNegotiator,
@@ -90,7 +91,6 @@ from negmas.sao import (
     SimpleTitForTatNegotiator,
     ToughNegotiator,
 )
-from negmas.utilities import UtilityFunction
 
 # required for development
 from scml.oneshot import OneShotAgent
@@ -397,7 +397,7 @@ class StagHunter(OneShotAgent):
         if not offer:
             return None
 
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
 
         unit_price_issue = ami.issues[UNIT_PRICE]
         quantity_issue = ami.issues[QUANTITY]
@@ -445,7 +445,7 @@ class StagHunter(OneShotAgent):
         # over-write the unit price in the best offer with a good-enough price
         offer[UNIT_PRICE] = min(
             max(
-                self._find_good_price(self.get_ami(negotiator_id), state, offer),
+                self._find_good_price(self.get_nmi(negotiator_id), state, offer),
                 unit_price_issue.min_value,
             ),
             unit_price_issue.max_value,
@@ -530,7 +530,7 @@ class StagHunter(OneShotAgent):
         # reject any offers with quantities above my needs
         offer = list(offer)
 
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
 
         up = offer[UNIT_PRICE]
         # qt = offer[QUANTITY]
@@ -586,7 +586,7 @@ class StagHunter(OneShotAgent):
         my_needs = int(self._needed())
         if my_needs <= 0 and not self.awi.is_first_level:
             return None
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         if not ami:
             return None
         quantity_issue = ami.issues[QUANTITY]
@@ -605,7 +605,7 @@ class StagHunter(OneShotAgent):
     # def best_offer(self, negotiator_id):
     #
     #     my_needs = int(self._needed())
-    #     ami = self.get_ami(negotiator_id)
+    #     ami = self.get_nmi(negotiator_id)
     #     if not ami:
     #         return None
     #     quantity_issue = ami.issues[QUANTITY]
@@ -868,7 +868,7 @@ class StagHunterV5(OneShotAgent):
 
         # self._stop_steps = {k: 0 for k in self.oppo_list}
         # for oppo_id in self.oppo_list:
-        #     total_steps =  self.get_ami(oppo_id).n_steps
+        #     total_steps =  self.get_nmi(oppo_id).n_steps
         #     if(len(self._max_util_dist[oppo_id]) == 100):
         #         self._max_util_dist[oppo_id] = np.zeros(total_steps)
         #     #self._stop_steps[oppo_id] = np.random.choice(len(self._max_util_dist[oppo_id]), p=self._max_util_dist[oppo_id]/np.sum(self._max_util_dist[oppo_id]))
@@ -1173,7 +1173,7 @@ class StagHunterV5(OneShotAgent):
         # if not offer:
         #     return None
 
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         unit_price_issue = ami.issues[UNIT_PRICE]
         quantity_issue = ami.issues[QUANTITY]
 
@@ -1231,7 +1231,7 @@ class StagHunterV5(OneShotAgent):
 
         # over-write the unit price in the best offer with a good-enough price
         offer[UNIT_PRICE] = self._find_good_price(
-            self.get_ami(negotiator_id), state, offer
+            self.get_nmi(negotiator_id), state, offer
         )
 
         raw_price = offer[UNIT_PRICE]
@@ -1262,7 +1262,7 @@ class StagHunterV5(OneShotAgent):
 
         offer = list(offer)
 
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
 
         up = offer[UNIT_PRICE]
         # qt = offer[QUANTITY]
@@ -1413,7 +1413,7 @@ class StagHunterV7(StagHunter):
         # if not offer:
         #     return None
 
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         unit_price_issue = ami.issues[UNIT_PRICE]
         quantity_issue = ami.issues[QUANTITY]
 
@@ -1468,7 +1468,7 @@ class StagHunterV7(StagHunter):
 
         # over-write the unit price in the best offer with a good-enough price
         offer[UNIT_PRICE] = int(
-            self._find_good_price(self.get_ami(negotiator_id), state, offer)
+            self._find_good_price(self.get_nmi(negotiator_id), state, offer)
         )
 
         if len(self._prev_opp_price[negotiator_id]) <= 3:

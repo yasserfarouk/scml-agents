@@ -119,7 +119,7 @@ class TheSopranos78(OneShotAgent):
             return None
 
         offers = list(offers)
-        offers[UNIT_PRICE] = self._find_good_price(self.get_ami(negotiator_id), state)
+        offers[UNIT_PRICE] = self._find_good_price(self.get_nmi(negotiator_id), state)
 
         return tuple(offers)
 
@@ -129,7 +129,7 @@ class TheSopranos78(OneShotAgent):
         if response != ResponseType.ACCEPT_OFFER:
             return response
 
-        agent_machine_interface = self.get_ami(negotiator_id)
+        agent_machine_interface = self.get_nmi(negotiator_id)
 
         return (
             response
@@ -184,7 +184,7 @@ class TheSopranos78(OneShotAgent):
         if requirements <= 0:
             return None
 
-        agent_machine_interface = self.get_ami(negotiator_id)
+        agent_machine_interface = self.get_nmi(negotiator_id)
         if not agent_machine_interface:
             return None
 

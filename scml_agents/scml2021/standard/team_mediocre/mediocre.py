@@ -17,10 +17,10 @@ from negmas import (
     MechanismState,
     Negotiator,
     Outcome,
+    ResponseType,
     SAONegotiator,
-    UtilityValue,
+    Value,
 )
-from negmas.outcomes import ResponseType
 from scml.scml2020 import SCML2020Agent
 from scml.scml2020.common import QUANTITY, TIME, UNIT_PRICE
 from scml.scml2020.components.negotiation import NegotiationManager
@@ -441,16 +441,18 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
                 offer_availability = negotiator.init()
 
                 if offer_availability:
-
-                    acceptance = self.awi.request_negotiation(
-                        is_buy=not is_sell,
-                        product=product,
-                        quantity=negotiator.q_bounds,
-                        unit_price=negotiator.p_bounds,
-                        time=negotiator.t_bounds,
-                        partner=partner,
-                        negotiator=negotiator,
-                    )
+                    try:
+                        acceptance = self.awi.request_negotiation(
+                            is_buy=not is_sell,
+                            product=product,
+                            quantity=negotiator.q_bounds,
+                            unit_price=negotiator.p_bounds,
+                            time=negotiator.t_bounds,
+                            partner=partner,
+                            negotiator=negotiator,
+                        )
+                    except:
+                        acceptance = False
                     if acceptance:
                         negotiator_.nego_no += 1
                         self.negotiators_engaged[self.awi.current_step][partner].append(

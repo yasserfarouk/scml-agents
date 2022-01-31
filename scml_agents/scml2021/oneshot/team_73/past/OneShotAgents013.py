@@ -42,7 +42,7 @@ class SimpleAgent(OneShotAgent, ABC):
         my_needs = self._needed(negotiator_id)
         if my_needs <= 0:
             return None
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         if not ami:
             return None
         quantity_issue = ami.issues[QUANTITY]
@@ -81,14 +81,14 @@ class BetterAgent(SimpleAgent, ABC):
         if not offer:
             return None
         offer = list(offer)
-        offer[UNIT_PRICE] = self._find_good_price(self.get_ami(negotiator_id), state)
+        offer[UNIT_PRICE] = self._find_good_price(self.get_nmi(negotiator_id), state)
         return tuple(offer)
 
     def respond(self, negotiator_id, state, offer):
         response = super().respond(negotiator_id, state, offer)
         if response != ResponseType.ACCEPT_OFFER:
             return response
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         return (
             response
             if self._is_good_price(ami, state, offer[UNIT_PRICE])
@@ -143,7 +143,7 @@ class AdaptiveAgent(BetterAgent, ABC):
     def respond(self, negotiator_id, state, offer):
         """Save the best price received"""
         response = super().respond(negotiator_id, state, offer)
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         if self._is_selling(ami):
             self._best_selling = max(offer[UNIT_PRICE], self._best_selling)
         else:
@@ -218,7 +218,7 @@ class LearningAgent(AdaptiveAgent, ABC):
         response = super().respond(negotiator_id, state, offer)
         # update my current best price to use for limiting concession in other
         # negotiations
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         up = offer[UNIT_PRICE]
         if self._is_selling(ami):
             partner = ami.annotation["buyer"]
@@ -328,7 +328,7 @@ class LearningSyncAgent(OneShotSyncAgent, LearningAgent, ABC):
             k: SAOResponse(ResponseType.REJECT_OFFER, v)
             for k, v in counter_offers.items()
         }
-        is_selling = (self._is_selling(self.get_ami(_)) for _ in offers.keys())
+        is_selling = (self._is_selling(self.get_nmi(_)) for _ in offers.keys())
         sorted_offers = sorted(
             zip(offers.values(), is_selling),
             key=lambda x: (-x[0][UNIT_PRICE]) if x[1] else x[0][UNIT_PRICE],

@@ -35,8 +35,8 @@ from negmas import AgentMechanismInterface, MechanismState
 from negmas.events import Notification
 from negmas.helpers import get_class
 from negmas.negotiators import Negotiator
+from negmas.preferences import MappingUtilityFunction, WeightedUtilityFunction
 from negmas.situated import Breach, Contract, RenegotiationRequest
-from negmas.utilities import ComplexWeightedUtilityFunction, MappingUtilityFunction
 from numpy.random import dirichlet
 from scml.scml2019.common import CFP, DEFAULT_NEGOTIATOR
 from scml.scml2019.factory_managers.builtins import GreedyFactoryManager
@@ -194,7 +194,7 @@ class MyScheduleDrivenConsumer(ScheduleDrivenConsumer):
         beta_u = pos_gauss(profile.beta_u, profile.cv)
         tau_u = pos_gauss(profile.tau_u, profile.cv)
         tau_q = pos_gauss(profile.tau_q, profile.cv)
-        ufun = ComplexWeightedUtilityFunction(
+        ufun = WeightedUtilityFunction(
             ufuns=[
                 MappingUtilityFunction(
                     mapping=lambda x: 1 - x["unit_price"] ** tau_u / beta_u

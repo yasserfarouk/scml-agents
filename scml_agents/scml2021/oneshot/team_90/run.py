@@ -74,7 +74,7 @@ class PDPSyncAgent(GreedySyncAgent):
             return dict(zip(offers.keys(), itertools.repeat(None)))
 
         good_prices = {
-            k: self._find_good_price(self.get_ami(k), s) for k, s in states.items()
+            k: self._find_good_price(self.get_nmi(k), s) for k, s in states.items()
         }
 
         responses = {
@@ -82,10 +82,10 @@ class PDPSyncAgent(GreedySyncAgent):
         }
         my_input_needs, my_output_needs = self._needs()
         input_offers = {
-            k: v for k, v in offers.items() if not self._is_selling(self.get_ami(k))
+            k: v for k, v in offers.items() if not self._is_selling(self.get_nmi(k))
         }
         output_offers = {
-            k: v for k, v in offers.items() if self._is_selling(self.get_ami(k))
+            k: v for k, v in offers.items() if self._is_selling(self.get_nmi(k))
         }
 
         n_input = len(input_offers)

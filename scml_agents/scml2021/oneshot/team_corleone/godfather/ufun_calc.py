@@ -5,7 +5,7 @@ from typing import Callable, Collection, List, Optional, Tuple, Union
 
 from negmas import Contract
 from negmas.outcomes import Issue, Outcome
-from negmas.utilities import UtilityFunction, UtilityValue
+from negmas.preferences import UtilityFunction, Value
 from scml.oneshot.ufun import OneShotUFun
 from scml.scml2020.common import QUANTITY, TIME, UNIT_PRICE, is_system_agent
 

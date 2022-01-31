@@ -22,7 +22,7 @@ from negmas import (
     SAOResponse,
 )
 from negmas.outcomes import Issue
-from negmas.utilities import UtilityFunction, normalize, utility_range
+from negmas.preferences import UtilityFunction, normalize
 from scml.oneshot import OneShotAgent, OneShotSyncAgent, OneShotUFun
 from scml.scml2020.common import QUANTITY, TIME, UNIT_PRICE
 
@@ -297,7 +297,7 @@ class GodfatherAgent(AspirationMixin, OneShotSyncAgent):
         self, offers: Dict[str, Tuple[int, int, int]], states
     ) -> Dict[str, SAOResponse]:
         call_idx, _ = self._enter_call()
-        # self.log("negotiation time: ", self.get_ami(list(offers.keys())[0]).state.time)
+        # self.log("negotiation time: ", self.get_nmi(list(offers.keys())[0]).state.time)
 
         counter_time = datetime.now()
 
@@ -830,10 +830,10 @@ class GodfatherAgent(AspirationMixin, OneShotSyncAgent):
         )
 
     def _get_opp_id_from_neg_id(self, negotiator_id: str) -> str:
-        return self._get_opp_id_from_ami(self.get_ami(negotiator_id))
+        return self._get_opp_id_from_ami(self.get_nmi(negotiator_id))
 
     def _get_offer_space(self, neg_id: str) -> OfferSpace:
-        ami = self.get_ami(neg_id)
+        ami = self.get_nmi(neg_id)
         q = ami.issues[QUANTITY]
         p = ami.issues[UNIT_PRICE]
         return OfferSpace(
@@ -1155,7 +1155,7 @@ class CheatingGodfatherAgent(GodfatherAgent):
 
     def get_my_id(self, opp_id: str):
         """Gets agent's own id. Probably not the best method, but oh well."""
-        ami = self.get_ami(opp_id)
+        ami = self.get_nmi(opp_id)
         our_ids = ami.agent_ids
         my_id_list = [i for i in our_ids if i != opp_id]
         if len(my_id_list) != 1:

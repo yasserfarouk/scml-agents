@@ -54,7 +54,7 @@ class SimpleAgent(OneShotAgent, ABC):
         my_needs = self._needed(negotiator_id)
         if my_needs <= 0:
             return None
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         if not ami:
             return None
         quantity_issue = ami.issues[QUANTITY]
@@ -93,14 +93,14 @@ class BetterAgent(SimpleAgent, ABC):
         if not offer:
             return None
         offer = list(offer)
-        offer[UNIT_PRICE] = self._find_good_price(self.get_ami(negotiator_id), state)
+        offer[UNIT_PRICE] = self._find_good_price(self.get_nmi(negotiator_id), state)
         return tuple(offer)
 
     def respond(self, negotiator_id, state, offer):
         response = super().respond(negotiator_id, state, offer)
         if response != ResponseType.ACCEPT_OFFER:
             return response
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         return (
             response
             if self._is_good_price(ami, state, offer[UNIT_PRICE])
@@ -142,7 +142,7 @@ class AdaptiveAgent(BetterAgent, ABC):
     """Considers best price offers received when making its decisions"""
 
     def __init__(self, *args, concession_exponent=0.2, **kwargs):
-        super().__init__(args, concession_exponent, kwargs)
+        super().__init__(*args, concession_exponent=concession_exponent, **kwargs)
         self._best_selling, self._best_buying = 0.0, float("inf")
 
     def init(self):
@@ -155,7 +155,7 @@ class AdaptiveAgent(BetterAgent, ABC):
     def respond(self, negotiator_id, state, offer):
         """Save the best price received"""
         response = super().respond(negotiator_id, state, offer)
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         if self._is_selling(ami):
             self._best_selling = max(offer[UNIT_PRICE], self._best_selling)
         else:
@@ -234,15 +234,15 @@ class Gentle(AdaptiveAgent, ABC):
         self.first_offer_price_slack = INF
 
     def on_negotiation_start(self, negotiator_id: str, state: MechanismState) -> None:
-        is_selling = self._is_selling(self.get_ami(negotiator_id))
-        ami = self.get_ami(negotiator_id)
+        is_selling = self._is_selling(self.get_nmi(negotiator_id))
+        ami = self.get_nmi(negotiator_id)
         if is_selling:
             self.nego_info["my_name"] = shorten_name(
-                self.get_ami(negotiator_id).annotation["seller"]
+                self.get_nmi(negotiator_id).annotation["seller"]
             )
         else:
             self.nego_info["my_name"] = shorten_name(
-                self.get_ami(negotiator_id).annotation["buyer"]
+                self.get_nmi(negotiator_id).annotation["buyer"]
             )
 
     def on_negotiation_success(self, contract, mechanism):
@@ -313,7 +313,7 @@ class Gentle(AdaptiveAgent, ABC):
 
         # update my current best price to use for limiting concession in other
         # negotiations
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         up = offer[UNIT_PRICE]
         if self._is_selling(ami):
             partner = ami.annotation["buyer"]
@@ -474,7 +474,7 @@ class Gentle(AdaptiveAgent, ABC):
 
     def _first_offer_price(self, name: str):
         """合意のない相手に対するofferの価格を決定"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         is_selling = self._is_selling(ami)
         time = t(self.awi.current_step, self.awi.n_steps)
 
@@ -622,7 +622,7 @@ class Gentle(AdaptiveAgent, ABC):
 
     def _opp_concession_rate_change(self, name: str):
         """相手の譲歩の変化率を計算"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         offers = [
             _
             for _ in self.opp_offer_list[shorten_name(name)]

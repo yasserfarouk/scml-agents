@@ -49,8 +49,8 @@ from negmas import (
 )
 from negmas.events import Notification
 from negmas.helpers import get_class
+from negmas.preferences import normalize
 from negmas.sao import AspirationNegotiator
-from negmas.utilities import normalize
 from scml.scml2019.awi import SCMLAWI
 from scml.scml2019.common import (
     CFP,
@@ -344,9 +344,7 @@ class SAHAFactoryManager(DoNothingFactoryManager):
                 name=self.name + "*" + partner, **self.negotiator_params
             )
             ufun = self.ufun_factory(self, self._create_annotation(cfp=cfp))
-            neg.utility_function = normalize(
-                ufun, outcomes=cfp.outcomes, infeasible_cutoff=0
-            )
+            neg.utility_function = normalize(ufun, outcomes=cfp.outcomes)
             return neg
 
     def on_negotiation_success(
@@ -539,7 +537,6 @@ class SAHAFactoryManager(DoNothingFactoryManager):
             ufun=normalize(
                 self.ufun_factory(self, self._create_annotation(cfp=cfp)),
                 outcomes=cfp.outcomes,
-                infeasible_cutoff=-1500,
             ),
         )
 
@@ -567,7 +564,6 @@ class SAHAFactoryManager(DoNothingFactoryManager):
             ufun=normalize(
                 self.ufun_factory(self, self._create_annotation(cfp=cfp)),
                 outcomes=cfp.outcomes,
-                infeasible_cutoff=-1500,
             ),
         )
 

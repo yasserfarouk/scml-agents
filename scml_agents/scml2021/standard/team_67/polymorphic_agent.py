@@ -25,6 +25,8 @@ from negmas import (
     UtilityFunction,
 )
 from negmas.helpers import humanize_time, instantiate
+from negmas.outcomes.base_issue import make_issue
+from negmas.outcomes.issue_ops import enumerate_issues
 
 # required for development
 from scml.scml2020 import (
@@ -298,9 +300,9 @@ class MyNegotiationManager(IndependentNegotiationsManager):
     ) -> None:
 
         issues = [
-            Issue((int(qvalues[0]), int(qvalues[1])), name="quantity"),
-            Issue((int(tvalues[0]), int(tvalues[1])), name="time"),
-            Issue((int(uvalues[0]), int(uvalues[1])), name="uvalues"),
+            make_issue((int(qvalues[0]), int(qvalues[1])), name="quantity"),
+            make_issue((int(tvalues[0]), int(tvalues[1])), name="time"),
+            make_issue((int(uvalues[0]), int(uvalues[1])), name="uvalues"),
         ]
 
         for partner in partners:
@@ -337,9 +339,7 @@ class MyNegotiationManager(IndependentNegotiationsManager):
         self, is_seller: bool, issues=None, outcomes=None, partner=None
     ) -> SAONegotiator:
         """Creates a negotiator"""
-        if outcomes is None and (
-            issues is None or not Issue.enumerate(issues, astype=tuple)
-        ):
+        if outcomes is None and (issues is None or not enumerate_issues(issues)):
             return None
         params = self.negotiator_params
         params["ufun"] = self.create_ufun(

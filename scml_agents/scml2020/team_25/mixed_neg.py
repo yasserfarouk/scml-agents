@@ -243,7 +243,7 @@ class MyAsp(AspirationNegotiator):
         return p
 
     def _is_seller(self):
-        return self._utility_function.weights[2] > 0
+        return self.ufun.weights[2] > 0
 
     def _price_ok(self, offer):
         ok_price = self.my_acceptable_unit_price(offer[1], self._is_seller())
@@ -254,18 +254,16 @@ class MyAsp(AspirationNegotiator):
 
     def respond(self, state, offer):
         if self.ufun_max is None or self.ufun_min is None:
-            self.on_ufun_changed()
-        if self._utility_function is None:
+            self.on_preferences_changed()
+        if self.ufun is None:
             return ResponseType.REJECT_OFFER
-        u = self._utility_function(offer)
+        u = self.ufun(offer)
         if u is None or u < self.reserved_value:
             return ResponseType.REJECT_OFFER
         production_cost = np.max(
             self.manager.awi.profile.costs[:, self.manager.awi.my_input_product]
         )
-        ok_ufunc = self._utility_function(
-            (1, 1, self.manager.output_price[0] - production_cost)
-        )
+        ok_ufunc = self.ufun((1, 1, self.manager.output_price[0] - production_cost))
         asp = (
             self.aspiration(state.relative_time)
             * ((self.ufun_max * 0.3 + ok_ufunc * 0.7) - self.ufun_min)
@@ -285,7 +283,7 @@ class MyAsp(AspirationNegotiator):
 
     def propose(self, state):
         if self.ufun_max is None or self.ufun_min is None:
-            self.on_ufun_changed()
+            self.on_preferences_changed()
         if self.ufun_max < self.reserved_value:
             return None
         asp = (
@@ -316,18 +314,18 @@ class MyAsp(AspirationNegotiator):
                 return self.best_outcome
             if self.randomize_offer:
                 return outcome_with_utility(
-                    ufun=self._utility_function,
+                    ufun=self.ufun,
                     rng=(asp, float("inf")),
-                    issues=self._ami.issues,
+                    issues=self.nmi.issues,
                 )
             tol = self.tolerance
             for _ in range(self.n_trials):
                 rng = self.ufun_max - self.ufun_min
                 mx = min(asp + tol * rng, self.__last_offer_util)
                 outcome = outcome_with_utility(
-                    ufun=self._utility_function,
+                    ufun=self.ufun,
                     rng=(asp, mx),
-                    issues=self._ami.issues,
+                    issues=self.nmi.issues,
                 )
                 if outcome is not None:
                     break

@@ -130,7 +130,7 @@ class Agent74(OneShotAgent):
 
             self._isExContractsInitialized = True
 
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         if not ami:
             return None
 
@@ -179,7 +179,7 @@ class Agent74(OneShotAgent):
     def respond(self, negotiator_id, state, offer):
 
         """Called when the agent is asked to respond to an offer"""
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         if not ami:
             return None
 

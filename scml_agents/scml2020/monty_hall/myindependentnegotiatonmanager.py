@@ -21,6 +21,7 @@ from negmas import (
     SAONegotiator,
 )
 from negmas.helpers import get_class, humanize_time, instantiate
+from negmas.outcomes.base_issue import make_issue
 from scml.scml2020 import AWI, SCML2020Agent, SCML2020World
 from scml.scml2020.common import TIME
 from scml.scml2020.services.controllers import StepController, SyncController
@@ -131,9 +132,9 @@ class MyIndependentNegotiationManager:
         # negotiate with all suppliers of the input product I need to produce
 
         issues = [
-            Issue(qvalues, name="quantity"),
-            Issue(tvalues, name="time"),
-            Issue(uvalues, name="uvalues"),
+            make_issue(qvalues, name="quantity"),
+            make_issue(tvalues, name="time"),
+            make_issue(uvalues, name="uvalues"),
         ]
         negotiator = self.create_negotiator(sell, issues=issues)
 

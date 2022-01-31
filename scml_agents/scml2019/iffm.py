@@ -48,10 +48,11 @@ from negmas import (
     Contract,
     MechanismState,
     RenegotiationRequest,
+    ResponseType,
 )
 from negmas.helpers import get_class
 from negmas.negotiators import Controller, Negotiator
-from negmas.outcomes import Outcome, ResponseType
+from negmas.outcomes import Outcome
 from scml.scml2019.awi import SCMLAWI
 from scml.scml2019.common import (
     CFP,
@@ -1799,7 +1800,6 @@ class InsuranceFraudNegotiator(negmas.sao.AspirationNegotiator):
         name=None,
         ufun=None,
         parent: Controller = None,
-        dynamic_ufun=True,
         randomize_offer=False,
         can_propose=True,
         assume_normalized=False,
@@ -1815,8 +1815,7 @@ class InsuranceFraudNegotiator(negmas.sao.AspirationNegotiator):
             assume_normalized=assume_normalized,
             parent=parent,
             ufun=ufun,
-            dynamic_ufun=dynamic_ufun,
-            randomize_offer=randomize_offer,
+            stochastic=randomize_offer,
             can_propose=can_propose,
         )
 

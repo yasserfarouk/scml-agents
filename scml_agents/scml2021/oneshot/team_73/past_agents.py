@@ -73,7 +73,7 @@ class SimpleAgent(OneShotAgent, ABC):
         my_needs = self._needed(negotiator_id)
         if my_needs <= 0:
             return None
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         if not ami:
             return None
         quantity_issue = ami.issues[QUANTITY]
@@ -103,8 +103,10 @@ class SimpleAgent(OneShotAgent, ABC):
 class BetterAgent(SimpleAgent, ABC):
     """A greedy agent based on OneShotAgent with more sane strategy"""
 
-    def __init__(self, *args, concession_exponent=0.2, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(
+        self, owner=None, ufun=None, name=None, concession_exponent=0.2, **kwargs
+    ):
+        super().__init__(owner=owner, ufun=ufun, name=name, **kwargs)
         self._e = concession_exponent
 
     def propose(self, negotiator_id: str, state) -> "Outcome":
@@ -112,14 +114,14 @@ class BetterAgent(SimpleAgent, ABC):
         if not offer:
             return None
         offer = list(offer)
-        offer[UNIT_PRICE] = self._find_good_price(self.get_ami(negotiator_id), state)
+        offer[UNIT_PRICE] = self._find_good_price(self.get_nmi(negotiator_id), state)
         return tuple(offer)
 
     def respond(self, negotiator_id, state, offer):
         response = super().respond(negotiator_id, state, offer)
         if response != ResponseType.ACCEPT_OFFER:
             return response
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         return (
             response
             if self._is_good_price(ami, state, offer[UNIT_PRICE])
@@ -160,8 +162,16 @@ class BetterAgent(SimpleAgent, ABC):
 class AdaptiveAgent(BetterAgent, ABC):
     """Considers best price offers received when making its decisions"""
 
-    def __init__(self, *args, concession_exponent=0.2, **kwargs):
-        super().__init__(args, concession_exponent, kwargs)
+    def __init__(
+        self, owner=None, ufun=None, name=None, concession_exponent=0.2, **kwargs
+    ):
+        super().__init__(
+            owner=owner,
+            ufun=ufun,
+            name=name,
+            concession_exponent=concession_exponent,
+            **kwargs
+        )
         self._best_selling, self._best_buying = 0.0, float("inf")
 
     def init(self):
@@ -174,7 +184,7 @@ class AdaptiveAgent(BetterAgent, ABC):
     def respond(self, negotiator_id, state, offer):
         """Save the best price received"""
         response = super().respond(negotiator_id, state, offer)
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         if self._is_selling(ami):
             self._best_selling = max(offer[UNIT_PRICE], self._best_selling)
         else:
@@ -196,7 +206,9 @@ class AgentT064(AdaptiveAgent, ABC):
 
     def __init__(
         self,
-        *args,
+        owner=None,
+        ufun=None,
+        name=None,
         acc_price_slack=float("inf"),
         step_price_slack=float("inf"),
         opp_price_slack=0.0,
@@ -207,7 +219,7 @@ class AgentT064(AdaptiveAgent, ABC):
         first_offer_price_slack=INF,
         **kwargs
     ):
-        super().__init__(*args, **kwargs)
+        super().__init__(owner=owner, ufun=ufun, name=name, **kwargs)
         self._e = concession_exponent
         self._best_acc_selling, self._best_acc_buying = 0.0, float("inf")
         self._best_opp_selling = defaultdict(float)
@@ -253,15 +265,15 @@ class AgentT064(AdaptiveAgent, ABC):
         self.first_offer_price_slack = INF
 
     def on_negotiation_start(self, negotiator_id: str, state: MechanismState) -> None:
-        is_selling = self._is_selling(self.get_ami(negotiator_id))
-        ami = self.get_ami(negotiator_id)
+        is_selling = self._is_selling(self.get_nmi(negotiator_id))
+        ami = self.get_nmi(negotiator_id)
         if is_selling:
             self.nego_info["my_name"] = shorten_name(
-                self.get_ami(negotiator_id).annotation["seller"]
+                self.get_nmi(negotiator_id).annotation["seller"]
             )
         else:
             self.nego_info["my_name"] = shorten_name(
-                self.get_ami(negotiator_id).annotation["buyer"]
+                self.get_nmi(negotiator_id).annotation["buyer"]
             )
 
     def on_negotiation_success(self, contract, mechanism):
@@ -332,7 +344,7 @@ class AgentT064(AdaptiveAgent, ABC):
 
         # update my current best price to use for limiting concession in other
         # negotiations
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         up = offer[UNIT_PRICE]
         if self._is_selling(ami):
             partner = ami.annotation["buyer"]
@@ -492,7 +504,7 @@ class AgentT064(AdaptiveAgent, ABC):
 
     def _first_offer_price(self, name: str):
         """合意のない相手に対するofferの価格を決定"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         good_price_range = self._good_price_range(ami)
         is_selling = self._is_selling(ami)
         time = t(self.awi.current_step, self.awi.n_steps)
@@ -643,7 +655,7 @@ class AgentT064(AdaptiveAgent, ABC):
 
     def _opp_concession_rate_change(self, name: str):
         """相手の譲歩の変化率を計算"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         offers = [
             _
             for _ in self.opp_offer_list[shorten_name(name)]
@@ -765,7 +777,7 @@ class AgentT064(AdaptiveAgent, ABC):
 
     def _opp_next_price(self, name):
         delta = 1
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         offers = [
             _
             for _ in self.opp_offer_list[shorten_name(name)]
@@ -794,7 +806,7 @@ class AgentT064(AdaptiveAgent, ABC):
 
     def _final_answer(self, name: str, response: ResponseType):
         # 最終ステップかつこれ以上相手のOfferがない場合は受け入れ
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         is_selling = self._is_selling(ami)
         if (
             self.nego_info["negotiation_step"] >= ami.n_steps - 1
@@ -810,7 +822,7 @@ class AgentT064(AdaptiveAgent, ABC):
 
     def _utility_check(self, name: str, offer: tuple):
         """提案or受諾するOfferの効用値を何もしない時と比べる"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
 
         util = self.ufun.from_offers([offer], [self._is_selling(ami)])
         do_nothing_util = self.ufun.from_offers([], [self._is_selling(ami)])
@@ -823,7 +835,7 @@ class AgentT064(AdaptiveAgent, ABC):
 
     def _change_trading_price(self, name: str, offer: list):
         """交渉価格を大幅に変化させる"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         is_selling = self._is_selling(ami)
         slack = 0.2
 
@@ -864,7 +876,9 @@ class AgentT063(AdaptiveAgent, ABC):
 
     def __init__(
         self,
-        *args,
+        owner=None,
+        ufun=None,
+        name=None,
         acc_price_slack=float("inf"),
         step_price_slack=float("inf"),
         opp_price_slack=0.0,
@@ -875,7 +889,7 @@ class AgentT063(AdaptiveAgent, ABC):
         first_offer_price_slack=INF,
         **kwargs
     ):
-        super().__init__(*args, **kwargs)
+        super().__init__(owner=owner, ufun=ufun, name=name, **kwargs)
         self._e = concession_exponent
         self._best_acc_selling, self._best_acc_buying = 0.0, float("inf")
         self._best_opp_selling = defaultdict(float)
@@ -921,15 +935,15 @@ class AgentT063(AdaptiveAgent, ABC):
         self.first_offer_price_slack = INF
 
     def on_negotiation_start(self, negotiator_id: str, state: MechanismState) -> None:
-        is_selling = self._is_selling(self.get_ami(negotiator_id))
-        ami = self.get_ami(negotiator_id)
+        is_selling = self._is_selling(self.get_nmi(negotiator_id))
+        ami = self.get_nmi(negotiator_id)
         if is_selling:
             self.nego_info["my_name"] = shorten_name(
-                self.get_ami(negotiator_id).annotation["seller"]
+                self.get_nmi(negotiator_id).annotation["seller"]
             )
         else:
             self.nego_info["my_name"] = shorten_name(
-                self.get_ami(negotiator_id).annotation["buyer"]
+                self.get_nmi(negotiator_id).annotation["buyer"]
             )
 
     def on_negotiation_success(self, contract, mechanism):
@@ -1000,7 +1014,7 @@ class AgentT063(AdaptiveAgent, ABC):
 
         # update my current best price to use for limiting concession in other
         # negotiations
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         up = offer[UNIT_PRICE]
         if self._is_selling(ami):
             partner = ami.annotation["buyer"]
@@ -1168,7 +1182,7 @@ class AgentT063(AdaptiveAgent, ABC):
 
     def _first_offer_price(self, name: str):
         """合意のない相手に対するofferの価格を決定"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         good_price_range = self._good_price_range(ami)
         is_selling = self._is_selling(ami)
         time = t(self.awi.current_step, self.awi.n_steps)
@@ -1330,7 +1344,7 @@ class AgentT063(AdaptiveAgent, ABC):
 
     def _opp_concession_rate_change(self, name: str):
         """相手の譲歩の変化率を計算"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         offers = [
             _
             for _ in self.opp_offer_list[shorten_name(name)]
@@ -1452,7 +1466,7 @@ class AgentT063(AdaptiveAgent, ABC):
 
     def _opp_next_price(self, name):
         delta = 1
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         offers = [
             _
             for _ in self.opp_offer_list[shorten_name(name)]
@@ -1481,7 +1495,7 @@ class AgentT063(AdaptiveAgent, ABC):
 
     def _final_answer(self, name: str, response: ResponseType):
         # 最終ステップかつこれ以上相手のOfferがない場合は受け入れ
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         is_selling = self._is_selling(ami)
         if (
             self.nego_info["negotiation_step"] >= ami.n_steps - 1
@@ -1497,7 +1511,7 @@ class AgentT063(AdaptiveAgent, ABC):
 
     def _utility_check(self, name: str, offer: tuple):
         """提案or受諾するOfferの効用値を何もしない時と比べる"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
 
         util = self.ufun.from_offers([offer], [self._is_selling(ami)])
         do_nothing_util = self.ufun.from_offers([], [self._is_selling(ami)])
@@ -1510,7 +1524,7 @@ class AgentT063(AdaptiveAgent, ABC):
 
     def _change_trading_price(self, name: str, offer: list):
         """交渉価格を大幅に変化させる"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         is_selling = self._is_selling(ami)
         slack = 0.2
 
@@ -1551,7 +1565,9 @@ class AgentT062(AdaptiveAgent, ABC):
 
     def __init__(
         self,
-        *args,
+        owner=None,
+        ufun=None,
+        name=None,
         acc_price_slack=float("inf"),
         step_price_slack=float("inf"),
         opp_price_slack=0.0,
@@ -1562,7 +1578,7 @@ class AgentT062(AdaptiveAgent, ABC):
         first_offer_price_slack=INF,
         **kwargs
     ):
-        super().__init__(*args, **kwargs)
+        super().__init__(owner=owner, ufun=ufun, name=name, **kwargs)
         self._e = concession_exponent
         self._best_acc_selling, self._best_acc_buying = 0.0, float("inf")
         self._best_opp_selling = defaultdict(float)
@@ -1608,15 +1624,15 @@ class AgentT062(AdaptiveAgent, ABC):
         self.first_offer_price_slack = INF
 
     def on_negotiation_start(self, negotiator_id: str, state: MechanismState) -> None:
-        is_selling = self._is_selling(self.get_ami(negotiator_id))
-        ami = self.get_ami(negotiator_id)
+        is_selling = self._is_selling(self.get_nmi(negotiator_id))
+        ami = self.get_nmi(negotiator_id)
         if is_selling:
             self.nego_info["my_name"] = shorten_name(
-                self.get_ami(negotiator_id).annotation["seller"]
+                self.get_nmi(negotiator_id).annotation["seller"]
             )
         else:
             self.nego_info["my_name"] = shorten_name(
-                self.get_ami(negotiator_id).annotation["buyer"]
+                self.get_nmi(negotiator_id).annotation["buyer"]
             )
 
     def on_negotiation_success(self, contract, mechanism):
@@ -1687,7 +1703,7 @@ class AgentT062(AdaptiveAgent, ABC):
 
         # update my current best price to use for limiting concession in other
         # negotiations
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         up = offer[UNIT_PRICE]
         if self._is_selling(ami):
             partner = ami.annotation["buyer"]
@@ -1854,7 +1870,7 @@ class AgentT062(AdaptiveAgent, ABC):
 
     def _first_offer_price(self, name: str):
         """合意のない相手に対するofferの価格を決定"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         good_price_range = self._good_price_range(ami)
         is_selling = self._is_selling(ami)
         time = t(self.awi.current_step, self.awi.n_steps)
@@ -2016,7 +2032,7 @@ class AgentT062(AdaptiveAgent, ABC):
 
     def _opp_concession_rate_change(self, name: str):
         """相手の譲歩の変化率を計算"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         offers = [
             _
             for _ in self.opp_offer_list[shorten_name(name)]
@@ -2138,7 +2154,7 @@ class AgentT062(AdaptiveAgent, ABC):
 
     def _opp_next_price(self, name):
         delta = 1
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         offers = [
             _
             for _ in self.opp_offer_list[shorten_name(name)]
@@ -2167,7 +2183,7 @@ class AgentT062(AdaptiveAgent, ABC):
 
     def _final_answer(self, name: str, response: ResponseType):
         # 最終ステップかつこれ以上相手のOfferがない場合は受け入れ
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         is_selling = self._is_selling(ami)
         if (
             self.nego_info["negotiation_step"] >= ami.n_steps - 1
@@ -2183,7 +2199,7 @@ class AgentT062(AdaptiveAgent, ABC):
 
     def _utility_check(self, name: str, offer: tuple):
         """提案or受諾するOfferの効用値を何もしない時と比べる"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
 
         util = self.ufun.from_offers([offer], [self._is_selling(ami)])
         do_nothing_util = self.ufun.from_offers([], [self._is_selling(ami)])
@@ -2196,7 +2212,7 @@ class AgentT062(AdaptiveAgent, ABC):
 
     def _change_trading_price(self, name: str, offer: list):
         """交渉価格を大幅に変化させる"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         is_selling = self._is_selling(ami)
         slack = 0.2
 
@@ -2237,7 +2253,9 @@ class AgentT061(AdaptiveAgent, ABC):
 
     def __init__(
         self,
-        *args,
+        owner=None,
+        ufun=None,
+        name=None,
         acc_price_slack=float("inf"),
         step_price_slack=float("inf"),
         opp_price_slack=0.0,
@@ -2248,7 +2266,7 @@ class AgentT061(AdaptiveAgent, ABC):
         first_offer_price_slack=INF,
         **kwargs
     ):
-        super().__init__(*args, **kwargs)
+        super().__init__(owner=owner, ufun=ufun, name=name, **kwargs)
         self._e = concession_exponent
         self._best_acc_selling, self._best_acc_buying = 0.0, float("inf")
         self._best_opp_selling = defaultdict(float)
@@ -2294,15 +2312,15 @@ class AgentT061(AdaptiveAgent, ABC):
         self.first_offer_price_slack = INF
 
     def on_negotiation_start(self, negotiator_id: str, state: MechanismState) -> None:
-        is_selling = self._is_selling(self.get_ami(negotiator_id))
-        ami = self.get_ami(negotiator_id)
+        is_selling = self._is_selling(self.get_nmi(negotiator_id))
+        ami = self.get_nmi(negotiator_id)
         if is_selling:
             self.nego_info["my_name"] = shorten_name(
-                self.get_ami(negotiator_id).annotation["seller"]
+                self.get_nmi(negotiator_id).annotation["seller"]
             )
         else:
             self.nego_info["my_name"] = shorten_name(
-                self.get_ami(negotiator_id).annotation["buyer"]
+                self.get_nmi(negotiator_id).annotation["buyer"]
             )
 
     def on_negotiation_success(self, contract, mechanism):
@@ -2373,7 +2391,7 @@ class AgentT061(AdaptiveAgent, ABC):
 
         # update my current best price to use for limiting concession in other
         # negotiations
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         up = offer[UNIT_PRICE]
         if self._is_selling(ami):
             partner = ami.annotation["buyer"]
@@ -2540,7 +2558,7 @@ class AgentT061(AdaptiveAgent, ABC):
 
     def _first_offer_price(self, name: str):
         """合意のない相手に対するofferの価格を決定"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         good_price_range = self._good_price_range(ami)
         is_selling = self._is_selling(ami)
         time = t(self.awi.current_step, self.awi.n_steps)
@@ -2702,7 +2720,7 @@ class AgentT061(AdaptiveAgent, ABC):
 
     def _opp_concession_rate_change(self, name: str):
         """相手の譲歩の変化率を計算"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         offers = [
             _
             for _ in self.opp_offer_list[shorten_name(name)]
@@ -2824,7 +2842,7 @@ class AgentT061(AdaptiveAgent, ABC):
 
     def _opp_next_price(self, name):
         delta = 1
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         offers = [
             _
             for _ in self.opp_offer_list[shorten_name(name)]
@@ -2853,7 +2871,7 @@ class AgentT061(AdaptiveAgent, ABC):
 
     def _final_answer(self, name: str, response: ResponseType):
         # 最終ステップかつこれ以上相手のOfferがない場合は受け入れ
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         is_selling = self._is_selling(ami)
         if (
             self.nego_info["negotiation_step"] >= ami.n_steps - 1
@@ -2869,7 +2887,7 @@ class AgentT061(AdaptiveAgent, ABC):
 
     def _utility_check(self, name: str, offer: tuple):
         """提案or受諾するOfferの効用値を何もしない時と比べる"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
 
         util = self.ufun.from_offers([offer], [self._is_selling(ami)])
         do_nothing_util = self.ufun.from_offers([], [self._is_selling(ami)])
@@ -2882,7 +2900,7 @@ class AgentT061(AdaptiveAgent, ABC):
 
     def _change_trading_price(self, name: str, offer: list):
         """交渉価格を大幅に変化させる"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         is_selling = self._is_selling(ami)
         slack = 0.2
 
@@ -2923,7 +2941,9 @@ class AgentT060(AdaptiveAgent, ABC):
 
     def __init__(
         self,
-        *args,
+        owner=None,
+        ufun=None,
+        name=None,
         acc_price_slack=float("inf"),
         step_price_slack=float("inf"),
         opp_price_slack=0.0,
@@ -2934,7 +2954,7 @@ class AgentT060(AdaptiveAgent, ABC):
         first_offer_price_slack=INF,
         **kwargs
     ):
-        super().__init__(*args, **kwargs)
+        super().__init__(owner=owner, ufun=ufun, name=name, **kwargs)
         self._e = concession_exponent
         self._best_acc_selling, self._best_acc_buying = 0.0, float("inf")
         self._best_opp_selling = defaultdict(float)
@@ -2980,15 +3000,15 @@ class AgentT060(AdaptiveAgent, ABC):
         self.first_offer_price_slack = INF
 
     def on_negotiation_start(self, negotiator_id: str, state: MechanismState) -> None:
-        is_selling = self._is_selling(self.get_ami(negotiator_id))
-        ami = self.get_ami(negotiator_id)
+        is_selling = self._is_selling(self.get_nmi(negotiator_id))
+        ami = self.get_nmi(negotiator_id)
         if is_selling:
             self.nego_info["my_name"] = shorten_name(
-                self.get_ami(negotiator_id).annotation["seller"]
+                self.get_nmi(negotiator_id).annotation["seller"]
             )
         else:
             self.nego_info["my_name"] = shorten_name(
-                self.get_ami(negotiator_id).annotation["buyer"]
+                self.get_nmi(negotiator_id).annotation["buyer"]
             )
 
     def on_negotiation_success(self, contract, mechanism):
@@ -3059,7 +3079,7 @@ class AgentT060(AdaptiveAgent, ABC):
 
         # update my current best price to use for limiting concession in other
         # negotiations
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         up = offer[UNIT_PRICE]
         if self._is_selling(ami):
             partner = ami.annotation["buyer"]
@@ -3226,7 +3246,7 @@ class AgentT060(AdaptiveAgent, ABC):
 
     def _first_offer_price(self, name: str):
         """合意のない相手に対するofferの価格を決定"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         good_price_range = self._good_price_range(ami)
         is_selling = self._is_selling(ami)
         time = t(self.awi.current_step, self.awi.n_steps)
@@ -3388,7 +3408,7 @@ class AgentT060(AdaptiveAgent, ABC):
 
     def _opp_concession_rate_change(self, name: str):
         """相手の譲歩の変化率を計算"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         offers = [
             _
             for _ in self.opp_offer_list[shorten_name(name)]
@@ -3510,7 +3530,7 @@ class AgentT060(AdaptiveAgent, ABC):
 
     def _opp_next_price(self, name):
         delta = 1
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         offers = [
             _
             for _ in self.opp_offer_list[shorten_name(name)]
@@ -3539,7 +3559,7 @@ class AgentT060(AdaptiveAgent, ABC):
 
     def _final_answer(self, name: str, response: ResponseType):
         # 最終ステップかつこれ以上相手のOfferがない場合は受け入れ
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         is_selling = self._is_selling(ami)
         if (
             self.nego_info["negotiation_step"] >= ami.n_steps - 1
@@ -3555,7 +3575,7 @@ class AgentT060(AdaptiveAgent, ABC):
 
     def _utility_check(self, name: str, offer: tuple):
         """提案or受諾するOfferの効用値を何もしない時と比べる"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
 
         util = self.ufun.from_offers([offer], [self._is_selling(ami)])
         do_nothing_util = self.ufun.from_offers([], [self._is_selling(ami)])
@@ -3568,7 +3588,7 @@ class AgentT060(AdaptiveAgent, ABC):
 
     def _change_trading_price(self, name: str, offer: list):
         """交渉価格を大幅に変化させる"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         is_selling = self._is_selling(ami)
         slack = 0.2
 
@@ -3609,7 +3629,9 @@ class AgentT056(AdaptiveAgent, ABC):
 
     def __init__(
         self,
-        *args,
+        owner=None,
+        ufun=None,
+        name=None,
         acc_price_slack=float("inf"),
         step_price_slack=float("inf"),
         opp_price_slack=0.0,
@@ -3620,7 +3642,7 @@ class AgentT056(AdaptiveAgent, ABC):
         first_offer_price_slack=INF,
         **kwargs
     ):
-        super().__init__(*args, **kwargs)
+        super().__init__(owner=owner, ufun=ufun, name=name, **kwargs)
         self._e = concession_exponent
         self._best_acc_selling, self._best_acc_buying = 0.0, float("inf")
         self._best_opp_selling = defaultdict(float)
@@ -3666,15 +3688,15 @@ class AgentT056(AdaptiveAgent, ABC):
         self.first_offer_price_slack = INF
 
     def on_negotiation_start(self, negotiator_id: str, state: MechanismState) -> None:
-        is_selling = self._is_selling(self.get_ami(negotiator_id))
-        ami = self.get_ami(negotiator_id)
+        is_selling = self._is_selling(self.get_nmi(negotiator_id))
+        ami = self.get_nmi(negotiator_id)
         if is_selling:
             self.nego_info["my_name"] = shorten_name(
-                self.get_ami(negotiator_id).annotation["seller"]
+                self.get_nmi(negotiator_id).annotation["seller"]
             )
         else:
             self.nego_info["my_name"] = shorten_name(
-                self.get_ami(negotiator_id).annotation["buyer"]
+                self.get_nmi(negotiator_id).annotation["buyer"]
             )
 
     def on_negotiation_success(self, contract, mechanism):
@@ -3745,7 +3767,7 @@ class AgentT056(AdaptiveAgent, ABC):
 
         # update my current best price to use for limiting concession in other
         # negotiations
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         up = offer[UNIT_PRICE]
         if self._is_selling(ami):
             partner = ami.annotation["buyer"]
@@ -3904,7 +3926,7 @@ class AgentT056(AdaptiveAgent, ABC):
 
     def _first_offer_price(self, name: str):
         """合意のない相手に対するofferの価格を決定"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         good_price_range = self._good_price_range(ami)
         is_selling = self._is_selling(ami)
         time = t(self.awi.current_step, self.awi.n_steps)
@@ -4066,7 +4088,7 @@ class AgentT056(AdaptiveAgent, ABC):
 
     def _opp_concession_rate_change(self, name: str):
         """相手の譲歩の変化率を計算"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         offers = [
             _
             for _ in self.opp_offer_list[shorten_name(name)]
@@ -4191,7 +4213,7 @@ class AgentT056(AdaptiveAgent, ABC):
 
     def _opp_next_price(self, name):
         delta = 1
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         offers = [
             _
             for _ in self.opp_offer_list[shorten_name(name)]
@@ -4220,7 +4242,7 @@ class AgentT056(AdaptiveAgent, ABC):
 
     def _final_answer(self, name: str, response: ResponseType):
         # 最終ステップかつこれ以上相手のOfferがない場合は受け入れ
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         is_selling = self._is_selling(ami)
         if (
             self.nego_info["negotiation_step"] >= ami.n_steps - 1
@@ -4236,7 +4258,7 @@ class AgentT056(AdaptiveAgent, ABC):
 
     def _utility_check(self, name: str, offer: tuple):
         """提案or受諾するOfferの効用値を何もしない時と比べる"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
 
         util = self.ufun.from_offers([offer], [self._is_selling(ami)])
         do_nothing_util = self.ufun.from_offers([], [self._is_selling(ami)])
@@ -4249,7 +4271,7 @@ class AgentT056(AdaptiveAgent, ABC):
 
     def _change_trading_price(self, name: str, offer: list):
         """交渉価格を大幅に変化させる"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         is_selling = self._is_selling(ami)
         slack = 0.2
 
@@ -4290,7 +4312,9 @@ class AgentT055(AdaptiveAgent, ABC):
 
     def __init__(
         self,
-        *args,
+        owner=None,
+        ufun=None,
+        name=None,
         acc_price_slack=float("inf"),
         step_price_slack=float("inf"),
         opp_price_slack=0.0,
@@ -4301,7 +4325,7 @@ class AgentT055(AdaptiveAgent, ABC):
         first_offer_price_slack=INF,
         **kwargs
     ):
-        super().__init__(*args, **kwargs)
+        super().__init__(owner=owner, ufun=ufun, name=name, **kwargs)
         self._e = concession_exponent
         self._best_acc_selling, self._best_acc_buying = 0.0, float("inf")
         self._best_opp_selling = defaultdict(float)
@@ -4347,15 +4371,15 @@ class AgentT055(AdaptiveAgent, ABC):
         self.first_offer_price_slack = INF
 
     def on_negotiation_start(self, negotiator_id: str, state: MechanismState) -> None:
-        is_selling = self._is_selling(self.get_ami(negotiator_id))
-        ami = self.get_ami(negotiator_id)
+        is_selling = self._is_selling(self.get_nmi(negotiator_id))
+        ami = self.get_nmi(negotiator_id)
         if is_selling:
             self.nego_info["my_name"] = shorten_name(
-                self.get_ami(negotiator_id).annotation["seller"]
+                self.get_nmi(negotiator_id).annotation["seller"]
             )
         else:
             self.nego_info["my_name"] = shorten_name(
-                self.get_ami(negotiator_id).annotation["buyer"]
+                self.get_nmi(negotiator_id).annotation["buyer"]
             )
 
     def on_negotiation_success(self, contract, mechanism):
@@ -4426,7 +4450,7 @@ class AgentT055(AdaptiveAgent, ABC):
 
         # update my current best price to use for limiting concession in other
         # negotiations
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         up = offer[UNIT_PRICE]
         if self._is_selling(ami):
             partner = ami.annotation["buyer"]
@@ -4585,7 +4609,7 @@ class AgentT055(AdaptiveAgent, ABC):
 
     def _first_offer_price(self, name: str):
         """合意のない相手に対するofferの価格を決定"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         good_price_range = self._good_price_range(ami)
         is_selling = self._is_selling(ami)
         time = t(self.awi.current_step, self.awi.n_steps)
@@ -4747,7 +4771,7 @@ class AgentT055(AdaptiveAgent, ABC):
 
     def _opp_concession_rate_change(self, name: str):
         """相手の譲歩の変化率を計算"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         offers = [
             _
             for _ in self.opp_offer_list[shorten_name(name)]
@@ -4872,7 +4896,7 @@ class AgentT055(AdaptiveAgent, ABC):
 
     def _opp_next_price(self, name):
         delta = 1
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         offers = [
             _
             for _ in self.opp_offer_list[shorten_name(name)]
@@ -4901,7 +4925,7 @@ class AgentT055(AdaptiveAgent, ABC):
 
     def _final_answer(self, name: str, response: ResponseType):
         # 最終ステップかつこれ以上相手のOfferがない場合は受け入れ
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         is_selling = self._is_selling(ami)
         if (
             self.nego_info["negotiation_step"] >= ami.n_steps - 1
@@ -4917,7 +4941,7 @@ class AgentT055(AdaptiveAgent, ABC):
 
     def _utility_check(self, name: str, offer: tuple):
         """提案or受諾するOfferの効用値を何もしない時と比べる"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
 
         util = self.ufun.from_offers([offer], [self._is_selling(ami)])
         do_nothing_util = self.ufun.from_offers([], [self._is_selling(ami)])
@@ -4930,7 +4954,7 @@ class AgentT055(AdaptiveAgent, ABC):
 
     def _change_trading_price(self, name: str, offer: list):
         """交渉価格を大幅に変化させる"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         is_selling = self._is_selling(ami)
         slack = 0.2
 
@@ -4971,7 +4995,9 @@ class AgentT054(AdaptiveAgent, ABC):
 
     def __init__(
         self,
-        *args,
+        owner=None,
+        ufun=None,
+        name=None,
         acc_price_slack=float("inf"),
         step_price_slack=float("inf"),
         opp_price_slack=0.0,
@@ -4982,7 +5008,7 @@ class AgentT054(AdaptiveAgent, ABC):
         first_offer_price_slack=INF,
         **kwargs
     ):
-        super().__init__(*args, **kwargs)
+        super().__init__(owner=owner, ufun=ufun, name=name, **kwargs)
         self._e = concession_exponent
         self._best_acc_selling, self._best_acc_buying = 0.0, float("inf")
         self._best_opp_selling = defaultdict(float)
@@ -5028,15 +5054,15 @@ class AgentT054(AdaptiveAgent, ABC):
         self.first_offer_price_slack = INF
 
     def on_negotiation_start(self, negotiator_id: str, state: MechanismState) -> None:
-        is_selling = self._is_selling(self.get_ami(negotiator_id))
-        ami = self.get_ami(negotiator_id)
+        is_selling = self._is_selling(self.get_nmi(negotiator_id))
+        ami = self.get_nmi(negotiator_id)
         if is_selling:
             self.nego_info["my_name"] = shorten_name(
-                self.get_ami(negotiator_id).annotation["seller"]
+                self.get_nmi(negotiator_id).annotation["seller"]
             )
         else:
             self.nego_info["my_name"] = shorten_name(
-                self.get_ami(negotiator_id).annotation["buyer"]
+                self.get_nmi(negotiator_id).annotation["buyer"]
             )
 
     def on_negotiation_success(self, contract, mechanism):
@@ -5107,7 +5133,7 @@ class AgentT054(AdaptiveAgent, ABC):
 
         # update my current best price to use for limiting concession in other
         # negotiations
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         up = offer[UNIT_PRICE]
         if self._is_selling(ami):
             partner = ami.annotation["buyer"]
@@ -5266,7 +5292,7 @@ class AgentT054(AdaptiveAgent, ABC):
 
     def _first_offer_price(self, name: str):
         """合意のない相手に対するofferの価格を決定"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         good_price_range = self._good_price_range(ami)
         is_selling = self._is_selling(ami)
         time = t(self.awi.current_step, self.awi.n_steps)
@@ -5428,7 +5454,7 @@ class AgentT054(AdaptiveAgent, ABC):
 
     def _opp_concession_rate_change(self, name: str):
         """相手の譲歩の変化率を計算"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         offers = [
             _
             for _ in self.opp_offer_list[shorten_name(name)]
@@ -5553,7 +5579,7 @@ class AgentT054(AdaptiveAgent, ABC):
 
     def _opp_next_price(self, name):
         delta = 1
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         offers = [
             _
             for _ in self.opp_offer_list[shorten_name(name)]
@@ -5582,7 +5608,7 @@ class AgentT054(AdaptiveAgent, ABC):
 
     def _final_answer(self, name: str, response: ResponseType):
         # 最終ステップかつこれ以上相手のOfferがない場合は受け入れ
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         is_selling = self._is_selling(ami)
         if (
             self.nego_info["negotiation_step"] >= ami.n_steps - 1
@@ -5598,7 +5624,7 @@ class AgentT054(AdaptiveAgent, ABC):
 
     def _utility_check(self, name: str, offer: tuple):
         """提案or受諾するOfferの効用値を何もしない時と比べる"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
 
         util = self.ufun.from_offers([offer], [self._is_selling(ami)])
         do_nothing_util = self.ufun.from_offers([], [self._is_selling(ami)])
@@ -5611,7 +5637,7 @@ class AgentT054(AdaptiveAgent, ABC):
 
     def _change_trading_price(self, name: str, offer: list):
         """交渉価格を大幅に変化させる"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         is_selling = self._is_selling(ami)
         slack = 0.2
 
@@ -5652,7 +5678,9 @@ class AgentT053(AdaptiveAgent, ABC):
 
     def __init__(
         self,
-        *args,
+        owner=None,
+        ufun=None,
+        name=None,
         acc_price_slack=float("inf"),
         step_price_slack=float("inf"),
         opp_price_slack=0.0,
@@ -5663,7 +5691,7 @@ class AgentT053(AdaptiveAgent, ABC):
         first_offer_price_slack=INF,
         **kwargs
     ):
-        super().__init__(*args, **kwargs)
+        super().__init__(owner=owner, ufun=ufun, name=name, **kwargs)
         self._e = concession_exponent
         self._best_acc_selling, self._best_acc_buying = 0.0, float("inf")
         self._best_opp_selling = defaultdict(float)
@@ -5709,15 +5737,15 @@ class AgentT053(AdaptiveAgent, ABC):
         self.first_offer_price_slack = INF
 
     def on_negotiation_start(self, negotiator_id: str, state: MechanismState) -> None:
-        is_selling = self._is_selling(self.get_ami(negotiator_id))
-        ami = self.get_ami(negotiator_id)
+        is_selling = self._is_selling(self.get_nmi(negotiator_id))
+        ami = self.get_nmi(negotiator_id)
         if is_selling:
             self.nego_info["my_name"] = shorten_name(
-                self.get_ami(negotiator_id).annotation["seller"]
+                self.get_nmi(negotiator_id).annotation["seller"]
             )
         else:
             self.nego_info["my_name"] = shorten_name(
-                self.get_ami(negotiator_id).annotation["buyer"]
+                self.get_nmi(negotiator_id).annotation["buyer"]
             )
 
     def on_negotiation_success(self, contract, mechanism):
@@ -5788,7 +5816,7 @@ class AgentT053(AdaptiveAgent, ABC):
 
         # update my current best price to use for limiting concession in other
         # negotiations
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         up = offer[UNIT_PRICE]
         if self._is_selling(ami):
             partner = ami.annotation["buyer"]
@@ -5947,7 +5975,7 @@ class AgentT053(AdaptiveAgent, ABC):
 
     def _first_offer_price(self, name: str):
         """合意のない相手に対するofferの価格を決定"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         good_price_range = self._good_price_range(ami)
         is_selling = self._is_selling(ami)
         time = t(self.awi.current_step, self.awi.n_steps)
@@ -6109,7 +6137,7 @@ class AgentT053(AdaptiveAgent, ABC):
 
     def _opp_concession_rate_change(self, name: str):
         """相手の譲歩の変化率を計算"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         offers = [
             _
             for _ in self.opp_offer_list[shorten_name(name)]
@@ -6234,7 +6262,7 @@ class AgentT053(AdaptiveAgent, ABC):
 
     def _opp_next_price(self, name):
         delta = 1
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         offers = [
             _
             for _ in self.opp_offer_list[shorten_name(name)]
@@ -6263,7 +6291,7 @@ class AgentT053(AdaptiveAgent, ABC):
 
     def _final_answer(self, name: str, response: ResponseType):
         # 最終ステップかつこれ以上相手のOfferがない場合は受け入れ
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         is_selling = self._is_selling(ami)
         if (
             self.nego_info["negotiation_step"] >= ami.n_steps - 1
@@ -6279,7 +6307,7 @@ class AgentT053(AdaptiveAgent, ABC):
 
     def _utility_check(self, name: str, offer: tuple):
         """提案or受諾するOfferの効用値を何もしない時と比べる"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
 
         util = self.ufun.from_offers([offer], [self._is_selling(ami)])
         do_nothing_util = self.ufun.from_offers([], [self._is_selling(ami)])
@@ -6292,7 +6320,7 @@ class AgentT053(AdaptiveAgent, ABC):
 
     def _change_trading_price(self, name: str, offer: list):
         """交渉価格を大幅に変化させる"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         is_selling = self._is_selling(ami)
         slack = 0.2
 
@@ -6333,7 +6361,9 @@ class AgentT052(AdaptiveAgent, ABC):
 
     def __init__(
         self,
-        *args,
+        owner=None,
+        ufun=None,
+        name=None,
         acc_price_slack=float("inf"),
         step_price_slack=float("inf"),
         opp_price_slack=0.0,
@@ -6344,7 +6374,7 @@ class AgentT052(AdaptiveAgent, ABC):
         first_offer_price_slack=INF,
         **kwargs
     ):
-        super().__init__(*args, **kwargs)
+        super().__init__(owner=owner, ufun=ufun, name=name, **kwargs)
         self._e = concession_exponent
         self._best_acc_selling, self._best_acc_buying = 0.0, float("inf")
         self._best_opp_selling = defaultdict(float)
@@ -6390,15 +6420,15 @@ class AgentT052(AdaptiveAgent, ABC):
         self.first_offer_price_slack = INF
 
     def on_negotiation_start(self, negotiator_id: str, state: MechanismState) -> None:
-        is_selling = self._is_selling(self.get_ami(negotiator_id))
-        ami = self.get_ami(negotiator_id)
+        is_selling = self._is_selling(self.get_nmi(negotiator_id))
+        ami = self.get_nmi(negotiator_id)
         if is_selling:
             self.nego_info["my_name"] = shorten_name(
-                self.get_ami(negotiator_id).annotation["seller"]
+                self.get_nmi(negotiator_id).annotation["seller"]
             )
         else:
             self.nego_info["my_name"] = shorten_name(
-                self.get_ami(negotiator_id).annotation["buyer"]
+                self.get_nmi(negotiator_id).annotation["buyer"]
             )
 
     def on_negotiation_success(self, contract, mechanism):
@@ -6469,7 +6499,7 @@ class AgentT052(AdaptiveAgent, ABC):
 
         # update my current best price to use for limiting concession in other
         # negotiations
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         up = offer[UNIT_PRICE]
         if self._is_selling(ami):
             partner = ami.annotation["buyer"]
@@ -6628,7 +6658,7 @@ class AgentT052(AdaptiveAgent, ABC):
 
     def _first_offer_price(self, name: str):
         """合意のない相手に対するofferの価格を決定"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         good_price_range = self._good_price_range(ami)
         is_selling = self._is_selling(ami)
         time = t(self.awi.current_step, self.awi.n_steps)
@@ -6790,7 +6820,7 @@ class AgentT052(AdaptiveAgent, ABC):
 
     def _opp_concession_rate_change(self, name: str):
         """相手の譲歩の変化率を計算"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         offers = [
             _
             for _ in self.opp_offer_list[shorten_name(name)]
@@ -6915,7 +6945,7 @@ class AgentT052(AdaptiveAgent, ABC):
 
     def _opp_next_price(self, name):
         delta = 1
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         offers = [
             _
             for _ in self.opp_offer_list[shorten_name(name)]
@@ -6944,7 +6974,7 @@ class AgentT052(AdaptiveAgent, ABC):
 
     def _final_answer(self, name: str, response: ResponseType):
         # 最終ステップかつこれ以上相手のOfferがない場合は受け入れ
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         is_selling = self._is_selling(ami)
         if (
             self.nego_info["negotiation_step"] >= ami.n_steps - 1
@@ -6960,7 +6990,7 @@ class AgentT052(AdaptiveAgent, ABC):
 
     def _utility_check(self, name: str, offer: tuple):
         """提案or受諾するOfferの効用値を何もしない時と比べる"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
 
         util = self.ufun.from_offers([offer], [self._is_selling(ami)])
         do_nothing_util = self.ufun.from_offers([], [self._is_selling(ami)])
@@ -6973,7 +7003,7 @@ class AgentT052(AdaptiveAgent, ABC):
 
     def _change_trading_price(self, name: str, offer: list):
         """交渉価格を大幅に変化させる"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         is_selling = self._is_selling(ami)
         slack = 0.2
 
@@ -7014,7 +7044,9 @@ class AgentT051(AdaptiveAgent, ABC):
 
     def __init__(
         self,
-        *args,
+        owner=None,
+        ufun=None,
+        name=None,
         acc_price_slack=float("inf"),
         step_price_slack=float("inf"),
         opp_price_slack=0.0,
@@ -7025,7 +7057,7 @@ class AgentT051(AdaptiveAgent, ABC):
         first_offer_price_slack=INF,
         **kwargs
     ):
-        super().__init__(*args, **kwargs)
+        super().__init__(owner=owner, ufun=ufun, name=name, **kwargs)
         self._e = concession_exponent
         self._best_acc_selling, self._best_acc_buying = 0.0, float("inf")
         self._best_opp_selling = defaultdict(float)
@@ -7071,15 +7103,15 @@ class AgentT051(AdaptiveAgent, ABC):
         self.first_offer_price_slack = INF
 
     def on_negotiation_start(self, negotiator_id: str, state: MechanismState) -> None:
-        is_selling = self._is_selling(self.get_ami(negotiator_id))
-        ami = self.get_ami(negotiator_id)
+        is_selling = self._is_selling(self.get_nmi(negotiator_id))
+        ami = self.get_nmi(negotiator_id)
         if is_selling:
             self.nego_info["my_name"] = shorten_name(
-                self.get_ami(negotiator_id).annotation["seller"]
+                self.get_nmi(negotiator_id).annotation["seller"]
             )
         else:
             self.nego_info["my_name"] = shorten_name(
-                self.get_ami(negotiator_id).annotation["buyer"]
+                self.get_nmi(negotiator_id).annotation["buyer"]
             )
 
     def on_negotiation_success(self, contract, mechanism):
@@ -7150,7 +7182,7 @@ class AgentT051(AdaptiveAgent, ABC):
 
         # update my current best price to use for limiting concession in other
         # negotiations
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         up = offer[UNIT_PRICE]
         if self._is_selling(ami):
             partner = ami.annotation["buyer"]
@@ -7309,7 +7341,7 @@ class AgentT051(AdaptiveAgent, ABC):
 
     def _first_offer_price(self, name: str):
         """合意のない相手に対するofferの価格を決定"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         good_price_range = self._good_price_range(ami)
         is_selling = self._is_selling(ami)
         time = t(self.awi.current_step, self.awi.n_steps)
@@ -7471,7 +7503,7 @@ class AgentT051(AdaptiveAgent, ABC):
 
     def _opp_concession_rate_change(self, name: str):
         """相手の譲歩の変化率を計算"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         offers = [
             _
             for _ in self.opp_offer_list[shorten_name(name)]
@@ -7596,7 +7628,7 @@ class AgentT051(AdaptiveAgent, ABC):
 
     def _opp_next_price(self, name):
         delta = 1
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         offers = [
             _
             for _ in self.opp_offer_list[shorten_name(name)]
@@ -7625,7 +7657,7 @@ class AgentT051(AdaptiveAgent, ABC):
 
     def _final_answer(self, name: str, response: ResponseType):
         # 最終ステップかつこれ以上相手のOfferがない場合は受け入れ
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         is_selling = self._is_selling(ami)
         if (
             self.nego_info["negotiation_step"] >= ami.n_steps - 1
@@ -7641,7 +7673,7 @@ class AgentT051(AdaptiveAgent, ABC):
 
     def _utility_check(self, name: str, offer: tuple):
         """提案or受諾するOfferの効用値を何もしない時と比べる"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
 
         util = self.ufun.from_offers([offer], [self._is_selling(ami)])
         do_nothing_util = self.ufun.from_offers([], [self._is_selling(ami)])
@@ -7654,7 +7686,7 @@ class AgentT051(AdaptiveAgent, ABC):
 
     def _change_trading_price(self, name: str, offer: list):
         """交渉価格を大幅に変化させる"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         is_selling = self._is_selling(ami)
         slack = 0.2
 
@@ -7695,7 +7727,9 @@ class AgentT050(AdaptiveAgent, ABC):
 
     def __init__(
         self,
-        *args,
+        owner=None,
+        ufun=None,
+        name=None,
         acc_price_slack=float("inf"),
         step_price_slack=float("inf"),
         opp_price_slack=0.0,
@@ -7706,7 +7740,7 @@ class AgentT050(AdaptiveAgent, ABC):
         first_offer_price_slack=INF,
         **kwargs
     ):
-        super().__init__(*args, **kwargs)
+        super().__init__(owner=owner, ufun=ufun, name=name, **kwargs)
         self._e = concession_exponent
         self._best_acc_selling, self._best_acc_buying = 0.0, float("inf")
         self._best_opp_selling = defaultdict(float)
@@ -7752,15 +7786,15 @@ class AgentT050(AdaptiveAgent, ABC):
         self.first_offer_price_slack = INF
 
     def on_negotiation_start(self, negotiator_id: str, state: MechanismState) -> None:
-        is_selling = self._is_selling(self.get_ami(negotiator_id))
-        ami = self.get_ami(negotiator_id)
+        is_selling = self._is_selling(self.get_nmi(negotiator_id))
+        ami = self.get_nmi(negotiator_id)
         if is_selling:
             self.nego_info["my_name"] = shorten_name(
-                self.get_ami(negotiator_id).annotation["seller"]
+                self.get_nmi(negotiator_id).annotation["seller"]
             )
         else:
             self.nego_info["my_name"] = shorten_name(
-                self.get_ami(negotiator_id).annotation["buyer"]
+                self.get_nmi(negotiator_id).annotation["buyer"]
             )
 
     def on_negotiation_success(self, contract, mechanism):
@@ -7831,7 +7865,7 @@ class AgentT050(AdaptiveAgent, ABC):
 
         # update my current best price to use for limiting concession in other
         # negotiations
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         up = offer[UNIT_PRICE]
         if self._is_selling(ami):
             partner = ami.annotation["buyer"]
@@ -7986,7 +8020,7 @@ class AgentT050(AdaptiveAgent, ABC):
 
     def _first_offer_price(self, name: str):
         """合意のない相手に対するofferの価格を決定"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         good_price_range = self._good_price_range(ami)
         is_selling = self._is_selling(ami)
         time = t(self.awi.current_step, self.awi.n_steps)
@@ -8268,7 +8302,7 @@ class AgentT050(AdaptiveAgent, ABC):
 
     def _opp_next_price(self, name):
         delta = 1
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         offers = [
             _
             for _ in self.opp_offer_list[shorten_name(name)]
@@ -8297,7 +8331,7 @@ class AgentT050(AdaptiveAgent, ABC):
 
     def _final_answer(self, name: str, response: ResponseType):
         # 最終ステップかつこれ以上相手のOfferがない場合は受け入れ
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         is_selling = self._is_selling(ami)
         if (
             self.nego_info["negotiation_step"] >= ami.n_steps - 1
@@ -8313,7 +8347,7 @@ class AgentT050(AdaptiveAgent, ABC):
 
     def _utility_check(self, name: str, offer: tuple):
         """提案or受諾するOfferの効用値を何もしない時と比べる"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
 
         util = self.ufun.from_offers([offer], [self._is_selling(ami)])
         do_nothing_util = self.ufun.from_offers([], [self._is_selling(ami)])
@@ -8326,7 +8360,7 @@ class AgentT050(AdaptiveAgent, ABC):
 
     def _change_trading_price(self, name: str, offer: list):
         """交渉価格を大幅に変化させる"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         is_selling = self._is_selling(ami)
         slack = 0.2
 
@@ -8365,7 +8399,9 @@ class AgentT050(AdaptiveAgent, ABC):
 class AgentT049(AdaptiveAgent, ABC):
     def __init__(
         self,
-        *args,
+        owner=None,
+        ufun=None,
+        name=None,
         acc_price_slack=float("inf"),
         step_price_slack=float("inf"),
         opp_price_slack=0.0,
@@ -8375,7 +8411,7 @@ class AgentT049(AdaptiveAgent, ABC):
         worst_opp_acc_price_slack=0.00,
         **kwargs
     ):
-        super().__init__(*args, **kwargs)
+        super().__init__(owner=owner, ufun=ufun, name=name, **kwargs)
         self._e = concession_exponent
         self._best_acc_selling, self._best_acc_buying = 0.0, float("inf")
         self._best_opp_selling = defaultdict(float)
@@ -8414,15 +8450,15 @@ class AgentT049(AdaptiveAgent, ABC):
         self.failure_opp_list = []
 
     def on_negotiation_start(self, negotiator_id: str, state: MechanismState) -> None:
-        is_selling = self._is_selling(self.get_ami(negotiator_id))
-        ami = self.get_ami(negotiator_id)
+        is_selling = self._is_selling(self.get_nmi(negotiator_id))
+        ami = self.get_nmi(negotiator_id)
         if is_selling:
             self.nego_info["my_name"] = shorten_name(
-                self.get_ami(negotiator_id).annotation["seller"]
+                self.get_nmi(negotiator_id).annotation["seller"]
             )
         else:
             self.nego_info["my_name"] = shorten_name(
-                self.get_ami(negotiator_id).annotation["buyer"]
+                self.get_nmi(negotiator_id).annotation["buyer"]
             )
 
     def on_negotiation_success(self, contract, mechanism):
@@ -8485,7 +8521,7 @@ class AgentT049(AdaptiveAgent, ABC):
         # offer = self.change_trading_price(negotiator_id, offer)
 
         # # 提案するOfferが有効かどうかを判断する
-        # ami = self.get_ami(negotiator_id)
+        # ami = self.get_nmi(negotiator_id)
         # while self.utility_check(negotiator_id, offer) is False:
         #     if self._is_selling(ami):
         #         offer[UNIT_PRICE] += 1
@@ -8504,7 +8540,7 @@ class AgentT049(AdaptiveAgent, ABC):
 
         # update my current best price to use for limiting concession in other
         # negotiations
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         up = offer[UNIT_PRICE]
         if self._is_selling(ami):
             partner = ami.annotation["buyer"]
@@ -8656,7 +8692,7 @@ class AgentT049(AdaptiveAgent, ABC):
 
     def first_offer_price(self, name: str):
         """合意のない相手に対するofferの価格を決定"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         good_price_range = self.good_price_range(ami)
         is_selling = self._is_selling(ami)
         time = t(self.awi.current_step, self.awi.n_steps)
@@ -8889,7 +8925,7 @@ class AgentT049(AdaptiveAgent, ABC):
 
     def opp_next_price(self, name):
         delta = 1
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         offers = [
             _
             for _ in self.opp_offer_list[shorten_name(name)]
@@ -8918,7 +8954,7 @@ class AgentT049(AdaptiveAgent, ABC):
 
     def final_answer(self, name: str, response: ResponseType):
         # 最終ステップかつこれ以上相手のOfferがない場合は受け入れ
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         is_selling = self._is_selling(ami)
         if (
             self.nego_info["negotiation_step"] >= ami.n_steps - 1
@@ -8934,7 +8970,7 @@ class AgentT049(AdaptiveAgent, ABC):
 
     def utility_check(self, name: str, offer: tuple):
         """提案or受諾するOfferの効用値を何もしない時と比べる"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
 
         util = self.ufun.from_offers([offer], [self._is_selling(ami)])
         do_nothing_util = self.ufun.from_offers([], [self._is_selling(ami)])
@@ -8947,7 +8983,7 @@ class AgentT049(AdaptiveAgent, ABC):
 
     def change_trading_price(self, name: str, offer: list):
         """交渉価格を大幅に変化させる"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         is_selling = self._is_selling(ami)
         slack = 0.2
 
@@ -8986,7 +9022,9 @@ class AgentT049(AdaptiveAgent, ABC):
 class AgentT048(AdaptiveAgent, ABC):
     def __init__(
         self,
-        *args,
+        owner=None,
+        ufun=None,
+        name=None,
         acc_price_slack=float("inf"),
         step_price_slack=float("inf"),
         opp_price_slack=0.0,
@@ -8995,7 +9033,7 @@ class AgentT048(AdaptiveAgent, ABC):
         concession_exponent=0.1,
         **kwargs
     ):
-        super().__init__(*args, **kwargs)
+        super().__init__(owner=owner, ufun=ufun, name=name, **kwargs)
         self._e = concession_exponent
         self._best_acc_selling, self._best_acc_buying = 0.0, float("inf")
         self._best_opp_selling = defaultdict(float)
@@ -9031,15 +9069,15 @@ class AgentT048(AdaptiveAgent, ABC):
         self.failure_opp_list = []
 
     def on_negotiation_start(self, negotiator_id: str, state: MechanismState) -> None:
-        is_selling = self._is_selling(self.get_ami(negotiator_id))
-        ami = self.get_ami(negotiator_id)
+        is_selling = self._is_selling(self.get_nmi(negotiator_id))
+        ami = self.get_nmi(negotiator_id)
         if is_selling:
             self.nego_info["my_name"] = shorten_name(
-                self.get_ami(negotiator_id).annotation["seller"]
+                self.get_nmi(negotiator_id).annotation["seller"]
             )
         else:
             self.nego_info["my_name"] = shorten_name(
-                self.get_ami(negotiator_id).annotation["buyer"]
+                self.get_nmi(negotiator_id).annotation["buyer"]
             )
 
     def on_negotiation_success(self, contract, mechanism):
@@ -9102,7 +9140,7 @@ class AgentT048(AdaptiveAgent, ABC):
         # offer = self.change_trading_price(negotiator_id, offer)
 
         # # 提案するOfferが有効かどうかを判断する
-        # ami = self.get_ami(negotiator_id)
+        # ami = self.get_nmi(negotiator_id)
         # while self.utility_check(negotiator_id, offer) is False:
         #     if self._is_selling(ami):
         #         offer[UNIT_PRICE] += 1
@@ -9121,7 +9159,7 @@ class AgentT048(AdaptiveAgent, ABC):
 
         # update my current best price to use for limiting concession in other
         # negotiations
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         up = offer[UNIT_PRICE]
         if self._is_selling(ami):
             partner = ami.annotation["buyer"]
@@ -9247,7 +9285,7 @@ class AgentT048(AdaptiveAgent, ABC):
 
     def first_offer_price(self, name: str):
         """合意のない相手に対するofferの価格を決定"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         good_price_range = self.good_price_range(ami)
         is_selling = self._is_selling(ami)
         time = t(self.awi.current_step, self.awi.n_steps)
@@ -9390,7 +9428,7 @@ class AgentT048(AdaptiveAgent, ABC):
 
     def opp_next_price(self, name):
         delta = 1
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         offers = [
             _
             for _ in self.opp_offer_list[shorten_name(name)]
@@ -9435,7 +9473,7 @@ class AgentT048(AdaptiveAgent, ABC):
 
     def final_answer(self, name: str, response: ResponseType):
         # 最終ステップかつこれ以上相手のOfferがない場合は受け入れ
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         is_selling = self._is_selling(ami)
         if (
             self.nego_info["negotiation_step"] >= ami.n_steps - 1
@@ -9465,7 +9503,7 @@ class AgentT048(AdaptiveAgent, ABC):
 
     def utility_check(self, name: str, offer: tuple):
         """提案or受諾するOfferの効用値を何もしない時と比べる"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
 
         util = self.ufun.from_offers([offer], [self._is_selling(ami)])
         do_nothing_util = self.ufun.from_offers([], [self._is_selling(ami)])
@@ -9478,7 +9516,7 @@ class AgentT048(AdaptiveAgent, ABC):
 
     def change_trading_price(self, name: str, offer: list):
         """交渉価格を大幅に変化させる"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         is_selling = self._is_selling(ami)
         slack = 0.2
 

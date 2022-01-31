@@ -1,7 +1,7 @@
 import random
 from typing import Any, Dict, Optional
 
-from negmas import SAOState, UtilityValue
+from negmas import SAOState, Value
 from scml.scml2019.common import INVALID_UTILITY, SCMLAgreement
 from scml.scml2019.factory_managers.builtins import (
     AveragingNegotiatorUtility,
@@ -31,7 +31,7 @@ class MyUtilityFunction(AveragingNegotiatorUtility):
         self.weight_of_u2 = 1
         super().__init__(agent=agent, annotation=annotation)
 
-    def call(self, agreement: SCMLAgreement) -> Optional[UtilityValue]:
+    def call(self, agreement: SCMLAgreement) -> Optional[Value]:
         return self.get_utility_4(agreement=agreement)
 
     def get_utility_1(self, agreement):

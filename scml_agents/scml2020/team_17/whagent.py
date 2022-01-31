@@ -23,6 +23,8 @@ from negmas import (
     UtilityFunction,
 )
 from negmas.helpers import get_class, humanize_time, instantiate
+from negmas.outcomes.base_issue import make_issue
+from negmas.outcomes.issue_ops import enumerate_issues
 from scml.scml2020 import (
     AWI,
     DecentralizingAgent,
@@ -403,9 +405,7 @@ class PreNegotiationManager(IndependentNegotiationsManager):
         return self.negotiator(annotation["seller"] == self.id, issues=issues)
 
     def negotiator(self, is_seller: bool, issues=None, outcomes=None) -> SAONegotiator:
-        if outcomes is None and (
-            issues is None or not Issue.enumerate(issues, astype=tuple)
-        ):
+        if outcomes is None and (issues is None or not enumerate_issues(issues)):
             return None
         params = self.negotiator_params
         params["ufun"] = self.create_ufun(
@@ -428,9 +428,9 @@ class PreNegotiationManager(IndependentNegotiationsManager):
         )
 
         issues = [
-            Issue(qvalues, name="quantity"),
-            Issue(tvalues, name="time"),
-            Issue(uvalues, name="uvalues"),
+            make_issue(qvalues, name="quantity"),
+            make_issue(tvalues, name="time"),
+            make_issue(uvalues, name="uvalues"),
         ]
         sortpartner = {}
         if self.awi.current_step > 4:

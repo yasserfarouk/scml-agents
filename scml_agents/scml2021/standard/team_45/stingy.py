@@ -227,7 +227,7 @@ class ControllerUFun(UtilityFunction):
     """A utility function for the controller"""
 
     def __init__(self, controller=None):
-        super().__init__(outcome_type=tuple)
+        super().__init__()
         self.controller = controller
 
     def eval(self, offer: "Outcome"):

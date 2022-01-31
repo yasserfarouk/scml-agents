@@ -13,9 +13,9 @@ class MyTestnegotiator(AspirationNegotiator):
 
     def respond(self, state: MechanismState, offer: "Outcome") -> "ResponseType":
         # print("RESPONSE CALLED")
-        if self._utility_function is None:
+        if self.ufun is None:
             return ResponseType.REJECT_OFFER
-        u = self._utility_function(offer)
+        u = self.ufun(offer)
         if u is None:
             return ResponseType.REJECT_OFFER
 
@@ -89,11 +89,11 @@ class MyTestnegotiator(AspirationNegotiator):
                     )
         a = 0
 
-    def on_ufun_changed(self):
-        super().on_ufun_changed()
-        outcomes = self._ami.discrete_outcomes()
+    def on_preferences_changed(self):
+        super().on_preferences_changed()
+        outcomes = self.nmi.discrete_outcomes()
         self.ordered_outcomes = sorted(
-            ((self._utility_function(outcome), outcome) for outcome in outcomes),
+            ((self.ufun(outcome), outcome) for outcome in outcomes),
             key=lambda x: x[0],
             reverse=True,
         )

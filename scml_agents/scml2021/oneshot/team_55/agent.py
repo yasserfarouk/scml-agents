@@ -59,7 +59,7 @@ class Zilberan(OneShotAgent):
         my_needs = self._needed(negotiator_id)
         if my_needs <= 0:
             return None
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         if not ami:
             return None
         quantity_issue = ami.issues[QUANTITY]
@@ -90,7 +90,7 @@ class Zilberan(OneShotAgent):
         if not offer:
             return None
         offer = list(offer)
-        offer[UNIT_PRICE] = self._find_good_price(self.get_ami(negotiator_id), state)
+        offer[UNIT_PRICE] = self._find_good_price(self.get_nmi(negotiator_id), state)
         return tuple(offer)
 
     def _is_good_price(self, ami, state, price):
@@ -231,7 +231,7 @@ class Zilberan(OneShotAgent):
 
     def respond(self, negotiator_id, state, offer):
         # find the quantity I still need and end negotiation if I need nothing more
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         my_needs = self._needed(negotiator_id)
         if my_needs <= 0:
             response = ResponseType.END_NEGOTIATION

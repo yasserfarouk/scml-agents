@@ -37,7 +37,7 @@ class SimpleAgent(OneShotAgent):
         my_needs = self._needed(negotiator_id)
         if my_needs <= 0:
             return None
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         if not ami:
             return None
         quantity_issue = ami.issues[QUANTITY]
@@ -76,14 +76,14 @@ class BetterAgent(SimpleAgent):
         if not offer:
             return None
         offer = list(offer)
-        offer[UNIT_PRICE] = self._find_good_price(self.get_ami(negotiator_id), state)
+        offer[UNIT_PRICE] = self._find_good_price(self.get_nmi(negotiator_id), state)
         return tuple(offer)
 
     def respond(self, negotiator_id, state, offer):
         response = super().respond(negotiator_id, state, offer)
         if response != ResponseType.ACCEPT_OFFER:
             return response
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         return (
             response
             if self._is_good_price(ami, state, offer[UNIT_PRICE])
@@ -139,8 +139,8 @@ class BondAgent(SimpleAgent):
         if not offer:
             return None
         offer = list(offer)
-        ami = self.get_ami(negotiator_id)
-        my_good_price = self._find_good_price(self.get_ami(negotiator_id), state)
+        ami = self.get_nmi(negotiator_id)
+        my_good_price = self._find_good_price(self.get_nmi(negotiator_id), state)
         last_offer = self._last_good_price[negotiator_id]
         min_price, max_price = self._price_range(ami)
         if last_offer is not None:
@@ -163,7 +163,7 @@ class BondAgent(SimpleAgent):
         response = super().respond(negotiator_id, state, offer)
         if response != ResponseType.ACCEPT_OFFER:
             return response
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         if self._is_good_price(ami, state, offer[UNIT_PRICE]):
             if self._good_price_refuse_count[negotiator_id] > self._refuse_tol:
                 self._good_price_refuse_count[negotiator_id] = 0

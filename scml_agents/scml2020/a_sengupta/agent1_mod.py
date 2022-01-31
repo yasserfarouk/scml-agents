@@ -28,11 +28,12 @@ from negmas import (
     Issue,
     LinearUtilityFunction,
     Negotiator,
+    ResponseType,
     SAONegotiator,
     ToughNegotiator,
 )
 from negmas.helpers import get_class, instantiate
-from negmas.outcomes import ResponseType
+from negmas.outcomes.base_issue import make_issue
 from scml.scml2020 import (
     DecentralizingAgent,
     DoNothingAgent,
@@ -94,10 +95,10 @@ class ToughAspirationNegotiator(AspirationNegotiator):
             return ResponseType.ACCEPT_OFFER
 
         if self.ufun_max is None or self.ufun_min is None:
-            self.on_ufun_changed()
-        if self._utility_function is None:
+            self.on_preferences_changed()
+        if self.ufun is None:
             return ResponseType.REJECT_OFFER
-        u = self._utility_function(offer)
+        u = self.ufun(offer)
         if u is None or u < self.reserved_value:
             return ResponseType.REJECT_OFFER
         asp = (
@@ -439,9 +440,9 @@ class GryffindorIndependentNegotiationsManager(IndependentNegotiationsManager):
     ):
 
         issues = [
-            Issue(qvalues, name="quantity"),
-            Issue(tvalues, name="time"),
-            Issue(uvalues, name="uvalues"),
+            make_issue(qvalues, name="quantity"),
+            make_issue(tvalues, name="time"),
+            make_issue(uvalues, name="uvalues"),
         ]
 
         for partner in partners:

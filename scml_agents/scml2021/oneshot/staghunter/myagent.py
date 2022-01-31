@@ -79,6 +79,7 @@ from negmas import (
 from negmas.genius.gnegotiators import Atlas3
 from negmas.helpers import humanize_time
 from negmas.outcomes import Issue
+from negmas.preferences import UtilityFunction
 from negmas.sao import (
     AspirationNegotiator,
     NaiveTitForTatNegotiator,
@@ -87,7 +88,6 @@ from negmas.sao import (
     SimpleTitForTatNegotiator,
     ToughNegotiator,
 )
-from negmas.utilities import UtilityFunction
 
 # required for development
 from scml.oneshot import OneShotAgent
@@ -114,12 +114,12 @@ __all__ = [
 
 
 class EstimatedUtility(UtilityFunction):
-    def __init__(self, id, owner, awi, beta, memory_size):
-        super().__init__()
+    def __init__(self, id, myowner, awi, beta, memory_size, **kwargs):
+        super().__init__(**kwargs)
         self.id = id
         self.awi = awi
         self.beta = beta
-        self.owner = owner
+        self.myowner = myowner
         if memory_size < 0:
             memory_size = self.awi.n_steps
         self.memory_size = memory_size
@@ -136,14 +136,14 @@ class EstimatedUtility(UtilityFunction):
         self.dataset[step] = dataset_t
         self.updated = False
         if type(self.feature_dim) == type(None):
-            self.feature_dim = len(self.owner.get_features(self.id))
+            self.feature_dim = len(self.myowner.get_features(self.id))
             self.weights = np.random.uniform(low=0, high=1, size=self.feature_dim)
             self.weights_bound = np.ones(self.feature_dim)
 
     def step(self, lr=1e-6):
         self.check_updated()
         if type(self.feature_dim) == type(None):
-            self.feature_dim = len(self.owner.get_features(self.id))
+            self.feature_dim = len(self.myowner.get_features(self.id))
             self.weights = np.random.uniform(low=0, high=1, size=self.feature_dim)
             self.weights_bound = np.ones(self.feature_dim)
 
@@ -378,7 +378,7 @@ class EstimatedUtility(UtilityFunction):
         # self.historical_offers[self.awi.current_step].append(offer)
 
         self.check_updated()
-        features = self.owner.get_features(self.id)
+        features = self.myowner.get_features(self.id)
 
         is_output = True if self.awi.is_first_level else False
         if self.awi.current_step == 0:
@@ -654,6 +654,8 @@ class StagHunter(OneShotAgent):
     def init(self, beta=5, memory_size=50):
         """Called once after the agent-world interface is initialized"""
 
+        if not self.awi:
+            raise ValueError(f"I do not know my AWI!!!")
         # GreedySyncAgent.init()
 
         if self.awi.is_first_level:
@@ -669,10 +671,13 @@ class StagHunter(OneShotAgent):
         self._ufuns__ = {
             id_: EstimatedUtility(
                 id=id_,
-                owner=self,
+                myowner=self,
                 awi=self.awi,
                 beta=beta,
                 memory_size=memory_size,
+                issues=self.awi.current_output_issues
+                if self.awi.is_first_level
+                else self.awi.current_input_issues,
             )
             for id_ in self.oppo_id_list
         }

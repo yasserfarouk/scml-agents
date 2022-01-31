@@ -451,7 +451,7 @@ class MhiranoUFun(UtilityFunction):
     """A utility function for the controller"""
 
     def __init__(self, controller=None):
-        super().__init__(outcome_type=tuple)
+        super().__init__()
         self.controller = controller
 
     def eval(self, offer: "Outcome"):
@@ -1185,8 +1185,8 @@ class MhiranoNegotiator(AspirationNegotiator):
         )
         return result
 
-    def on_ufun_changed(self):
-        super().on_ufun_changed()
+    def on_preferences_changed(self):
+        super().on_preferences_changed()
 
     def on_negotiation_start(self, state: MechanismState) -> None:
         ami: AgentMechanismInterface = self.ami

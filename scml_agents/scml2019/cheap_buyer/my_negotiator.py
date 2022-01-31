@@ -40,7 +40,7 @@ class Mynegotiator(AspirationNegotiator):
             + self.ufun_min
         )
 
-        if self._utility_function is None:
+        if self.ufun is None:
             return ResponseType.REJECT_OFFER
         if offered_utility is None:
             return ResponseType.REJECT_OFFER
@@ -64,7 +64,7 @@ class Mynegotiator(AspirationNegotiator):
 
         if not self.offers:
             return self._random_offer(init_rat)
-        o = self.offers[self._ami.id]
+        o = self.offers[self.nmi.id]
         before_ix = len(o) - 1 if len(o) > 1 else len(o) - 2
         current_u = self.get_normalized_utility(
             o[-1]
@@ -87,7 +87,7 @@ class Mynegotiator(AspirationNegotiator):
         return [order[0] for order in self.ordered_outcomes]
 
     def _set_offers(self, o):
-        k = self._ami.id
+        k = self.nmi.id
         if k in self.offers:
             self.offers[k].append(o)
         else:
@@ -176,11 +176,11 @@ class Mynegotiator(AspirationNegotiator):
                     )
         a = 0
 
-    def on_ufun_changed(self):
-        super().on_ufun_changed()
-        outcomes = self._ami.discrete_outcomes()
+    def on_preferences_changed(self):
+        super().on_preferences_changed()
+        outcomes = self.nmi.discrete_outcomes()
         self.ordered_outcomes = sorted(
-            ((self._utility_function(outcome), outcome) for outcome in outcomes),
+            ((self.ufun(outcome), outcome) for outcome in outcomes),
             key=lambda x: float(x[0]) if x[0] is not None else float("-inf"),
             reverse=True,
         )
@@ -228,16 +228,16 @@ class Mynegotiator(AspirationNegotiator):
             # @ todo : Frequency heurstic
 
     def notify_ufun_changed(self):
-        self.on_ufun_changed()
+        self.on_preferences_changed()
 
     def propose_(self, state: MechanismState) -> Optional["Outcome"]:
         if self._ufun_modified:
-            self.on_ufun_changed()
+            self.on_preferences_changed()
         result = self.propose(state=state)
         self.my_last_proposal = result
         return result
 
     def respond_(self, state: MechanismState, offer: "Outcome") -> "ResponseType":
         if self._ufun_modified:
-            self.on_ufun_changed()
+            self.on_preferences_changed()
         return self.respond(state=state, offer=offer)

@@ -5,6 +5,7 @@ from scml.scml2020 import SCML2021World
 
 from scml_agents import get_agents
 from scml_agents.scml2020 import *
+from scml_agents.scml2021.oneshot.team_73.oneshot_agents import Gentle
 
 
 @mark.parametrize("fm", get_agents(2021, as_class=True, track="collusion"))

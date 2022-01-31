@@ -8,9 +8,8 @@ from typing import Any, List
 import numpy as np
 import torch
 from hyperparameters import *
-from negmas import Issue
+from negmas import Issue, UtilityFunction, Value
 from negmas.outcomes import Outcome
-from negmas.utilities import UtilityFunction, UtilityValue
 from scml.scml2020 import QUANTITY, TIME, UNIT_PRICE
 from utility_model import (
     UtilityModel,
@@ -56,7 +55,7 @@ class MyUtilityFunction(UtilityFunction):
         """
         return ""
 
-    def __call__(self, offer: Outcome) -> UtilityValue:
+    def __call__(self, offer: Outcome) -> Value:
         """Calculate the utility_function value for a given outcome.
 
         Args:
@@ -66,12 +65,12 @@ class MyUtilityFunction(UtilityFunction):
         Remarks:
 
             - You cannot return None from overriden __call__() functions but raise an exception (ValueError) if it was
-              not possible to calculate the UtilityValue.
-            - Return A UtilityValue not a float for real-valued utilities for the benefit of inspection code.
+              not possible to calculate the Value.
+            - Return A Value not a float for real-valued utilities for the benefit of inspection code.
             - Return the reserved value if the offer was None
 
         Returns:
-            UtilityValue: The utility_function value which may be a distribution. If `None` it means the
+            Value: The utility_function value which may be a distribution. If `None` it means the
                           utility_function value cannot be calculated.
         """
         if offer is None:
@@ -174,7 +173,7 @@ class MyRLUtilityFunction(UtilityFunction):
             x = 0
         return self.model(to_features)
 
-    def __call__(self, offer: Outcome) -> UtilityValue:
+    def __call__(self, offer: Outcome) -> Value:
         """Calculate the utility_function value for a given outcome.
 
         Args:
@@ -184,12 +183,12 @@ class MyRLUtilityFunction(UtilityFunction):
         Remarks:
 
             - You cannot return None from overriden __call__() functions but raise an exception (ValueError) if it was
-              not possible to calculate the UtilityValue.
-            - Return A UtilityValue not a float for real-valued utilities for the benefit of inspection code.
+              not possible to calculate the Value.
+            - Return A Value not a float for real-valued utilities for the benefit of inspection code.
             - Return the reserved value if the offer was None
 
         Returns:
-            UtilityValue: The utility_function value which may be a distribution. If `None` it means the
+            Value: The utility_function value which may be a distribution. If `None` it means the
                           utility_function value cannot be calculated.
         """
         if offer is None:

@@ -55,13 +55,13 @@ class MyNegotiator2(SAONegotiator):
         else:
             return self.respond_only_the_best(offer, state)
 
-    def on_ufun_changed(self):
-        super().on_ufun_changed()
-        if self._ami is None:
+    def on_preferences_changed(self):
+        super().on_preferences_changed()
+        if self.nmi is None:
             return
-        outcomes = self._ami.discrete_outcomes()
+        outcomes = self.nmi.discrete_outcomes()
         self.ordered_outcomes = sorted(
-            ((self._utility_function(outcome), outcome) for outcome in outcomes),
+            ((self.ufun(outcome), outcome) for outcome in outcomes),
             key=lambda x: float(x[0]) if x[0] is not None else float("-inf"),
             reverse=True,
         )
@@ -79,12 +79,12 @@ class MyNegotiator2(SAONegotiator):
 
     def propose_(self, state: MechanismState) -> Optional["Outcome"]:
         if self._ufun_modified:
-            self.on_ufun_changed()
+            self.on_preferences_changed()
         return self.propose(state)
 
     def respond_(self, state: MechanismState, offer: "Outcome") -> "ResponseType":
         if self._ufun_modified:
-            self.on_ufun_changed()
+            self.on_preferences_changed()
         return self.respond(state=state, offer=offer)
 
     def get_utility_value(self, offer):
@@ -98,7 +98,7 @@ class MyNegotiator2(SAONegotiator):
 
     def propose_only_the_best(self, state):
         if self.ordered_outcomes is None or len(self.ordered_outcomes) < 1:
-            self.on_ufun_changed()
+            self.on_preferences_changed()
         our_offer = self.ordered_outcomes[0][1]
         return our_offer
 
@@ -110,7 +110,7 @@ class MyNegotiator2(SAONegotiator):
 
     def propose_time_based_concession(self, state):
         if self.ordered_outcomes is None or len(self.ordered_outcomes) < 1:
-            self.on_ufun_changed()
+            self.on_preferences_changed()
         our_offer = self.ordered_outcomes[0][1]
         concession_score = self.get_concession_score(state)
         for ordered_outcome in self.ordered_outcomes:

@@ -28,7 +28,7 @@ from negmas import (
     SAOState,
     SAOSyncController,
     UtilityFunction,
-    UtilityValue,
+    Value,
     outcome_is_valid,
 )
 from negmas.events import Notification, Notifier
@@ -137,7 +137,7 @@ class DanasUtilityFunction(CalcTrustworthiness, LinearUtilityFunction):
         else:
             super().__init__((1, -1, -10))
 
-    def eval(self, offer: Optional["Outcome"]) -> Optional[UtilityValue]:
+    def eval(self, offer: Optional["Outcome"]) -> Optional[Value]:
         u = super().eval(offer)
         return self.eval_trustworthiness(u, offer)
 

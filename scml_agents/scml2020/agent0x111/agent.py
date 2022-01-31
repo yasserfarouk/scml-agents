@@ -97,9 +97,9 @@ class StepController(SAOController, AspirationMixin, Notifier):
         )
         self.secured = 0
         # issues = [
-        #   Issue(qvalues, name="quantity"),
-        #   Issue(tvalues, name="time"),
-        #   Issue(uvalues, name="uvalues"),
+        #   make_issue(qvalues, name="quantity"),
+        #   make_issue(tvalues, name="time"),
+        #   make_issue(uvalues, name="uvalues"),
         # ]
 
         # ratio= self.get_ratio_of_suspects()

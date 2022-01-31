@@ -290,11 +290,11 @@ class MyPaibiuAgent(
                 price_range = (min_price, 2 * min_price)
                 controller = SAOMetaNegotiatorController(
                     ufun=LinearUtilityFunction(
-                        {
-                            TIME: 0.0,
-                            QUANTITY: (1 - self._price_weight),
-                            UNIT_PRICE: self._price_weight,
-                        }
+                        (
+                            (1 - self._price_weight),
+                            0.0,
+                            self._price_weight,
+                        )
                     )
                 )
             else:
@@ -303,11 +303,11 @@ class MyPaibiuAgent(
                 price_range = (max_price // 2, max_price)
                 controller = SAOMetaNegotiatorController(
                     ufun=LinearUtilityFunction(
-                        {
-                            TIME: 0.0,
-                            QUANTITY: (1 - self._price_weight),
-                            UNIT_PRICE: -self._price_weight,
-                        }
+                        (
+                            (1 - self._price_weight),
+                            0.0,
+                            -self._price_weight,
+                        )
                     )
                 )
 
@@ -337,11 +337,11 @@ class MyPaibiuAgent(
         if self.id == annotation["seller"]:
             controller = SAOMetaNegotiatorController(
                 ufun=LinearUtilityFunction(
-                    {
-                        TIME: 0.0,
-                        QUANTITY: (1 - self._price_weight),
-                        UNIT_PRICE: self._price_weight,
-                    }
+                    (
+                        (1 - self._price_weight),
+                        0.0,
+                        self._price_weight,
+                    )
                 )
             )
         else:
@@ -367,11 +367,11 @@ class MyPaibiuAgent(
                 return None
             controller = SAOMetaNegotiatorController(
                 ufun=LinearUtilityFunction(
-                    {
-                        TIME: 0.0,
-                        QUANTITY: (1 - self._price_weight),
-                        UNIT_PRICE: -self._price_weight,
-                    }
+                    (
+                        (1 - self._price_weight),
+                        0.0,
+                        -self._price_weight,
+                    )
                 )
             )
         return controller.create_negotiator()

@@ -96,7 +96,7 @@ class Agent97(OneShotAgent):
     def propose(self, negotiator_id, state):
         """Called when the agent is asking to propose in one negotiation"""
         my_needs = self._needed(negotiator_id)
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         rep = 0.1
         if self.reputation:
             rep = self.sigmoid(self.reputation[min(self.reputation)])
@@ -114,9 +114,9 @@ class Agent97(OneShotAgent):
         offer[TIME] = self.awi.current_step
         if self._is_selling(ami):
             # offer[UNIT_PRICE] = self._find_good_price(
-            # self.get_ami(negotiator_id), state
+            # self.get_nmi(negotiator_id), state
             # )
-            maxx, minn = self._find_good_price(self.get_ami(negotiator_id), state)
+            maxx, minn = self._find_good_price(self.get_nmi(negotiator_id), state)
             """
             if maxx!=0 and minn!=0:
                 offer[UNIT_PRICE]= (maxx+minn)/2
@@ -148,9 +148,9 @@ class Agent97(OneShotAgent):
 
         else:
             # offer[UNIT_PRICE] = self._find_good_price(
-            # self.get_ami(negotiator_id), state
+            # self.get_nmi(negotiator_id), state
             # )
-            maxx, minn = self._find_good_price(self.get_ami(negotiator_id), state)
+            maxx, minn = self._find_good_price(self.get_nmi(negotiator_id), state)
             """
             if maxx!=0 and minn!=0:
                 offer[UNIT_PRICE]=(maxx+minn)/2
@@ -379,7 +379,7 @@ class Agent97(OneShotAgent):
         """Called when the agent is asked to respond to an offer
         relate time with the prices
         """
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         image = self.get_image(negotiator_id, state, offer, ami)
         reputation = self.get_reputation(image, state, ami)
         # print(self._selling_log)
