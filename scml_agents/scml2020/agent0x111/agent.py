@@ -61,7 +61,7 @@ class StepController(SAOController, AspirationMixin, Notifier):
         - It uses whatever negotiator type on all of its negotiations and it assumes that the ufun will never change
         - Once it accumulates the required quantity, it ends all remaining negotiations
         - It assumes that all ufuns are identical so there is no need to keep a separate negotiator for each one and it
-          instantiates a single negotiator that dynamically changes the AMI but always uses the same ufun.
+          instantiates a single negotiator that dynamically changes the nmi but always uses the same ufun. ami
     """
 
     def __init__(
@@ -122,19 +122,22 @@ class StepController(SAOController, AspirationMixin, Notifier):
     def join(
         self,
         negotiator_id: str,
-        ami: AgentMechanismInterface,
+        nmi: AgentMechanismInterface,
         state: MechanismState,
         *,
+        preferences: Optional["UtilityFunction"] = None,
         ufun: Optional["UtilityFunction"] = None,
         role: str = "agent",
     ) -> bool:
-        joined = super().join(negotiator_id, ami, state, ufun=ufun, role=role)
+        joined = super().join(
+            negotiator_id, nmi, state, preferences=preferences, ufun=ufun, role=role
+        )
         if joined:
             self.completed[negotiator_id] = False
         return joined
 
     def propose(self, negotiator_id: str, state: MechanismState) -> Optional["Outcome"]:
-        self.__negotiator._ami = self.negotiators[negotiator_id][0]._ami
+        self.__negotiator._nmi = self.negotiators[negotiator_id][0]._nmi
         return self.__negotiator.propose(state)
 
     def respond(
@@ -142,7 +145,7 @@ class StepController(SAOController, AspirationMixin, Notifier):
     ) -> ResponseType:
         if self.secured >= self.target:
             return ResponseType.END_NEGOTIATION
-        self.__negotiator._ami = self.negotiators[negotiator_id][0]._ami
+        self.__negotiator._nmi = self.negotiators[negotiator_id][0]._nmi
         return self.__negotiator.respond(offer=offer, state=state)
 
     def __str__(self):
@@ -729,7 +732,7 @@ class ElaboratedStepNegotiationManager(ElaboratedMeanERPStrategy, NegotiationMan
             return None
         # self.awi.loginfo_agent(
         #     f"Accepting request from {initiator}: {[str(_) for _ in mechanism.issues]} "
-        #     f"({Issue.num_outcomes(mechanism.issues)})"
+        #     f"({num_outcomes(mechanism.issues)})"
         # )
         # create a controller for the time-step if one does not exist or use the one already running
         if controller_info.controller is None:

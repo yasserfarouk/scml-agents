@@ -40,7 +40,7 @@ class MyUtilityFunction(AveragingNegotiatorUtility):
             return super().call(agreement)
         result = 0
         for negotiation in self.agent.running_negotiations:
-            state: SAOState = negotiation.negotiator._ami.state
+            state: SAOState = negotiation.negotiator.nmi.state
             self.optimism = state.relative_time
             result = result + super().call(agreement)
         return result / len(self.agent.running_negotiations)
@@ -56,8 +56,8 @@ class MyUtilityFunction(AveragingNegotiatorUtility):
     #         for negotiation in self.agent.running_negotiations:
     #             negotiator = negotiation.negotiator
     #             current_offer = negotiator.my_last_proposal
-    #             max_steps = negotiator._ami.n_steps
-    #             step = negotiator._ami.state.step
+    #             max_steps = negotiator._nmi.n_steps
+    #             step = negotiator._nmi.state.step
     #             probability_of_acceptance = step/((self.alpha * max_steps) + (self.beta * self.average_number_of_steps))
     #             probability_of_acceptances.append(probability_of_acceptance)
     #             if current_offer is not None and random.random() < probability_of_acceptance:
@@ -78,7 +78,7 @@ class MyUtilityFunction(AveragingNegotiatorUtility):
         index = 0
         while index < len(step_0_trimmed_running_negotiations):
             if (
-                step_0_trimmed_running_negotiations[index].negotiator._ami.state.step
+                step_0_trimmed_running_negotiations[index].negotiator.nmi.state.step
                 == 0
             ):
                 step_0_trimmed_running_negotiations.remove(
@@ -99,8 +99,8 @@ class MyUtilityFunction(AveragingNegotiatorUtility):
                 for negotiation in step_0_trimmed_running_negotiations:
                     negotiator = negotiation.negotiator
                     current_offer = negotiator.my_last_proposal
-                    max_steps = negotiator._ami.n_steps
-                    step = negotiator._ami.state.step
+                    max_steps = negotiator.nmi.n_steps
+                    step = negotiator.nmi.state.step
                     probability_of_acceptance = step / (
                         (self.alpha * max_steps)
                         + (self.beta * self.average_number_of_steps)
@@ -140,7 +140,7 @@ class MyUtilityFunction(AveragingNegotiatorUtility):
         index = 0
         while index < len(step_0_trimmed_running_negotiations):
             if (
-                step_0_trimmed_running_negotiations[index].negotiator._ami.state.step
+                step_0_trimmed_running_negotiations[index].negotiator.nmi.state.step
                 == 0
             ):
                 step_0_trimmed_running_negotiations.remove(
@@ -157,8 +157,8 @@ class MyUtilityFunction(AveragingNegotiatorUtility):
             for negotiation in step_0_trimmed_running_negotiations:
                 negotiator = negotiation.negotiator
                 current_offer = negotiator.my_last_proposal
-                max_steps = negotiator._ami.n_steps
-                step = negotiator._ami.state.step
+                max_steps = negotiator.nmi.n_steps
+                step = negotiator.nmi.state.step
                 probability_of_acceptance = step / (
                     (self.alpha * max_steps)
                     + (self.beta * self.average_number_of_steps)
@@ -201,7 +201,6 @@ class MyUtilityFunction(AveragingNegotiatorUtility):
     #     if self._free_sale(agreement):
     #         return INVALID_UTILITY
     #     awi = self.agent.awi
-    #     joint_probability = 0
-    #     binary_combinations = list(itertools.product([0, 1], repeat=len(self.agent.running_negotiations)))
+    #     joint_probability 205-         #     binary_combinations = list(itertools.product([0, 1], repeat=len(self.agent.running_negotiations)))
     #     for negotiation in self.agent.running_negotiations:
-    #         state = negotiation.negotiator._ami.state
+    #         state = negotiation.negotiator._nmi.state

@@ -1,6 +1,7 @@
-import sys
+from __future__ import annotations
+
 from inspect import ismodule
-from typing import Optional, Tuple, Union
+from typing import Literal, overload
 
 from negmas.helpers import get_class, get_full_type_name
 from negmas.situated import Agent
@@ -12,17 +13,47 @@ import scml_agents.scml2021 as scml2021
 __all__ = ["get_agents"]
 
 
+@overload
 def get_agents(
-    version: Union[str, int],
+    version: str | int,
     *,
     track: str = "any",
     qualified_only: bool = False,
     finalists_only: bool = False,
     winners_only: bool = False,
     bird_only: bool = False,
-    top_only: Optional[Union[int, float]] = None,
+    top_only: int | float | None = None,
+    as_class: Literal[False],
+) -> tuple[str, ...]:
+    ...
+
+
+@overload
+def get_agents(
+    version: str | int,
+    *,
+    track: str = "any",
+    qualified_only: bool = False,
+    finalists_only: bool = False,
+    winners_only: bool = False,
+    bird_only: bool = False,
+    top_only: int | float | None = None,
+    as_class: Literal[True],
+) -> tuple[Agent, ...]:
+    ...
+
+
+def get_agents(
+    version: str | int,
+    *,
+    track: str = "any",
+    qualified_only: bool = False,
+    finalists_only: bool = False,
+    winners_only: bool = False,
+    bird_only: bool = False,
+    top_only: int | float | None = None,
     as_class: bool = True,
-) -> Tuple[Union[Agent, str]]:
+) -> tuple[Agent | str, ...]:
     """
     Gets agent classes/full class names for a version which can either be a competition year (int) or "contrib".
 
@@ -49,14 +80,14 @@ def get_agents(
             results += get_agents(
                 v,
                 track=track,
-                qualified_only=qualifiled_only,
+                qualified_only=qualified_only,
                 finalists_only=finalists_only,
                 winners_only=winners_only,
                 bird_only=bird_only,
                 top_only=top_only,
                 as_class=as_class,
             )
-        return results
+        return tuple(results)
     classes = tuple()
     track = track.lower()
     if isinstance(version, int) and version == 2019:
@@ -223,7 +254,7 @@ def get_agents(
             )
     elif isinstance(version, int) and version == 2021:
         if bird_only:
-            classes = scml2021.oneshot.team_corleone.MAIN_AGENT
+            classes = (scml2021.oneshot.team_corleone.MAIN_AGENT,)
         elif track in ("std", "standard") and winners_only:
             classes = (
                 (scml2021.standard.team_may.MAIN_AGENT,),

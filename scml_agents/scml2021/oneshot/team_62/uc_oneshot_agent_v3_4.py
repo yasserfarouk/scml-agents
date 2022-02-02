@@ -238,9 +238,9 @@ class UcOneshotAgent3_4(OneShotAgent):
     def propose(self, negotiator_id: str, state: MechanismState):
         """Called when the agent is asking to propose in one negotiation"""
         # collect info
-        ami = self.get_nmi(negotiator_id)
+        nmi = self.get_nmi(negotiator_id)
         partner = (
-            ami.annotation["buyer"] if self.awi.level == 0 else ami.annotation["seller"]
+            nmi.annotation["buyer"] if self.awi.level == 0 else nmi.annotation["seller"]
         )
 
         if self._required_quantity() <= 0:
@@ -254,20 +254,20 @@ class UcOneshotAgent3_4(OneShotAgent):
                 th = self.default_th_value[state.step]
                 target_price = (
                     round(
-                        ami.issues[UNIT_PRICE].min_value
+                        nmi.issues[UNIT_PRICE].min_value
                         + th
                         * (
-                            ami.issues[UNIT_PRICE].max_value
-                            - ami.issues[UNIT_PRICE].min_value
+                            nmi.issues[UNIT_PRICE].max_value
+                            - nmi.issues[UNIT_PRICE].min_value
                         )
                     )
                     if self.awi.level == 0
                     else round(
-                        ami.issues[UNIT_PRICE].max_value
+                        nmi.issues[UNIT_PRICE].max_value
                         - th
                         * (
-                            ami.issues[UNIT_PRICE].max_value
-                            - ami.issues[UNIT_PRICE].min_value
+                            nmi.issues[UNIT_PRICE].max_value
+                            - nmi.issues[UNIT_PRICE].min_value
                         )
                     )
                 )
@@ -281,9 +281,9 @@ class UcOneshotAgent3_4(OneShotAgent):
     def respond(self, negotiator_id: str, state: MechanismState, offer) -> ResponseType:
         """Called when the agent is asked to respond to an offer"""
         # collect info
-        ami = self.get_nmi(negotiator_id)
+        nmi = self.get_nmi(negotiator_id)
         partner = (
-            ami.annotation["buyer"] if self.awi.level == 0 else ami.annotation["seller"]
+            nmi.annotation["buyer"] if self.awi.level == 0 else nmi.annotation["seller"]
         )
         offer_quantity = offer[QUANTITY]
         offer_unit_price = offer[UNIT_PRICE]
@@ -291,8 +291,8 @@ class UcOneshotAgent3_4(OneShotAgent):
         if partner in self.partners:
             target_price = self.actual_price[self.partners.index(partner)][state.step]
         else:
-            min_price = ami.issues[UNIT_PRICE].min_value
-            max_price = ami.issues[UNIT_PRICE].max_value
+            min_price = nmi.issues[UNIT_PRICE].min_value
+            max_price = nmi.issues[UNIT_PRICE].max_value
             th = self.default_th_value[state.step]
             target_price = (
                 round(min_price + th * (max_price - min_price))

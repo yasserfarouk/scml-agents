@@ -240,21 +240,21 @@ class GodfatherAgent(AspirationMixin, OneShotSyncAgent):
 
         self._exit_call()
 
-    def on_negotiation_failure(self, partners, annotation, ami, state):
+    def on_negotiation_failure(self, partners, annotation, nmi, state):
         """Updates negotiation history"""
         call_idx, _ = self._enter_call()
 
-        opp_id = self._get_opp_id_from_ami(ami)
+        opp_id = self._get_opp_id_from_nmi(nmi)
         self.log(f"failing negotiation with {opp_id}")
         self._history.fail(opp_id)
 
         self._exit_call()
 
-    def on_negotiation_success(self, contract, ami):
+    def on_negotiation_success(self, contract, nmi):
         """Updates negotiation history"""
         call_idx, _ = self._enter_call()
 
-        opp_id = self._get_opp_id_from_ami(ami)
+        opp_id = self._get_opp_id_from_nmi(nmi)
         self.log(f"succeeding negotiation with {opp_id}")
         my_offers = self._history.current_negotiator_history(opp_id).my_offers()
         if my_offers and my_offers[-1] == Moves.ACCEPT:
@@ -824,18 +824,18 @@ class GodfatherAgent(AspirationMixin, OneShotSyncAgent):
             else contract.annotation["seller"]
         )
 
-    def _get_opp_id_from_ami(self, ami) -> str:
+    def _get_opp_id_from_nmi(self, nmi) -> str:
         return (
-            ami.annotation["buyer"] if self._is_selling() else ami.annotation["seller"]
+            nmi.annotation["buyer"] if self._is_selling() else nmi.annotation["seller"]
         )
 
     def _get_opp_id_from_neg_id(self, negotiator_id: str) -> str:
-        return self._get_opp_id_from_ami(self.get_nmi(negotiator_id))
+        return self._get_opp_id_from_nmi(self.get_nmi(negotiator_id))
 
     def _get_offer_space(self, neg_id: str) -> OfferSpace:
-        ami = self.get_nmi(neg_id)
-        q = ami.issues[QUANTITY]
-        p = ami.issues[UNIT_PRICE]
+        nmi = self.get_nmi(neg_id)
+        q = nmi.issues[QUANTITY]
+        p = nmi.issues[UNIT_PRICE]
         return OfferSpace(
             min_p=p.min_value,
             max_p=p.max_value,
@@ -1155,11 +1155,11 @@ class CheatingGodfatherAgent(GodfatherAgent):
 
     def get_my_id(self, opp_id: str):
         """Gets agent's own id. Probably not the best method, but oh well."""
-        ami = self.get_nmi(opp_id)
-        our_ids = ami.agent_ids
+        nmi = self.get_nmi(opp_id)
+        our_ids = nmi.agent_ids
         my_id_list = [i for i in our_ids if i != opp_id]
         if len(my_id_list) != 1:
-            raise RuntimeError("Couldn't get my negotiator id from ami")
+            raise RuntimeError("Couldn't get my negotiator id from nmi")
         return my_id_list[0]
 
     def opp_ufun_getter(self, opp_id: str) -> Callable[[], Optional[BilatUFun]]:

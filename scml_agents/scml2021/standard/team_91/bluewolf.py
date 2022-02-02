@@ -126,12 +126,12 @@ class ObedientNegotiator(SAONegotiator):
 
     def propose(self, state: MechanismState) -> Optional[Outcome]:
         """Simply calls the corresponding method on the owner"""
-        return self.owner.propose(state, self.ami, self.is_selling, self.is_requested)
+        return self.owner.propose(state, self.nmi, self.is_selling, self.is_requested)
 
     def respond(self, state: MechanismState, offer: Outcome) -> ResponseType:
         """Simply calls the corresponding method on the owner"""
         return self.owner.respond(
-            state, self.ami, offer, self.is_selling, self.is_requested
+            state, self.nmi, offer, self.is_selling, self.is_requested
         )
 
 
@@ -271,14 +271,14 @@ class BlueWolf(
             )
 
     def propose(
-        self, state: SAOState, ami: SAOAMI, is_selling: bool, is_requested: bool
+        self, state: SAOState, nmi: SAOAMI, is_selling: bool, is_requested: bool
     ):
         partner_id = (
-            ami.annotation["buyer"]
-            if ami.annotation["seller"] == self.id
-            else ami.annotation["seller"]
+            nmi.annotation["buyer"]
+            if nmi.annotation["seller"] == self.id
+            else nmi.annotation["seller"]
         )
-        is_selling = ami.annotation["seller"] == self.id
+        is_selling = nmi.annotation["seller"] == self.id
         offer = [-1] * 3
         offer[TIME] = min(
             np.random.randint(
@@ -287,10 +287,10 @@ class BlueWolf(
             self.awi.n_steps - 1,
         )
         offer[TIME] = min(
-            max(offer[TIME], ami.issues[TIME].min_value), ami.issues[TIME].max_value
+            max(offer[TIME], nmi.issues[TIME].min_value), nmi.issues[TIME].max_value
         )
 
-        offer[UNIT_PRICE] = self._find_good_price(ami, state, offer)
+        offer[UNIT_PRICE] = self._find_good_price(nmi, state, offer)
         if is_selling:
             offer[QUANTITY] = int(2 / 3 * self._cur_outputs_needed[offer[TIME]])
         else:
@@ -303,21 +303,21 @@ class BlueWolf(
             )
 
         offer[QUANTITY] = max(
-            min(offer[QUANTITY], ami.issues[QUANTITY].max_value),
-            ami.issues[QUANTITY].min_value,
+            min(offer[QUANTITY], nmi.issues[QUANTITY].max_value),
+            nmi.issues[QUANTITY].min_value,
         )
 
         return tuple(offer)
 
-    def respond(self, state, ami, offer, is_selling, is_requested):
+    def respond(self, state, nmi, offer, is_selling, is_requested):
         offer = list(offer)
 
         partner_id = (
-            ami.annotation["buyer"]
-            if ami.annotation["seller"] == self.id
-            else ami.annotation["seller"]
+            nmi.annotation["buyer"]
+            if nmi.annotation["seller"] == self.id
+            else nmi.annotation["seller"]
         )
-        is_selling = ami.annotation["seller"] == self.id
+        is_selling = nmi.annotation["seller"] == self.id
         self._prev_oppo_encounter_prices[partner_id].append(offer[UNIT_PRICE])
         self._prev_oppo_encounter_quantities[partner_id].append(offer[QUANTITY])
 
@@ -335,43 +335,43 @@ class BlueWolf(
         if offer[TIME] > self.awi.current_step + 3:
             return ResponseType.REJECT_OFFER
 
-        if self._is_good_price(ami, state, offer):
+        if self._is_good_price(nmi, state, offer):
             return ResponseType.ACCEPT_OFFER
 
         else:
             return ResponseType.REJECT_OFFER
 
-    def _is_selling(self, ami):
-        if not ami:
+    def _is_selling(self, nmi):
+        if not nmi:
             return None
-        return ami.annotation["product"] == self.awi.my_output_product
+        return nmi.annotation["product"] == self.awi.my_output_product
 
-    def _is_good_price(self, ami, state, offer):
+    def _is_good_price(self, nmi, state, offer):
         """Checks if a given price is good enough at this stage"""
-        mn, mx = self._price_range(ami)
-        th = self._th(state.step, ami.n_steps, ami)
+        mn, mx = self._price_range(nmi)
+        th = self._th(state.step, nmi.n_steps, nmi)
         # a good price is one better than the threshold
-        if self._is_selling(ami):
+        if self._is_selling(nmi):
             return (offer[UNIT_PRICE] - mn) >= th * (mx - mn)
         else:
             return (mx - offer[UNIT_PRICE]) >= th * (mx - mn)
 
-    def _find_good_price(self, ami, state, offer):
+    def _find_good_price(self, nmi, state, offer):
         """Finds a good-enough price conceding linearly over time"""
-        mn, mx = self._price_range(ami)
-        th = self._th(state.step, ami.n_steps, ami)
+        mn, mx = self._price_range(nmi)
+        th = self._th(state.step, nmi.n_steps, nmi)
         # offer a price that is around th of your best possible price
-        if self._is_selling(ami):
+        if self._is_selling(nmi):
             return math.floor(mn + th * (mx - mn))
         else:
             return math.ceil(mx - th * (mx - mn))
 
-    def _price_range(self, ami):
+    def _price_range(self, nmi):
         """Limits the price by the best price received"""
-        mn = ami.issues[UNIT_PRICE].min_value
-        mx = ami.issues[UNIT_PRICE].max_value
-        if self._is_selling(ami):
-            partner = ami.annotation["buyer"]
+        mn = nmi.issues[UNIT_PRICE].min_value
+        mx = nmi.issues[UNIT_PRICE].max_value
+        if self._is_selling(nmi):
+            partner = nmi.annotation["buyer"]
             # mx = max(
             #     mn * (1 + self._range_slack),
             #     min(
@@ -413,7 +413,7 @@ class BlueWolf(
             )
 
         else:
-            partner = ami.annotation["seller"]
+            partner = nmi.annotation["seller"]
             # mn = min(
             #     mx * (1 - self._range_slack),
             #     max(
@@ -456,12 +456,12 @@ class BlueWolf(
 
         return math.floor(mn), math.ceil(mx)
 
-    def _th(self, step, n_steps, ami):
+    def _th(self, step, n_steps, nmi):
         """calculates a descending threshold (0 <= th <= 1)"""
         partner = (
-            ami.annotation["buyer"]
-            if self._is_selling(ami)
-            else ami.annotation["seller"]
+            nmi.annotation["buyer"]
+            if self._is_selling(nmi)
+            else nmi.annotation["seller"]
         )
         return ((n_steps - step - 1) / (n_steps - 1)) ** self._e[partner]
 

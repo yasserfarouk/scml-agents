@@ -54,17 +54,17 @@ class SimpleAgent(OneShotAgent, ABC):
         my_needs = self._needed(negotiator_id)
         if my_needs <= 0:
             return None
-        ami = self.get_nmi(negotiator_id)
-        if not ami:
+        nmi = self.get_nmi(negotiator_id)
+        if not nmi:
             return None
-        quantity_issue = ami.issues[QUANTITY]
-        unit_price_issue = ami.issues[UNIT_PRICE]
+        quantity_issue = nmi.issues[QUANTITY]
+        unit_price_issue = nmi.issues[UNIT_PRICE]
         offer = [-1] * 3
         offer[QUANTITY] = max(
             min(my_needs, quantity_issue.max_value), quantity_issue.min_value
         )
         offer[TIME] = self.awi.current_step
-        if self._is_selling(ami):
+        if self._is_selling(nmi):
             offer[UNIT_PRICE] = unit_price_issue.max_value
         else:
             offer[UNIT_PRICE] = unit_price_issue.min_value
@@ -77,8 +77,8 @@ class SimpleAgent(OneShotAgent, ABC):
             - self.secured
         )
 
-    def _is_selling(self, ami):
-        return ami.annotation["product"] == self.awi.my_output_product
+    def _is_selling(self, nmi):
+        return nmi.annotation["product"] == self.awi.my_output_product
 
 
 class BetterAgent(SimpleAgent, ABC):
@@ -100,37 +100,37 @@ class BetterAgent(SimpleAgent, ABC):
         response = super().respond(negotiator_id, state, offer)
         if response != ResponseType.ACCEPT_OFFER:
             return response
-        ami = self.get_nmi(negotiator_id)
+        nmi = self.get_nmi(negotiator_id)
         return (
             response
-            if self._is_good_price(ami, state, offer[UNIT_PRICE])
+            if self._is_good_price(nmi, state, offer[UNIT_PRICE])
             else ResponseType.REJECT_OFFER
         )
 
-    def _is_good_price(self, ami, state, price):
+    def _is_good_price(self, nmi, state, price):
         """Checks if a given price is good enough at this stage"""
-        mn, mx = self._price_range(ami)
-        th = self._th(state.step, ami.n_steps)
+        mn, mx = self._price_range(nmi)
+        th = self._th(state.step, nmi.n_steps)
         # a good price is one better than the threshold
-        if self._is_selling(ami):
+        if self._is_selling(nmi):
             return (price - mn) >= th * (mx - mn)
         else:
             return (mx - price) >= th * (mx - mn)
 
-    def _find_good_price(self, ami, state):
+    def _find_good_price(self, nmi, state):
         """Finds a good-enough price conceding linearly over time"""
-        mn, mx = self._price_range(ami)
-        th = self._th(state.step, ami.n_steps)
+        mn, mx = self._price_range(nmi)
+        th = self._th(state.step, nmi.n_steps)
         # offer a price that is around th of your best possible price
-        if self._is_selling(ami):
+        if self._is_selling(nmi):
             return mn + th * (mx - mn)
         else:
             return mx - th * (mx - mn)
 
-    def _price_range(self, ami):
+    def _price_range(self, nmi):
         """Finds the minimum and maximum prices"""
-        mn = ami.issues[UNIT_PRICE].min_value
-        mx = ami.issues[UNIT_PRICE].max_value
+        mn = nmi.issues[UNIT_PRICE].min_value
+        mx = nmi.issues[UNIT_PRICE].max_value
         return mn, mx
 
     def _th(self, step, n_steps):
@@ -155,17 +155,17 @@ class AdaptiveAgent(BetterAgent, ABC):
     def respond(self, negotiator_id, state, offer):
         """Save the best price received"""
         response = super().respond(negotiator_id, state, offer)
-        ami = self.get_nmi(negotiator_id)
-        if self._is_selling(ami):
+        nmi = self.get_nmi(negotiator_id)
+        if self._is_selling(nmi):
             self._best_selling = max(offer[UNIT_PRICE], self._best_selling)
         else:
             self._best_buying = min(offer[UNIT_PRICE], self._best_buying)
         return response
 
-    def _price_range(self, ami):
+    def _price_range(self, nmi):
         """Limits the price by the best price received"""
-        mn, mx = super()._price_range(ami)
-        if self._is_selling(ami):
+        mn, mx = super()._price_range(nmi)
+        if self._is_selling(nmi):
             mn = max(mn, self._best_selling)
         else:
             mx = min(mx, self._best_buying)
@@ -235,7 +235,7 @@ class Gentle(AdaptiveAgent, ABC):
 
     def on_negotiation_start(self, negotiator_id: str, state: MechanismState) -> None:
         is_selling = self._is_selling(self.get_nmi(negotiator_id))
-        ami = self.get_nmi(negotiator_id)
+        nmi = self.get_nmi(negotiator_id)
         if is_selling:
             self.nego_info["my_name"] = shorten_name(
                 self.get_nmi(negotiator_id).annotation["seller"]
@@ -313,13 +313,13 @@ class Gentle(AdaptiveAgent, ABC):
 
         # update my current best price to use for limiting concession in other
         # negotiations
-        ami = self.get_nmi(negotiator_id)
+        nmi = self.get_nmi(negotiator_id)
         up = offer[UNIT_PRICE]
-        if self._is_selling(ami):
-            partner = ami.annotation["buyer"]
+        if self._is_selling(nmi):
+            partner = nmi.annotation["buyer"]
             self._best_opp_selling[partner] = max(up, self._best_selling)
         else:
-            partner = ami.annotation["seller"]
+            partner = nmi.annotation["seller"]
             self._best_opp_buying[partner] = min(up, self._best_buying)
 
         response = super().respond(negotiator_id, state, offer)
@@ -330,15 +330,15 @@ class Gentle(AdaptiveAgent, ABC):
 
         return response
 
-    def _find_good_price(self, ami, state):
+    def _find_good_price(self, nmi, state):
         """Finds a good-enough price conceding linearly over time"""
-        is_selling = self._is_selling(ami)
+        is_selling = self._is_selling(nmi)
         # offer a price that is around th of your best possible price
 
         # パラメタの設定
-        name = ami.annotation["buyer"] if is_selling else ami.annotation["seller"]
+        name = nmi.annotation["buyer"] if is_selling else nmi.annotation["seller"]
         success_agreements = opponent_agreements(
-            ami, is_selling, self.success_contracts
+            nmi, is_selling, self.success_contracts
         )
         accept_agreements = [
             _
@@ -354,13 +354,13 @@ class Gentle(AdaptiveAgent, ABC):
         rank = opponent_rank(
             list(self.active_negotiators.keys()), is_selling, self.success_contracts
         )
-        good_price_range = self._good_price_range(ami)
+        good_price_range = self._good_price_range(nmi)
         std = good_price_range["max"] if is_selling else good_price_range["min"]
         # std = (good_price_range["min"] + good_price_range["max"]) / 2
         # std = self.awi.trading_prices[1]
         pattern = ["offer"]
-        if self.nego_info["negotiation_step"] >= ami.n_steps - 1:
-            if self._environment_factor(ami) >= 0.5:
+        if self.nego_info["negotiation_step"] >= nmi.n_steps - 1:
+            if self._environment_factor(nmi) >= 0.5:
                 pattern.append("good_env")
                 if success_agreements:
                     if accept_agreements:
@@ -368,7 +368,7 @@ class Gentle(AdaptiveAgent, ABC):
                         if price_comparison(
                             is_selling,
                             worst_opp_acc_price(
-                                ami, is_selling, self.success_contracts
+                                nmi, is_selling, self.success_contracts
                             ),
                             std,
                         ):
@@ -379,8 +379,8 @@ class Gentle(AdaptiveAgent, ABC):
                         pattern.append("offer_agreements")
 
                     if list(rank.keys())[0] == name:
-                        step = min(state.step + 1, ami.n_steps - 1)
-                elif self.nego_info["negotiation_step"] >= ami.n_steps - 1:
+                        step = min(state.step + 1, nmi.n_steps - 1)
+                elif self.nego_info["negotiation_step"] >= nmi.n_steps - 1:
                     pattern.append("first_offer")
                 else:
                     pattern.append("")  # パラメタを変更しない
@@ -392,7 +392,7 @@ class Gentle(AdaptiveAgent, ABC):
                         if price_comparison(
                             is_selling,
                             worst_opp_acc_price(
-                                ami, is_selling, self.success_contracts
+                                nmi, is_selling, self.success_contracts
                             ),
                             std,
                         ):
@@ -402,32 +402,32 @@ class Gentle(AdaptiveAgent, ABC):
                     else:
                         pattern.append("offer_agreements")
                     if list(rank.keys())[0] == name:
-                        step = min(state.step + 1, ami.n_steps - 1)
-                elif self.nego_info["negotiation_step"] >= ami.n_steps - 1:
+                        step = min(state.step + 1, nmi.n_steps - 1)
+                elif self.nego_info["negotiation_step"] >= nmi.n_steps - 1:
                     pattern.append("first_offer")
                 else:
                     pattern.append("")  # パラメタを変更しない
             self._set_param(pattern)
 
-        mn, mx = self._price_range(ami)
-        th = self._th(step, ami.n_steps)
+        mn, mx = self._price_range(nmi)
+        th = self._th(step, nmi.n_steps)
 
         if is_selling:
             return mn + th * (mx - mn)
         else:
             return mx - th * (mx - mn)
 
-    def _is_good_price(self, ami, state, price):
+    def _is_good_price(self, nmi, state, price):
         """Checks if a given price is good enough at this stage"""
-        is_selling = self._is_selling(ami)
+        is_selling = self._is_selling(nmi)
 
         # 相手の譲歩率に応じて判断
-        name = ami.annotation["buyer"] if is_selling else ami.annotation["seller"]
+        name = nmi.annotation["buyer"] if is_selling else nmi.annotation["seller"]
         success_agreements = opponent_agreements(
-            ami, is_selling, self.success_contracts
+            nmi, is_selling, self.success_contracts
         )
         pattern = ["accept"]
-        if self.nego_info["negotiation_step"] >= ami.n_steps - 1:
+        if self.nego_info["negotiation_step"] >= nmi.n_steps - 1:
             # 譲歩率の変化
             if self._opp_concession_rate_change(name):
                 pattern.append("concession")
@@ -435,51 +435,51 @@ class Gentle(AdaptiveAgent, ABC):
                 if success_agreements:
                     pattern.append("persist")
                 else:
-                    up = ami.issues[UNIT_PRICE]
+                    up = nmi.issues[UNIT_PRICE]
                     if is_selling:
                         return price >= (up.min_value + up.max_value) / 2
                     else:
                         return price <= (up.min_value + up.max_value) / 2
             # env-factor
-            if self._environment_factor(ami) > 0.5:
+            if self._environment_factor(nmi) > 0.5:
                 pattern.append("good_env")
             else:
                 pattern.append("bad_env")
 
             self._set_param(pattern)
 
-        mn, mx = self._price_range(ami)
-        th = self._th(state.step, ami.n_steps)
+        mn, mx = self._price_range(nmi)
+        th = self._th(state.step, nmi.n_steps)
 
         # a good price is one better than the threshold
-        if self._is_selling(ami):
+        if self._is_selling(nmi):
             return (price - mn) >= th * (mx - mn)
         else:
             return (mx - price) >= th * (mx - mn)
 
-    def _good_price_range(self, ami: SAOAMI):
+    def _good_price_range(self, nmi: SAOAMI):
         """エージェントにとって良い価格帯を見つける"""
-        is_selling = self._is_selling(ami)
-        mx = ami.issues[UNIT_PRICE].max_value
-        mn = ami.issues[UNIT_PRICE].min_value
+        is_selling = self._is_selling(nmi)
+        mx = nmi.issues[UNIT_PRICE].max_value
+        mn = nmi.issues[UNIT_PRICE].min_value
 
         price_range = {
             "min": mn
-            + Gentle.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn),
+            + Gentle.better_agent._th(nmi.n_steps - 2, nmi.n_steps) * (mx - mn),
             "max": mx
-            - Gentle.better_agent._th(ami.n_steps - 2, ami.n_steps) * (mx - mn),
+            - Gentle.better_agent._th(nmi.n_steps - 2, nmi.n_steps) * (mx - mn),
         }
 
         return price_range
 
     def _first_offer_price(self, name: str):
         """合意のない相手に対するofferの価格を決定"""
-        ami = self.get_nmi(name)
-        is_selling = self._is_selling(ami)
+        nmi = self.get_nmi(name)
+        is_selling = self._is_selling(nmi)
         time = t(self.awi.current_step, self.awi.n_steps)
 
         # 基準値の決定
-        up = ami.issues[UNIT_PRICE]
+        up = nmi.issues[UNIT_PRICE]
         std = (up.max_value + up.min_value) / 2
 
         # 価格を決定（滑らかに譲歩）
@@ -488,7 +488,7 @@ class Gentle(AdaptiveAgent, ABC):
         th = [0.0, 0.3]
         if time < th[0]:
             strong_degree = strong_range["max"]
-        elif th[0] <= time <= th[1] or 0.5 < self._self_factor(ami):
+        elif th[0] <= time <= th[1] or 0.5 < self._self_factor(nmi):
             strong_degree = strong_range["max"] - rng * min(
                 time - th[0] / th[1] - th[0], 1
             )
@@ -499,21 +499,21 @@ class Gentle(AdaptiveAgent, ABC):
 
         return price
 
-    def _price_range(self, ami):
+    def _price_range(self, nmi):
         """Limits the price by the best price received"""
-        mn = ami.issues[UNIT_PRICE].min_value
-        mx = ami.issues[UNIT_PRICE].max_value
-        is_selling = self._is_selling(ami)
-        name = ami.annotation["buyer"] if is_selling else ami.annotation["seller"]
+        mn = nmi.issues[UNIT_PRICE].min_value
+        mx = nmi.issues[UNIT_PRICE].max_value
+        is_selling = self._is_selling(nmi)
+        name = nmi.annotation["buyer"] if is_selling else nmi.annotation["seller"]
 
-        if self._is_selling(ami):
-            partner = ami.annotation["buyer"]
+        if self._is_selling(nmi):
+            partner = nmi.annotation["buyer"]
             mn = min(
                 mx * (1 - self._range_slack),
                 # self.new_price_selling * (1 - self.new_price_slack),
                 # min([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [float("inf")]),
                 # min([_.agreement["unit_price"] for _ in success_agreements] + [float("inf")]),
-                worst_opp_acc_price(ami, is_selling, self.success_contracts)
+                worst_opp_acc_price(nmi, is_selling, self.success_contracts)
                 * (1 + self.worst_opp_acc_price_slack),
                 max(
                     [mn]
@@ -536,13 +536,13 @@ class Gentle(AdaptiveAgent, ABC):
                 ),
             )
         else:
-            partner = ami.annotation["seller"]
+            partner = nmi.annotation["seller"]
             mx = max(
                 mn * (1 + self._range_slack),
                 # self.new_price_buying * (1 + self.new_price_slack),
                 # max([_[UNIT_PRICE] for _ in self.my_offer_list[partner]] + [0]),
                 # max([_.agreement["unit_price"] for _ in success_agreements] + [0]),
-                worst_opp_acc_price(ami, is_selling, self.success_contracts)
+                worst_opp_acc_price(nmi, is_selling, self.success_contracts)
                 * (1 - self.worst_opp_acc_price_slack),
                 min(
                     [mx]
@@ -567,7 +567,7 @@ class Gentle(AdaptiveAgent, ABC):
             )
         return mn, mx
 
-    def _self_factor(self, ami):
+    def _self_factor(self, nmi):
         """自身の交渉の進捗を評価"""
         prev_agreement = 0  # 前日合意できたか
         agreement_ratio = 0  # 相手との交渉成功割合
@@ -589,12 +589,12 @@ class Gentle(AdaptiveAgent, ABC):
 
         # 良い値段で合意できているか
         success_agreements = opponent_agreements(
-            ami, self._is_selling(ami), self.success_contracts
+            nmi, self._is_selling(nmi), self.success_contracts
         )
         if success_agreements:
             tp = self.awi.trading_prices[1]
             prev_up = success_agreements[-1].agreement["unit_price"]
-            if self._is_selling(ami):
+            if self._is_selling(nmi):
                 good_agreement = min(max(0.5 - (prev_up - tp) / tp, 0), 1)
             else:
                 good_agreement = max(min(0.5 + (prev_up - tp) / tp, 1), 0)
@@ -609,9 +609,9 @@ class Gentle(AdaptiveAgent, ABC):
         # 重み付けして足す
         return w_prev * prev_agreement + w_good * good_agreement
 
-    def _environment_factor(self, ami):
+    def _environment_factor(self, nmi):
         """マーケットの状況を評価"""
-        if self._is_selling(ami):
+        if self._is_selling(nmi):
             n_sellers = len(self.awi.all_suppliers[1])
             n_buyers = len(self.awi.my_consumers)
             return min(n_buyers / n_sellers / 2, 1)
@@ -622,7 +622,7 @@ class Gentle(AdaptiveAgent, ABC):
 
     def _opp_concession_rate_change(self, name: str):
         """相手の譲歩の変化率を計算"""
-        ami = self.get_nmi(name)
+        nmi = self.get_nmi(name)
         offers = [
             _
             for _ in self.opp_offer_list[shorten_name(name)]

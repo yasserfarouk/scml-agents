@@ -130,15 +130,15 @@ class Agent74(OneShotAgent):
 
             self._isExContractsInitialized = True
 
-        ami = self.get_nmi(negotiator_id)
-        if not ami:
+        nmi = self.get_nmi(negotiator_id)
+        if not nmi:
             return None
 
-        quantity_issue = ami.issues[QUANTITY]
-        unit_price_issue = ami.issues[UNIT_PRICE]
+        quantity_issue = nmi.issues[QUANTITY]
+        unit_price_issue = nmi.issues[UNIT_PRICE]
 
         need_to_buy, need_to_sell = self._needs()
-        isSelling = self._is_selling(ami)
+        isSelling = self._is_selling(nmi)
         if isSelling:  # This is a sell negotiation
             offer = [-1] * 3
             quantityToOffer = max(
@@ -147,7 +147,7 @@ class Agent74(OneShotAgent):
             offer[QUANTITY] = quantityToOffer
 
             MinAcceptableSellPrice, MinProfitablePrice = self.getMinAcceptableSellPrice(
-                quantityToOffer, state, ami
+                quantityToOffer, state, nmi
             )
             offer[UNIT_PRICE] = max(
                 min(MinAcceptableSellPrice, unit_price_issue.max_value),
@@ -165,7 +165,7 @@ class Agent74(OneShotAgent):
             )
             offer[QUANTITY] = quantityToOffer
 
-            MaxAcceptableBuyPrice = self.getMaxAcceptableBuyPrice(state, ami)
+            MaxAcceptableBuyPrice = self.getMaxAcceptableBuyPrice(state, nmi)
             offer[UNIT_PRICE] = max(
                 min(MaxAcceptableBuyPrice, unit_price_issue.max_value),
                 unit_price_issue.min_value,
@@ -179,22 +179,22 @@ class Agent74(OneShotAgent):
     def respond(self, negotiator_id, state, offer):
 
         """Called when the agent is asked to respond to an offer"""
-        ami = self.get_nmi(negotiator_id)
-        if not ami:
+        nmi = self.get_nmi(negotiator_id)
+        if not nmi:
             return None
 
         inStock = self._MySecuredBuys - self._MySecuredSells
         isQuantityOK = False
         isPriceOK = False
         quantityToOffer = 0
-        isSelling = self._is_selling(ami)
+        isSelling = self._is_selling(nmi)
         role = ""
         if isSelling:
             role = "Selling"
         else:
             role = "Buying"
 
-        # self._outFile.write(f"\nOffer received!!! - {role}. cur step={state.step}, max steps={ami.n_steps}, Neg ID={negotiator_id}\n")
+        # self._outFile.write(f"\nOffer received!!! - {role}. cur step={state.step}, max steps={nmi.n_steps}, Neg ID={negotiator_id}\n")
         # self._outFile.write(f"Offer quantity={offer[QUANTITY]}, Offer price={offer[UNIT_PRICE]}, Offer time={offer[TIME]}\n")
 
         # find the quantity I still need and end negotiation if I need nothing more
@@ -218,9 +218,9 @@ class Agent74(OneShotAgent):
                 isQuantityOK = True
 
             # Calculate minimum acceptable sell price
-            mx = ami.issues[UNIT_PRICE].max_value  # Get max price
+            mx = nmi.issues[UNIT_PRICE].max_value  # Get max price
             MinAcceptableSellPrice, MinProfitablePrice = self.getMinAcceptableSellPrice(
-                quantityToOffer, state, ami
+                quantityToOffer, state, nmi
             )
             if offer[UNIT_PRICE] > MinAcceptableSellPrice:
                 isPriceOK = True  # Offer is more than the minimum acceptable sell price - Accept it
@@ -228,7 +228,7 @@ class Agent74(OneShotAgent):
                 isPriceOK = True  # Offer is close to the maximum - Accept it
             else:  # Price is not OK - Reject offer
                 # self._outFile.write(f"Rejecting offer - Need to sell={need_to_sell}, suggested unit price={offer[UNIT_PRICE]}, calculated min price={MinAcceptableSellPrice}\n")
-                # self._outFile.write(f"th={self._th(state.step, ami.n_steps)}, mx={mx}, MinProfitablePrice={MinProfitablePrice}\n")
+                # self._outFile.write(f"th={self._th(state.step, nmi.n_steps)}, mx={mx}, MinProfitablePrice={MinProfitablePrice}\n")
                 # self._outFile.write(f"Avg buy price={self._MyAverageBuyPrice}, production cost={self._MyProductionCost}, Secured sells={self._MySecuredSells}, Avg sell price={self._MyAverageSellPrice}\n")
                 return ResponseType.REJECT_OFFER
 
@@ -257,8 +257,8 @@ class Agent74(OneShotAgent):
                 isQuantityOK = True
 
             # Calculate minimum acceptable sell price
-            mn = ami.issues[UNIT_PRICE].min_value  # Get min price
-            MaxAcceptableBuyPrice = self.getMaxAcceptableBuyPrice(state, ami)
+            mn = nmi.issues[UNIT_PRICE].min_value  # Get min price
+            MaxAcceptableBuyPrice = self.getMaxAcceptableBuyPrice(state, nmi)
             if offer[UNIT_PRICE] < MaxAcceptableBuyPrice:
                 isPriceOK = True  # Offer is less than the maximum acceptable buy price - Accept it
             elif offer[UNIT_PRICE] < 1.1 * mn:
@@ -267,7 +267,7 @@ class Agent74(OneShotAgent):
                 # self._outFile.write(
                 #    f"Rejecting offer - Need to buy={need_to_buy}, suggested unit price={offer[UNIT_PRICE]}, calculated min price={MaxAcceptableBuyPrice}\n")
                 # self._outFile.write(
-                #    f"th={self._th(state.step, ami.n_steps)}, mn={mn}\n")
+                #    f"th={self._th(state.step, nmi.n_steps)}, mn={mn}\n")
                 # self._outFile.write(
                 #    f"Avg buy price={self._MyAverageBuyPrice}, production cost={self._MyProductionCost}, Secured sells={self._MySecuredSells}, Avg sell price={self._MyAverageSellPrice}\n")
                 return ResponseType.REJECT_OFFER
@@ -281,7 +281,7 @@ class Agent74(OneShotAgent):
                 # self._outFile.write(f"Rejecting offer - Need to buy={need_to_buy}, Offer quantity={offer[QUANTITY]}, unit price={offer[UNIT_PRICE]}\n")
                 return ResponseType.REJECT_OFFER
 
-    def getMinAcceptableSellPrice(self, quantity, state, ami):
+    def getMinAcceptableSellPrice(self, quantity, state, nmi):
         totalSellPriceSoFar = self._MyAverageSellPrice * self._MySecuredSells
         inStock = self._MySecuredBuys - self._MySecuredSells
         MinProfitablePrice = (
@@ -289,20 +289,20 @@ class Agent74(OneShotAgent):
             * (self._MySecuredSells + quantity)
             - totalSellPriceSoFar
         ) / quantity
-        th = self._th(state.step, ami.n_steps)
-        mx = ami.issues[UNIT_PRICE].max_value  # Get max price
-        mn = ami.issues[UNIT_PRICE].min_value  # Get min price
+        th = self._th(state.step, nmi.n_steps)
+        mx = nmi.issues[UNIT_PRICE].max_value  # Get max price
+        mn = nmi.issues[UNIT_PRICE].min_value  # Get min price
         MinProfitablePrice = max(MinProfitablePrice, mn)
         MinAcceptableSellPrice = MinProfitablePrice + th * (mx - MinProfitablePrice)
         if (inStock > 0) and (
-            ami.n_steps == state.step + 1
+            nmi.n_steps == state.step + 1
         ):  # This is the last step in negotiation, get rid of stock
             # self._outFile.write("This is the last step, get rid of stock!!\n")
             MinAcceptableSellPrice = mn
 
         return MinAcceptableSellPrice, MinProfitablePrice
 
-    def getMaxAcceptableBuyPrice(self, state, ami):
+    def getMaxAcceptableBuyPrice(self, state, nmi):
         SellBuyGap = self._MySecuredSells - self._MySecuredBuys
 
         if (
@@ -310,17 +310,17 @@ class Agent74(OneShotAgent):
         ):  # Agent is currently obliged to sell more than it actually has
             # I'm willing to buy at a price that I'm already obliged to sell minus my production cost minus the penalty I will get if I don't sell
             maxBuyPrice = self._MyAverageSellPrice - self._MyProductionCost
-            th = self._th(state.step, ami.n_steps)
-            mx = ami.issues[UNIT_PRICE].max_value  # Get max price
+            th = self._th(state.step, nmi.n_steps)
+            mx = nmi.issues[UNIT_PRICE].max_value  # Get max price
             maxBuyPrice = min(
                 maxBuyPrice, mx
             )  # Max buy price cannot be higher than the maximal price
-            mn = ami.issues[UNIT_PRICE].min_value  # Get min price
+            mn = nmi.issues[UNIT_PRICE].min_value  # Get min price
             maxAcceptableBuyPrice = maxBuyPrice - th * (maxBuyPrice - mn)
             return maxAcceptableBuyPrice
         else:  # Agent is not obliged to sell items it does not have
             # I'm willing to buy at a max price as the average i bought so far
-            mn = ami.issues[UNIT_PRICE].min_value  # Get min price
+            mn = nmi.issues[UNIT_PRICE].min_value  # Get min price
             maxBuyPrice = self._MyAverageBuyPrice
             if maxBuyPrice < mn:  # My average buy price is too low
                 # The max price I'm willing to accept is the market trading price of my output product minus my production cost
@@ -329,8 +329,8 @@ class Agent74(OneShotAgent):
                 maxBuyPrice = myOutputProductTradingPrice - self._MyProductionCost
 
             maxBuyPrice = max(maxBuyPrice, mn)
-            th = self._th(state.step, ami.n_steps)
-            mn = ami.issues[UNIT_PRICE].min_value  # Get min price
+            th = self._th(state.step, nmi.n_steps)
+            mn = nmi.issues[UNIT_PRICE].min_value  # Get min price
             maxAcceptableBuyPrice = maxBuyPrice - th * (maxBuyPrice - mn)
             return maxAcceptableBuyPrice
 
@@ -506,10 +506,10 @@ class Agent74(OneShotAgent):
         """Called when a negotiation the agent is a party of ends without
         agreement"""
 
-    def _is_selling(self, ami):
-        if not ami:
+    def _is_selling(self, nmi):
+        if not nmi:
             return None
-        return ami.annotation["product"] == self.awi.my_output_product
+        return nmi.annotation["product"] == self.awi.my_output_product
 
 
 def run(

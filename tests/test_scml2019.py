@@ -1,31 +1,13 @@
-import copy
-from pathlib import Path
-from pprint import pprint
-from typing import Dict, List
-
-import hypothesis.strategies as st
-import numpy as np
-import pkg_resources
 import pytest
-from hypothesis import given, settings
-from negmas.helpers import unique_name
-from negmas.situated import Contract
-from pytest import mark
-from scml.scml2019 import *
-from scml.scml2019 import (
-    FactoryStatusUpdate,
-    GreedyScheduler,
-    InputOutput,
-    Job,
-    ProductionFailure,
-)
+from scml.scml2019.factory_managers.builtins import GreedyFactoryManager
 from scml.scml2019.utils import anac2019_collusion, anac2019_sabotage, anac2019_std
+from scml.scml2019.world import SCML2019World
 
 from scml_agents import get_agents
 from scml_agents.scml2019 import *
 
 
-@mark.parametrize("fm", get_agents(2019, track="all"))
+@pytest.mark.parametrize("fm", get_agents(2019, track="all"))
 def test_can_run_std(fm):
     horizon = None
     signing_delay = 0

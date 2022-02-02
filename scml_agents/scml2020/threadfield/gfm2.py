@@ -237,7 +237,7 @@ class GFM2(SCML2020Agent):
     def negotiator(self, is_seller: bool, issues=None) -> Optional[SAONegotiator]:
         """Creates a negotiator"""
 
-        if issues is None or not enumerate_issues(issues, astype=tuple):
+        if issues is None or not enumerate_issues(issues):
             return None
 
         return AspirationNegotiator(
@@ -619,7 +619,7 @@ class MySpecialUtilityFunction(UtilityFunction):
         outcome_type: Optional[Type] = None,
         issue_names: Optional[List[str]] = None,
         issues: List["Issue"] = None,
-        ami: AgentMechanismInterface = None,
+        nmi: AgentMechanismInterface = None,
         awi: AWI = None,
     ) -> None:
         self.is_seller = is_seller
@@ -630,7 +630,7 @@ class MySpecialUtilityFunction(UtilityFunction):
             reserved_value=reserved_value,
             issue_names=issue_names,
             issues=issues,
-            ami=ami,
+            nmi=nmi,
         )
 
     def eval(self, offer: "Outcome") -> Value:

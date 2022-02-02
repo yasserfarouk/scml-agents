@@ -84,8 +84,8 @@ from negmas.sao import (
     AspirationNegotiator,
     NaiveTitForTatNegotiator,
     NiceNegotiator,
-    OnlyBestNegotiator,
     SimpleTitForTatNegotiator,
+    TopFractionNegotiator,
     ToughNegotiator,
 )
 
@@ -873,7 +873,7 @@ class StagHunterTough(StagHunter):
 # class StagHunterOB(StagHungerAsp):
 #     def init(self, discounter_factor=0.99, memory_size=10):
 #         super().init(discounter_factor, memory_size)
-#         self.oppo_negotiators = dict([(id, OnlyBestNegotiator(ufun=self.ufuncs[id])) for id in self.oppo_id_list])
+#         self.oppo_negotiators = dict([(id, TopFractionNegotiator(ufun=self.ufuncs[id])) for id in self.oppo_id_list])
 #
 #
 # class StagHunterNTFT(StagHungerAsp):

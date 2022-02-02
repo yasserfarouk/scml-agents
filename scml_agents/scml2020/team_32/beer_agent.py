@@ -1,15 +1,14 @@
 """
 **Submitted to ANAC 2020 SCML**
-*Authors* Benjamin Wexler <benwex93@gmail.com> Elad <eladna812@gmail.com>
+Authors* Benjamin Wexler <benwex93@gmail.com> Elad <eladna812@gmail.com>
 """
-# from scml.scml2020 import SCML2020World
-# import matplotlib.pyplot as plt
 # required for running the test tournament
 import time
 
 # required for typing
 from typing import Any, Dict, List, Optional, Tuple
 
+import matplotlib.pyplot as plt
 import numpy as np
 from negmas import (
     AgentMechanismInterface,
@@ -21,7 +20,7 @@ from negmas import (
     Negotiator,
 )
 from negmas.helpers import humanize_time
-from scml.scml2020 import IndependentNegotiationsManager
+from scml.scml2020 import IndependentNegotiationsManager, SCML2020World
 from scml.scml2020.agents import (
     BuyCheapSellExpensiveAgent,
     DecentralizingAgent,

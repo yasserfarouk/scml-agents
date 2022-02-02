@@ -87,8 +87,8 @@ from negmas.sao import (
     AspirationNegotiator,
     NaiveTitForTatNegotiator,
     NiceNegotiator,
-    OnlyBestNegotiator,
     SimpleTitForTatNegotiator,
+    TopFractionNegotiator,
     ToughNegotiator,
 )
 
@@ -397,10 +397,10 @@ class StagHunter(OneShotAgent):
         if not offer:
             return None
 
-        ami = self.get_nmi(negotiator_id)
+        nmi = self.get_nmi(negotiator_id)
 
-        unit_price_issue = ami.issues[UNIT_PRICE]
-        quantity_issue = ami.issues[QUANTITY]
+        unit_price_issue = nmi.issues[UNIT_PRICE]
+        quantity_issue = nmi.issues[QUANTITY]
 
         offer = list(offer)
 
@@ -458,12 +458,12 @@ class StagHunter(OneShotAgent):
 
         raw_price = offer[UNIT_PRICE]
 
-        mn, mx = self._price_range(ami)
+        mn, mx = self._price_range(nmi)
 
         test_price_interval = (
-            np.linspace(raw_price, ami.issues[UNIT_PRICE].max_value, 50)
+            np.linspace(raw_price, nmi.issues[UNIT_PRICE].max_value, 50)
             if self.awi.is_first_level
-            else np.linspace(raw_price, ami.issues[UNIT_PRICE].min_value, 50)
+            else np.linspace(raw_price, nmi.issues[UNIT_PRICE].min_value, 50)
         )
 
         candidate_price = None
@@ -481,8 +481,8 @@ class StagHunter(OneShotAgent):
             )
             cur_offer = deepcopy(offer)
             cur_offer[UNIT_PRICE] = max(
-                min(int(p), ami.issues[UNIT_PRICE].max_value),
-                ami.issues[UNIT_PRICE].min_value,
+                min(int(p), nmi.issues[UNIT_PRICE].max_value),
+                nmi.issues[UNIT_PRICE].min_value,
             )
 
             u1 = self.ufun.from_offers(
@@ -530,32 +530,32 @@ class StagHunter(OneShotAgent):
         # reject any offers with quantities above my needs
         offer = list(offer)
 
-        ami = self.get_nmi(negotiator_id)
+        nmi = self.get_nmi(negotiator_id)
 
         up = offer[UNIT_PRICE]
         # qt = offer[QUANTITY]
         is_selling = self.awi.is_first_level
         if is_selling:
             self._best_selling = max(up, self._best_selling)
-            partner = ami.annotation["buyer"]
+            partner = nmi.annotation["buyer"]
             self._best_opp_selling[partner] = max(up, self._best_opp_selling[partner])
         else:
             self._best_buying = min(up, self._best_buying)
-            partner = ami.annotation["seller"]
+            partner = nmi.annotation["seller"]
             self._best_opp_buying[partner] = min(up, self._best_opp_buying[partner])
 
         self._prev_opp_quantity[partner].append(offer[QUANTITY])
         self._prev_opp_price[partner].append(up)
 
         if (
-            offer[QUANTITY] < ami.issues[QUANTITY].min_value
-            or offer[QUANTITY] > ami.issues[QUANTITY].max_value
+            offer[QUANTITY] < nmi.issues[QUANTITY].min_value
+            or offer[QUANTITY] > nmi.issues[QUANTITY].max_value
         ):
             return ResponseType.REJECT_OFFER
 
         if (
-            offer[UNIT_PRICE] < ami.issues[UNIT_PRICE].min_value
-            or offer[UNIT_PRICE] > ami.issues[UNIT_PRICE].max_value
+            offer[UNIT_PRICE] < nmi.issues[UNIT_PRICE].min_value
+            or offer[UNIT_PRICE] > nmi.issues[UNIT_PRICE].max_value
         ):
             return ResponseType.REJECT_OFFER
 
@@ -571,13 +571,13 @@ class StagHunter(OneShotAgent):
         if u1 > u2:
             return ResponseType.REJECT_OFFER
 
-        # if(state.step >= ami.n_steps - 2):
+        # if(state.step >= nmi.n_steps - 2):
         #     return ResponseType.ACCEPT_OFFER
 
         if self._needed() <= 0:
             return ResponseType.ACCEPT_OFFER
 
-        if self._is_good_price(ami, state, offer):
+        if self._is_good_price(nmi, state, offer):
             return ResponseType.ACCEPT_OFFER
 
         return ResponseType.REJECT_OFFER
@@ -586,17 +586,17 @@ class StagHunter(OneShotAgent):
         my_needs = int(self._needed())
         if my_needs <= 0 and not self.awi.is_first_level:
             return None
-        ami = self.get_nmi(negotiator_id)
-        if not ami:
+        nmi = self.get_nmi(negotiator_id)
+        if not nmi:
             return None
-        quantity_issue = ami.issues[QUANTITY]
-        unit_price_issue = ami.issues[UNIT_PRICE]
+        quantity_issue = nmi.issues[QUANTITY]
+        unit_price_issue = nmi.issues[UNIT_PRICE]
         offer = [-1] * 3
         offer[QUANTITY] = max(
             min(my_needs, quantity_issue.max_value), quantity_issue.min_value
         )
         offer[TIME] = self.awi.current_step
-        if self._is_selling(ami):
+        if self._is_selling(nmi):
             offer[UNIT_PRICE] = unit_price_issue.max_value
         else:
             offer[UNIT_PRICE] = unit_price_issue.min_value
@@ -605,17 +605,17 @@ class StagHunter(OneShotAgent):
     # def best_offer(self, negotiator_id):
     #
     #     my_needs = int(self._needed())
-    #     ami = self.get_nmi(negotiator_id)
-    #     if not ami:
+    #     nmi = self.get_nmi(negotiator_id)
+    #     if not nmi:
     #         return None
-    #     quantity_issue = ami.issues[QUANTITY]
-    #     unit_price_issue = ami.issues[UNIT_PRICE]
+    #     quantity_issue = nmi.issues[QUANTITY]
+    #     unit_price_issue = nmi.issues[UNIT_PRICE]
     #     offer = [-1] * 3
     #     offer[QUANTITY] = max(
     #         min(my_needs, quantity_issue.max_value), quantity_issue.min_value
     #     )
     #     offer[TIME] = self.awi.current_step
-    #     if self._is_selling(ami):
+    #     if self._is_selling(nmi):
     #         offer[UNIT_PRICE] = unit_price_issue.max_value
     #     else:
     #         offer[UNIT_PRICE] = unit_price_issue.min_value
@@ -632,37 +632,37 @@ class StagHunter(OneShotAgent):
         )
         return demand - self._secured
 
-    def _is_selling(self, ami):
-        if not ami:
+    def _is_selling(self, nmi):
+        if not nmi:
             return None
-        return ami.annotation["product"] == self.awi.my_output_product
+        return nmi.annotation["product"] == self.awi.my_output_product
 
-    def _is_good_price(self, ami, state, offer):
+    def _is_good_price(self, nmi, state, offer):
         """Checks if a given price is good enough at this stage"""
-        mn, mx = self._price_range(ami)
-        th = self._th(state.step, ami.n_steps, ami)
+        mn, mx = self._price_range(nmi)
+        th = self._th(state.step, nmi.n_steps, nmi)
         # a good price is one better than the threshold
-        if self._is_selling(ami):
+        if self._is_selling(nmi):
             return (offer[UNIT_PRICE] - mn) >= th * (mx - mn)
         else:
             return (mx - offer[UNIT_PRICE]) >= th * (mx - mn)
 
-    def _find_good_price(self, ami, state, offer):
+    def _find_good_price(self, nmi, state, offer):
         """Finds a good-enough price conceding linearly over time"""
-        mn, mx = self._price_range(ami)
-        th = self._th(state.step, ami.n_steps, ami)
+        mn, mx = self._price_range(nmi)
+        th = self._th(state.step, nmi.n_steps, nmi)
         # offer a price that is around th of your best possible price
-        if self._is_selling(ami):
+        if self._is_selling(nmi):
             return mn + th * (mx - mn)
         else:
             return mx - th * (mx - mn)
 
-    def _price_range(self, ami):
+    def _price_range(self, nmi):
         """Limits the price by the best price received"""
-        mn = ami.issues[UNIT_PRICE].min_value
-        mx = ami.issues[UNIT_PRICE].max_value
-        if self._is_selling(ami):
-            partner = ami.annotation["buyer"]
+        mn = nmi.issues[UNIT_PRICE].min_value
+        mx = nmi.issues[UNIT_PRICE].max_value
+        if self._is_selling(nmi):
+            partner = nmi.annotation["buyer"]
             # mx = max(
             #     mn * (1 + self._range_slack),
             #     min(
@@ -705,7 +705,7 @@ class StagHunter(OneShotAgent):
             )
 
         else:
-            partner = ami.annotation["seller"]
+            partner = nmi.annotation["seller"]
             # mn = min(
             #     mx * (1 - self._range_slack),
             #     max(
@@ -748,12 +748,12 @@ class StagHunter(OneShotAgent):
             )
         return mn, mx
 
-    def _th(self, step, n_steps, ami):
+    def _th(self, step, n_steps, nmi):
         """calculates a descending threshold (0 <= th <= 1)"""
         partner = (
-            ami.annotation["buyer"]
-            if self._is_selling(ami)
-            else ami.annotation["seller"]
+            nmi.annotation["buyer"]
+            if self._is_selling(nmi)
+            else nmi.annotation["seller"]
         )
         return ((n_steps - step - 1) / (n_steps - 1)) ** self._e[partner]
 
@@ -1057,37 +1057,37 @@ class StagHunterV5(OneShotAgent):
         )
         return demand - self._secured
 
-    def _is_selling(self, ami):
-        if not ami:
+    def _is_selling(self, nmi):
+        if not nmi:
             return None
-        return ami.annotation["product"] == self.awi.my_output_product
+        return nmi.annotation["product"] == self.awi.my_output_product
 
-    def _is_good_price(self, ami, state, offer):
+    def _is_good_price(self, nmi, state, offer):
         """Checks if a given price is good enough at this stage"""
-        mn, mx = self._price_range(ami)
-        th = self._th(state.step, ami.n_steps, ami)
+        mn, mx = self._price_range(nmi)
+        th = self._th(state.step, nmi.n_steps, nmi)
         # a good price is one better than the threshold
-        if self._is_selling(ami):
+        if self._is_selling(nmi):
             return (offer[UNIT_PRICE] - mn) >= th * (mx - mn)
         else:
             return (mx - offer[UNIT_PRICE]) >= th * (mx - mn)
 
-    def _find_good_price(self, ami, state, offer):
+    def _find_good_price(self, nmi, state, offer):
         """Finds a good-enough price conceding linearly over time"""
-        mn, mx = self._price_range(ami)
-        th = self._th(state.step, ami.n_steps, ami)
+        mn, mx = self._price_range(nmi)
+        th = self._th(state.step, nmi.n_steps, nmi)
         # offer a price that is around th of your best possible price
-        if self._is_selling(ami):
+        if self._is_selling(nmi):
             return mn + th * (mx - mn)
         else:
             return mx - th * (mx - mn)
 
-    def _price_range(self, ami):
+    def _price_range(self, nmi):
         """Limits the price by the best price received"""
-        mn = ami.issues[UNIT_PRICE].min_value
-        mx = ami.issues[UNIT_PRICE].max_value
-        if self._is_selling(ami):
-            partner = ami.annotation["buyer"]
+        mn = nmi.issues[UNIT_PRICE].min_value
+        mx = nmi.issues[UNIT_PRICE].max_value
+        if self._is_selling(nmi):
+            partner = nmi.annotation["buyer"]
             # mx = max(
             #     mn * (1 + self._range_slack),
             #     min(
@@ -1122,7 +1122,7 @@ class StagHunterV5(OneShotAgent):
             )
 
         else:
-            partner = ami.annotation["seller"]
+            partner = nmi.annotation["seller"]
             # mn = min(
             #     mx * (1 - self._range_slack),
             #     max(
@@ -1157,12 +1157,12 @@ class StagHunterV5(OneShotAgent):
             )
         return mn, mx
 
-    def _th(self, step, n_steps, ami):
+    def _th(self, step, n_steps, nmi):
         """calculates a descending threshold (0 <= th <= 1)"""
         partner = (
-            ami.annotation["buyer"]
-            if self._is_selling(ami)
-            else ami.annotation["seller"]
+            nmi.annotation["buyer"]
+            if self._is_selling(nmi)
+            else nmi.annotation["seller"]
         )
         return ((n_steps - step - 1) / (n_steps - 1)) ** self._e[partner]
 
@@ -1173,12 +1173,12 @@ class StagHunterV5(OneShotAgent):
         # if not offer:
         #     return None
 
-        ami = self.get_nmi(negotiator_id)
-        unit_price_issue = ami.issues[UNIT_PRICE]
-        quantity_issue = ami.issues[QUANTITY]
+        nmi = self.get_nmi(negotiator_id)
+        unit_price_issue = nmi.issues[UNIT_PRICE]
+        quantity_issue = nmi.issues[QUANTITY]
 
         offer = [-1] * 3
-        if self._is_selling(ami):
+        if self._is_selling(nmi):
             offer[UNIT_PRICE] = unit_price_issue.max_value
         else:
             offer[UNIT_PRICE] = unit_price_issue.min_value
@@ -1236,7 +1236,7 @@ class StagHunterV5(OneShotAgent):
 
         raw_price = offer[UNIT_PRICE]
 
-        # mn, mx = self._price_range(ami)
+        # mn, mx = self._price_range(nmi)
 
         test_price_interval = (
             np.linspace(raw_price, unit_price_issue.max_value, 25)
@@ -1262,18 +1262,18 @@ class StagHunterV5(OneShotAgent):
 
         offer = list(offer)
 
-        ami = self.get_nmi(negotiator_id)
+        nmi = self.get_nmi(negotiator_id)
 
         up = offer[UNIT_PRICE]
         # qt = offer[QUANTITY]
         is_selling = self.awi.is_first_level
         if is_selling:
             self._best_selling = max(up, self._best_selling)
-            partner = ami.annotation["buyer"]
+            partner = nmi.annotation["buyer"]
             self._best_opp_selling[partner] = max(up, self._best_opp_selling[partner])
         else:
             self._best_buying = min(up, self._best_buying)
-            partner = ami.annotation["seller"]
+            partner = nmi.annotation["seller"]
             self._best_opp_buying[partner] = min(up, self._best_opp_buying[partner])
         self._prev_opp_quantity[partner].append(offer[QUANTITY])
         self._prev_opp_price[partner].append(up)
@@ -1293,16 +1293,16 @@ class StagHunterV5(OneShotAgent):
         if u1 > u2:
             return ResponseType.REJECT_OFFER
 
-        if state.step >= ami.n_steps - 2:
+        if state.step >= nmi.n_steps - 2:
             return ResponseType.ACCEPT_OFFER
 
         # if self.awi.current_step < 5:
-        #     if self._is_good_price(ami, state, offer):
+        #     if self._is_good_price(nmi, state, offer):
         #         return ResponseType.ACCEPT_OFFER
         #
         #     return ResponseType.REJECT_OFFER
 
-        # if(state.step < 3 or self._is_good_price(ami, state, offer)):
+        # if(state.step < 3 or self._is_good_price(nmi, state, offer)):
         #     return ResponseType.ACCEPT_OFFER
         # if(len(self._prev_opp_quantity[negotiator_id]) >= 3):
         #     if(np.max(self._prev_opp_quantity[negotiator_id][-3:]) -  np.min(self._prev_opp_quantity[negotiator_id][-3:]) == 0):
@@ -1314,20 +1314,20 @@ class StagHunterV5(OneShotAgent):
         # if(offer[QUANTITY] < self._quantity_slack[self._cur_rank[negotiator_id]] * self._needed()):
         #     return ResponseType.ACCEPT_OFFER
 
-        if self._is_good_price(ami, state, offer):
+        if self._is_good_price(nmi, state, offer):
             return ResponseType.ACCEPT_OFFER
 
-        # if(state.step >= self._stop_steps[negotiator_id] or self._is_good_price(ami, state, offer)):
+        # if(state.step >= self._stop_steps[negotiator_id] or self._is_good_price(nmi, state, offer)):
         #     return ResponseType.ACCEPT_OFFER
 
         return ResponseType.REJECT_OFFER
 
 
 class StagHunterV6(StagHunterV5):
-    def _is_good_price(self, ami, state, offer):
+    def _is_good_price(self, nmi, state, offer):
         """Checks if a given price is good enough at this stage"""
-        mn, mx = self._price_range(ami)
-        th = self._th(state.step, ami.n_steps, ami)
+        mn, mx = self._price_range(nmi)
+        th = self._th(state.step, nmi.n_steps, nmi)
         # a good price is one better than the threshold
         is_selling = self.awi.is_first_level
 
@@ -1352,15 +1352,15 @@ class StagHunterV6(StagHunterV5):
             [is_selling] * (len(self.cur_offer_list) + 1),
         )
 
-        if self._is_selling(ami):
+        if self._is_selling(nmi):
             return (u2 - u_mn) >= th * (u_mx - u_mn)
         else:
             return (u2 - u_mx) >= th * (u_mn - u_mx)
 
-    def _find_good_price(self, ami, state, offer):
+    def _find_good_price(self, nmi, state, offer):
         """Finds a good-enough price conceding linearly over time"""
-        mn, mx = self._price_range(ami)
-        th = self._th(state.step, ami.n_steps, ami)
+        mn, mx = self._price_range(nmi)
+        th = self._th(state.step, nmi.n_steps, nmi)
         # offer a price that is around th of your best possible price
         is_selling = self.awi.is_first_level
 
@@ -1396,7 +1396,7 @@ class StagHunterV6(StagHunterV5):
                 [is_selling] * (len(self.cur_offer_list) + 1),
             )
 
-            if self._is_selling(ami):
+            if self._is_selling(nmi):
                 if (u2 - u_mn) >= th * (u_mx - u_mn):
                     return p
             else:
@@ -1413,12 +1413,12 @@ class StagHunterV7(StagHunter):
         # if not offer:
         #     return None
 
-        ami = self.get_nmi(negotiator_id)
-        unit_price_issue = ami.issues[UNIT_PRICE]
-        quantity_issue = ami.issues[QUANTITY]
+        nmi = self.get_nmi(negotiator_id)
+        unit_price_issue = nmi.issues[UNIT_PRICE]
+        quantity_issue = nmi.issues[QUANTITY]
 
         offer = [-1] * 3
-        if self._is_selling(ami):
+        if self._is_selling(nmi):
             offer[UNIT_PRICE] = unit_price_issue.max_value
         else:
             offer[UNIT_PRICE] = unit_price_issue.min_value

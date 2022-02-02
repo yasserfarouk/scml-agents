@@ -344,7 +344,10 @@ class SAHAFactoryManager(DoNothingFactoryManager):
                 name=self.name + "*" + partner, **self.negotiator_params
             )
             ufun = self.ufun_factory(self, self._create_annotation(cfp=cfp))
-            neg.utility_function = normalize(ufun, outcomes=cfp.outcomes)
+            try:
+                neg.utility_function = normalize(ufun, outcomes=cfp.outcomes)
+            except:
+                neg.utility_function = ufun
             return neg
 
     def on_negotiation_success(
@@ -531,14 +534,17 @@ class SAHAFactoryManager(DoNothingFactoryManager):
             )
         else:
             neg = self.negotiator_type(name=self.name + ">" + cfp.publisher)
-        self.request_negotiation(
-            negotiator=neg,
-            cfp=cfp,
-            ufun=normalize(
-                self.ufun_factory(self, self._create_annotation(cfp=cfp)),
-                outcomes=cfp.outcomes,
-            ),
-        )
+        try:
+            self.request_negotiation(
+                negotiator=neg,
+                cfp=cfp,
+                ufun=normalize(
+                    self.ufun_factory(self, self._create_annotation(cfp=cfp)),
+                    outcomes=cfp.outcomes,
+                ),
+            )
+        except:
+            pass
 
     def _process_sell_cfp(self, cfp: "CFP"):
         if self.awi.is_bankrupt(cfp.publisher):
@@ -558,14 +564,17 @@ class SAHAFactoryManager(DoNothingFactoryManager):
             )
         else:
             neg = self.negotiator_type(name=self.name + ">" + cfp.publisher)
-        self.request_negotiation(
-            negotiator=neg,
-            cfp=cfp,
-            ufun=normalize(
-                self.ufun_factory(self, self._create_annotation(cfp=cfp)),
-                outcomes=cfp.outcomes,
-            ),
-        )
+        try:
+            self.request_negotiation(
+                negotiator=neg,
+                cfp=cfp,
+                ufun=normalize(
+                    self.ufun_factory(self, self._create_annotation(cfp=cfp)),
+                    outcomes=cfp.outcomes,
+                ),
+            )
+        except:
+            pass
 
     def on_new_cfp(self, cfp: "CFP") -> None:
 

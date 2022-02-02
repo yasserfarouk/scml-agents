@@ -8,7 +8,9 @@ from negmas import (
     SAOSyncController,
     outcome_is_valid,
 )
+from negmas.common import PreferencesChange
 from negmas.sao import SAOResponse
+from negmas.sao.negotiators.passthrough import PassThroughSAONegotiator
 from scml.scml2020 import (
     QUANTITY,
     TIME,
@@ -100,6 +102,12 @@ class ProtectedSyncController(SyncController):
             return -1000
         return self._price_weight * price + (1 - self._price_weight) * q
 
+    def create_negotiator(self, *args, **kwargs):
+        neg = super().create_negotiator(*args, **kwargs)
+        if self.ufun and not isinstance(neg, PassThroughSAONegotiator):
+            neg.set_preferences(self.ufun)
+        return neg
+
     def my_first_proposals(self, offers):
         return {nid: self.best_proposal(nid)[0] for nid in offers.keys()}
 
@@ -109,7 +117,7 @@ class ProtectedSyncController(SyncController):
         utils = np.array(
             [
                 self.utility(
-                    o, self.negotiators[nid][0].ami.issues[UNIT_PRICE].max_value
+                    o, self.negotiators[nid][0].nmi.issues[UNIT_PRICE].max_value
                 )
                 for nid, o in offers.items()
             ]
@@ -164,18 +172,18 @@ class ProtectedSyncController(SyncController):
 
     def good_neg_proposal(self, nid):
         negotiator = self.negotiators[nid][0]
-        if negotiator.ami is None:
+        if negotiator.nmi is None:
             return None, -1000
         utils = np.array(
             [
-                self.utility(_, negotiator.ami.issues[UNIT_PRICE].max_value)
-                for _ in negotiator.ami.outcomes
+                self.utility(_, negotiator.nmi.issues[UNIT_PRICE].max_value)
+                for _ in negotiator.nmi.outcomes
             ]
         )
         good_offers = []
         for i in range(len(utils)):
             if utils[i] > 0:
-                good_offers.append((negotiator.ami.outcomes[i], utils[i]))
+                good_offers.append((negotiator.nmi.outcomes[i], utils[i]))
 
         if len(good_offers) == 0:
             return None, -1000
@@ -207,8 +215,8 @@ class MyAsp(AspirationNegotiator):
     def __init__(self, *args, **kwargs):
         self.manager = kwargs["MyManager"]
         del kwargs["MyManager"]
-        self.manager.good_buy_price = 0
         super().__init__(*args, **kwargs)
+        self.manager.good_buy_price = 0
 
     def my_acceptable_unit_price(self, step: int, sell: bool):
         production_cost = np.max(
@@ -254,7 +262,7 @@ class MyAsp(AspirationNegotiator):
 
     def respond(self, state, offer):
         if self.ufun_max is None or self.ufun_min is None:
-            self.on_preferences_changed()
+            self.on_preferences_changed([PreferencesChange.General])
         if self.ufun is None:
             return ResponseType.REJECT_OFFER
         u = self.ufun(offer)
@@ -283,7 +291,7 @@ class MyAsp(AspirationNegotiator):
 
     def propose(self, state):
         if self.ufun_max is None or self.ufun_min is None:
-            self.on_preferences_changed()
+            self.on_preferences_changed([PreferencesChange.General])
         if self.ufun_max < self.reserved_value:
             return None
         asp = (
@@ -551,7 +559,7 @@ class StepBuyBestSellNegManager(StepNegotiationManager):
             return None
         # self.awi.loginfo_agent(
         #     f"Accepting request from {initiator}: {[str(_) for _ in mechanism.issues]} "
-        #     f"({Issue.num_outcomes(mechanism.issues)})"
+        #     f"({num_outcomes(mechanism.issues)})"
         # )
         # create a controller for the time-step if one does not exist or use the one already running
         if controller_info.controller is None:

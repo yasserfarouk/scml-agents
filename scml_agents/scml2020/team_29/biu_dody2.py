@@ -20,6 +20,7 @@ from negmas import (
     Negotiator,
     SAONegotiator,
     UtilityFunction,
+    num_outcomes,
 )
 from negmas.helpers import get_class
 from scml import SCML2020World
@@ -737,7 +738,7 @@ class DrorStepNegotiationManager(DrorMeanERPStrategy, DrorNegotiationManager):
             return None
         self.awi.loginfo_agent(
             f"Accepting request from {initiator}: {[str(_) for _ in mechanism.issues]} "
-            f"({Issue.num_outcomes(mechanism.issues)})"
+            f"({num_outcomes(mechanism.issues)})"
         )
         # create a controller for the time-step if one does not exist or use the one already running
         if controller_info.controller is None:
