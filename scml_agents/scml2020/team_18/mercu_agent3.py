@@ -193,16 +193,10 @@ class MyController(SAOController, AspirationMixin, Notifier):
             negotiator_params if negotiator_params is not None else dict()
         )
         self.secured = 0
-        issues = [
-            make_issue((1, int(max(1, target_quantity))), "quantity"),
-            make_issue((step, step), "time"),
-            make_issue((int(urange[0]), int(max(urange))), "unit_price"),
-        ]
-
         if is_seller:
-            self.ufun = LinearUtilityFunction((1, 1, 10), issues=issues)
+            self.ufun = LinearUtilityFunction((1, 1, 10))
         else:
-            self.ufun = LinearUtilityFunction((1, -1, -10), issues=issues)
+            self.ufun = LinearUtilityFunction((1, -1, -10))
         negotiator_params["ufun"] = self.ufun
         self.__negotiator = instantiate(negotiator_type, **negotiator_params)
         self.completed = defaultdict(bool)
