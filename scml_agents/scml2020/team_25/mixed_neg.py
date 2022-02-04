@@ -273,7 +273,7 @@ class MyAsp(AspirationNegotiator):
         )
         ok_ufunc = self.ufun((1, 1, self.manager.output_price[0] - production_cost))
         asp = (
-            self.aspiration(state.relative_time)
+            self.utility_at(state.relative_time)
             * ((self.ufun_max * 0.3 + ok_ufunc * 0.7) - self.ufun_min)
             + self.ufun_min
         )
@@ -295,7 +295,7 @@ class MyAsp(AspirationNegotiator):
         if self.ufun_max < self.reserved_value:
             return None
         asp = (
-            self.aspiration(state.relative_time) * (self.ufun_max - self.ufun_min)
+            self.utility_at(state.relative_time) * (self.ufun_max - self.ufun_min)
             + self.ufun_min
         )
         if asp < self.reserved_value:

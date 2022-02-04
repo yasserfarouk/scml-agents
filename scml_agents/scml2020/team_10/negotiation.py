@@ -39,18 +39,14 @@ class MyFixedUtilityNegotiator(SAONegotiator):
         _is_seller: bool,
         parent: "PredictionBasedTradingStrategy",
         manager=None,
-        assume_normalized=True,
         ufun: Optional[UtilityFunction] = None,
         name: Optional[str] = None,
-        rational_proposal=True,
         owner: "Agent" = None,
         horizon: int = MAX_HORIZON,
     ):
         super().__init__(
-            assume_normalized=assume_normalized,
             ufun=ufun,
             name=name,
-            rational_proposal=rational_proposal,
             parent=parent,
             owner=owner,
         )
@@ -302,18 +298,14 @@ class MyUtilityNegotiator(SAONegotiator):
         _is_seller: bool,
         parent: "PredictionBasedTradingStrategy",
         manager=None,
-        assume_normalized=True,
         ufun: Optional[UtilityFunction] = None,
         name: Optional[str] = None,
-        rational_proposal=True,
         owner: "Agent" = None,
         horizon: int = MAX_HORIZON,
     ):
         super().__init__(
-            assume_normalized=assume_normalized,
             ufun=ufun,
             name=name,
-            rational_proposal=rational_proposal,
             parent=parent,
             owner=owner,
         )
@@ -327,7 +319,6 @@ class MyUtilityNegotiator(SAONegotiator):
                 manager  # the negotiation manager (parent may be a controller)
             )
         self.horizon = horizon
-        self.rational_proposal = False
 
     def pad(self, arr, padding):
         if len(arr) == padding:
@@ -635,9 +626,9 @@ class MyUtilityNegotiationManager(NegotiationManager):
         # negotiate with all suppliers of the input product I need to produce
 
         issues = [
-            make_issue(qvalues, name="quantity"),
-            make_issue(tvalues, name="time"),
-            make_issue(uvalues, name="uvalues"),
+            make_issue((int(qvalues[0]), int(max(qvalues))), name="quantity"),
+            make_issue((int(tvalues[0]), int(max(tvalues))), name="time"),
+            make_issue((int(uvalues[0]), int(max(uvalues))), name="unit_price"),
         ]
 
         for partner in partners:

@@ -1,6 +1,7 @@
 import warnings
 from collections import defaultdict
 
+from negmas import make_issue
 from scml.scml2019.common import (
     INVALID_UTILITY,
     ProductionFailure,
@@ -20,6 +21,8 @@ from scml.scml2019.simulators import (
     FastFactorySimulator,
     temporary_transaction,
 )
+
+from scml_agents.scml2021.oneshot.team_73.nego_utils import UNIT_PRICE
 
 if True:
     from typing import Any, Callable, Collection, Dict, List, Optional, Type, Union
@@ -197,16 +200,35 @@ class MyScheduleDrivenConsumer(ScheduleDrivenConsumer):
         ufun = WeightedUtilityFunction(
             ufuns=[
                 MappingUtilityFunction(
-                    mapping=lambda x: 1 - x["unit_price"] ** tau_u / beta_u
+                    mapping=lambda x: 1 - x[UNIT_PRICE] ** tau_u / beta_u,
+                    issues=[
+                        make_issue((cfp.min_quantity, cfp.max_quantity), "quantity"),
+                        make_issue((cfp.min_time, cfp.max_time), "time"),
+                        make_issue(
+                            (cfp.min_unit_price, cfp.max_unit_price), "unit_price"
+                        ),
+                    ],
                 ),
                 MappingUtilityFunction(
                     mapping=functools.partial(
                         ScheduleDrivenConsumer._qufun, tau=tau_q, profile=profile
-                    )
+                    ),
+                    issues=[
+                        make_issue((cfp.min_quantity, cfp.max_quantity), "quantity"),
+                        make_issue((cfp.min_time, cfp.max_time), "time"),
+                        make_issue(
+                            (cfp.min_unit_price, cfp.max_unit_price), "unit_price"
+                        ),
+                    ],
                 ),
             ],
             weights=[alpha_u, alpha_q],
             name=self.name + "_" + partner,
+            issues=[
+                make_issue((cfp.min_quantity, cfp.max_quantity), "quantity"),
+                make_issue((cfp.min_time, cfp.max_time), "time"),
+                make_issue((cfp.min_unit_price, cfp.max_unit_price), "unit_price"),
+            ],
         )
         ufun.reserved_value = -1500
         # ufun = normalize(, outcomes=cfp.outcomes, infeasible_cutoff=-1500)

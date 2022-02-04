@@ -715,7 +715,7 @@ class PrintingFactoryManager(DoNothingFactoryManager):
 
 
 class AspirationNego2(negmas.sao.AspirationNegotiator):
-    def aspiration(self, t: float) -> float:
+    def utility_at(self, t: float) -> float:
         """
         The aspiration level
 
@@ -1801,26 +1801,18 @@ class InsuranceFraudNegotiator(negmas.sao.AspirationNegotiator):
         ufun=None,
         parent: Controller = None,
         randomize_offer=False,
-        can_propose=True,
-        assume_normalized=False,
         ### aspiration init
         max_aspiration=0.95,
         aspiration_type="boulware",
-        above_reserved_value=False,
         agent=None,
         cfp=None,
     ):
         super().__init__(
             name=name,
-            assume_normalized=assume_normalized,
             parent=parent,
             ufun=ufun,
             stochastic=randomize_offer,
-            can_propose=can_propose,
         )
-
-        self.rational_proposal = False
-        self.can_propose = False
 
         self.partner = cfp.publisher
         self.agent = agent

@@ -79,8 +79,8 @@ class OurNegotiationsManager(IndependentNegotiationsManager):
 
         # ours
         if is_seller:
-            return LinearUtilityFunction((0, 1, 25))
-        return LinearUtilityFunction((0, -1, -25))
+            return LinearUtilityFunction((0, 1, 25), issues=issues, outcomes=outcomes)
+        return LinearUtilityFunction((0, -1, -25), issues=issues, outcomes=outcomes)
 
 
 # use DemandDrivenProductionStrategy instead of SupplyDrivenProductionStrategy

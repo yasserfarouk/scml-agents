@@ -164,9 +164,9 @@ class GFM2(SCML2020Agent):
             uvalues = (1, self.awi.catalog_prices[self.awi.my_input_product])
             print_log(f"tvalues={tvalues}")
             issues = [
-                make_issue(qvalues, name="quantity"),
-                make_issue(tvalues, name="time"),
-                make_issue(uvalues, name="uvalues"),
+                make_issue((int(qvalues[0]), int(max(qvalues))), name="quantity"),
+                make_issue((int(tvalues[0]), int(max(tvalues))), name="time"),
+                make_issue((int(uvalues[0]), int(max(uvalues))), name="unit_price"),
             ]
             for _ in range(5):
                 for partner in self.awi.my_suppliers:
@@ -193,9 +193,9 @@ class GFM2(SCML2020Agent):
                 self.awi.catalog_prices[self.awi.my_output_product] * 4,
             )
             issues = [
-                make_issue(qvalues, name="quantity"),
-                make_issue(tvalues, name="time"),
-                make_issue(uvalues, name="uvalues"),
+                make_issue((int(qvalues[0]), int(max(qvalues))), name="quantity"),
+                make_issue((int(tvalues[0]), int(max(tvalues))), name="time"),
+                make_issue((int(uvalues[0]), int(max(uvalues))), name="unit_price"),
             ]
             for _ in range(5):
                 for partner in self.awi.my_consumers:
@@ -242,7 +242,6 @@ class GFM2(SCML2020Agent):
 
         return AspirationNegotiator(
             ufun=self.create_ufun(is_seller=is_seller, issues=issues),
-            assume_normalized=True,
         )
 
     def on_negotiation_failure(

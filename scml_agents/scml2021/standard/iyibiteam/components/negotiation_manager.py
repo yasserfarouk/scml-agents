@@ -55,7 +55,7 @@ class ModifiedAspirationAgent(AspirationNegotiator):
             self.ufun_min -= (slope - 0.2) % (0 - 0.2 + 1) + 0.2
 
         asp = (
-            self.aspiration(state.relative_time) * (self.ufun_max - self.ufun_min)
+            self.utility_at(state.relative_time) * (self.ufun_max - self.ufun_min)
             + self.ufun_min
         )
 

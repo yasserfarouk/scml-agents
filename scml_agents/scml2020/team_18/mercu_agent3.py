@@ -68,6 +68,7 @@ from negmas import (
 )
 from negmas.events import Notification, Notifier
 from negmas.helpers import get_class, humanize_time, instantiate
+from negmas.outcomes.base_issue import make_issue
 from negmas.sao import SAOController
 from scml.scml2020 import Failure, SCML2020Agent
 from scml.scml2020.agents import (
@@ -192,10 +193,16 @@ class MyController(SAOController, AspirationMixin, Notifier):
             negotiator_params if negotiator_params is not None else dict()
         )
         self.secured = 0
+        issues = [
+            make_issue((1, int(max(1, target_quantity))), "quantity"),
+            make_issue((step, step), "time"),
+            make_issue((int(urange[0]), int(max(urange))), "unit_price"),
+        ]
+
         if is_seller:
-            self.ufun = LinearUtilityFunction((1, 1, 10))
+            self.ufun = LinearUtilityFunction((1, 1, 10), issues=issues)
         else:
-            self.ufun = LinearUtilityFunction((1, -1, -10))
+            self.ufun = LinearUtilityFunction((1, -1, -10), issues=issues)
         negotiator_params["ufun"] = self.ufun
         self.__negotiator = instantiate(negotiator_type, **negotiator_params)
         self.completed = defaultdict(bool)
@@ -1033,8 +1040,8 @@ class MercuAgent(
     def create_ufun(self, is_seller: bool, issues=None, outcomes=None):
         """A utility function that penalizes high cost and late delivery for buying and and awards them for selling"""
         if is_seller:
-            return LinearUtilityFunction((0, 0.25, 1))
-        return LinearUtilityFunction((0, -0.5, -0.8))
+            return LinearUtilityFunction((0, 0.25, 1), issues=issues, outcomes=outcomes)
+        return LinearUtilityFunction((0, -0.5, -0.8), issues=issues, outcomes=outcomes)
 
 
 def run(

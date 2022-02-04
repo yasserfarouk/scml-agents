@@ -1,5 +1,8 @@
 import sys
 
+from build.lib.scml_agents.scml2020.a_sengupta.agent1_mod import QUANTITY
+from scml_agents.scml2021.oneshot.team_73.nego_utils import UNIT_PRICE
+
 sys.path.append("/".join(__file__.split("/")[:-1]))
 import math
 import os
@@ -16,6 +19,7 @@ from negmas import (
     MappingUtilityFunction,
     MechanismState,
     Negotiator,
+    make_issue,
 )
 from negmas.sao import AspirationNegotiator
 from prettytable import PrettyTable
@@ -141,16 +145,26 @@ class NVMFactoryManager(DoNothingFactoryManager):
 
         # Initialize the negotiator that will negotiate for inputs
         self.input_negotiator_ufun = MappingUtilityFunction(
-            mapping=lambda outcome: 1 - outcome["unit_price"],
+            mapping=lambda outcome: 1 - outcome[UNIT_PRICE],
             reserved_value=INVALID_UTILITY,
+            issues=[
+                make_issue((1, 20), "quantity"),
+                make_issue((1, 20), "time"),
+                make_issue((1, 20), "unit_price"),
+            ],
         )
 
         # Initialize the negotiator that will negotiate for outputs
         self.output_negotiator_ufun = MappingUtilityFunction(
-            mapping=lambda outcome: (math.exp(outcome["unit_price"]) - 1.5)
-            * outcome["quantity"]
-            if outcome["unit_price"] > 0.0
-            else INVALID_UTILITY
+            mapping=lambda outcome: (math.exp(outcome[UNIT_PRICE]) - 1.5)
+            * outcome[QUANTITY]
+            if outcome[UNIT_PRICE] > 0.0
+            else INVALID_UTILITY,
+            issues=[
+                make_issue((1, 20), "quantity"),
+                make_issue((1, 20), "time"),
+                make_issue((1, 20), "unit_price"),
+            ],
         )
 
         # Set the time limit for posting CFPs.
@@ -331,6 +345,34 @@ class NVMFactoryManager(DoNothingFactoryManager):
             if the_cfps:
                 for i, c in the_cfps.items():
                     c: CFP
+
+                    # Initialize the negotiator that will negotiate for outputs
+                    self.output_negotiator_ufun = MappingUtilityFunction(
+                        mapping=lambda outcome: (math.exp(outcome[UNIT_PRICE]) - 1.5)
+                        * outcome[QUANTITY]
+                        if outcome[UNIT_PRICE] > 0.0
+                        else INVALID_UTILITY,
+                        issues=[
+                            make_issue((c.min_quantity, c.max_quantity), "quantity"),
+                            make_issue((c.min_time, c.max_time), "time"),
+                            make_issue(
+                                (c.min_unit_price, c.max_unit_price), "unit_price"
+                            ),
+                        ],
+                    )
+                    # Initialize the negotiator that will negotiate for inputs
+                    self.input_negotiator_ufun = MappingUtilityFunction(
+                        mapping=lambda outcome: 1 - outcome[UNIT_PRICE],
+                        reserved_value=INVALID_UTILITY,
+                        issues=[
+                            make_issue((c.min_quantity, c.max_quantity), "quantity"),
+                            make_issue((c.min_time, c.max_time), "time"),
+                            make_issue(
+                                (c.min_unit_price, c.max_unit_price), "unit_price"
+                            ),
+                        ],
+                    )
+
                     # Make sure we don't respond to ourselves.
                     if c.publisher != self.id:
                         # Respond to CFPs when we try to buy stuff for the middle man
@@ -403,6 +445,29 @@ class NVMFactoryManager(DoNothingFactoryManager):
         Returning `None` means rejecting to enter this negotiation
 
         """
+
+        # Initialize the negotiator that will negotiate for outputs
+        self.output_negotiator_ufun = MappingUtilityFunction(
+            mapping=lambda outcome: (math.exp(outcome[UNIT_PRICE]) - 1.5)
+            * outcome[QUANTITY]
+            if outcome[UNIT_PRICE] > 0.0
+            else INVALID_UTILITY,
+            issues=[
+                make_issue((cfp.min_quantity, cfp.max_quantity), "quantity"),
+                make_issue((cfp.min_time, cfp.max_time), "time"),
+                make_issue((cfp.min_unit_price, cfp.max_unit_price), "unit_price"),
+            ],
+        )
+        # Initialize the negotiator that will negotiate for inputs
+        self.input_negotiator_ufun = MappingUtilityFunction(
+            mapping=lambda outcome: 1 - outcome[UNIT_PRICE],
+            reserved_value=INVALID_UTILITY,
+            issues=[
+                make_issue((cfp.min_quantity, cfp.max_quantity), "quantity"),
+                make_issue((cfp.min_time, cfp.max_time), "time"),
+                make_issue((cfp.min_unit_price, cfp.max_unit_price), "unit_price"),
+            ],
+        )
         if cfp.publisher == self.id and cfp.is_buy:
             neg_ufun = self.input_negotiator_ufun
         elif cfp.publisher == self.id and not cfp.is_buy:
@@ -603,6 +668,28 @@ class NVMFactoryManager(DoNothingFactoryManager):
     def on_new_cfp(self, cfp: "CFP"):
         """Call whenever a CFP is posted."""
         if cfp.publisher != self.id:
+            # Initialize the negotiator that will negotiate for outputs
+            self.output_negotiator_ufun = MappingUtilityFunction(
+                mapping=lambda outcome: (math.exp(outcome[UNIT_PRICE]) - 1.5)
+                * outcome[QUANTITY]
+                if outcome[UNIT_PRICE] > 0.0
+                else INVALID_UTILITY,
+                issues=[
+                    make_issue((cfp.min_quantity, cfp.max_quantity), "quantity"),
+                    make_issue((cfp.min_time, cfp.max_time), "time"),
+                    make_issue((cfp.min_unit_price, cfp.max_unit_price), "unit_price"),
+                ],
+            )
+            # Initialize the negotiator that will negotiate for inputs
+            self.input_negotiator_ufun = MappingUtilityFunction(
+                mapping=lambda outcome: 1 - outcome[UNIT_PRICE],
+                reserved_value=INVALID_UTILITY,
+                issues=[
+                    make_issue((cfp.min_quantity, cfp.max_quantity), "quantity"),
+                    make_issue((cfp.min_time, cfp.max_time), "time"),
+                    make_issue((cfp.min_unit_price, cfp.max_unit_price), "unit_price"),
+                ],
+            )
             self.request_negotiation(
                 cfp=cfp,
                 negotiator=AspirationNegotiator(

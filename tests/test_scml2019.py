@@ -7,6 +7,30 @@ from scml_agents import get_agents
 from scml_agents.scml2019 import *
 
 
+def test_can_run_std_example():
+    fm = NVMFactoryManager
+    horizon = None
+    signing_delay = 0
+    n_factory_levels = 1
+    n_factories_per_level = 2
+    n_steps = 10
+    world = SCML2019World.chain_world(
+        n_intermediate_levels=n_factory_levels - 1,
+        log_file_name="",
+        n_steps=n_steps,
+        manager_types=(GreedyFactoryManager, fm),
+        n_factories_per_level=n_factories_per_level,
+        default_signing_delay=signing_delay,
+        consumer_kwargs={
+            "consumption_horizon": horizon,
+            "negotiator_type": "negmas.sao.NiceNegotiator",
+        },
+        miner_kwargs={"negotiator_type": "negmas.sao.NiceNegotiator"},
+    )
+    world.run()
+    assert sum(world.stats["n_contracts_concluded"]) > 0
+
+
 @pytest.mark.parametrize("fm", get_agents(2019, track="all"))
 def test_can_run_std(fm):
     horizon = None

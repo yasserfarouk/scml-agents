@@ -36,7 +36,7 @@ class Mynegotiator(AspirationNegotiator):
         my_utility = self.get_normalized_utility(my_offer)
         offered_utility = self.get_normalized_utility(offer)
         asp = (
-            self.aspiration(state.relative_time) * (self.ufun_max - self.ufun_min)
+            self.utility_at(state.relative_time) * (self.ufun_max - self.ufun_min)
             + self.ufun_min
         )
 
@@ -59,7 +59,7 @@ class Mynegotiator(AspirationNegotiator):
         init_rat = round(tot_util * 0.10)  #  best 0,10 percent, random offers
         optm_rat = round(tot_util * 0.10)  # current_r + optm_r, increases the rank
         pesm_rat = round(tot_util * 0.05)  # current_r - pes_r, decreases the rank
-        aspiration = self.aspiration(state.relative_time)
+        aspiration = self.utility_at(state.relative_time)
         asp = aspiration * (self.ufun_max - self.ufun_min) + self.ufun_min
 
         if not self.offers:
@@ -174,7 +174,6 @@ class Mynegotiator(AspirationNegotiator):
                         max(0, (outcome[0] / max_utility)),
                         outcome[1],
                     )
-        a = 0
 
     def on_preferences_changed(self, changes=tuple()):
         super().on_preferences_changed([PreferencesChange.General])
@@ -186,12 +185,11 @@ class Mynegotiator(AspirationNegotiator):
         )
         self.partner_offers.append(self.ordered_outcomes[0][1])
         self.update_weights(self.ordered_outcomes[1][1])
-        if not self.assume_normalized:
-            self.normalize()
-            self.ufun_max = self.ordered_outcomes[0][0]
-            self.ufun_min = self.ordered_outcomes[-1][0]
-            if self.reserved_value is not None and self.ufun_min < self.reserved_value:
-                self.ufun_min = self.reserved_value
+        self.normalize()
+        self.ufun_max = self.ordered_outcomes[0][0]
+        self.ufun_min = self.ordered_outcomes[-1][0]
+        if self.reserved_value is not None and self.ufun_min < self.reserved_value:
+            self.ufun_min = self.reserved_value
         self.normalized_utilities = {}
         for offer_value_pair in self.ordered_outcomes:
             offer = offer_value_pair[1]

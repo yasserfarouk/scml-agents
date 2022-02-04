@@ -163,8 +163,10 @@ class StdAgent(
 
     def create_ufun(self, is_seller, issues, outcomes):
         if is_seller:
-            return LinearUtilityFunction((1, 1, 10))  # q,t,p?
-        return LinearUtilityFunction((1, -1, -10))
+            return LinearUtilityFunction(
+                (1, 1, 10), issues=issues, outcomes=outcomes
+            )  # q,t,p?
+        return LinearUtilityFunction((1, -1, -10), issues=issues, outcomes=outcomes)
 
     def on_contracts_finalized(self, signed, cancelled, rejectors):
         for c in signed:

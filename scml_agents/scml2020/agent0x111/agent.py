@@ -23,6 +23,7 @@ from negmas import (
     PassThroughNegotiator,
     ResponseType,
     UtilityFunction,
+    make_issue,
 )
 from negmas.common import AgentMechanismInterface
 from negmas.events import Notification, Notifier
@@ -96,21 +97,19 @@ class StepController(SAOController, AspirationMixin, Notifier):
             negotiator_params if negotiator_params is not None else dict()
         )
         self.secured = 0
-        # issues = [
-        #   make_issue(qvalues, name="quantity"),
-        #   make_issue(tvalues, name="time"),
-        #   make_issue(uvalues, name="uvalues"),
-        # ]
+        issues = [
+            make_issue((1, int(max(1, target_quantity))), name="quantity"),
+            make_issue((step, step), name="time"),
+            make_issue((int(urange[0]), int(max(urange))), name="unit_price"),
+        ]
 
         # ratio= self.get_ratio_of_suspects()
         # print(str("The ratio between all partners and suspects in step {} is: {}").format(step,ratio))
 
         if is_seller:
-            self.ufun = LinearUtilityFunction((1, 1, 10))
-
+            self.ufun = LinearUtilityFunction((1, 1, 10), issues=issues)
         else:
-
-            self.ufun = LinearUtilityFunction((1, -1, -10))
+            self.ufun = LinearUtilityFunction((1, -1, -10), issues=issues)
 
         negotiator_params["ufun"] = self.ufun
         self.__negotiator = instantiate(negotiator_type, **negotiator_params)

@@ -529,9 +529,7 @@ class SAHAFactoryManager(DoNothingFactoryManager):
         )
 
         if self.negotiator_type == AspirationNegotiator:
-            neg = self.negotiator_type(
-                assume_normalized=True, name=self.name + ">" + cfp.publisher
-            )
+            neg = self.negotiator_type(name=self.name + ">" + cfp.publisher)
         else:
             neg = self.negotiator_type(name=self.name + ">" + cfp.publisher)
         try:
@@ -559,9 +557,7 @@ class SAHAFactoryManager(DoNothingFactoryManager):
         )
 
         if self.negotiator_type == AspirationNegotiator:
-            neg = self.negotiator_type(
-                assume_normalized=True, name=self.name + ">" + cfp.publisher
-            )
+            neg = self.negotiator_type(name=self.name + ">" + cfp.publisher)
         else:
             neg = self.negotiator_type(name=self.name + ">" + cfp.publisher)
         try:

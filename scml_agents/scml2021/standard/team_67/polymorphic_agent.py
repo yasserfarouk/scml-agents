@@ -300,9 +300,9 @@ class MyNegotiationManager(IndependentNegotiationsManager):
     ) -> None:
 
         issues = [
-            make_issue((int(qvalues[0]), int(qvalues[1])), name="quantity"),
-            make_issue((int(tvalues[0]), int(tvalues[1])), name="time"),
-            make_issue((int(uvalues[0]), int(uvalues[1])), name="uvalues"),
+            make_issue((int(qvalues[0]), int(max(qvalues))), name="quantity"),
+            make_issue((int(tvalues[0]), int(max(tvalues))), name="time"),
+            make_issue((int(uvalues[0]), int(max(uvalues))), name="unit_price"),
         ]
 
         for partner in partners:
@@ -352,9 +352,15 @@ class MyNegotiationManager(IndependentNegotiationsManager):
     ) -> UtilityFunction:
         if is_seller:
             trust = self.consumers_financial_trust[partner]
-            return LinearUtilityFunction((1.0 * trust, 1.0 * trust, 10.0 * trust))
+            return LinearUtilityFunction(
+                (1.0 * trust, 1.0 * trust, 10.0 * trust),
+                issues=issues,
+                outcomes=outcomes,
+            )
         trust = self.suppliers_financial_trust[partner]
-        return LinearUtilityFunction((1.0 * trust, -1.0 * trust, -10.0 * trust))
+        return LinearUtilityFunction(
+            (1.0 * trust, -1.0 * trust, -10.0 * trust), issues=issues, outcomes=outcomes
+        )
 
 
 class PolymorphicAgent(

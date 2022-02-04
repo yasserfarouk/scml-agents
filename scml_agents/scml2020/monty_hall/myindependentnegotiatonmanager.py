@@ -132,9 +132,9 @@ class MyIndependentNegotiationManager:
         # negotiate with all suppliers of the input product I need to produce
 
         issues = [
-            make_issue(qvalues, name="quantity"),
-            make_issue(tvalues, name="time"),
-            make_issue(uvalues, name="uvalues"),
+            make_issue((int(qvalues[0]), int(max(qvalues))), name="quantity"),
+            make_issue((int(tvalues[0]), int(max(tvalues))), name="time"),
+            make_issue((int(uvalues[0]), int(max(uvalues))), name="unit_price"),
         ]
         negotiator = self.create_negotiator(sell, issues=issues)
 
@@ -171,5 +171,5 @@ class MyIndependentNegotiationManager:
 
     def create_ufun(self, is_seller: bool, issues=None, outcomes=None):
         if is_seller:
-            return LinearUtilityFunction((1, 1, 10))
-        return LinearUtilityFunction((1, -1, -10))
+            return LinearUtilityFunction((1, 1, 10), issues=issues, outcomes=outcomes)
+        return LinearUtilityFunction((1, -1, -10), issues=issues, outcomes=outcomes)

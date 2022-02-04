@@ -428,9 +428,9 @@ class PreNegotiationManager(IndependentNegotiationsManager):
         )
 
         issues = [
-            make_issue(qvalues, name="quantity"),
-            make_issue(tvalues, name="time"),
-            make_issue(uvalues, name="uvalues"),
+            make_issue((int(qvalues[0]), int(max(qvalues))), name="quantity"),
+            make_issue((int(tvalues[0]), int(max(tvalues))), name="time"),
+            make_issue((int(uvalues[0]), int(max(uvalues))), name="unit_price"),
         ]
         sortpartner = {}
         if self.awi.current_step > 4:
@@ -506,8 +506,8 @@ class PreNegotiationManager(IndependentNegotiationsManager):
         self, is_seller: bool, issues=None, outcomes=None
     ) -> UtilityFunction:
         if is_seller:
-            return LinearUtilityFunction((0, 0.25, 1))
-        return LinearUtilityFunction((0, -0.5, -0.8))
+            return LinearUtilityFunction((0, 0.25, 1), issues=issues, outcomes=outcomes)
+        return LinearUtilityFunction((0, -0.5, -0.8), issues=issues, outcomes=outcomes)
 
 
 class WhAgent(

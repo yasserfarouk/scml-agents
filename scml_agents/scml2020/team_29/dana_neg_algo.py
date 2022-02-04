@@ -133,10 +133,13 @@ class UpdateUfunc:
 class DanasUtilityFunction(CalcTrustworthiness, LinearUtilityFunction):
     def __init__(self, controller, *args, **kwargs):
         self.controller = controller
+        issues = kwargs.get("issues", None)
+        outcomes = kwargs.get("outocmes", None)
+
         if self.controller.is_seller:
-            super().__init__((1, 1, 10))
+            super().__init__((1, 1, 10), issues=issues, outcomes=outcomes)
         else:
-            super().__init__((1, -1, -10))
+            super().__init__((1, -1, -10), issues=issues, outcomes=outcomes)
 
     def eval(self, offer: Optional["Outcome"]) -> Optional[Value]:
         u = super().eval(offer)
