@@ -3,12 +3,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
-from negmas import (
-    Contract,
-    LinearUtilityFunction,
-    SAOMetaNegotiatorController,
-    make_issue,
-)
+from negmas import Contract, LinearUtilityFunction, SAOMetaNegotiatorController
 from scml.scml2020 import QUANTITY, TIME, UNIT_PRICE, SCML2020Agent, SCML2021World
 from scml.scml2020.agents import (
     DecentralizingAgent,
@@ -300,16 +295,6 @@ class MyPaibiuAgent(
                             0.0,
                             self._price_weight,
                         ),
-                        issues=[
-                            make_issue((1, int(max(needs, 1))), "quantity"),
-                            make_issue(
-                                (self._current_start, self._current_end), "time"
-                            ),
-                            make_issue(
-                                (int(price_range[0]), int(max(price_range))),
-                                "unit_price",
-                            ),
-                        ],
                     )
                 )
             else:
@@ -323,16 +308,6 @@ class MyPaibiuAgent(
                             0.0,
                             -self._price_weight,
                         ),
-                        issues=[
-                            make_issue((1, int(max(needs, 1))), "quantity"),
-                            make_issue(
-                                (self._current_start, self._current_end), "time"
-                            ),
-                            make_issue(
-                                (int(price_range[0]), int(max(price_range))),
-                                "unit_price",
-                            ),
-                        ],
                     )
                 )
 

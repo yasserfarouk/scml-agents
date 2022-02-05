@@ -1,8 +1,6 @@
 import os
 import sys
 
-from negmas.outcomes.base_issue import make_issue
-
 sys.path.append(os.path.dirname(__file__))
 
 from math import ceil, floor
@@ -625,14 +623,8 @@ class MyUtilityNegotiationManager(NegotiationManager):
     ) -> None:
         # negotiate with all suppliers of the input product I need to produce
 
-        issues = [
-            make_issue((int(qvalues[0]), int(max(qvalues))), name="quantity"),
-            make_issue((int(tvalues[0]), int(max(tvalues))), name="time"),
-            make_issue((int(uvalues[0]), int(max(uvalues))), name="unit_price"),
-        ]
-
         for partner in partners:
-            negotiator = self.negotiator(sell, issues=issues)
+            negotiator = self.negotiator(sell)
             self.neg_history[sell][negotiator.id] = []
             self.awi.request_negotiation(
                 is_buy=not sell,

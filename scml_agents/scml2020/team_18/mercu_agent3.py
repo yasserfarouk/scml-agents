@@ -68,7 +68,6 @@ from negmas import (
 )
 from negmas.events import Notification, Notifier
 from negmas.helpers import get_class, humanize_time, instantiate
-from negmas.outcomes.base_issue import make_issue
 from negmas.sao import SAOController
 from scml.scml2020 import Failure, SCML2020Agent
 from scml.scml2020.agents import (
@@ -1034,8 +1033,8 @@ class MercuAgent(
     def create_ufun(self, is_seller: bool, issues=None, outcomes=None):
         """A utility function that penalizes high cost and late delivery for buying and and awards them for selling"""
         if is_seller:
-            return LinearUtilityFunction((0, 0.25, 1), issues=issues, outcomes=outcomes)
-        return LinearUtilityFunction((0, -0.5, -0.8), issues=issues, outcomes=outcomes)
+            return LinearUtilityFunction((0, 0.25, 1))
+        return LinearUtilityFunction((0, -0.5, -0.8))
 
 
 def run(

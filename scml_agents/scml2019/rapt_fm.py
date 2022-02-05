@@ -1,7 +1,6 @@
 import warnings
 from collections import defaultdict
 
-from negmas import make_issue
 from scml.scml2019.common import (
     INVALID_UTILITY,
     ProductionFailure,

@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from negmas.outcomes.base_issue import make_issue
 from scml.scml2020 import SCML2020Agent, SCML2021World
 from scml.scml2020.agents.decentralizing import DecentralizingAgentWithLogging
 
@@ -621,16 +620,6 @@ class YetAnotherNegotiationManager:
                             QUANTITY: (1 - self._price_weight),
                             UNIT_PRICE: self._price_weight,
                         },
-                        issues=[
-                            make_issue((1, int(max(needs, 1))), "quantity"),
-                            make_issue(
-                                (self._current_start, self._current_end), "time"
-                            ),
-                            make_issue(
-                                (int(price_range[0]), int(max(price_range))),
-                                "unit_price",
-                            ),
-                        ],
                     )
                 )
             else:
@@ -643,16 +632,6 @@ class YetAnotherNegotiationManager:
                             QUANTITY: (1 - self._price_weight),
                             UNIT_PRICE: -self._price_weight,
                         },
-                        issues=[
-                            make_issue((1, int(max(needs, 1))), "quantity"),
-                            make_issue(
-                                (self._current_start, self._current_end), "time"
-                            ),
-                            make_issue(
-                                (int(price_range[0]), int(max(price_range))),
-                                "unit_price",
-                            ),
-                        ],
                     )
                 )
 
@@ -769,7 +748,6 @@ class FromScratchAgent(SCML2020Agent):
         ufun = self.create_ufun(
             is_seller,
             (issues[UNIT_PRICE].min_value, issues[UNIT_PRICE].max_value),
-            issues=issues,
         )
         return AspirationNegotiator(ufun=ufun)
 
@@ -798,19 +776,17 @@ class FromScratchAgent(SCML2020Agent):
                 oldq * self.prices[is_seller] + p * q
             ) / self.quantities[is_seller]
 
-    def create_ufun(self, is_seller, prange, issues):
+    def create_ufun(self, is_seller, prange):
         if is_seller:
             return MappingUtilityFunction(
                 lambda x: -1000 if x[UNIT_PRICE] < self.prices[1] else x[UNIT_PRICE],
                 reserved_value=0.0,
-                issues=issues,
             )
         return MappingUtilityFunction(
             lambda x: -1000
             if x[UNIT_PRICE] > self.prices[0]
             else prange[1] - x[UNIT_PRICE],
             reserved_value=0.0,
-            issues=issues,
         )
 
 
@@ -848,15 +824,8 @@ class ProactiveFromScratch(FromScratchAgent):
             qrange = (1, q)
             prange = self.prices[not is_seller]
             trange = (awi.current_step, t) if is_seller else (t, awi.n_steps - 1)
-            issues = [
-                make_issue((int(qrange[0]), int(max(qrange))), name="quantity"),
-                make_issue((int(trange[0]), int(max(trange))), name="time"),
-                make_issue((int(prange[0]), int(max(prange))), name="unit_price"),
-            ]
             negotiators = [
-                AspirationNegotiator(
-                    ufun=self.create_ufun(is_seller, prange, issues=issues)
-                )
+                AspirationNegotiator(ufun=self.create_ufun(is_seller, prange))
                 for _ in partners
             ]
             awi.request_negotiations(
