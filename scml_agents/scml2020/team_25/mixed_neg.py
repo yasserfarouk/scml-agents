@@ -300,53 +300,22 @@ class MyAsp(AspirationNegotiator):
         )
         if asp < self.reserved_value:
             return None
-        if self.presorted:
-            if len(self.ordered_outcomes) < 1:
-                return None
-            for i, (u, o) in enumerate(self.ordered_outcomes):
-                if u is None:
-                    continue
-                if u < asp:
-                    if u < self.reserved_value:
-                        return None
-                    if i == 0:
-                        return self.return_good_offer(self.ordered_outcomes[i][1])
-                    if self.randomize_offer:
-                        return random.sample(self.ordered_outcomes[:i], 1)[0][1]
-                    return self.return_good_offer(self.ordered_outcomes[i - 1][1])
-            if self.randomize_offer:
-                return random.sample(self.ordered_outcomes, 1)[0][1]
-            return self.return_good_offer(self.ordered_outcomes[-1][1])
-        else:
-            if asp >= 0.99999999999 and self.best_outcome is not None:
-                return self.best_outcome
-            if self.randomize_offer:
-                return outcome_with_utility(
-                    ufun=self.ufun,
-                    rng=(asp, float("inf")),
-                    issues=self.nmi.issues,
-                )
-            tol = self.tolerance
-            for _ in range(self.n_trials):
-                rng = self.ufun_max - self.ufun_min
-                mx = min(asp + tol * rng, self.__last_offer_util)
-                outcome = outcome_with_utility(
-                    ufun=self.ufun,
-                    rng=(asp, mx),
-                    issues=self.nmi.issues,
-                )
-                if outcome is not None:
-                    break
-                tol = math.sqrt(tol)
-            else:
-                outcome = (
-                    self.best_outcome
-                    if self.__last_offer is None
-                    else self.__last_offer
-                )
-            self.__last_offer_util = self.utility_function(outcome)
-            self.__last_offer = outcome
-            return outcome
+        if len(self.ordered_outcomes) < 1:
+            return None
+        for i, (u, o) in enumerate(self.ordered_outcomes):
+            if u is None:
+                continue
+            if u < asp:
+                if u < self.reserved_value:
+                    return None
+                if i == 0:
+                    return self.return_good_offer(self.ordered_outcomes[i][1])
+                if self.randomize_offer:
+                    return random.sample(self.ordered_outcomes[:i], 1)[0][1]
+                return self.return_good_offer(self.ordered_outcomes[i - 1][1])
+        if self.randomize_offer:
+            return random.sample(self.ordered_outcomes, 1)[0][1]
+        return self.return_good_offer(self.ordered_outcomes[-1][1])
 
 
 class StepBuyBestSellNegManager(StepNegotiationManager):
