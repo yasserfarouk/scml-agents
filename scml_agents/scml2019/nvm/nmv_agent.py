@@ -1,6 +1,6 @@
 import sys
 
-from build.lib.scml_agents.scml2020.a_sengupta.agent1_mod import QUANTITY
+from scml.scml2019 import QUANTITY
 from scml_agents.scml2021.oneshot.team_73.nego_utils import UNIT_PRICE
 
 sys.path.append("/".join(__file__.split("/")[:-1]))
