@@ -56,6 +56,9 @@ class MyUtilityFunction(UtilityFunction):
         return ""
 
     def __call__(self, offer: Outcome) -> Value:
+        return self.eval(offer)
+
+    def eval(self, offer: Outcome) -> Value:
         """Calculate the utility_function value for a given outcome.
 
         Args:
@@ -174,6 +177,9 @@ class MyRLUtilityFunction(UtilityFunction):
         return self.model(to_features)
 
     def __call__(self, offer: Outcome) -> Value:
+        return self.eval(offer)
+
+    def eval(self, offer: Outcome) -> Value:
         """Calculate the utility_function value for a given outcome.
 
         Args:
