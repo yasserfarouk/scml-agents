@@ -10,7 +10,7 @@ from negmas import (
 )
 from negmas.common import PreferencesChange
 from negmas.sao import SAOResponse
-from negmas.sao.negotiators.passthrough import PassThroughSAONegotiator
+from negmas.sao.negotiators.controlled import ControlledSAONegotiator
 from scml.scml2020 import (
     QUANTITY,
     TIME,
@@ -104,7 +104,7 @@ class ProtectedSyncController(SyncController):
 
     def create_negotiator(self, *args, **kwargs):
         neg = super().create_negotiator(*args, **kwargs)
-        if self.ufun and not isinstance(neg, PassThroughSAONegotiator):
+        if self.ufun and not isinstance(neg, ControlledSAONegotiator):
             neg.set_preferences(self.ufun)
         return neg
 

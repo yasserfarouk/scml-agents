@@ -14,13 +14,13 @@ from negmas import (
     AspirationNegotiator,
     Breach,
     Contract,
+    ControlledNegotiator,
     Issue,
     LinearUtilityFunction,
     MappingUtilityFunction,
     MechanismState,
     Negotiator,
     Outcome,
-    PassThroughNegotiator,
     ResponseType,
     SAOController,
     SAONegotiator,
@@ -317,11 +317,11 @@ class DanasController(
 
     def create_negotiator(
         self,
-        negotiator_type: Union[str, Type[PassThroughNegotiator]] = None,
+        negotiator_type: Union[str, Type[ControlledNegotiator]] = None,
         name: str = None,
         cntxt: Any = None,
         **kwargs,
-    ) -> PassThroughNegotiator:
+    ) -> ControlledNegotiator:
         neg = super().create_negotiator(negotiator_type, name, cntxt, **kwargs)
         self.completed[neg.id] = False
         return neg

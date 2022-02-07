@@ -74,7 +74,7 @@ from negmas import (
     SAOResponse,
 )
 from negmas.helpers import humanize_time
-from negmas.sao import SAOAMI, SAONegotiator, SAOState
+from negmas.sao import SAONMI, SAONegotiator, SAOState
 
 # required for development
 from scml.scml2020 import (
@@ -271,7 +271,7 @@ class BlueWolf(
             )
 
     def propose(
-        self, state: SAOState, nmi: SAOAMI, is_selling: bool, is_requested: bool
+        self, state: SAOState, nmi: SAONMI, is_selling: bool, is_requested: bool
     ):
         partner_id = (
             nmi.annotation["buyer"]

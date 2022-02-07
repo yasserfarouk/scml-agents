@@ -64,7 +64,7 @@ import types
 from typing import Any, Optional, Type, Union
 
 import numpy as np
-from negmas import Outcome, PassThroughNegotiator, ResponseType
+from negmas import ControlledNegotiator, Outcome, ResponseType
 from negmas.helpers import humanize_time
 from negmas.sao import SAOState
 

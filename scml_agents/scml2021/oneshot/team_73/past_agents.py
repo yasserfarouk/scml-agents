@@ -487,7 +487,7 @@ class AgentT064(AdaptiveAgent, ABC):
         else:
             return (mx - price) >= th * (mx - mn)
 
-    def _good_price_range(self, nmi: SAOAMI):
+    def _good_price_range(self, nmi: SAONMI):
         """エージェントにとって良い価格帯を見つける"""
         is_selling = self._is_selling(nmi)
         mx = nmi.issues[UNIT_PRICE].max_value
@@ -1165,7 +1165,7 @@ class AgentT063(AdaptiveAgent, ABC):
         else:
             return (mx - price) >= th * (mx - mn)
 
-    def _good_price_range(self, nmi: SAOAMI):
+    def _good_price_range(self, nmi: SAONMI):
         """エージェントにとって良い価格帯を見つける"""
         is_selling = self._is_selling(nmi)
         mx = nmi.issues[UNIT_PRICE].max_value
@@ -1853,7 +1853,7 @@ class AgentT062(AdaptiveAgent, ABC):
         else:
             return (mx - price) >= th * (mx - mn)
 
-    def _good_price_range(self, nmi: SAOAMI):
+    def _good_price_range(self, nmi: SAONMI):
         """エージェントにとって良い価格帯を見つける"""
         is_selling = self._is_selling(nmi)
         mx = nmi.issues[UNIT_PRICE].max_value
@@ -2541,7 +2541,7 @@ class AgentT061(AdaptiveAgent, ABC):
         else:
             return (mx - price) >= th * (mx - mn)
 
-    def _good_price_range(self, nmi: SAOAMI):
+    def _good_price_range(self, nmi: SAONMI):
         """エージェントにとって良い価格帯を見つける"""
         is_selling = self._is_selling(nmi)
         mx = nmi.issues[UNIT_PRICE].max_value
@@ -3229,7 +3229,7 @@ class AgentT060(AdaptiveAgent, ABC):
         else:
             return (mx - price) >= th * (mx - mn)
 
-    def _good_price_range(self, nmi: SAOAMI):
+    def _good_price_range(self, nmi: SAONMI):
         """エージェントにとって良い価格帯を見つける"""
         is_selling = self._is_selling(nmi)
         mx = nmi.issues[UNIT_PRICE].max_value
@@ -3909,7 +3909,7 @@ class AgentT056(AdaptiveAgent, ABC):
         else:
             return (mx - price) >= th * (mx - mn)
 
-    def _good_price_range(self, nmi: SAOAMI):
+    def _good_price_range(self, nmi: SAONMI):
         """エージェントにとって良い価格帯を見つける"""
         is_selling = self._is_selling(nmi)
         mx = nmi.issues[UNIT_PRICE].max_value
@@ -4592,7 +4592,7 @@ class AgentT055(AdaptiveAgent, ABC):
         else:
             return (mx - price) >= th * (mx - mn)
 
-    def _good_price_range(self, nmi: SAOAMI):
+    def _good_price_range(self, nmi: SAONMI):
         """エージェントにとって良い価格帯を見つける"""
         is_selling = self._is_selling(nmi)
         mx = nmi.issues[UNIT_PRICE].max_value
@@ -5275,7 +5275,7 @@ class AgentT054(AdaptiveAgent, ABC):
         else:
             return (mx - price) >= th * (mx - mn)
 
-    def _good_price_range(self, nmi: SAOAMI):
+    def _good_price_range(self, nmi: SAONMI):
         """エージェントにとって良い価格帯を見つける"""
         is_selling = self._is_selling(nmi)
         mx = nmi.issues[UNIT_PRICE].max_value
@@ -5958,7 +5958,7 @@ class AgentT053(AdaptiveAgent, ABC):
         else:
             return (mx - price) >= th * (mx - mn)
 
-    def _good_price_range(self, nmi: SAOAMI):
+    def _good_price_range(self, nmi: SAONMI):
         """エージェントにとって良い価格帯を見つける"""
         is_selling = self._is_selling(nmi)
         mx = nmi.issues[UNIT_PRICE].max_value
@@ -6641,7 +6641,7 @@ class AgentT052(AdaptiveAgent, ABC):
         else:
             return (mx - price) >= th * (mx - mn)
 
-    def _good_price_range(self, nmi: SAOAMI):
+    def _good_price_range(self, nmi: SAONMI):
         """エージェントにとって良い価格帯を見つける"""
         is_selling = self._is_selling(nmi)
         mx = nmi.issues[UNIT_PRICE].max_value
@@ -7324,7 +7324,7 @@ class AgentT051(AdaptiveAgent, ABC):
         else:
             return (mx - price) >= th * (mx - mn)
 
-    def _good_price_range(self, nmi: SAOAMI):
+    def _good_price_range(self, nmi: SAONMI):
         """エージェントにとって良い価格帯を見つける"""
         is_selling = self._is_selling(nmi)
         mx = nmi.issues[UNIT_PRICE].max_value
@@ -8003,7 +8003,7 @@ class AgentT050(AdaptiveAgent, ABC):
         else:
             return (mx - price) >= th * (mx - mn)
 
-    def _good_price_range(self, nmi: SAOAMI):
+    def _good_price_range(self, nmi: SAONMI):
         """エージェントにとって良い価格帯を見つける"""
         is_selling = self._is_selling(nmi)
         mx = nmi.issues[UNIT_PRICE].max_value
@@ -8677,7 +8677,7 @@ class AgentT049(AdaptiveAgent, ABC):
         else:
             return (mx - price) >= th * (mx - mn)
 
-    def good_price_range(self, nmi: SAOAMI):
+    def good_price_range(self, nmi: SAONMI):
         """エージェントにとって良い価格帯を見つける"""
         is_selling = self._is_selling(nmi)
         mx = nmi.issues[UNIT_PRICE].max_value
@@ -9264,7 +9264,7 @@ class AgentT048(AdaptiveAgent, ABC):
         else:
             return (mx - price) >= th * (mx - mn)
 
-    def good_price_range(self, nmi: SAOAMI):
+    def good_price_range(self, nmi: SAONMI):
         """エージェントにとって良い価格帯を見つける"""
         is_selling = self._is_selling(nmi)
         mx = nmi.issues[UNIT_PRICE].max_value

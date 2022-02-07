@@ -1,7 +1,7 @@
 from statistics import mean
 from typing import List
 
-from negmas import SAOAMI
+from negmas import SAONMI
 
 QUANTITY = 0
 TIME = 1
@@ -21,7 +21,7 @@ def shorten_name(name: str):
     return name.split("-")[0]
 
 
-def opponent_agreements(nmi: SAOAMI, is_selling: bool, success_contracts: list) -> list:
+def opponent_agreements(nmi: SAONMI, is_selling: bool, success_contracts: list) -> list:
     """指定された相手との合意（contract）を返す"""
     if is_selling:
         opponent_name = nmi.annotation["buyer"]
@@ -38,7 +38,7 @@ def opponent_agreements(nmi: SAOAMI, is_selling: bool, success_contracts: list) 
 
 
 def worst_opp_acc_price(
-    nmi: SAOAMI, is_selling: bool, success_contracts: list
+    nmi: SAONMI, is_selling: bool, success_contracts: list
 ) -> float:
     """
     指定された相手との合意の中で，相手にとって最も良い価格を返す．
