@@ -48,10 +48,11 @@ from negmas import (
     Contract,
     MechanismState,
     RenegotiationRequest,
+    ResponseType,
 )
 from negmas.helpers import get_class
 from negmas.negotiators import Controller, Negotiator
-from negmas.outcomes import Outcome, ResponseType
+from negmas.outcomes import Outcome
 from scml.scml2019.awi import SCMLAWI
 from scml.scml2019.common import (
     CFP,
@@ -714,7 +715,7 @@ class PrintingFactoryManager(DoNothingFactoryManager):
 
 
 class AspirationNego2(negmas.sao.AspirationNegotiator):
-    def aspiration(self, t: float) -> float:
+    def utility_at(self, t: float) -> float:
         """
         The aspiration level
 
@@ -1799,29 +1800,19 @@ class InsuranceFraudNegotiator(negmas.sao.AspirationNegotiator):
         name=None,
         ufun=None,
         parent: Controller = None,
-        dynamic_ufun=True,
         randomize_offer=False,
-        can_propose=True,
-        assume_normalized=False,
         ### aspiration init
         max_aspiration=0.95,
         aspiration_type="boulware",
-        above_reserved_value=False,
         agent=None,
         cfp=None,
     ):
         super().__init__(
             name=name,
-            assume_normalized=assume_normalized,
             parent=parent,
             ufun=ufun,
-            dynamic_ufun=dynamic_ufun,
-            randomize_offer=randomize_offer,
-            can_propose=can_propose,
+            stochastic=randomize_offer,
         )
-
-        self.rational_proposal = False
-        self.can_propose = False
 
         self.partner = cfp.publisher
         self.agent = agent

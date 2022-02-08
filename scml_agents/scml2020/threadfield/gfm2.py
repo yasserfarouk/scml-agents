@@ -57,9 +57,10 @@ from negmas import (
     Outcome,
     SAONegotiator,
     UtilityFunction,
-    UtilityValue,
+    Value,
 )
 from negmas.helpers import humanize_time
+from negmas.outcomes.issue_ops import enumerate_issues
 from scml.scml2020 import AWI, Failure, SCML2020Agent
 
 # required for development
@@ -161,11 +162,6 @@ class GFM2(SCML2020Agent):
             )
             uvalues = (1, self.awi.catalog_prices[self.awi.my_input_product])
             print_log(f"tvalues={tvalues}")
-            issues = [
-                Issue(qvalues, name="quantity"),
-                Issue(tvalues, name="time"),
-                Issue(uvalues, name="uvalues"),
-            ]
             for _ in range(5):
                 for partner in self.awi.my_suppliers:
                     self.awi.request_negotiation(
@@ -175,7 +171,7 @@ class GFM2(SCML2020Agent):
                         unit_price=uvalues,
                         time=tvalues,
                         partner=partner,
-                        negotiator=self.negotiator(False, issues=issues),
+                        negotiator=self.negotiator(False),
                     )
 
         # output products
@@ -190,11 +186,6 @@ class GFM2(SCML2020Agent):
                 ),
                 self.awi.catalog_prices[self.awi.my_output_product] * 4,
             )
-            issues = [
-                Issue(qvalues, name="quantity"),
-                Issue(tvalues, name="time"),
-                Issue(uvalues, name="uvalues"),
-            ]
             for _ in range(5):
                 for partner in self.awi.my_consumers:
                     self.awi.request_negotiation(
@@ -204,7 +195,7 @@ class GFM2(SCML2020Agent):
                         unit_price=uvalues,
                         time=tvalues,
                         partner=partner,
-                        negotiator=self.negotiator(True, issues=issues),
+                        negotiator=self.negotiator(True),
                     )
 
     # ================================
@@ -235,12 +226,8 @@ class GFM2(SCML2020Agent):
     def negotiator(self, is_seller: bool, issues=None) -> Optional[SAONegotiator]:
         """Creates a negotiator"""
 
-        if issues is None or not Issue.enumerate(issues, astype=tuple):
-            return None
-
         return AspirationNegotiator(
             ufun=self.create_ufun(is_seller=is_seller, issues=issues),
-            assume_normalized=True,
         )
 
     def on_negotiation_failure(
@@ -613,11 +600,11 @@ class MySpecialUtilityFunction(UtilityFunction):
         self,
         is_seller: bool,
         name: Optional[str] = None,
-        reserved_value: UtilityValue = float("-inf"),
+        reserved_value: Value = float("-inf"),
         outcome_type: Optional[Type] = None,
         issue_names: Optional[List[str]] = None,
         issues: List["Issue"] = None,
-        ami: AgentMechanismInterface = None,
+        nmi: AgentMechanismInterface = None,
         awi: AWI = None,
     ) -> None:
         self.is_seller = is_seller
@@ -626,13 +613,12 @@ class MySpecialUtilityFunction(UtilityFunction):
         super().__init__(
             name=name,
             reserved_value=reserved_value,
-            outcome_type=outcome_type,
             issue_names=issue_names,
             issues=issues,
-            ami=ami,
+            nmi=nmi,
         )
 
-    def eval(self, offer: "Outcome") -> UtilityValue:
+    def eval(self, offer: "Outcome") -> Value:
         price, quantity, date = offer
 
         if self.is_seller:

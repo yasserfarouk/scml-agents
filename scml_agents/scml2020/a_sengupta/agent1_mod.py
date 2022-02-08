@@ -28,11 +28,13 @@ from negmas import (
     Issue,
     LinearUtilityFunction,
     Negotiator,
+    ResponseType,
     SAONegotiator,
     ToughNegotiator,
 )
+from negmas.common import PreferencesChange
 from negmas.helpers import get_class, instantiate
-from negmas.outcomes import ResponseType
+from negmas.outcomes.base_issue import make_issue
 from scml.scml2020 import (
     DecentralizingAgent,
     DoNothingAgent,
@@ -94,14 +96,14 @@ class ToughAspirationNegotiator(AspirationNegotiator):
             return ResponseType.ACCEPT_OFFER
 
         if self.ufun_max is None or self.ufun_min is None:
-            self.on_ufun_changed()
-        if self._utility_function is None:
+            self.on_preferences_changed([PreferencesChange.General])
+        if self.ufun is None:
             return ResponseType.REJECT_OFFER
-        u = self._utility_function(offer)
+        u = self.ufun(offer)
         if u is None or u < self.reserved_value:
             return ResponseType.REJECT_OFFER
         asp = (
-            self.aspiration(state.relative_time) * (self.ufun_max - self.ufun_min)
+            self.utility_at(state.relative_time) * (self.ufun_max - self.ufun_min)
             + self.ufun_min
         )
         if u >= asp and u > self.reserved_value:
@@ -117,7 +119,7 @@ class ToughAspirationNegotiator(AspirationNegotiator):
             return (2, self.exec_time, 1)
 
         asp = (
-            self.aspiration(state.relative_time) * (self.ufun_max - self.ufun_min)
+            self.utility_at(state.relative_time) * (self.ufun_max - self.ufun_min)
             + self.ufun_min
         )
 
@@ -439,9 +441,9 @@ class GryffindorIndependentNegotiationsManager(IndependentNegotiationsManager):
     ):
 
         issues = [
-            Issue(qvalues, name="quantity"),
-            Issue(tvalues, name="time"),
-            Issue(uvalues, name="uvalues"),
+            make_issue((int(qvalues[0]), int(max(qvalues))), name="quantity"),
+            make_issue((int(tvalues[0]), int(max(tvalues))), name="time"),
+            make_issue((int(uvalues[0]), int(max(uvalues))), name="unit_price"),
         ]
 
         for partner in partners:
@@ -742,5 +744,5 @@ class Merchant(
     def create_ufun(self, is_seller: bool, issues=None, outcomes=None):
         """A utility function that penalizes high cost and late delivery for buying and and awards them for selling"""
         if is_seller:
-            return LinearUtilityFunction((0, 0.1, 1))
-        return LinearUtilityFunction((0, -0.1, -1))
+            return LinearUtilityFunction((0, 0.1, 1), issues=issues, outcomes=outcomes)
+        return LinearUtilityFunction((0, -0.1, -1), issues=issues, outcomes=outcomes)

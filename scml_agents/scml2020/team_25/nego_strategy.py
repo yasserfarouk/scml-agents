@@ -136,7 +136,7 @@ class SyncController(SAOSyncController):
 
     def is_valid(self, negotiator_id: str, offer: "Outcome") -> bool:
         """Is this a valid offer for that negotiation"""
-        issues = self.negotiators[negotiator_id][0].ami.issues
+        issues = self.negotiators[negotiator_id][0].nmi.issues
         return outcome_is_valid(offer, issues)
 
     def counter_all(
@@ -232,14 +232,14 @@ class SyncController(SAOSyncController):
 
     def best_proposal_for_nid(self, nid: str) -> Tuple[Optional["Outcome"], float]:
         negotiator = self.negotiators[nid][0]
-        if negotiator.ami is None:
+        if negotiator.nmi is None:
             return None, -1000
-        utils = np.array([self.myUtil(_) for _ in negotiator.ami.outcomes])
+        utils = np.array([self.myUtil(_) for _ in negotiator.nmi.outcomes])
         best_indx = np.argmax(utils)
         self._best_utils[nid] = utils[best_indx]
         if utils[best_indx] < 0:
             return None, utils[best_indx]
-        return negotiator.ami.outcomes[best_indx], utils[best_indx]
+        return negotiator.nmi.outcomes[best_indx], utils[best_indx]
 
     def best_offers(self) -> Dict[str, "Outcome"]:
         "same as first_proposals but with myUtil"

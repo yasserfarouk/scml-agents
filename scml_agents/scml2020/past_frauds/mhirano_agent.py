@@ -45,18 +45,19 @@ from negmas import (
     AspirationNegotiator,
     Breach,
     Contract,
+    ControlledNegotiator,
+    ControlledSAONegotiator,
     Controller,
     Issue,
     LinearUtilityFunction,
     MechanismState,
     Negotiator,
-    PassThroughNegotiator,
-    PassThroughSAONegotiator,
     ResponseType,
     SAOController,
     SAONegotiator,
     UtilityFunction,
 )
+from negmas.common import PreferencesChange
 from negmas.helpers import get_class, humanize_time
 from scipy.stats import poisson
 from scml.scml2020 import (
@@ -210,8 +211,10 @@ class MhiranoAgent(DemandDrivenProductionStrategy, PrintingAgent):
     def create_negotiator(self, is_seller: bool) -> Negotiator:
         def create_ufun(is_seller: bool, issues=None, outcomes=None):
             if is_seller:
-                return LinearUtilityFunction((1, 1, 10))
-            return LinearUtilityFunction((1, -1, -10))
+                return LinearUtilityFunction(
+                    (1, 1, 10), issues=issues, outcomes=outcomes
+                )
+            return LinearUtilityFunction((1, -1, -10), issues=issues, outcomes=outcomes)
 
         ufun: UtilityFunction = create_ufun(is_seller=is_seller)
         negotiator: Negotiator = self.controller.create_negotiator(
@@ -451,7 +454,7 @@ class MhiranoUFun(UtilityFunction):
     """A utility function for the controller"""
 
     def __init__(self, controller=None):
-        super().__init__(outcome_type=tuple)
+        super().__init__()
         self.controller = controller
 
     def eval(self, offer: "Outcome"):
@@ -1065,17 +1068,17 @@ class MhiranoController(PrintingSAOController):
     def join_(
         self,
         negotiator_id: str,
-        ami: AgentMechanismInterface,
+        nmi: AgentMechanismInterface,
         state: MechanismState,
         issues: List[Issue],
         outcomes: List["Outcome"],
     ) -> None:
-        # スタート時点の issueとoutcomes, amiを保存
-        is_seller = ami.annotation["seller"] == self.parent.id
+        # スタート時点の issueとoutcomes, nmiを保存
+        is_seller = nmi.annotation["seller"] == self.parent.id
         outcomes = self._slim_outcomes(outcomes=outcomes)
         self._negotiating[negotiator_id] = {
             "state": state,
-            "ami": ami,
+            "nmi": nmi,
             "is_seller": is_seller,
             "issues": issues,
             "initial_space": outcomes,
@@ -1088,20 +1091,20 @@ class MhiranoController(PrintingSAOController):
     def on_negotiation_start_(
         self,
         negotiator_id: str,
-        ami: AgentMechanismInterface,
+        nmi: AgentMechanismInterface,
         state: MechanismState,
         issues: List[Issue],
         outcomes: List["Outcome"],
     ) -> None:
         if negotiator_id not in self._negotiating:
-            is_seller = ami.annotation["seller"] == self.parent.id
+            is_seller = nmi.annotation["seller"] == self.parent.id
             ######
             # outcomesのスリム化
             ######
             outcomes = self._slim_outcomes(outcomes=outcomes)
             self._negotiating[negotiator_id] = {
                 "state": state,
-                "ami": ami,
+                "nmi": nmi,
                 "is_seller": is_seller,
                 "issues": issues,
                 "initial_space": outcomes,
@@ -1164,37 +1167,40 @@ class MhiranoNegotiator(AspirationNegotiator):
 
     def join(
         self,
-        ami: AgentMechanismInterface,
+        nmi: AgentMechanismInterface,
         state: MechanismState,
         *,
+        preferences: Optional["UtilityFunction"] = None,
         ufun: Optional["UtilityFunction"] = None,
         role: str = "agent",
     ) -> bool:
-        result: bool = super().join(ami=ami, state=state, ufun=ufun, role=role)
-        ami: AgentMechanismInterface = self.ami
-        issues = ami.issues
-        outcomes = ami.outcomes
+        result: bool = super().join(
+            nmi=nmi, state=state, preferences=preferences, ufun=ufun, role=role
+        )
+        nmi: AgentMechanismInterface = self.nmi
+        issues = nmi.issues
+        outcomes = nmi.outcomes
         if outcomes is None:
             return None
         self.__parent.join_(
             negotiator_id=self.name,
-            ami=ami,
+            nmi=nmi,
             state=state,
             issues=issues,
             outcomes=outcomes,
         )
         return result
 
-    def on_ufun_changed(self):
-        super().on_ufun_changed()
+    def on_preferences_changed(self, changes=tuple()):
+        super().on_preferences_changed([PreferencesChange.General])
 
     def on_negotiation_start(self, state: MechanismState) -> None:
-        ami: AgentMechanismInterface = self.ami
-        issues = ami.issues
-        outcomes = ami.outcomes
+        nmi: AgentMechanismInterface = self.nmi
+        issues = nmi.issues
+        outcomes = nmi.outcomes
         self.__parent.on_negotiation_start_(
             negotiator_id=self.name,
-            ami=ami,
+            nmi=nmi,
             state=state,
             issues=issues,
             outcomes=outcomes,

@@ -8,9 +8,8 @@ from typing import Any, List
 import numpy as np
 import torch
 from hyperparameters import *
-from negmas import Issue
+from negmas import Issue, UtilityFunction, Value
 from negmas.outcomes import Outcome
-from negmas.utilities import UtilityFunction, UtilityValue
 from scml.scml2020 import QUANTITY, TIME, UNIT_PRICE
 from utility_model import (
     UtilityModel,
@@ -56,7 +55,7 @@ class MyUtilityFunction(UtilityFunction):
         """
         return ""
 
-    def __call__(self, offer: Outcome) -> UtilityValue:
+    def eval(self, offer: Outcome) -> Value:
         """Calculate the utility_function value for a given outcome.
 
         Args:
@@ -66,25 +65,16 @@ class MyUtilityFunction(UtilityFunction):
         Remarks:
 
             - You cannot return None from overriden __call__() functions but raise an exception (ValueError) if it was
-              not possible to calculate the UtilityValue.
-            - Return A UtilityValue not a float for real-valued utilities for the benefit of inspection code.
+              not possible to calculate the Value.
+            - Return A Value not a float for real-valued utilities for the benefit of inspection code.
             - Return the reserved value if the offer was None
 
         Returns:
-            UtilityValue: The utility_function value which may be a distribution. If `None` it means the
+            Value: The utility_function value which may be a distribution. If `None` it means the
                           utility_function value cannot be calculated.
         """
         if offer is None:
             return self.reserved_value
-        """A simple utility function
-
-        Remarks:
-             - If the time is invalid or there is no need to get any more agreements
-               at the given time, return -1000
-             - Otherwise use the price-weight to calculate a linear combination of
-               the price and the how much of the needs is satisfied by this contract
-
-        """
         # get my needs and secured amounts arrays
         if self._is_seller:
             _needed, _secured = (
@@ -174,7 +164,10 @@ class MyRLUtilityFunction(UtilityFunction):
             x = 0
         return self.model(to_features)
 
-    def __call__(self, offer: Outcome) -> UtilityValue:
+    def __call__(self, offer: Outcome) -> Value:
+        return self.eval(offer)
+
+    def eval(self, offer: Outcome) -> Value:
         """Calculate the utility_function value for a given outcome.
 
         Args:
@@ -184,12 +177,12 @@ class MyRLUtilityFunction(UtilityFunction):
         Remarks:
 
             - You cannot return None from overriden __call__() functions but raise an exception (ValueError) if it was
-              not possible to calculate the UtilityValue.
-            - Return A UtilityValue not a float for real-valued utilities for the benefit of inspection code.
+              not possible to calculate the Value.
+            - Return A Value not a float for real-valued utilities for the benefit of inspection code.
             - Return the reserved value if the offer was None
 
         Returns:
-            UtilityValue: The utility_function value which may be a distribution. If `None` it means the
+            Value: The utility_function value which may be a distribution. If `None` it means the
                           utility_function value cannot be calculated.
         """
         if offer is None:

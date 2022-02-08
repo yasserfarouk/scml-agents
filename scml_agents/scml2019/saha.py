@@ -49,8 +49,8 @@ from negmas import (
 )
 from negmas.events import Notification
 from negmas.helpers import get_class
+from negmas.preferences import normalize
 from negmas.sao import AspirationNegotiator
-from negmas.utilities import normalize
 from scml.scml2019.awi import SCMLAWI
 from scml.scml2019.common import (
     CFP,
@@ -344,9 +344,10 @@ class SAHAFactoryManager(DoNothingFactoryManager):
                 name=self.name + "*" + partner, **self.negotiator_params
             )
             ufun = self.ufun_factory(self, self._create_annotation(cfp=cfp))
-            neg.utility_function = normalize(
-                ufun, outcomes=cfp.outcomes, infeasible_cutoff=0
-            )
+            try:
+                neg.utility_function = normalize(ufun, outcomes=cfp.outcomes)
+            except:
+                neg.utility_function = ufun
             return neg
 
     def on_negotiation_success(
@@ -528,20 +529,20 @@ class SAHAFactoryManager(DoNothingFactoryManager):
         )
 
         if self.negotiator_type == AspirationNegotiator:
-            neg = self.negotiator_type(
-                assume_normalized=True, name=self.name + ">" + cfp.publisher
-            )
+            neg = self.negotiator_type(name=self.name + ">" + cfp.publisher)
         else:
             neg = self.negotiator_type(name=self.name + ">" + cfp.publisher)
-        self.request_negotiation(
-            negotiator=neg,
-            cfp=cfp,
-            ufun=normalize(
-                self.ufun_factory(self, self._create_annotation(cfp=cfp)),
-                outcomes=cfp.outcomes,
-                infeasible_cutoff=-1500,
-            ),
-        )
+        try:
+            self.request_negotiation(
+                negotiator=neg,
+                cfp=cfp,
+                ufun=normalize(
+                    self.ufun_factory(self, self._create_annotation(cfp=cfp)),
+                    outcomes=cfp.outcomes,
+                ),
+            )
+        except:
+            pass
 
     def _process_sell_cfp(self, cfp: "CFP"):
         if self.awi.is_bankrupt(cfp.publisher):
@@ -556,20 +557,20 @@ class SAHAFactoryManager(DoNothingFactoryManager):
         )
 
         if self.negotiator_type == AspirationNegotiator:
-            neg = self.negotiator_type(
-                assume_normalized=True, name=self.name + ">" + cfp.publisher
-            )
+            neg = self.negotiator_type(name=self.name + ">" + cfp.publisher)
         else:
             neg = self.negotiator_type(name=self.name + ">" + cfp.publisher)
-        self.request_negotiation(
-            negotiator=neg,
-            cfp=cfp,
-            ufun=normalize(
-                self.ufun_factory(self, self._create_annotation(cfp=cfp)),
-                outcomes=cfp.outcomes,
-                infeasible_cutoff=-1500,
-            ),
-        )
+        try:
+            self.request_negotiation(
+                negotiator=neg,
+                cfp=cfp,
+                ufun=normalize(
+                    self.ufun_factory(self, self._create_annotation(cfp=cfp)),
+                    outcomes=cfp.outcomes,
+                ),
+            )
+        except:
+            pass
 
     def on_new_cfp(self, cfp: "CFP") -> None:
 

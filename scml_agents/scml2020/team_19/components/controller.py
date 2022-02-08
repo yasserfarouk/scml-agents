@@ -1,31 +1,11 @@
 # required for typing
-import random
-from collections import defaultdict
-from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union
+from __future__ import annotations
+
+from typing import Dict, Optional, Tuple
 
 import numpy as np
-from negmas import (
-    AgentWorldInterface,
-    AspirationMixin,
-    Issue,
-    LinearUtilityFunction,
-    MechanismState,
-    Outcome,
-    PassThroughNegotiator,
-    ResponseType,
-    UtilityFunction,
-    outcome_is_valid,
-)
-from negmas.common import AgentMechanismInterface
-from negmas.events import Notification, Notifier
-from negmas.helpers import instantiate
-from negmas.sao import (
-    SAOController,
-    SAONegotiator,
-    SAOResponse,
-    SAOState,
-    SAOSyncController,
-)
+from negmas import MechanismState, Outcome, ResponseType, outcome_is_valid
+from negmas.sao import SAOResponse, SAOState, SAOSyncController
 from scml.scml2020.common import QUANTITY, TIME, UNIT_PRICE
 
 
@@ -86,7 +66,7 @@ class SyncController(SAOSyncController):
         return self._price_weight * price + (1 - self._price_weight) * q
 
     def is_valid(self, negotiator_id: str, offer: "Outcome") -> bool:
-        issues = self.negotiators[negotiator_id][0].ami.issues
+        issues = self.negotiators[negotiator_id][0].nmi.issues
         return outcome_is_valid(offer, issues)
 
     def counter_all(
@@ -105,7 +85,7 @@ class SyncController(SAOSyncController):
         utils = np.array(
             [
                 self.utility(
-                    o, self.negotiators[nid][0].ami.issues[UNIT_PRICE].max_value
+                    o, self.negotiators[nid][0].nmi.issues[UNIT_PRICE].max_value
                 )
                 for nid, o in offers.items()
             ]
@@ -173,22 +153,22 @@ class SyncController(SAOSyncController):
         Args:
             nid: Negotiator ID
         Returns:
-            The outcome with highest utility and the corresponding utility
+           The outcome with highest utility and the corresponding utility
         """
         negotiator = self.negotiators[nid][0]
-        if negotiator.ami is None:
+        if negotiator.nmi is None:
             return None, -1000
         utils = np.array(
             [
-                self.utility(_, negotiator.ami.issues[UNIT_PRICE].max_value)
-                for _ in negotiator.ami.outcomes
+                self.utility(_, negotiator.nmi.issues[UNIT_PRICE].max_value)
+                for _ in negotiator.nmi.outcomes
             ]
         )
         best_indx = np.argmax(utils)
         self._best_utils[nid] = utils[best_indx]
         if utils[best_indx] < 0:
             return None, utils[best_indx]
-        return negotiator.ami.outcomes[best_indx], utils[best_indx]
+        return negotiator.nmi.outcomes[best_indx], utils[best_indx]
 
     def first_proposals(self) -> Dict[str, "Outcome"]:
         """Gets a set of proposals to use for initializing the negotiation."""

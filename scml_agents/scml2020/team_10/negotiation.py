@@ -20,9 +20,9 @@ from negmas import (
 )
 from negmas.common import MechanismState
 from negmas.helpers import get_class, instantiate
-from negmas.outcomes import Outcome
+from negmas.outcomes import Outcome, enumerate_issues
+from negmas.preferences import UtilityFunction
 from negmas.sao import SAONegotiator, SAOResponse
-from negmas.utilities import UtilityFunction
 from scml.scml2020 import QUANTITY, TIME, UNIT_PRICE
 from scml.scml2020.components.negotiation import (
     AspirationNegotiator,
@@ -37,18 +37,14 @@ class MyFixedUtilityNegotiator(SAONegotiator):
         _is_seller: bool,
         parent: "PredictionBasedTradingStrategy",
         manager=None,
-        assume_normalized=True,
         ufun: Optional[UtilityFunction] = None,
         name: Optional[str] = None,
-        rational_proposal=True,
         owner: "Agent" = None,
         horizon: int = MAX_HORIZON,
     ):
         super().__init__(
-            assume_normalized=assume_normalized,
             ufun=ufun,
             name=name,
-            rational_proposal=rational_proposal,
             parent=parent,
             owner=owner,
         )
@@ -300,18 +296,14 @@ class MyUtilityNegotiator(SAONegotiator):
         _is_seller: bool,
         parent: "PredictionBasedTradingStrategy",
         manager=None,
-        assume_normalized=True,
         ufun: Optional[UtilityFunction] = None,
         name: Optional[str] = None,
-        rational_proposal=True,
         owner: "Agent" = None,
         horizon: int = MAX_HORIZON,
     ):
         super().__init__(
-            assume_normalized=assume_normalized,
             ufun=ufun,
             name=name,
-            rational_proposal=rational_proposal,
             parent=parent,
             owner=owner,
         )
@@ -325,7 +317,6 @@ class MyUtilityNegotiator(SAONegotiator):
                 manager  # the negotiation manager (parent may be a controller)
             )
         self.horizon = horizon
-        self.rational_proposal = False
 
     def pad(self, arr, padding):
         if len(arr) == padding:
@@ -632,14 +623,8 @@ class MyUtilityNegotiationManager(NegotiationManager):
     ) -> None:
         # negotiate with all suppliers of the input product I need to produce
 
-        issues = [
-            Issue(qvalues, name="quantity"),
-            Issue(tvalues, name="time"),
-            Issue(uvalues, name="uvalues"),
-        ]
-
         for partner in partners:
-            negotiator = self.negotiator(sell, issues=issues)
+            negotiator = self.negotiator(sell)
             self.neg_history[sell][negotiator.id] = []
             self.awi.request_negotiation(
                 is_buy=not sell,
@@ -671,10 +656,6 @@ class MyUtilityNegotiationManager(NegotiationManager):
 
     def negotiator(self, is_seller: bool, issues=None, outcomes=None) -> SAONegotiator:
         """Creates a negotiator"""
-        if outcomes is None and (
-            issues is None or not Issue.enumerate(issues, astype=tuple)
-        ):
-            return None
         params = self.negotiator_params
         params["ufun"] = self.create_ufun(
             is_seller=is_seller, outcomes=outcomes, issues=issues
@@ -814,7 +795,7 @@ class MySyncController(SAOSyncController):
 
     def is_valid(self, negotiator_id: str, offer: "Outcome") -> bool:
         """Is this a valid offer for that negotiation"""
-        issues = self.negotiators[negotiator_id][0].ami.issues
+        issues = self.negotiators[negotiator_id][0].nmi.issues
         return outcome_is_valid(offer, issues)
 
     def counter_all(
@@ -913,14 +894,14 @@ class MySyncController(SAOSyncController):
             The outcome with highest utility and the corresponding utility
         """
         negotiator = self.negotiators[nid][0]
-        if negotiator.ami is None:
+        if negotiator.nmi is None:
             return None, -1000
-        utils = np.array([self.utility(_) for _ in negotiator.ami.outcomes])
+        utils = np.array([self.utility(_) for _ in negotiator.nmi.outcomes])
         best_indx = np.argmax(utils)
         self._best_utils[nid] = utils[best_indx]
         if utils[best_indx] < 0:
             return None, utils[best_indx]
-        return negotiator.ami.outcomes[best_indx], utils[best_indx]
+        return negotiator.nmi.outcomes[best_indx], utils[best_indx]
 
 
 class MyNegotiationManager:

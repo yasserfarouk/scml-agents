@@ -124,7 +124,7 @@ class SyncController(SAOSyncController):
 
     def is_valid(self, negotiator_id: str, offer: "Outcome") -> bool:
         """Is this a valid offer for that negotiation"""
-        issues = self.negotiators[negotiator_id][0].ami.issues
+        issues = self.negotiators[negotiator_id][0].nmi.issues
         return outcome_is_valid(offer, issues)
 
     def counter_all(
@@ -216,14 +216,14 @@ class SyncController(SAOSyncController):
             The outcome with highest utility and the corresponding utility
         """
         negotiator = self.negotiators[nid][0]
-        if negotiator.ami is None:
+        if negotiator.nmi is None:
             return None, -1000
-        utils = np.array([self.utility(_) for _ in negotiator.ami.outcomes])
+        utils = np.array([self.utility(_) for _ in negotiator.nmi.outcomes])
         best_indx = np.argmax(utils)
         self._best_utils[nid] = utils[best_indx]
         if utils[best_indx] < 0:
             return None, utils[best_indx]
-        return negotiator.ami.outcomes[best_indx], utils[best_indx]
+        return negotiator.nmi.outcomes[best_indx], utils[best_indx]
 
 
 class MyNegotiationManager:
@@ -382,8 +382,8 @@ class MyDrorAgent(
     def create_ufun(self, is_seller: bool, issues=None, outcomes=None):
         """A utility function that penalizes high cost and late delivery for buying and and awards them for selling"""
         if is_seller:
-            return LinearUtilityFunction((0, 0.25, 1))
-        return LinearUtilityFunction((0, -0.5, -0.8))
+            return LinearUtilityFunction((0, 0.25, 1), issues=issues, outcomes=outcomes)
+        return LinearUtilityFunction((0, -0.5, -0.8), issues=issues, outcomes=outcomes)
 
 
 class MyPredictor(TradePredictionStrategy):

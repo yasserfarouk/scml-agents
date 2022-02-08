@@ -83,7 +83,7 @@ class SyncController(SAOSyncController):
 
     def is_valid(self, negotiator_id: str, offer: "Outcome") -> bool:
         """Is this a valid offer for that negotiation"""
-        issues = self.negotiators[negotiator_id][0].ami.issues
+        issues = self.negotiators[negotiator_id][0].nmi.issues
         return outcome_is_valid(offer, issues)
 
     # =========================================
@@ -104,14 +104,14 @@ class SyncController(SAOSyncController):
 
         negotiator, _ = self.negotiators.get(negotiator_id, (None, None))
 
-        if negotiator is None or negotiator.ami is None:
+        if negotiator is None or negotiator.nmi is None:
             return None
 
-        issues = negotiator.ami.issues
+        issues = negotiator.nmi.issues
 
         partner_id = self.partner_agent_ids(negotiator_id)[0]
         if partner_id in self.my_suppliers:  # If current proposer agent is seller.
-            self.nego_history[negotiator.ami.id][0] = {
+            self.nego_history[negotiator.nmi.id][0] = {
                 "agentID": self.__parent.id,
                 "q": int(issues[QUANTITY].max_value),
                 "t": int(issues[TIME].min_value),
@@ -123,7 +123,7 @@ class SyncController(SAOSyncController):
                 issues[UNIT_PRICE].min_value + 1,
             )
         elif partner_id in self.my_consumers:  # If current proposer agent is buyer.
-            self.nego_history[negotiator.ami.id][0] = {
+            self.nego_history[negotiator.nmi.id][0] = {
                 "agentID": self.__parent.id,
                 "q": int(issues[QUANTITY].max_value),
                 "t": int(issues[TIME].min_value),
@@ -168,7 +168,7 @@ class SyncController(SAOSyncController):
         for negotiator_id, state in states.items():
             partner_id = self.partner_agent_ids(negotiator_id)[0]
             negotiator, _ = self.negotiators.get(negotiator_id, (None, None))
-            self.nego_history[negotiator.ami.id][
+            self.nego_history[negotiator.nmi.id][
                 2 * (states[negotiator_id].step) - 1
             ] = {
                 "agentID": partner_id,
@@ -232,7 +232,7 @@ class SyncController(SAOSyncController):
         partner_id = self.partner_agent_ids(negotiator_id)[0]
         negotiator, _ = self.negotiators.get(negotiator_id, (None, None))
         if state.agreement:
-            self.nego_history[negotiator.ami.id]["Acceptance"] = {
+            self.nego_history[negotiator.nmi.id]["Acceptance"] = {
                 "q": int(state.current_offer[QUANTITY]),
                 "t": int(state.current_offer[TIME]),
                 "p": int(state.current_offer[UNIT_PRICE]),
@@ -250,12 +250,12 @@ class SyncController(SAOSyncController):
                 "Acceptance"
             ] += state.current_offer[QUANTITY]
         else:
-            self.nego_history[negotiator.ami.id]["Acceptance"] = {}
+            self.nego_history[negotiator.nmi.id]["Acceptance"] = {}
             self.ended_negotiator_ids.append(negotiator_id)
 
-        mechanism_nego_history = copy.deepcopy(self.nego_history[negotiator.ami.id])
+        mechanism_nego_history = copy.deepcopy(self.nego_history[negotiator.nmi.id])
         self.__parent.nego_stats.set_negotiation_bid_history(
-            self.current_step, partner_id, negotiator.ami.id, mechanism_nego_history
+            self.current_step, partner_id, negotiator.nmi.id, mechanism_nego_history
         )
 
     # =========================================
@@ -300,7 +300,7 @@ class SyncController(SAOSyncController):
             elif negotiator_id not in (pseudo_ids + self.accepted_negotiator_ids):
                 # Check whether this negotiator's negotiation is accepted or not, we do not send request to finished nego.
                 if negotiator_id not in (pseudo_ids + self.accepted_negotiator_ids):
-                    issues = self.negotiators[negotiator_id][0].ami.issues
+                    issues = self.negotiators[negotiator_id][0].nmi.issues
                     relative_time = states[negotiator_id].relative_time
                     offer = offer_content["Offer"]
                     # Check if the negotiator is buyer.
@@ -384,7 +384,7 @@ class SyncController(SAOSyncController):
                             negotiator, _ = self.negotiators.get(
                                 negotiator_id, (None, None)
                             )
-                            self.nego_history[negotiator.ami.id][
+                            self.nego_history[negotiator.nmi.id][
                                 2 * states[negotiator_id].step
                             ] = {
                                 "agentID": self.__parent.id,
@@ -424,7 +424,7 @@ class SyncController(SAOSyncController):
             elif negotiator_id not in (pseudo_ids + self.accepted_negotiator_ids):
                 # Check whether this negotiator's negotiation is accepted or not, we do not send request to finished nego.
                 if negotiator_id not in (pseudo_ids + self.accepted_negotiator_ids):
-                    issues = self.negotiators[negotiator_id][0].ami.issues
+                    issues = self.negotiators[negotiator_id][0].nmi.issues
                     relative_time = states[negotiator_id].relative_time
                     offer = offer_content["Offer"]
                     if negotiator_id in seller_ids:
@@ -476,7 +476,7 @@ class SyncController(SAOSyncController):
                             negotiator, _ = self.negotiators.get(
                                 negotiator_id, (None, None)
                             )
-                            self.nego_history[negotiator.ami.id][
+                            self.nego_history[negotiator.nmi.id][
                                 2 * states[negotiator_id].step
                             ] = {
                                 "agentID": self.__parent.id,
@@ -515,7 +515,7 @@ class SyncController(SAOSyncController):
             # Check whether this negotiator's negotiation is accepted or not, we do not send request to finished nego.
             if negotiator_id not in (pseudo_ids + self.accepted_negotiator_ids):
                 # Get issues with boundries from mechanism.
-                issues = self.negotiators[negotiator_id][0].ami.issues
+                issues = self.negotiators[negotiator_id][0].nmi.issues
                 # Get current negotiation time.
                 relative_time = states[negotiator_id].relative_time
                 # Get opponent's offer.
@@ -558,7 +558,7 @@ class SyncController(SAOSyncController):
                             negotiator, _ = self.negotiators.get(
                                 negotiator_id, (None, None)
                             )
-                            self.nego_history[negotiator.ami.id][
+                            self.nego_history[negotiator.nmi.id][
                                 2 * states[negotiator_id].step
                             ] = {
                                 "agentID": self.__parent.id,
@@ -607,7 +607,7 @@ class SyncController(SAOSyncController):
                             negotiator, _ = self.negotiators.get(
                                 negotiator_id, (None, None)
                             )
-                            self.nego_history[negotiator.ami.id][
+                            self.nego_history[negotiator.nmi.id][
                                 2 * states[negotiator_id].step
                             ] = {
                                 "agentID": self.__parent.id,
@@ -656,7 +656,7 @@ class SyncController(SAOSyncController):
                             negotiator, _ = self.negotiators.get(
                                 negotiator_id, (None, None)
                             )
-                            self.nego_history[negotiator.ami.id][
+                            self.nego_history[negotiator.nmi.id][
                                 2 * states[negotiator_id].step
                             ] = {
                                 "agentID": self.__parent.id,
@@ -705,7 +705,7 @@ class SyncController(SAOSyncController):
                             negotiator, _ = self.negotiators.get(
                                 negotiator_id, (None, None)
                             )
-                            self.nego_history[negotiator.ami.id][
+                            self.nego_history[negotiator.nmi.id][
                                 2 * states[negotiator_id].step
                             ] = {
                                 "agentID": self.__parent.id,
@@ -734,7 +734,7 @@ class SyncController(SAOSyncController):
                         negotiator, _ = self.negotiators.get(
                             negotiator_id, (None, None)
                         )
-                        self.nego_history[negotiator.ami.id][
+                        self.nego_history[negotiator.nmi.id][
                             2 * states[negotiator_id].step
                         ] = {
                             "agentID": self.__parent.id,

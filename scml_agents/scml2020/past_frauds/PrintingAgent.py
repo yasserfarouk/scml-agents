@@ -314,7 +314,7 @@ class PrintingSAOController(SAOController):
     def before_join(
         self,
         negotiator_id: str,
-        ami: AgentMechanismInterface,
+        nmi: AgentMechanismInterface,
         state: MechanismState,
         *,
         ufun: Optional["UtilityFunction"] = None,
@@ -326,7 +326,7 @@ class PrintingSAOController(SAOController):
 
         Args:
             negotiator_id: The negotiator ID
-            ami  (AgentMechanismInterface): The negotiation.
+            nmi  (AgentMechanismInterface): The negotiation.
             state (MechanismState): The current state of the negotiation
             ufun (UtilityFunction): The ufun function to use before any discounting.
             role (str): role of the agent.
@@ -337,13 +337,13 @@ class PrintingSAOController(SAOController):
 
         """
         return super().before_join(
-            negotiator_id=negotiator_id, ami=ami, state=state, ufun=ufun, role=role
+            negotiator_id=negotiator_id, nmi=nmi, state=state, ufun=ufun, role=role
         )
 
     def after_join(
         self,
         negotiator_id: str,
-        ami: AgentMechanismInterface,
+        nmi: AgentMechanismInterface,
         state: MechanismState,
         *,
         ufun: Optional["UtilityFunction"] = None,
@@ -355,13 +355,13 @@ class PrintingSAOController(SAOController):
 
         Args:
             negotiator_id: The negotiator ID
-            ami  (AgentMechanismInterface): The negotiation.
+            nmi  (AgentMechanismInterface): The negotiation.
             state (MechanismState): The current state of the negotiation
             ufun (UtilityFunction): The ufun function to use before any discounting.
             role (str): role of the agent.
         """
         super().after_join(
-            negotiator_id=negotiator_id, ami=ami, state=state, ufun=ufun, role=role
+            negotiator_id=negotiator_id, nmi=nmi, state=state, ufun=ufun, role=role
         )
 
     def propose(self, negotiator_id: str, state: MechanismState) -> Optional["Outcome"]:

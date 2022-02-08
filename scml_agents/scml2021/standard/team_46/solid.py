@@ -184,7 +184,7 @@ class ControllerUFun(UtilityFunction):
     """A utility function for the controller"""
 
     def __init__(self, controller=None):
-        super().__init__(outcome_type=tuple)
+        super().__init__()
         self.controller = controller
 
     def eval(self, offer: "Outcome"):
@@ -280,7 +280,7 @@ class SyncController(SAOSyncController):
     def is_valid(self, negotiator_id: str, offer: "Outcome") -> bool:
         """Is this a valid offer for that negotiation"""
         # 交渉に関して妥当なオファーかどうか
-        issues = self.negotiators[negotiator_id][0].ami.issues
+        issues = self.negotiators[negotiator_id][0].nmi.issues
         return outcome_is_valid(offer, issues)
 
     def counter_all(

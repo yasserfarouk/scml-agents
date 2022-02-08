@@ -146,7 +146,7 @@ class MyNegotiationManager(MyERPredictor, NegotiationManager):
             return None
         # self.awi.loginfo_agent(
         #     f"Accepting request from {initiator}: {[str(_) for _ in mechanism.issues]} "
-        #     f"({Issue.num_outcomes(mechanism.issues)})"
+        #     f"({num_outcomes(mechanism.issues)})"
         # )
         # create a controller for the time-step if one does not exist or use the one already running
         if controller_info.controller is None:

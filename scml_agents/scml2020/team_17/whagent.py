@@ -23,6 +23,8 @@ from negmas import (
     UtilityFunction,
 )
 from negmas.helpers import get_class, humanize_time, instantiate
+from negmas.outcomes.base_issue import make_issue
+from negmas.outcomes.issue_ops import enumerate_issues
 from scml.scml2020 import (
     AWI,
     DecentralizingAgent,
@@ -402,11 +404,9 @@ class PreNegotiationManager(IndependentNegotiationsManager):
     ) -> Optional[Negotiator]:
         return self.negotiator(annotation["seller"] == self.id, issues=issues)
 
-    def negotiator(self, is_seller: bool, issues=None, outcomes=None) -> SAONegotiator:
-        if outcomes is None and (
-            issues is None or not Issue.enumerate(issues, astype=tuple)
-        ):
-            return None
+    def negotiator(
+        self, is_seller: bool, issues=None, outcomes=None, partner=None
+    ) -> SAONegotiator:
         params = self.negotiator_params
         params["ufun"] = self.create_ufun(
             is_seller=is_seller, outcomes=outcomes, issues=issues
@@ -428,9 +428,9 @@ class PreNegotiationManager(IndependentNegotiationsManager):
         )
 
         issues = [
-            Issue(qvalues, name="quantity"),
-            Issue(tvalues, name="time"),
-            Issue(uvalues, name="uvalues"),
+            make_issue((int(qvalues[0]), int(max(qvalues))), name="quantity"),
+            make_issue((int(tvalues[0]), int(max(tvalues))), name="time"),
+            make_issue((int(uvalues[0]), int(max(uvalues))), name="unit_price"),
         ]
         sortpartner = {}
         if self.awi.current_step > 4:
@@ -506,8 +506,8 @@ class PreNegotiationManager(IndependentNegotiationsManager):
         self, is_seller: bool, issues=None, outcomes=None
     ) -> UtilityFunction:
         if is_seller:
-            return LinearUtilityFunction((0, 0.25, 1))
-        return LinearUtilityFunction((0, -0.5, -0.8))
+            return LinearUtilityFunction((0, 0.25, 1), issues=issues, outcomes=outcomes)
+        return LinearUtilityFunction((0, -0.5, -0.8), issues=issues, outcomes=outcomes)
 
 
 class WhAgent(

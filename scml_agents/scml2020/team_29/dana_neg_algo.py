@@ -13,13 +13,13 @@ from negmas import (
     AspirationNegotiator,
     Breach,
     Contract,
+    ControlledNegotiator,
     Issue,
     LinearUtilityFunction,
     MappingUtilityFunction,
     MechanismState,
     Negotiator,
     Outcome,
-    PassThroughNegotiator,
     ResponseType,
     SAOController,
     SAONegotiator,
@@ -27,7 +27,7 @@ from negmas import (
     SAOState,
     SAOSyncController,
     UtilityFunction,
-    UtilityValue,
+    Value,
     outcome_is_valid,
 )
 from negmas.events import Notification, Notifier
@@ -55,7 +55,7 @@ improvements:
 
 class CalcTrustworthiness:
     _awi = None
-    _ami = None
+    # _nmi = None
     breach_level_w = 0.2
     breach_prob_w = 0.8
     last_step = True
@@ -68,13 +68,19 @@ class CalcTrustworthiness:
     def awi(self, value):
         self._awi = value
 
-    @property
-    def ami(self):
-        return self._ami
+    #     @property
 
-    @ami.setter
-    def ami(self, value):
-        self._ami = value
+    #     def nmi(self):
+
+    #         return self._nmi
+
+    #
+
+    #     @nmi.setter
+
+    #     def nmi(self, value):
+
+    #         self._nmi = value
 
     def eval_trustworthiness(self, u, offer: Optional["Outcome"]):
         """
@@ -83,9 +89,9 @@ class CalcTrustworthiness:
         """
         # extract financial report
         rival_agent_id = (
-            self.ami.annotation["buyer"]
+            self.nmi.annotation["buyer"]
             if self.controller.is_seller
-            else self.ami.annotation["seller"]
+            else self.nmi.annotation["seller"]
         )
         financial_rep = self.awi.reports_of_agent(rival_agent_id)
 
@@ -126,19 +132,22 @@ class CalcTrustworthiness:
 
 class UpdateUfunc:
     def set_ufun_members(self, negotiator_id: str):
-        self.ufun.ami = self.negotiators[negotiator_id][0]._ami
+        self.ufun.nmi = self.negotiators[negotiator_id][0]._nmi
         self.ufun.awi = self.awi
 
 
 class DanasUtilityFunction(CalcTrustworthiness, LinearUtilityFunction):
     def __init__(self, controller, *args, **kwargs):
         self.controller = controller
-        if self.controller.is_seller:
-            super().__init__((1, 1, 10))
-        else:
-            super().__init__((1, -1, -10))
+        issues = kwargs.get("issues", None)
+        outcomes = kwargs.get("outocmes", None)
 
-    def eval(self, offer: Optional["Outcome"]) -> Optional[UtilityValue]:
+        if self.controller.is_seller:
+            super().__init__((1, 1, 10), issues=issues, outcomes=outcomes)
+        else:
+            super().__init__((1, -1, -10), issues=issues, outcomes=outcomes)
+
+    def eval(self, offer: Optional["Outcome"]) -> Optional[Value]:
         u = super().eval(offer)
         return self.eval_trustworthiness(u, offer)
 
@@ -171,7 +180,7 @@ class DanasController(UpdateUfunc, SAOController, AspirationMixin, Notifier):
         - It uses whatever negotiator type on all of its negotiations and it assumes that the ufun will never change
         - Once it accumulates the required quantity, it ends all remaining negotiations
         - It assumes that all ufuns are identical so there is no need to keep a separate negotiator for each one and it
-          instantiates a single negotiator that dynamically changes the AMI but always uses the same ufun.
+          instantiates a single negotiator that dynamically changes the nmi but always uses the same ufun.
     """
 
     def __init__(
@@ -218,21 +227,22 @@ class DanasController(UpdateUfunc, SAOController, AspirationMixin, Notifier):
     def join(
         self,
         negotiator_id: str,
-        ami: AgentMechanismInterface,
+        nmi: AgentMechanismInterface,
         state: MechanismState,
         *,
+        preferences: Optional["UtilityFunction"] = None,
         ufun: Optional["UtilityFunction"] = None,
         role: str = "agent",
     ) -> bool:
-        raise Exception
-        # joined = super().join(negotiator_id, ami, state, ufun=ufun, role=role)
+        raise Exception()
+        # joined = super().join(negotiator_id, nmi, state, ufun=ufun, role=role)
         # if joined:
         #     self.completed[negotiator_id] = False
         # return joined
 
     def propose(self, negotiator_id: str, state: MechanismState) -> Optional["Outcome"]:
         self.set_ufun_members(negotiator_id)
-        self.__negotiator._ami = self.negotiators[negotiator_id][0]._ami
+        self.__negotiator._nmi = self.negotiators[negotiator_id][0]._nmi
         a = self.__negotiator.propose(state)
         return a
 
@@ -242,7 +252,7 @@ class DanasController(UpdateUfunc, SAOController, AspirationMixin, Notifier):
         if self.secured >= self.target:
             return ResponseType.END_NEGOTIATION
         self.set_ufun_members(negotiator_id)
-        self.__negotiator._ami = self.negotiators[negotiator_id][0]._ami
+        self.__negotiator._nmi = self.negotiators[negotiator_id][0]._nmi
         a = self.__negotiator.respond(offer=offer, state=state)
         return a
 
@@ -255,11 +265,11 @@ class DanasController(UpdateUfunc, SAOController, AspirationMixin, Notifier):
 
     def create_negotiator(
         self,
-        negotiator_type: Union[str, Type[PassThroughNegotiator]] = None,
+        negotiator_type: Union[str, Type[ControlledNegotiator]] = None,
         name: str = None,
         cntxt: Any = None,
         **kwargs,
-    ) -> PassThroughNegotiator:
+    ) -> ControlledNegotiator:
         neg = super().create_negotiator(negotiator_type, name, cntxt, **kwargs)
         self.completed[neg.id] = False
         return neg

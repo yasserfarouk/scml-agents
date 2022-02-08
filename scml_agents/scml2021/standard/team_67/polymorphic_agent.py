@@ -25,6 +25,7 @@ from negmas import (
     UtilityFunction,
 )
 from negmas.helpers import humanize_time, instantiate
+from negmas.outcomes.issue_ops import enumerate_issues
 
 # required for development
 from scml.scml2020 import (
@@ -297,12 +298,6 @@ class MyNegotiationManager(IndependentNegotiationsManager):
         partners: List[str],
     ) -> None:
 
-        issues = [
-            Issue((int(qvalues[0]), int(qvalues[1])), name="quantity"),
-            Issue((int(tvalues[0]), int(tvalues[1])), name="time"),
-            Issue((int(uvalues[0]), int(uvalues[1])), name="uvalues"),
-        ]
-
         for partner in partners:
             self.awi.request_negotiation(
                 is_buy=not sell,
@@ -311,7 +306,7 @@ class MyNegotiationManager(IndependentNegotiationsManager):
                 unit_price=uvalues,
                 time=tvalues,
                 partner=partner,
-                negotiator=self.negotiator(sell, issues=issues, partner=partner),
+                negotiator=self.negotiator(sell, partner=partner),
             )
 
     def respond_to_negotiation_request(
@@ -337,10 +332,6 @@ class MyNegotiationManager(IndependentNegotiationsManager):
         self, is_seller: bool, issues=None, outcomes=None, partner=None
     ) -> SAONegotiator:
         """Creates a negotiator"""
-        if outcomes is None and (
-            issues is None or not Issue.enumerate(issues, astype=tuple)
-        ):
-            return None
         params = self.negotiator_params
         params["ufun"] = self.create_ufun(
             is_seller=is_seller, outcomes=outcomes, issues=issues, partner=partner
@@ -352,9 +343,15 @@ class MyNegotiationManager(IndependentNegotiationsManager):
     ) -> UtilityFunction:
         if is_seller:
             trust = self.consumers_financial_trust[partner]
-            return LinearUtilityFunction((1.0 * trust, 1.0 * trust, 10.0 * trust))
+            return LinearUtilityFunction(
+                (1.0 * trust, 1.0 * trust, 10.0 * trust),
+                issues=issues,
+                outcomes=outcomes,
+            )
         trust = self.suppliers_financial_trust[partner]
-        return LinearUtilityFunction((1.0 * trust, -1.0 * trust, -10.0 * trust))
+        return LinearUtilityFunction(
+            (1.0 * trust, -1.0 * trust, -10.0 * trust), issues=issues, outcomes=outcomes
+        )
 
 
 class PolymorphicAgent(

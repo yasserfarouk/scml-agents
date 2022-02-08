@@ -39,17 +39,17 @@ class SimpleAgent(OneShotAgent):
         my_needs = self._needed(negotiator_id)
         if my_needs <= 0:
             return None
-        ami = self.get_ami(negotiator_id)
-        if not ami:
+        nmi = self.get_nmi(negotiator_id)
+        if not nmi:
             return None
-        quantity_issue = ami.issues[QUANTITY]
-        unit_price_issue = ami.issues[UNIT_PRICE]
+        quantity_issue = nmi.issues[QUANTITY]
+        unit_price_issue = nmi.issues[UNIT_PRICE]
         offer = [-1] * 3
         offer[QUANTITY] = max(
             min(my_needs, quantity_issue.max_value), quantity_issue.min_value
         )
         offer[TIME] = self.awi.current_step
-        if self._is_selling(ami):
+        if self._is_selling(nmi):
             offer[UNIT_PRICE] = unit_price_issue.max_value
         else:
             offer[UNIT_PRICE] = unit_price_issue.min_value
@@ -62,8 +62,8 @@ class SimpleAgent(OneShotAgent):
             - self.secured
         )
 
-    def _is_selling(self, ami):
-        return ami.annotation["product"] == self.awi.my_output_product
+    def _is_selling(self, nmi):
+        return nmi.annotation["product"] == self.awi.my_output_product
 
 
 class BetterAgent(SimpleAgent):
@@ -78,44 +78,44 @@ class BetterAgent(SimpleAgent):
         if not offer:
             return None
         offer = list(offer)
-        offer[UNIT_PRICE] = self._find_good_price(self.get_ami(negotiator_id), state)
+        offer[UNIT_PRICE] = self._find_good_price(self.get_nmi(negotiator_id), state)
         return tuple(offer)
 
     def respond(self, negotiator_id, state, offer):
         response = super().respond(negotiator_id, state, offer)
         if response != ResponseType.ACCEPT_OFFER:
             return response
-        ami = self.get_ami(negotiator_id)
+        nmi = self.get_nmi(negotiator_id)
         return (
             response
-            if self._is_good_price(ami, state, offer[UNIT_PRICE])
+            if self._is_good_price(nmi, state, offer[UNIT_PRICE])
             else ResponseType.REJECT_OFFER
         )
 
-    def _is_good_price(self, ami, state, price):
+    def _is_good_price(self, nmi, state, price):
         """Checks if a given price is good enough at this stage"""
-        mn, mx = self._price_range(ami)
-        th = self._th(state.step, ami.n_steps)
+        mn, mx = self._price_range(nmi)
+        th = self._th(state.step, nmi.n_steps)
         # a good price is one better than the threshold
-        if self._is_selling(ami):
+        if self._is_selling(nmi):
             return (price - mn) >= th * (mx - mn)
         else:
             return (mx - price) >= th * (mx - mn)
 
-    def _find_good_price(self, ami, state):
+    def _find_good_price(self, nmi, state):
         """Finds a good-enough price conceding linearly over time"""
-        mn, mx = self._price_range(ami)
-        th = self._th(state.step, ami.n_steps)
+        mn, mx = self._price_range(nmi)
+        th = self._th(state.step, nmi.n_steps)
         # offer a price that is around th of your best possible price
-        if self._is_selling(ami):
+        if self._is_selling(nmi):
             return mn + th * (mx - mn)
         else:
             return mx - th * (mx - mn)
 
-    def _price_range(self, ami):
+    def _price_range(self, nmi):
         """Finds the minimum and maximum prices"""
-        mn = ami.issues[UNIT_PRICE].min_value
-        mx = ami.issues[UNIT_PRICE].max_value
+        mn = nmi.issues[UNIT_PRICE].min_value
+        mx = nmi.issues[UNIT_PRICE].max_value
         return mn, mx
 
     def _th(self, step, n_steps):
@@ -133,17 +133,17 @@ class AdaptiveAgent(BetterAgent):
     def respond(self, negotiator_id, state, offer):
         """Save the best price received"""
         response = super().respond(negotiator_id, state, offer)
-        ami = self.get_ami(negotiator_id)
-        if self._is_selling(ami):
+        nmi = self.get_nmi(negotiator_id)
+        if self._is_selling(nmi):
             self._best_selling = max(offer[UNIT_PRICE], self._best_selling)
         else:
             self._best_buying = min(offer[UNIT_PRICE], self._best_buying)
         return response
 
-    def _price_range(self, ami):
+    def _price_range(self, nmi):
         """Limits the price by the best price received"""
-        mn, mx = super()._price_range(ami)
-        if self._is_selling(ami):
+        mn, mx = super()._price_range(nmi)
+        if self._is_selling(nmi):
             mn = max(mn, self._best_selling)
         else:
             mx = min(mx, self._best_buying)
@@ -208,22 +208,22 @@ class LearningAgent(AdaptiveAgent):
         response = super().respond(negotiator_id, state, offer)
         # update my current best price to use for limiting concession in other
         # negotiations
-        ami = self.get_ami(negotiator_id)
+        nmi = self.get_nmi(negotiator_id)
         up = offer[UNIT_PRICE]
-        if self._is_selling(ami):
-            partner = ami.annotation["buyer"]
+        if self._is_selling(nmi):
+            partner = nmi.annotation["buyer"]
             self._best_opp_selling[partner] = max(up, self._best_selling)
         else:
-            partner = ami.annotation["seller"]
+            partner = nmi.annotation["seller"]
             self._best_opp_buying[partner] = min(up, self._best_buying)
         return response
 
-    def _price_range(self, ami):
+    def _price_range(self, nmi):
         """Limits the price by the best price received"""
-        mn = ami.issues[UNIT_PRICE].min_value
-        mx = ami.issues[UNIT_PRICE].max_value
-        if self._is_selling(ami):
-            partner = ami.annotation["buyer"]
+        mn = nmi.issues[UNIT_PRICE].min_value
+        mx = nmi.issues[UNIT_PRICE].max_value
+        if self._is_selling(nmi):
+            partner = nmi.annotation["buyer"]
             mn = min(
                 mx * (1 - self._range_slack),
                 max(
@@ -243,7 +243,7 @@ class LearningAgent(AdaptiveAgent):
                 ),
             )
         else:
-            partner = ami.annotation["seller"]
+            partner = nmi.annotation["seller"]
             mx = max(
                 mn * (1 + self._range_slack),
                 min(
@@ -338,14 +338,14 @@ class ImprovedLearningAgent(AdaptiveAgent):
         response = super().respond(negotiator_id, state, offer)
         # update my current best price to use for limiting concession in other
         # negotiations
-        ami = self.get_ami(negotiator_id)
+        nmi = self.get_nmi(negotiator_id)
         up = offer[UNIT_PRICE]
 
         # TODO: Perform a de-discount for getting better contracts.
         # TODO: If the opponent balance is negative - decrease the slack.
 
-        if self._is_selling(ami):
-            partner = ami.annotation["buyer"]
+        if self._is_selling(nmi):
+            partner = nmi.annotation["buyer"]
             self._best_opp_selling[partner] = max(up, self._best_selling)
             #
 
@@ -355,7 +355,7 @@ class ImprovedLearningAgent(AdaptiveAgent):
             self.adjust_slack(partner, buyer=False)
 
         else:
-            partner = ami.annotation["seller"]
+            partner = nmi.annotation["seller"]
 
             self._best_opp_buying[partner] = min(up, self._best_buying)
             self.adjust_slack(partner, buyer=True)
@@ -375,12 +375,12 @@ class ImprovedLearningAgent(AdaptiveAgent):
             if current_cash != self.partners_last_cash[partner]:
                 self.partners_last_cash[partner] = current_cash
 
-    def _price_range(self, ami):
+    def _price_range(self, nmi):
         """Limits the price by the best price received"""
-        mn = ami.issues[UNIT_PRICE].min_value
-        mx = ami.issues[UNIT_PRICE].max_value
-        if self._is_selling(ami):
-            partner = ami.annotation["buyer"]
+        mn = nmi.issues[UNIT_PRICE].min_value
+        mx = nmi.issues[UNIT_PRICE].max_value
+        if self._is_selling(nmi):
+            partner = nmi.annotation["buyer"]
             mn = min(
                 mx * (1 - self._range_slack),
                 max(
@@ -401,7 +401,7 @@ class ImprovedLearningAgent(AdaptiveAgent):
                 ),
             )
         else:
-            partner = ami.annotation["seller"]
+            partner = nmi.annotation["seller"]
             mx = max(
                 mn * (1 + self._range_slack),
                 min(

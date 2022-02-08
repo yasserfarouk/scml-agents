@@ -1,6 +1,6 @@
 from typing import Optional
 
-from negmas import UtilityValue
+from negmas import Value
 from scml.scml2019.common import SCMLAgreement
 from scml.scml2019.factory_managers.builtins import NegotiatorUtility
 
@@ -9,7 +9,7 @@ class SellerUtilityFunction(NegotiatorUtility):
     def __init__(self, unit_cost):
         self.unit_cost = unit_cost
 
-    def call(self, agreement: SCMLAgreement) -> Optional[UtilityValue]:
+    def call(self, agreement: SCMLAgreement) -> Optional[Value]:
         quantity = agreement.get("quantity")
         unit_price = agreement.get("unit_price")
         unit_cost = self.unit_cost

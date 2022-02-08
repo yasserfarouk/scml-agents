@@ -56,14 +56,15 @@ from negmas import (
     AspirationNegotiator,
     Breach,
     Contract,
+    ControlledNegotiator,
     Issue,
     LinearUtilityFunction,
     MechanismState,
     Negotiator,
-    PassThroughNegotiator,
     ResponseType,
     SAONegotiator,
     UtilityFunction,
+    num_outcomes,
 )
 from negmas.events import Notification, Notifier
 from negmas.helpers import get_class, humanize_time, instantiate
@@ -125,9 +126,10 @@ class MyNegotiator(SAONegotiator):
 
     def join(
         self,
-        ami,
+        nmi,
         state,
         *,
+        preferences: Optional["UtilityFunction"] = None,
         ufun=None,
         role="agent",
     ) -> bool:
@@ -142,15 +144,15 @@ class MyNegotiator(SAONegotiator):
         permission = (
             self._Negotiator__parent is None
             or self._Negotiator__parent.before_join(
-                self.id, ami, state, ufun=ufun, role=role
+                self.id, nmi, state, ufun=ufun, role=role
             )
         )
         if not permission:
             return False
-        if super().join(ami, state, ufun=ufun, role=role):
+        if super().join(nmi, state, ufun=ufun, preferences=preferences, role=role):
             if self._Negotiator__parent:
                 self._Negotiator__parent.after_join(
-                    self.id, ami, state, ufun=ufun, role=role
+                    self.id, nmi, state, ufun=ufun, role=role
                 )
             return True
         return False
@@ -205,19 +207,22 @@ class MyController(SAOController, AspirationMixin, Notifier):
     def join(
         self,
         negotiator_id: str,
-        ami: AgentMechanismInterface,
+        nmi: AgentMechanismInterface,
         state: MechanismState,
         *,
+        preferences: Optional["UtilityFunction"] = None,
         ufun: Optional["UtilityFunction"] = None,
         role: str = "agent",
     ) -> bool:
-        joined = super().join(negotiator_id, ami, state, ufun=ufun, role=role)
+        joined = super().join(
+            negotiator_id, nmi, state, preferences=preferences, ufun=ufun, role=role
+        )
         if joined:
             self.completed[negotiator_id] = False
         return joined
 
     def propose(self, negotiator_id: str, state: MechanismState) -> Optional["Outcome"]:
-        self.__negotiator._ami = self.negotiators[negotiator_id][0]._ami
+        self.__negotiator._nmi = self.negotiators[negotiator_id][0]._nmi
         return self.__negotiator.propose(state)
 
     def respond(
@@ -226,7 +231,7 @@ class MyController(SAOController, AspirationMixin, Notifier):
         # 必要数量達成済み
         if self.secured >= self.target:
             return ResponseType.END_NEGOTIATION
-        self.__negotiator._ami = self.negotiators[negotiator_id][0]._ami
+        self.__negotiator._nmi = self.negotiators[negotiator_id][0]._nmi
         return self.__negotiator.respond(offer=offer, state=state)
 
     def __str__(self):
@@ -236,13 +241,22 @@ class MyController(SAOController, AspirationMixin, Notifier):
             f"({len([_ for _ in self.completed.values() if _])} completed of {len(self.completed)} negotiators)"
         )
 
+    def _create_ufun(self, is_seller: bool, issues=None, outcomes=None):
+        """A utility function that penalizes high cost and late delivery for buying and and awards them for selling"""
+        if is_seller:
+            return LinearUtilityFunction((0, 0.25, 1))
+        return LinearUtilityFunction((0, -0.5, -0.8))
+
     def create_negotiator(
         self,
         negotiator_type: Union[str, Type[MyNegotiator]] = None,
         name: str = None,
         cntxt: Any = None,
+        seller: bool = True,
         **kwargs,
     ) -> MyNegotiator:
+        ufun = self._create_ufun(seller)
+        kwargs["ufun"] = ufun
         neg = super().create_negotiator(negotiator_type, name, cntxt, **kwargs)
         self.completed[neg.id] = False
         return neg
@@ -294,7 +308,7 @@ class MyController(SAOController, AspirationMixin, Notifier):
                 else:
                     return
                 self.retries[partner] += 1
-                neg = self.create_negotiator()
+                neg = self.create_negotiator(seller=not self.is_seller)
                 self.completed[neg.id] = False
                 self.awi.loginfo(
                     f"{str(self)} negotiating with {partner} on u={self.urange}"
@@ -437,7 +451,7 @@ class MyNegotiationManager(NegotiationManager):
             return None
         self.awi.loginfo_agent(
             f"Accepting request from {initiator}: {[str(_) for _ in mechanism.issues]} "
-            f"({Issue.num_outcomes(mechanism.issues)})"
+            f"({num_outcomes(mechanism.issues)})"
         )
         # create a controller for the time-step if one does not exist or use the one already running
         if controller_info.controller is None:
@@ -452,7 +466,7 @@ class MyNegotiationManager(NegotiationManager):
             controller = controller_info.controller
 
         # create a new negotiator, add it to the controller and return it
-        return controller.create_negotiator()
+        return controller.create_negotiator(seller=is_seller)
 
     def all_negotiations_concluded(
         self, controller_index: int, is_seller: bool

@@ -227,7 +227,7 @@ class ControllerUFun(UtilityFunction):
     """A utility function for the controller"""
 
     def __init__(self, controller=None):
-        super().__init__(outcome_type=tuple)
+        super().__init__()
         self.controller = controller
 
     def eval(self, offer: "Outcome"):
@@ -313,7 +313,7 @@ class SyncController(SAOSyncController):
 
     def is_valid(self, negotiator_id: str, offer: "Outcome") -> bool:
         """Is this a valid offer for that negotiation"""
-        issues = self.negotiators[negotiator_id][0].ami.issues
+        issues = self.negotiators[negotiator_id][0].nmi.issues
         return outcome_is_valid(offer, issues)
 
     def counter_all(
@@ -493,8 +493,8 @@ class StingyAgent(
     def create_ufun(self, is_seller: bool, issues=None, outcomes=None):
         """A utility function that penalizes high cost and late delivery for buying and and awards them for selling"""
         if is_seller:
-            return LinearUtilityFunction((0, 0.25, 1))
-        return LinearUtilityFunction((0, -0.5, -0.8))
+            return LinearUtilityFunction((0, 0.25, 1), issues=issues, outcomes=outcomes)
+        return LinearUtilityFunction((0, -0.5, -0.8), issues=issues, outcomes=outcomes)
 
 
 def run(

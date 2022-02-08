@@ -20,8 +20,8 @@ from negmas import (
 )
 from negmas.helpers import humanize_time
 from negmas.outcomes import Issue
+from negmas.preferences import UtilityFunction
 from negmas.sao import AspirationNegotiator
-from negmas.utilities import UtilityFunction
 from scml.oneshot import OneShotAgent
 from scml.oneshot.agents import (
     GreedyOneShotAgent,

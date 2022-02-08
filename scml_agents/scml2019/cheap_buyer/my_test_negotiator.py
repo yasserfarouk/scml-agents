@@ -13,14 +13,14 @@ class MyTestnegotiator(AspirationNegotiator):
 
     def respond(self, state: MechanismState, offer: "Outcome") -> "ResponseType":
         # print("RESPONSE CALLED")
-        if self._utility_function is None:
+        if self.ufun is None:
             return ResponseType.REJECT_OFFER
-        u = self._utility_function(offer)
+        u = self.ufun(offer)
         if u is None:
             return ResponseType.REJECT_OFFER
 
         asp = (
-            self.aspiration(state.relative_time) * (self.ufun_max - self.ufun_min)
+            self.utility_at(state.relative_time) * (self.ufun_max - self.ufun_min)
             + self.ufun_min
         )
         if u >= asp and u > self.reserved_value:
@@ -33,7 +33,7 @@ class MyTestnegotiator(AspirationNegotiator):
     def propose(self, state: MechanismState) -> Optional["Outcome"]:
         # print("PROPOSE CALLED")
         result = None
-        aspiration = self.aspiration(state.relative_time)
+        aspiration = self.utility_at(state.relative_time)
         asp = aspiration * (self.ufun_max - self.ufun_min) + self.ufun_min
         if asp < self.reserved_value:
             # print("Offer test : "+str(result))
@@ -89,17 +89,16 @@ class MyTestnegotiator(AspirationNegotiator):
                     )
         a = 0
 
-    def on_ufun_changed(self):
-        super().on_ufun_changed()
-        outcomes = self._ami.discrete_outcomes()
+    def on_preferences_changed(self, changes=tuple()):
+        super().on_preferences_changed([PreferencesChange.General])
+        outcomes = self.nmi.discrete_outcomes()
         self.ordered_outcomes = sorted(
-            ((self._utility_function(outcome), outcome) for outcome in outcomes),
+            ((self.ufun(outcome), outcome) for outcome in outcomes),
             key=lambda x: x[0],
             reverse=True,
         )
-        if not self.assume_normalized:
-            self.normalize()
-            self.ufun_max = self.ordered_outcomes[0][0]
-            self.ufun_min = self.ordered_outcomes[-1][0]
-            if self.reserved_value is not None and self.ufun_min < self.reserved_value:
-                self.ufun_min = self.reserved_value
+        self.normalize()
+        self.ufun_max = self.ordered_outcomes[0][0]
+        self.ufun_min = self.ordered_outcomes[-1][0]
+        if self.reserved_value is not None and self.ufun_min < self.reserved_value:
+            self.ufun_min = self.reserved_value

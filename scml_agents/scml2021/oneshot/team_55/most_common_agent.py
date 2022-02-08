@@ -64,7 +64,7 @@ import types
 from typing import Any, Optional, Type, Union
 
 import numpy as np
-from negmas import Outcome, PassThroughNegotiator, ResponseType
+from negmas import ControlledNegotiator, Outcome, ResponseType
 from negmas.helpers import humanize_time
 from negmas.sao import SAOState
 
@@ -112,7 +112,7 @@ class ZilberanBackup(OneShotAgent):
             "connect_to_oneshot_adapter",
             "connect_to_2021_adapter",
             "make_ufun",
-            "on_ufun_changed",
+            "on_preferences_changed",
         ]
 
         for attribute in dir(self):

@@ -2,7 +2,7 @@ import random
 from typing import Optional
 
 from negmas import ResponseType
-from negmas.common import MechanismState
+from negmas.common import MechanismState, PreferencesChange
 from negmas.sao import AspirationNegotiator
 from scml.scml2019 import CFP, INVALID_UTILITY
 
@@ -36,11 +36,11 @@ class Mynegotiator(AspirationNegotiator):
         my_utility = self.get_normalized_utility(my_offer)
         offered_utility = self.get_normalized_utility(offer)
         asp = (
-            self.aspiration(state.relative_time) * (self.ufun_max - self.ufun_min)
+            self.utility_at(state.relative_time) * (self.ufun_max - self.ufun_min)
             + self.ufun_min
         )
 
-        if self._utility_function is None:
+        if self.ufun is None:
             return ResponseType.REJECT_OFFER
         if offered_utility is None:
             return ResponseType.REJECT_OFFER
@@ -59,12 +59,12 @@ class Mynegotiator(AspirationNegotiator):
         init_rat = round(tot_util * 0.10)  #  best 0,10 percent, random offers
         optm_rat = round(tot_util * 0.10)  # current_r + optm_r, increases the rank
         pesm_rat = round(tot_util * 0.05)  # current_r - pes_r, decreases the rank
-        aspiration = self.aspiration(state.relative_time)
+        aspiration = self.utility_at(state.relative_time)
         asp = aspiration * (self.ufun_max - self.ufun_min) + self.ufun_min
 
         if not self.offers:
             return self._random_offer(init_rat)
-        o = self.offers[self._ami.id]
+        o = self.offers[self.nmi.id]
         before_ix = len(o) - 1 if len(o) > 1 else len(o) - 2
         current_u = self.get_normalized_utility(
             o[-1]
@@ -87,7 +87,7 @@ class Mynegotiator(AspirationNegotiator):
         return [order[0] for order in self.ordered_outcomes]
 
     def _set_offers(self, o):
-        k = self._ami.id
+        k = self.nmi.id
         if k in self.offers:
             self.offers[k].append(o)
         else:
@@ -174,24 +174,22 @@ class Mynegotiator(AspirationNegotiator):
                         max(0, (outcome[0] / max_utility)),
                         outcome[1],
                     )
-        a = 0
 
-    def on_ufun_changed(self):
-        super().on_ufun_changed()
-        outcomes = self._ami.discrete_outcomes()
+    def on_preferences_changed(self, changes=tuple()):
+        super().on_preferences_changed([PreferencesChange.General])
+        outcomes = self.nmi.discrete_outcomes()
         self.ordered_outcomes = sorted(
-            ((self._utility_function(outcome), outcome) for outcome in outcomes),
+            ((self.ufun(outcome), outcome) for outcome in outcomes),
             key=lambda x: float(x[0]) if x[0] is not None else float("-inf"),
             reverse=True,
         )
         self.partner_offers.append(self.ordered_outcomes[0][1])
         self.update_weights(self.ordered_outcomes[1][1])
-        if not self.assume_normalized:
-            self.normalize()
-            self.ufun_max = self.ordered_outcomes[0][0]
-            self.ufun_min = self.ordered_outcomes[-1][0]
-            if self.reserved_value is not None and self.ufun_min < self.reserved_value:
-                self.ufun_min = self.reserved_value
+        self.normalize()
+        self.ufun_max = self.ordered_outcomes[0][0]
+        self.ufun_min = self.ordered_outcomes[-1][0]
+        if self.reserved_value is not None and self.ufun_min < self.reserved_value:
+            self.ufun_min = self.reserved_value
         self.normalized_utilities = {}
         for offer_value_pair in self.ordered_outcomes:
             offer = offer_value_pair[1]
@@ -227,17 +225,17 @@ class Mynegotiator(AspirationNegotiator):
             frequencies = {}
             # @ todo : Frequency heurstic
 
-    def notify_ufun_changed(self):
-        self.on_ufun_changed()
+    def notify_ufun_changed(self, changes=tuple()):
+        self.on_preferences_changed([PreferencesChange.General])
 
     def propose_(self, state: MechanismState) -> Optional["Outcome"]:
-        if self._ufun_modified:
-            self.on_ufun_changed()
+        if self.ufun and self.ufun.changes:
+            self.on_preferences_changed(self.ufun.changes)
         result = self.propose(state=state)
         self.my_last_proposal = result
         return result
 
     def respond_(self, state: MechanismState, offer: "Outcome") -> "ResponseType":
-        if self._ufun_modified:
-            self.on_ufun_changed()
+        if self.ufun and self.ufun.changes:
+            self.on_preferences_changed(self.ufun.changes)
         return self.respond(state=state, offer=offer)

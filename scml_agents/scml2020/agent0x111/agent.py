@@ -15,14 +15,15 @@ from negmas import (
     AspirationNegotiator,
     Breach,
     Contract,
+    ControlledNegotiator,
     Issue,
     LinearUtilityFunction,
     MechanismState,
     Negotiator,
     Outcome,
-    PassThroughNegotiator,
     ResponseType,
     UtilityFunction,
+    make_issue,
 )
 from negmas.common import AgentMechanismInterface
 from negmas.events import Notification, Notifier
@@ -61,7 +62,7 @@ class StepController(SAOController, AspirationMixin, Notifier):
         - It uses whatever negotiator type on all of its negotiations and it assumes that the ufun will never change
         - Once it accumulates the required quantity, it ends all remaining negotiations
         - It assumes that all ufuns are identical so there is no need to keep a separate negotiator for each one and it
-          instantiates a single negotiator that dynamically changes the AMI but always uses the same ufun.
+          instantiates a single negotiator that dynamically changes the nmi but always uses the same ufun. ami
     """
 
     def __init__(
@@ -96,21 +97,19 @@ class StepController(SAOController, AspirationMixin, Notifier):
             negotiator_params if negotiator_params is not None else dict()
         )
         self.secured = 0
-        # issues = [
-        #   Issue(qvalues, name="quantity"),
-        #   Issue(tvalues, name="time"),
-        #   Issue(uvalues, name="uvalues"),
-        # ]
+        issues = [
+            make_issue((1, int(max(1, target_quantity))), name="quantity"),
+            make_issue((step, step), name="time"),
+            make_issue((int(urange[0]), int(max(urange))), name="unit_price"),
+        ]
 
         # ratio= self.get_ratio_of_suspects()
         # print(str("The ratio between all partners and suspects in step {} is: {}").format(step,ratio))
 
         if is_seller:
-            self.ufun = LinearUtilityFunction((1, 1, 10))
-
+            self.ufun = LinearUtilityFunction((1, 1, 10), issues=issues)
         else:
-
-            self.ufun = LinearUtilityFunction((1, -1, -10))
+            self.ufun = LinearUtilityFunction((1, -1, -10), issues=issues)
 
         negotiator_params["ufun"] = self.ufun
         self.__negotiator = instantiate(negotiator_type, **negotiator_params)
@@ -122,19 +121,22 @@ class StepController(SAOController, AspirationMixin, Notifier):
     def join(
         self,
         negotiator_id: str,
-        ami: AgentMechanismInterface,
+        nmi: AgentMechanismInterface,
         state: MechanismState,
         *,
+        preferences: Optional["UtilityFunction"] = None,
         ufun: Optional["UtilityFunction"] = None,
         role: str = "agent",
     ) -> bool:
-        joined = super().join(negotiator_id, ami, state, ufun=ufun, role=role)
+        joined = super().join(
+            negotiator_id, nmi, state, preferences=preferences, ufun=ufun, role=role
+        )
         if joined:
             self.completed[negotiator_id] = False
         return joined
 
     def propose(self, negotiator_id: str, state: MechanismState) -> Optional["Outcome"]:
-        self.__negotiator._ami = self.negotiators[negotiator_id][0]._ami
+        self.__negotiator._nmi = self.negotiators[negotiator_id][0]._nmi
         return self.__negotiator.propose(state)
 
     def respond(
@@ -142,7 +144,7 @@ class StepController(SAOController, AspirationMixin, Notifier):
     ) -> ResponseType:
         if self.secured >= self.target:
             return ResponseType.END_NEGOTIATION
-        self.__negotiator._ami = self.negotiators[negotiator_id][0]._ami
+        self.__negotiator._nmi = self.negotiators[negotiator_id][0]._nmi
         return self.__negotiator.respond(offer=offer, state=state)
 
     def __str__(self):
@@ -154,11 +156,11 @@ class StepController(SAOController, AspirationMixin, Notifier):
 
     def create_negotiator(
         self,
-        negotiator_type: Union[str, Type[PassThroughNegotiator]] = None,
+        negotiator_type: Union[str, Type[ControlledNegotiator]] = None,
         name: str = None,
         cntxt: Any = None,
         **kwargs,
-    ) -> PassThroughNegotiator:
+    ) -> ControlledNegotiator:
         neg = super().create_negotiator(negotiator_type, name, cntxt, **kwargs)
         self.completed[neg.id] = False
         return neg
@@ -729,7 +731,7 @@ class ElaboratedStepNegotiationManager(ElaboratedMeanERPStrategy, NegotiationMan
             return None
         # self.awi.loginfo_agent(
         #     f"Accepting request from {initiator}: {[str(_) for _ in mechanism.issues]} "
-        #     f"({Issue.num_outcomes(mechanism.issues)})"
+        #     f"({num_outcomes(mechanism.issues)})"
         # )
         # create a controller for the time-step if one does not exist or use the one already running
         if controller_info.controller is None:

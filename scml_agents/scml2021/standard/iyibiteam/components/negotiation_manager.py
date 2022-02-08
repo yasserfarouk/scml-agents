@@ -9,11 +9,12 @@ from negmas import (
     Contract,
     Issue,
     Negotiator,
+    ResponseType,
     SAONegotiator,
     ToughNegotiator,
 )
+from negmas.common import PreferencesChange
 from negmas.helpers import get_class
-from negmas.outcomes import ResponseType
 from scipy.stats import linregress
 from scml.scml2020 import (
     AWI,
@@ -36,16 +37,12 @@ from sklearn.linear_model import LinearRegression
 class ModifiedAspirationAgent(AspirationNegotiator):
     def respond(self, state, offer):
         if self.ufun_max is None or self.ufun_min is None:
-            self.on_ufun_changed()
+            self.on_preferences_changed([PreferencesChange.General])
 
-        if (
-            self._utility_function is None
-            or self.ufun_max is None
-            or self.ufun_min is None
-        ):
+        if self.ufun is None or self.ufun_max is None or self.ufun_min is None:
             return ResponseType.REJECT_OFFER
 
-        u = self._utility_function(offer)
+        u = self.ufun(offer)
 
         slope = None
         if self.owner is not None:
@@ -58,7 +55,7 @@ class ModifiedAspirationAgent(AspirationNegotiator):
             self.ufun_min -= (slope - 0.2) % (0 - 0.2 + 1) + 0.2
 
         asp = (
-            self.aspiration(state.relative_time) * (self.ufun_max - self.ufun_min)
+            self.utility_at(state.relative_time) * (self.ufun_max - self.ufun_min)
             + self.ufun_min
         )
 

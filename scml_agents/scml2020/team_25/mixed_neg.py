@@ -8,7 +8,9 @@ from negmas import (
     SAOSyncController,
     outcome_is_valid,
 )
+from negmas.common import PreferencesChange
 from negmas.sao import SAOResponse
+from negmas.sao.negotiators.controlled import ControlledSAONegotiator
 from scml.scml2020 import (
     QUANTITY,
     TIME,
@@ -100,6 +102,12 @@ class ProtectedSyncController(SyncController):
             return -1000
         return self._price_weight * price + (1 - self._price_weight) * q
 
+    def create_negotiator(self, *args, **kwargs):
+        neg = super().create_negotiator(*args, **kwargs)
+        if self.ufun and not isinstance(neg, ControlledSAONegotiator):
+            neg.set_preferences(self.ufun)
+        return neg
+
     def my_first_proposals(self, offers):
         return {nid: self.best_proposal(nid)[0] for nid in offers.keys()}
 
@@ -109,7 +117,7 @@ class ProtectedSyncController(SyncController):
         utils = np.array(
             [
                 self.utility(
-                    o, self.negotiators[nid][0].ami.issues[UNIT_PRICE].max_value
+                    o, self.negotiators[nid][0].nmi.issues[UNIT_PRICE].max_value
                 )
                 for nid, o in offers.items()
             ]
@@ -164,18 +172,18 @@ class ProtectedSyncController(SyncController):
 
     def good_neg_proposal(self, nid):
         negotiator = self.negotiators[nid][0]
-        if negotiator.ami is None:
+        if negotiator.nmi is None:
             return None, -1000
         utils = np.array(
             [
-                self.utility(_, negotiator.ami.issues[UNIT_PRICE].max_value)
-                for _ in negotiator.ami.outcomes
+                self.utility(_, negotiator.nmi.issues[UNIT_PRICE].max_value)
+                for _ in negotiator.nmi.outcomes
             ]
         )
         good_offers = []
         for i in range(len(utils)):
             if utils[i] > 0:
-                good_offers.append((negotiator.ami.outcomes[i], utils[i]))
+                good_offers.append((negotiator.nmi.outcomes[i], utils[i]))
 
         if len(good_offers) == 0:
             return None, -1000
@@ -207,8 +215,8 @@ class MyAsp(AspirationNegotiator):
     def __init__(self, *args, **kwargs):
         self.manager = kwargs["MyManager"]
         del kwargs["MyManager"]
-        self.manager.good_buy_price = 0
         super().__init__(*args, **kwargs)
+        self.manager.good_buy_price = 0
 
     def my_acceptable_unit_price(self, step: int, sell: bool):
         production_cost = np.max(
@@ -243,7 +251,7 @@ class MyAsp(AspirationNegotiator):
         return p
 
     def _is_seller(self):
-        return self._utility_function.weights[2] > 0
+        return self.ufun.weights[2] > 0
 
     def _price_ok(self, offer):
         ok_price = self.my_acceptable_unit_price(offer[1], self._is_seller())
@@ -254,20 +262,18 @@ class MyAsp(AspirationNegotiator):
 
     def respond(self, state, offer):
         if self.ufun_max is None or self.ufun_min is None:
-            self.on_ufun_changed()
-        if self._utility_function is None:
+            self.on_preferences_changed([PreferencesChange.General])
+        if self.ufun is None:
             return ResponseType.REJECT_OFFER
-        u = self._utility_function(offer)
+        u = self.ufun(offer)
         if u is None or u < self.reserved_value:
             return ResponseType.REJECT_OFFER
         production_cost = np.max(
             self.manager.awi.profile.costs[:, self.manager.awi.my_input_product]
         )
-        ok_ufunc = self._utility_function(
-            (1, 1, self.manager.output_price[0] - production_cost)
-        )
+        ok_ufunc = self.ufun((1, 1, self.manager.output_price[0] - production_cost))
         asp = (
-            self.aspiration(state.relative_time)
+            self.utility_at(state.relative_time)
             * ((self.ufun_max * 0.3 + ok_ufunc * 0.7) - self.ufun_min)
             + self.ufun_min
         )
@@ -285,62 +291,31 @@ class MyAsp(AspirationNegotiator):
 
     def propose(self, state):
         if self.ufun_max is None or self.ufun_min is None:
-            self.on_ufun_changed()
+            self.on_preferences_changed([PreferencesChange.General])
         if self.ufun_max < self.reserved_value:
             return None
         asp = (
-            self.aspiration(state.relative_time) * (self.ufun_max - self.ufun_min)
+            self.utility_at(state.relative_time) * (self.ufun_max - self.ufun_min)
             + self.ufun_min
         )
         if asp < self.reserved_value:
             return None
-        if self.presorted:
-            if len(self.ordered_outcomes) < 1:
-                return None
-            for i, (u, o) in enumerate(self.ordered_outcomes):
-                if u is None:
-                    continue
-                if u < asp:
-                    if u < self.reserved_value:
-                        return None
-                    if i == 0:
-                        return self.return_good_offer(self.ordered_outcomes[i][1])
-                    if self.randomize_offer:
-                        return random.sample(self.ordered_outcomes[:i], 1)[0][1]
-                    return self.return_good_offer(self.ordered_outcomes[i - 1][1])
-            if self.randomize_offer:
-                return random.sample(self.ordered_outcomes, 1)[0][1]
-            return self.return_good_offer(self.ordered_outcomes[-1][1])
-        else:
-            if asp >= 0.99999999999 and self.best_outcome is not None:
-                return self.best_outcome
-            if self.randomize_offer:
-                return outcome_with_utility(
-                    ufun=self._utility_function,
-                    rng=(asp, float("inf")),
-                    issues=self._ami.issues,
-                )
-            tol = self.tolerance
-            for _ in range(self.n_trials):
-                rng = self.ufun_max - self.ufun_min
-                mx = min(asp + tol * rng, self.__last_offer_util)
-                outcome = outcome_with_utility(
-                    ufun=self._utility_function,
-                    rng=(asp, mx),
-                    issues=self._ami.issues,
-                )
-                if outcome is not None:
-                    break
-                tol = math.sqrt(tol)
-            else:
-                outcome = (
-                    self.best_outcome
-                    if self.__last_offer is None
-                    else self.__last_offer
-                )
-            self.__last_offer_util = self.utility_function(outcome)
-            self.__last_offer = outcome
-            return outcome
+        if len(self.ordered_outcomes) < 1:
+            return None
+        for i, (u, o) in enumerate(self.ordered_outcomes):
+            if u is None:
+                continue
+            if u < asp:
+                if u < self.reserved_value:
+                    return None
+                if i == 0:
+                    return self.return_good_offer(self.ordered_outcomes[i][1])
+                if self.randomize_offer:
+                    return random.sample(self.ordered_outcomes[:i], 1)[0][1]
+                return self.return_good_offer(self.ordered_outcomes[i - 1][1])
+        if self.randomize_offer:
+            return random.sample(self.ordered_outcomes, 1)[0][1]
+        return self.return_good_offer(self.ordered_outcomes[-1][1])
 
 
 class StepBuyBestSellNegManager(StepNegotiationManager):
@@ -553,7 +528,7 @@ class StepBuyBestSellNegManager(StepNegotiationManager):
             return None
         # self.awi.loginfo_agent(
         #     f"Accepting request from {initiator}: {[str(_) for _ in mechanism.issues]} "
-        #     f"({Issue.num_outcomes(mechanism.issues)})"
+        #     f"({num_outcomes(mechanism.issues)})"
         # )
         # create a controller for the time-step if one does not exist or use the one already running
         if controller_info.controller is None:

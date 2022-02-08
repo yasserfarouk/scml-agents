@@ -55,9 +55,9 @@ You should see a short tournament running and results reported.
 # required for development
 from typing import Any, Dict, List, Optional
 
+from negmas import ResponseType
 from negmas.common import AgentMechanismInterface, MechanismState
 from negmas.negotiators import Controller
-from negmas.outcomes import ResponseType
 from negmas.sao.negotiators import SAONegotiator
 from negmas.situated import Contract
 from scml.scml2020 import SCML2020Agent

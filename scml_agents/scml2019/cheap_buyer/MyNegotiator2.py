@@ -2,7 +2,7 @@ import math
 import random
 from typing import Optional
 
-from negmas import MechanismState, ResponseType, SAONegotiator
+from negmas import MechanismState, PreferencesChange, ResponseType, SAONegotiator
 
 
 class MyNegotiator2(SAONegotiator):
@@ -55,13 +55,13 @@ class MyNegotiator2(SAONegotiator):
         else:
             return self.respond_only_the_best(offer, state)
 
-    def on_ufun_changed(self):
-        super().on_ufun_changed()
-        if self._ami is None:
+    def on_preferences_changed(self, changes=tuple()):
+        super().on_preferences_changed([PreferencesChange.General])
+        if self.nmi is None:
             return
-        outcomes = self._ami.discrete_outcomes()
+        outcomes = self.nmi.discrete_outcomes()
         self.ordered_outcomes = sorted(
-            ((self._utility_function(outcome), outcome) for outcome in outcomes),
+            ((self.ufun(outcome), outcome) for outcome in outcomes),
             key=lambda x: float(x[0]) if x[0] is not None else float("-inf"),
             reverse=True,
         )
@@ -78,13 +78,13 @@ class MyNegotiator2(SAONegotiator):
             index = index + 1
 
     def propose_(self, state: MechanismState) -> Optional["Outcome"]:
-        if self._ufun_modified:
-            self.on_ufun_changed()
+        if self.ufun and self.ufun.changes:
+            self.on_preferences_changed(self.ufun.changes)
         return self.propose(state)
 
     def respond_(self, state: MechanismState, offer: "Outcome") -> "ResponseType":
-        if self._ufun_modified:
-            self.on_ufun_changed()
+        if self.ufun and self.ufun.changes:
+            self.on_preferences_changed(self.ufun.changes)
         return self.respond(state=state, offer=offer)
 
     def get_utility_value(self, offer):
@@ -98,7 +98,7 @@ class MyNegotiator2(SAONegotiator):
 
     def propose_only_the_best(self, state):
         if self.ordered_outcomes is None or len(self.ordered_outcomes) < 1:
-            self.on_ufun_changed()
+            self.on_preferences_changed([PreferencesChange.General])
         our_offer = self.ordered_outcomes[0][1]
         return our_offer
 
@@ -110,7 +110,7 @@ class MyNegotiator2(SAONegotiator):
 
     def propose_time_based_concession(self, state):
         if self.ordered_outcomes is None or len(self.ordered_outcomes) < 1:
-            self.on_ufun_changed()
+            self.on_preferences_changed([PreferencesChange.General])
         our_offer = self.ordered_outcomes[0][1]
         concession_score = self.get_concession_score(state)
         for ordered_outcome in self.ordered_outcomes:
