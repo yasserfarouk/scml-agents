@@ -332,8 +332,6 @@ class MyNegotiationManager(IndependentNegotiationsManager):
         self, is_seller: bool, issues=None, outcomes=None, partner=None
     ) -> SAONegotiator:
         """Creates a negotiator"""
-        if outcomes is None and (issues is None or not enumerate_issues(issues)):
-            return None
         params = self.negotiator_params
         params["ufun"] = self.create_ufun(
             is_seller=is_seller, outcomes=outcomes, issues=issues, partner=partner
