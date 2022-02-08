@@ -226,9 +226,6 @@ class GFM2(SCML2020Agent):
     def negotiator(self, is_seller: bool, issues=None) -> Optional[SAONegotiator]:
         """Creates a negotiator"""
 
-        if issues is None or not enumerate_issues(issues):
-            return None
-
         return AspirationNegotiator(
             ufun=self.create_ufun(is_seller=is_seller, issues=issues),
         )
