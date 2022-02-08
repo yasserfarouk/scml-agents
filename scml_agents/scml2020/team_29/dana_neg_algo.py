@@ -55,7 +55,7 @@ improvements:
 
 class CalcTrustworthiness:
     _awi = None
-    _nmi = None
+    # _nmi = None
     breach_level_w = 0.2
     breach_prob_w = 0.8
     last_step = True
@@ -68,13 +68,19 @@ class CalcTrustworthiness:
     def awi(self, value):
         self._awi = value
 
-    @property
-    def nmi(self):
-        return self._nmi
+    #     @property
 
-    @nmi.setter
-    def nmi(self, value):
-        self._nmi = value
+    #     def nmi(self):
+
+    #         return self._nmi
+
+    #
+
+    #     @nmi.setter
+
+    #     def nmi(self, value):
+
+    #         self._nmi = value
 
     def eval_trustworthiness(self, u, offer: Optional["Outcome"]):
         """

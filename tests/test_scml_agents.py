@@ -116,7 +116,7 @@ def test_get_agents_per_year(version):
             "scml_agents.scml2021.oneshot.team_90.run.PDPSyncAgent",
             "scml_agents.scml2021.oneshot.team_corleone.godfather.godfather.MinDisagreementGodfatherAgent",
             "scml_agents.scml2021.oneshot.team_corleone.godfather.godfather.MinEmpiricalGodfatherAgent",
-            # "scml_agents.scml2021.oneshot.team_corleone.godfather.godfather.AspirationUniformGodfatherAgent",
+            "scml_agents.scml2021.oneshot.team_corleone.godfather.godfather.AspirationUniformGodfatherAgent",
             "scml_agents.scml2021.oneshot.team_corleone.godfather.godfather.NonconvergentGodfatherAgent",
             "scml_agents.scml2021.oneshot.team_corleone.godfather.godfather.ParetoEmpiricalGodfatherAgent",
             "scml_agents.scml2021.oneshot.team_corleone.godfather.godfather.GoldfishParetoEmpiricalGodfatherAgent",

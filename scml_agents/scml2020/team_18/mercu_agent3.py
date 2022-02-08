@@ -241,13 +241,22 @@ class MyController(SAOController, AspirationMixin, Notifier):
             f"({len([_ for _ in self.completed.values() if _])} completed of {len(self.completed)} negotiators)"
         )
 
+    def _create_ufun(self, is_seller: bool, issues=None, outcomes=None):
+        """A utility function that penalizes high cost and late delivery for buying and and awards them for selling"""
+        if is_seller:
+            return LinearUtilityFunction((0, 0.25, 1))
+        return LinearUtilityFunction((0, -0.5, -0.8))
+
     def create_negotiator(
         self,
         negotiator_type: Union[str, Type[MyNegotiator]] = None,
         name: str = None,
         cntxt: Any = None,
+        seller: bool = True,
         **kwargs,
     ) -> MyNegotiator:
+        ufun = self._create_ufun(seller)
+        kwargs["ufun"] = ufun
         neg = super().create_negotiator(negotiator_type, name, cntxt, **kwargs)
         self.completed[neg.id] = False
         return neg
@@ -299,7 +308,7 @@ class MyController(SAOController, AspirationMixin, Notifier):
                 else:
                     return
                 self.retries[partner] += 1
-                neg = self.create_negotiator()
+                neg = self.create_negotiator(seller=not self.is_seller)
                 self.completed[neg.id] = False
                 self.awi.loginfo(
                     f"{str(self)} negotiating with {partner} on u={self.urange}"
@@ -457,7 +466,7 @@ class MyNegotiationManager(NegotiationManager):
             controller = controller_info.controller
 
         # create a new negotiator, add it to the controller and return it
-        return controller.create_negotiator()
+        return controller.create_negotiator(seller=is_seller)
 
     def all_negotiations_concluded(
         self, controller_index: int, is_seller: bool

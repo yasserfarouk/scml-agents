@@ -55,9 +55,6 @@ class MyUtilityFunction(UtilityFunction):
         """
         return ""
 
-    def __call__(self, offer: Outcome) -> Value:
-        return self.eval(offer)
-
     def eval(self, offer: Outcome) -> Value:
         """Calculate the utility_function value for a given outcome.
 
@@ -78,15 +75,6 @@ class MyUtilityFunction(UtilityFunction):
         """
         if offer is None:
             return self.reserved_value
-        """A simple utility function
-
-        Remarks:
-             - If the time is invalid or there is no need to get any more agreements
-               at the given time, return -1000
-             - Otherwise use the price-weight to calculate a linear combination of
-               the price and the how much of the needs is satisfied by this contract
-
-        """
         # get my needs and secured amounts arrays
         if self._is_seller:
             _needed, _secured = (

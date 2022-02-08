@@ -404,7 +404,9 @@ class PreNegotiationManager(IndependentNegotiationsManager):
     ) -> Optional[Negotiator]:
         return self.negotiator(annotation["seller"] == self.id, issues=issues)
 
-    def negotiator(self, is_seller: bool, issues=None, outcomes=None) -> SAONegotiator:
+    def negotiator(
+        self, is_seller: bool, issues=None, outcomes=None, partner=None
+    ) -> SAONegotiator:
         params = self.negotiator_params
         params["ufun"] = self.create_ufun(
             is_seller=is_seller, outcomes=outcomes, issues=issues
