@@ -212,11 +212,9 @@ class MhiranoAgent(DemandDrivenProductionStrategy, PrintingAgent):
         def create_ufun(is_seller: bool, issues=None, outcomes=None):
             if is_seller:
                 return LinearUtilityFunction(
-                    (1, 1, 10), issues=issues, outcoomes=outcomes
+                    (1, 1, 10), issues=issues, outcomes=outcomes
                 )
-            return LinearUtilityFunction(
-                (1, -1, -10), issues=issues, outcoomes=outcomes
-            )
+            return LinearUtilityFunction((1, -1, -10), issues=issues, outcomes=outcomes)
 
         ufun: UtilityFunction = create_ufun(is_seller=is_seller)
         negotiator: Negotiator = self.controller.create_negotiator(
