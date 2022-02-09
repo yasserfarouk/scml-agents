@@ -76,9 +76,9 @@ setup(
     install_requires=[
         "Click (>=6.0)",
         'dataclasses; python_version < "3.7"',
-        "torch",
-        "tensorflow",
         "scml",
+        "pytorch",
+        "tensorflow",
         "pulp",
         "xgboost",
     ],  # Optional
