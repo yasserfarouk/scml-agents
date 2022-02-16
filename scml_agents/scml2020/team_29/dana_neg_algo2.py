@@ -10,7 +10,6 @@ from negmas import (
     INVALID_UTILITY,
     AgentMechanismInterface,
     AgentWorldInterface,
-    AspirationMixin,
     AspirationNegotiator,
     Breach,
     Contract,
@@ -21,6 +20,7 @@ from negmas import (
     MechanismState,
     Negotiator,
     Outcome,
+    PolyAspiration,
     ResponseType,
     SAOController,
     SAONegotiator,
@@ -200,9 +200,7 @@ class MaintainFairPrice:
         return ResponseType.ACCEPT_OFFER
 
 
-class DanasController(
-    MaintainFairPrice, UpdateUfunc, SAOController, AspirationMixin, Notifier
-):
+class DanasController(MaintainFairPrice, UpdateUfunc, SAOController, Notifier):
     """A controller for managing a set of negotiations about selling or buying (but not both)  starting/ending at some
     specific time-step.
     Args:
@@ -272,6 +270,7 @@ class DanasController(
         self.step = step
         self.retries: Dict[str, int] = defaultdict(int)
         self.max_retries = max_retries
+        self.__asp = PolyAspiration(3.5, "boulware")
 
     def join(
         self,

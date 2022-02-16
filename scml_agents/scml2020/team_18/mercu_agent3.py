@@ -52,7 +52,6 @@ import numpy as np
 from negmas import (
     AgentMechanismInterface,
     AgentWorldInterface,
-    AspirationMixin,
     AspirationNegotiator,
     Breach,
     Contract,
@@ -61,6 +60,7 @@ from negmas import (
     LinearUtilityFunction,
     MechanismState,
     Negotiator,
+    PolyAspiration,
     ResponseType,
     SAONegotiator,
     UtilityFunction,
@@ -158,7 +158,7 @@ class MyNegotiator(SAONegotiator):
         return False
 
 
-class MyController(SAOController, AspirationMixin, Notifier):
+class MyController(SAOController, Notifier):
     def __init__(
         self,
         *args,
@@ -188,6 +188,7 @@ class MyController(SAOController, AspirationMixin, Notifier):
         self.urange = urange
         self.partners = partners
         self.product = product
+        self.__asp = PolyAspiration(max_aspiration=1.0, aspiration_type="boulware")
         negotiator_params = (
             negotiator_params if negotiator_params is not None else dict()
         )

@@ -3,7 +3,7 @@ import random
 from typing import Callable, List
 
 import numpy as np
-from negmas import AspirationMixin, SAOResponse
+from negmas import SAOResponse
 from numpy.lib.arraysetops import _unpack_tuple
 
 from .bilat_ufun import BilatUFun, BilatUFunAvg
@@ -55,7 +55,7 @@ class StrategyRandom(Strategy):
             return np.random.choice(list(all_offers))
 
 
-class StrategyAspiration(AspirationMixin, Strategy):
+class StrategyAspiration(Strategy):
     ASPIRATION_EXPONENT = 1.0  # linear
 
     def _set_state(self, ufun: BilatUFun, histories: List[BilateralHistory]) -> None:

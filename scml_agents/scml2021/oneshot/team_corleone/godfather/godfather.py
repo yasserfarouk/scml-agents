@@ -16,8 +16,8 @@ import pandas as pd
 import xgboost as xgb
 from negmas import (
     AgentMechanismInterface,
-    AspirationMixin,
     Outcome,
+    PolyAspiration,
     ResponseType,
     SAOResponse,
 )
@@ -87,7 +87,7 @@ __all__ = [
 ]
 
 
-class GodfatherAgent(AspirationMixin, OneShotSyncAgent):
+class GodfatherAgent(OneShotSyncAgent):
     enable_vis = False
     enable_training_collection = False
 
@@ -123,6 +123,7 @@ class GodfatherAgent(AspirationMixin, OneShotSyncAgent):
         self.vis_path = "visualizations"
 
         super().__init__(*args, **kwargs)
+        self.__asp = PolyAspiration(1.0, "boulware")
 
     def _enter_call(self):
         caller = None

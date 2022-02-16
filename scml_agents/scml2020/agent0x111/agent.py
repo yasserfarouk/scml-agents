@@ -11,7 +11,6 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union
 import numpy as np
 from negmas import (
     AgentWorldInterface,
-    AspirationMixin,
     AspirationNegotiator,
     Breach,
     Contract,
@@ -21,6 +20,7 @@ from negmas import (
     MechanismState,
     Negotiator,
     Outcome,
+    PolyAspiration,
     ResponseType,
     UtilityFunction,
     make_issue,
@@ -39,7 +39,7 @@ from tabulate import tabulate
 __all__ = ["ASMASH"]
 
 
-class StepController(SAOController, AspirationMixin, Notifier):
+class StepController(SAOController, Notifier):
     """A controller for managing a set of negotiations about selling or buying (but not both)  starting/ending at some
     specific time-step.
     Args:
@@ -117,6 +117,7 @@ class StepController(SAOController, AspirationMixin, Notifier):
         self.step = step
         self.retries: Dict[str, int] = defaultdict(int)
         self.max_retries = max_retries
+        self.__asp = PolyAspiration(1.0, "boulware")
 
     def join(
         self,

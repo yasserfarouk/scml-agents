@@ -9,7 +9,6 @@ from negmas import (
     INVALID_UTILITY,
     AgentMechanismInterface,
     AgentWorldInterface,
-    AspirationMixin,
     AspirationNegotiator,
     Breach,
     Contract,
@@ -20,6 +19,7 @@ from negmas import (
     MechanismState,
     Negotiator,
     Outcome,
+    PolyAspiration,
     ResponseType,
     SAOController,
     SAONegotiator,
@@ -157,7 +157,7 @@ class DanasNegotiator(AspirationNegotiator):
         super().__init__(*args, max_aspiration=3.5, **kwargs)
 
 
-class DanasController(UpdateUfunc, SAOController, AspirationMixin, Notifier):
+class DanasController(UpdateUfunc, SAOController, Notifier):
     """A controller for managing a set of negotiations about selling or buying (but not both)  starting/ending at some
     specific time-step.
     Args:
@@ -202,6 +202,7 @@ class DanasController(UpdateUfunc, SAOController, AspirationMixin, Notifier):
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
+        self.__asp = PolyAspiration(1.0, "boulware")
         self.parent_name = parent_name
         self.awi = awi
         self.horizon = horizon
