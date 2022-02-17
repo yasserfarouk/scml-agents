@@ -4,6 +4,12 @@ from scml.scml2020 import SCML2020World
 from scml_agents import get_agents
 from scml_agents.scml2020 import *
 from scml_agents.scml2020.monty_hall import MontyHall
+from tests.switches import (
+    SCMLAGENTS_RUN2020,
+    SCMLAGENTS_RUN_COLLUSION_TOURNAMENTS,
+    SCMLAGENTS_RUN_SABOTAGE_TOURNAMENTS,
+    SCMLAGENTS_RUN_STD_TOURNAMENTS,
+)
 
 
 def do_run(fm):
@@ -19,6 +25,7 @@ def do_run(fm):
     assert sum(world.stats["n_contracts_concluded"]) >= 0
 
 
+@pytest.mark.skipif(not SCMLAGENTS_RUN2020, reason="Skipping 2020")
 @pytest.mark.parametrize("fm", get_agents(2020, as_class=True))
 def test_can_run(fm):
     do_run(fm)

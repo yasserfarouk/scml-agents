@@ -1,6 +1,6 @@
 click
 scml
-pytorch
+torch
 tensorflow
 pulp
 xgboost

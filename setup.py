@@ -77,7 +77,7 @@ setup(
         "Click (>=6.0)",
         'dataclasses; python_version < "3.7"',
         "scml",
-        "pytorch",
+        "torch",
         "tensorflow",
         "pulp",
         "xgboost",

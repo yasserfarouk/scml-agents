@@ -5,8 +5,15 @@ from scml.scml2019.world import SCML2019World
 
 from scml_agents import get_agents
 from scml_agents.scml2019 import *
+from tests.switches import (
+    SCMLAGENTS_RUN2019,
+    SCMLAGENTS_RUN_COLLUSION_TOURNAMENTS,
+    SCMLAGENTS_RUN_SABOTAGE_TOURNAMENTS,
+    SCMLAGENTS_RUN_STD_TOURNAMENTS,
+)
 
 
+@pytest.mark.skipif(not SCMLAGENTS_RUN2019, reason="Skipping 2019")
 def test_can_run_std_example():
     fm = NVMFactoryManager
     horizon = None
@@ -31,6 +38,9 @@ def test_can_run_std_example():
     assert sum(world.stats["n_contracts_concluded"]) > 0
 
 
+@pytest.mark.skipif(
+    not SCMLAGENTS_RUN2019 or not SCMLAGENTS_RUN_STD_TOURNAMENTS, reason="Skipping 2019"
+)
 @pytest.mark.parametrize("fm", get_agents(2019, track="all"))
 def test_can_run_std(fm):
     horizon = None
@@ -55,6 +65,9 @@ def test_can_run_std(fm):
     assert sum(world.stats["n_contracts_concluded"]) > 0
 
 
+@pytest.mark.skipif(
+    not SCMLAGENTS_RUN2019 or not SCMLAGENTS_RUN_STD_TOURNAMENTS, reason="Skipping 2019"
+)
 def test_can_run_std_tournament():
     competitors = get_agents(2019, track="std", qualified_only=True)
     anac2019_std(
@@ -67,6 +80,10 @@ def test_can_run_std_tournament():
     )
 
 
+@pytest.mark.skipif(
+    not SCMLAGENTS_RUN2019 or not SCMLAGENTS_RUN_COLLUSION_TOURNAMENTS,
+    reason="Skipping 2019",
+)
 def test_can_run_collusion_tournament():
     competitors = get_agents(2019, track="collusion", qualified_only=True)
     anac2019_collusion(
@@ -79,6 +96,10 @@ def test_can_run_collusion_tournament():
     )
 
 
+@pytest.mark.skipif(
+    not SCMLAGENTS_RUN2019 or not SCMLAGENTS_RUN_SABOTAGE_TOURNAMENTS,
+    reason="Skipping 2019",
+)
 def test_can_run_sabotage_tournament():
     competitors = get_agents(2019, track="sabotage", qualified_only=True)
     anac2019_sabotage(

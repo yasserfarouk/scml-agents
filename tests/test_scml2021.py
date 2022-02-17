@@ -8,8 +8,15 @@ from scml_agents.scml2020 import *
 from scml_agents.scml2021.oneshot.team_73.oneshot_agents import Gentle
 from scml_agents.scml2021.standard.team_67.polymorphic_agent import PolymorphicAgent
 from scml_agents.scml2021.standard.team_82.perry import PerryTheAgent
+from tests.switches import (
+    SCMLAGENTS_RUN2021,
+    SCMLAGENTS_RUN_COLLUSION_TOURNAMENTS,
+    SCMLAGENTS_RUN_SABOTAGE_TOURNAMENTS,
+    SCMLAGENTS_RUN_STD_TOURNAMENTS,
+)
 
 
+@pytest.mark.skipif(not SCMLAGENTS_RUN2021, reason="Skipping 2021")
 @mark.parametrize("fm", get_agents(2021, as_class=True, track="collusion"))
 def test_can_run_collusion(fm):
     n_steps = 10
@@ -23,6 +30,7 @@ def test_can_run_collusion(fm):
     assert sum(world.stats["n_contracts_concluded"]) >= 0
 
 
+@pytest.mark.skipif(not SCMLAGENTS_RUN2021, reason="Skipping 2021")
 def test_can_run_std_example():
     fm = PerryTheAgent
     n_steps = 10
@@ -36,6 +44,7 @@ def test_can_run_std_example():
     assert sum(world.stats["n_contracts_concluded"]) >= 0
 
 
+@pytest.mark.skipif(not SCMLAGENTS_RUN2021, reason="Skipping 2021")
 @mark.parametrize("fm", get_agents(2021, as_class=True, track="std"))
 def test_can_run_std(fm):
     n_steps = 10
@@ -49,6 +58,7 @@ def test_can_run_std(fm):
     assert sum(world.stats["n_contracts_concluded"]) >= 0
 
 
+@pytest.mark.skipif(not SCMLAGENTS_RUN2021, reason="Skipping 2021")
 @mark.parametrize(
     "fm", get_agents(2021, as_class=True, track="oneshot", finalists_only=True)
 )
@@ -65,6 +75,7 @@ def test_can_run_oneshot_finalists(fm):
     assert sum(world.stats["n_contracts_concluded"]) >= 0
 
 
+@pytest.mark.skipif(not SCMLAGENTS_RUN2021, reason="Skipping 2021")
 @mark.parametrize("fm", get_agents(2021, as_class=True, track="oneshot"))
 def test_can_run_oneshot(fm):
     n_steps = 10
