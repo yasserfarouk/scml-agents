@@ -23,6 +23,7 @@ from negmas import (
     SAOMetaNegotiatorController,
     SAONegotiator,
     UtilityFunction,
+    make_issue,
 )
 from negmas.helpers import humanize_time, instantiate
 from negmas.outcomes.issue_ops import enumerate_issues
@@ -297,6 +298,11 @@ class MyNegotiationManager(IndependentNegotiationsManager):
         tvalues: Tuple[int, int],
         partners: List[str],
     ) -> None:
+        issues = [
+            make_issue((int(qvalues[0]), int(max(qvalues))), name="quantity"),
+            make_issue((int(tvalues[0]), int(max(tvalues))), name="time"),
+            make_issue((int(uvalues[0]), int(max(uvalues))), name="unit_price"),
+        ]
 
         for partner in partners:
             self.awi.request_negotiation(
@@ -306,7 +312,7 @@ class MyNegotiationManager(IndependentNegotiationsManager):
                 unit_price=uvalues,
                 time=tvalues,
                 partner=partner,
-                negotiator=self.negotiator(sell, partner=partner),
+                negotiator=self.negotiator(sell, partner=partner, issues=issues),
             )
 
     def respond_to_negotiation_request(
