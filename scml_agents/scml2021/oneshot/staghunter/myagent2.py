@@ -239,8 +239,8 @@ class StagHunter(OneShotAgent):
         self._secured = 0
 
         u_total = self.ufun.from_offers(
-            list(self.cur_offer_list.values()),
-            [self.awi.is_first_level] * (len(self.cur_offer_list)),
+            tuple(tuple(_) for _ in self.cur_offer_list.values()),
+            tuple([self.awi.is_first_level] * (len(self.cur_offer_list))),
         )
 
         for oppo_id in self.oppo_list:
@@ -251,7 +251,8 @@ class StagHunter(OneShotAgent):
                         cur_offer.append(self.cur_offer_list[id_p])
 
                 u_p = self.ufun.from_offers(
-                    cur_offer, [self.awi.is_first_level] * (len(cur_offer))
+                    tuple(tuple(_) for _ in cur_offer),
+                    tuple([self.awi.is_first_level] * (len(cur_offer))),
                 )
 
                 # if(u_total-u_p >= self._prev_best_mag_profit[oppo_id]):
@@ -431,13 +432,15 @@ class StagHunter(OneShotAgent):
             )
 
         u1 = self.ufun.from_offers(
-            list(self.cur_offer_list.values()),
-            [self.awi.is_first_level] * len(self.cur_offer_list),
+            tuple(tuple(_) for _ in self.cur_offer_list.values()),
+            tuple([self.awi.is_first_level] * len(self.cur_offer_list)),
         )
 
         u2 = self.ufun.from_offers(
-            list(self.cur_offer_list.values()) + [offer],
-            [self.awi.is_first_level] * (len(self.cur_offer_list) + 1),
+            tuple(
+                tuple(_) for _ in list(self.cur_offer_list.values()) + [tuple(offer)]
+            ),
+            tuple([self.awi.is_first_level] * (len(self.cur_offer_list) + 1)),
         )
         if u1 > u2:
             return None
@@ -486,13 +489,16 @@ class StagHunter(OneShotAgent):
             )
 
             u1 = self.ufun.from_offers(
-                list(self.cur_offer_list.values()),
-                [self.awi.is_first_level] * len(self.cur_offer_list),
+                tuple(tuple(_) for _ in self.cur_offer_list.values()),
+                tuple([self.awi.is_first_level] * len(self.cur_offer_list)),
             )
 
             u2 = self.ufun.from_offers(
-                list(self.cur_offer_list.values()) + [cur_offer],
-                [self.awi.is_first_level] * (len(self.cur_offer_list) + 1),
+                tuple(
+                    tuple(_)
+                    for _ in list(self.cur_offer_list.values()) + [tuple(cur_offer)]
+                ),
+                tuple([self.awi.is_first_level] * (len(self.cur_offer_list) + 1)),
             )
 
             if u1 < u2 and type(candidate_price) == type(None):
@@ -560,12 +566,14 @@ class StagHunter(OneShotAgent):
             return ResponseType.REJECT_OFFER
 
         u1 = self.ufun.from_offers(
-            list(self.cur_offer_list.values()), [is_selling] * len(self.cur_offer_list)
+            tuple(tuple(_) for _ in self.cur_offer_list.values()),
+            tuple([is_selling] * len(self.cur_offer_list)),
         )
 
         offers = [offer] + list(self.cur_offer_list.values())
         u2 = self.ufun.from_offers(
-            offers, [is_selling] * (len(self.cur_offer_list) + 1)
+            tuple(tuple(_) for _ in offers),
+            tuple([is_selling] * (len(self.cur_offer_list) + 1)),
         )
 
         if u1 > u2:
@@ -886,8 +894,8 @@ class StagHunterV5(OneShotAgent):
         self._secured = 0
 
         u_total = self.ufun.from_offers(
-            list(self.cur_offer_list.values()),
-            [self.awi.is_first_level] * (len(self.cur_offer_list)),
+            tuple(self.cur_offer_list.values()),
+            tuple([self.awi.is_first_level] * (len(self.cur_offer_list))),
         )
 
         for oppo_id in self.oppo_list:
@@ -895,10 +903,11 @@ class StagHunterV5(OneShotAgent):
                 cur_offer = []
                 for id_p in self.cur_offer_list:
                     if id_p != oppo_id:
-                        cur_offer.append(self.cur_offer_list[id_p])
+                        cur_offer.append(tuple(self.cur_offer_list[id_p]))
 
                 u_p = self.ufun.from_offers(
-                    cur_offer, [self.awi.is_first_level] * (len(cur_offer))
+                    tuple(cur_offer),
+                    tuple([self.awi.is_first_level] * (len(cur_offer))),
                 )
 
                 # if(u_total-u_p >= self._prev_best_mag_profit[oppo_id]):
@@ -1216,13 +1225,15 @@ class StagHunterV5(OneShotAgent):
             #     offer[QUANTITY] = random.randint(1, mx+1)
 
         u1 = self.ufun.from_offers(
-            list(self.cur_offer_list.values()),
-            [self.awi.is_first_level] * len(self.cur_offer_list),
+            tuple(tuple(_) for _ in self.cur_offer_list.values()),
+            tuple([self.awi.is_first_level] * len(self.cur_offer_list)),
         )
         #
         u2 = self.ufun.from_offers(
-            list(self.cur_offer_list.values()) + [offer],
-            [self.awi.is_first_level] * (len(self.cur_offer_list) + 1),
+            tuple(
+                tuple(_) for _ in list(self.cur_offer_list.values()) + [tuple(offer)]
+            ),
+            tuple([self.awi.is_first_level] * (len(self.cur_offer_list) + 1)),
         )
         #
         #
@@ -1249,8 +1260,10 @@ class StagHunterV5(OneShotAgent):
             cur_offer[UNIT_PRICE] = int(p)
 
             u2 = self.ufun.from_offers(
-                list(self.cur_offer_list.values()) + [cur_offer],
-                [self.awi.is_first_level] * (len(self.cur_offer_list) + 1),
+                tuple(
+                    tuple(_) for _ in list(self.cur_offer_list.values()) + [cur_offer]
+                ),
+                tuple([self.awi.is_first_level] * (len(self.cur_offer_list) + 1)),
             )
 
             if u1 < u2:
@@ -1279,12 +1292,13 @@ class StagHunterV5(OneShotAgent):
         self._prev_opp_price[partner].append(up)
 
         u1 = self.ufun.from_offers(
-            list(self.cur_offer_list.values()), [is_selling] * len(self.cur_offer_list)
+            tuple(tuple(_) for _ in self.cur_offer_list.values()),
+            tuple([is_selling] * len(self.cur_offer_list)),
         )
 
         u2 = self.ufun.from_offers(
-            [offer] + list(self.cur_offer_list.values()),
-            [is_selling] * (len(self.cur_offer_list) + 1),
+            tuple(tuple(_) for _ in [offer] + list(self.cur_offer_list.values())),
+            tuple([is_selling] * (len(self.cur_offer_list) + 1)),
         )
 
         # self._oppo_neg_history[negotiator_id].append((state.step, offer, u2-u1,))
@@ -1332,24 +1346,24 @@ class StagHunterV6(StagHunterV5):
         is_selling = self.awi.is_first_level
 
         u2 = self.ufun.from_offers(
-            [offer] + list(self.cur_offer_list.values()),
-            [is_selling] * (len(self.cur_offer_list) + 1),
+            tuple(tuple(_) for _ in [offer] + list(self.cur_offer_list.values())),
+            tuple([is_selling] * (len(self.cur_offer_list) + 1)),
         )
 
         mn_offer = deepcopy(offer)
         mn_offer[UNIT_PRICE] = mn
 
         u_mn = self.ufun.from_offers(
-            [mn_offer] + list(self.cur_offer_list.values()),
-            [is_selling] * (len(self.cur_offer_list) + 1),
+            tuple(tuple(_) for _ in [mn_offer] + list(self.cur_offer_list.values())),
+            tuple([is_selling] * (len(self.cur_offer_list) + 1)),
         )
 
         mx_offer = deepcopy(offer)
         mx_offer[UNIT_PRICE] = mx
 
         u_mx = self.ufun.from_offers(
-            [mx_offer] + list(self.cur_offer_list.values()),
-            [is_selling] * (len(self.cur_offer_list) + 1),
+            tuple(tuple(_) for _ in [mx_offer] + list(self.cur_offer_list.values())),
+            tuple([is_selling] * (len(self.cur_offer_list) + 1)),
         )
 
         if self._is_selling(nmi):
@@ -1368,16 +1382,16 @@ class StagHunterV6(StagHunterV5):
         mn_offer[UNIT_PRICE] = mn
 
         u_mn = self.ufun.from_offers(
-            [mn_offer] + list(self.cur_offer_list.values()),
-            [is_selling] * (len(self.cur_offer_list) + 1),
+            tuple(tuple(_) for _ in [mn_offer] + list(self.cur_offer_list.values())),
+            tuple([is_selling] * (len(self.cur_offer_list) + 1)),
         )
 
         mx_offer = deepcopy(offer)
         mx_offer[UNIT_PRICE] = mx
 
         u_mx = self.ufun.from_offers(
-            [mx_offer] + list(self.cur_offer_list.values()),
-            [is_selling] * (len(self.cur_offer_list) + 1),
+            tuple(tuple(_) for _ in [mx_offer] + list(self.cur_offer_list.values())),
+            tuple([is_selling] * (len(self.cur_offer_list) + 1)),
         )
 
         test_price_interval = (
@@ -1392,8 +1406,8 @@ class StagHunterV6(StagHunterV5):
             offer_p[UNIT_PRICE] = p
 
             u2 = self.ufun.from_offers(
-                [offer_p] + list(self.cur_offer_list.values()),
-                [is_selling] * (len(self.cur_offer_list) + 1),
+                tuple(tuple(_) for _ in [offer_p] + list(self.cur_offer_list.values())),
+                tuple([is_selling] * (len(self.cur_offer_list) + 1)),
             )
 
             if self._is_selling(nmi):
@@ -1447,13 +1461,15 @@ class StagHunterV7(StagHunter):
                 offer[QUANTITY] = min(self._prev_opp_quantity[negotiator_id][-3:])
 
         u1 = self.ufun.from_offers(
-            list(self.cur_offer_list.values()),
-            [self.awi.is_first_level] * len(self.cur_offer_list),
+            tuple(tuple(_) for _ in self.cur_offer_list.values()),
+            tuple([self.awi.is_first_level] * len(self.cur_offer_list)),
         )
 
         u2 = self.ufun.from_offers(
-            list(self.cur_offer_list.values()) + [offer],
-            [self.awi.is_first_level] * (len(self.cur_offer_list) + 1),
+            tuple(
+                tuple(_) for _ in list(self.cur_offer_list.values()) + [tuple(offer)]
+            ),
+            tuple([self.awi.is_first_level] * (len(self.cur_offer_list) + 1)),
         )
 
         # if(u1 > u2):

@@ -495,8 +495,8 @@ class GodfatherAgent(OneShotSyncAgent):
 
             if self.enable_safety_checks:
                 util_ref: float = self.ufun.from_offers(
-                    offers_not_j + [offer_j],
-                    [self._is_selling()] * (len(offers_not_j) + 1),
+                    tuple(offers_not_j + [offer_j]),
+                    tuple([self._is_selling()] * (len(offers_not_j) + 1)),
                 )  # type: ignore
                 assert abs(util - util_ref) < 0.01, "util {}, util_ref {}".format(
                     util, util_ref
@@ -607,7 +607,7 @@ class GodfatherAgent(OneShotSyncAgent):
                 u_q = [
                     (
                         self.ufun.from_offers(
-                            [outcome.to_negmas(0)], [self._is_selling()]
+                            (outcome.to_negmas(0),), (self._is_selling(),)
                         ),
                         outcome.quantity,
                     )
@@ -744,7 +744,7 @@ class GodfatherAgent(OneShotSyncAgent):
                 u_q = [
                     (
                         self.ufun.from_offers(
-                            [outcome.to_negmas(0)], [self._is_selling()]
+                            (outcome.to_negmas(0),), (self._is_selling(),)
                         ),
                         outcome.quantity,
                     )
@@ -804,7 +804,7 @@ class GodfatherAgent(OneShotSyncAgent):
     def _my_ufun(self, offers: List[Offer]) -> float:
         is_selling = [self._is_selling()] * len(offers)
         offers_negmas = [o.to_negmas(self.awi.current_step) for o in offers]
-        util: float = self.ufun.from_offers(offers_negmas, is_selling)
+        util: float = self.ufun.from_offers(tuple(offers_negmas), tuple(is_selling))
         # util_2 = helpers.ufun_from_offer(self.ufun, offer, self._is_selling())
         # self.log("diff", util, util2)
         return util

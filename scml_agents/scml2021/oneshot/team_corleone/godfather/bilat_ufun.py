@@ -280,7 +280,7 @@ class BilatUFunAvg(BilatUFun):
         offer[TIME] = 1
         offer[UNIT_PRICE] = o.price
         offer[QUANTITY] = o.quantity
-        result = self.scml_ufun(offer)
+        result = self.scml_ufun(tuple(offer))
         return result
 
     # def __init__(self, offer_space: OfferSpace, opp_history: BilateralHistory, expected_exog_quant=None):

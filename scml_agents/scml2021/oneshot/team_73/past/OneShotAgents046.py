@@ -855,8 +855,8 @@ class LearningAgentT(AdaptiveAgent, ABC):
         """提案or受諾するOfferの効用値を何もしない時と比べる"""
         nmi = self.get_nmi(name)
 
-        util = self.ufun.from_offers([offer], [self._is_selling(nmi)])
-        do_nothing_util = self.ufun.from_offers([], [self._is_selling(nmi)])
+        util = self.ufun.from_offers((offer,), (self._is_selling(nmi),))
+        do_nothing_util = self.ufun.from_offers(tuple(), (self._is_selling(nmi),))
         # print_log(["util", "do_nothing_util"], [util, do_nothing_util])
 
         if util <= do_nothing_util:
@@ -1118,7 +1118,9 @@ class LearningSyncAgent_(OneShotSyncAgent, ABC):
             outputs.append(is_output)
 
         if my_needs > 0:
-            u, producible = self.from_offers(list(chosen.values()), outputs, True)
+            u, producible = self.from_offers(
+                tuple(chosen.values()), tuple(outputs), True
+            )
         else:
             # my_needsを満たしているときは交渉終了
             responses = dict(
@@ -1389,8 +1391,12 @@ class LearningSyncAgent_(OneShotSyncAgent, ABC):
         )
 
         return (
-            self.from_offers([max_offer], [True] if self._is_selling(nmi) else [False]),
-            self.from_offers([min_offer], [True] if self._is_selling(nmi) else [False]),
+            self.from_offers(
+                (max_offer,), (True,) if self._is_selling(nmi) else (False,)
+            ),
+            self.from_offers(
+                (min_offer,), (True,) if self._is_selling(nmi) else (False,)
+            ),
         )
 
     def detect_std_utility(self, need, nmi):
@@ -1411,7 +1417,7 @@ class LearningSyncAgent_(OneShotSyncAgent, ABC):
             offer[UNIT_PRICE] *= 1 + slack
 
         return self.from_offers(
-            [tuple(offer)], [True] if self._is_selling(nmi) else [False]
+            (tuple(offer),), (True,) if self._is_selling(nmi) else (False,)
         )
 
     # その日の交渉の結果を表示
@@ -1903,7 +1909,7 @@ class LearningSyncAgentT(LearningSyncAgent, ABC):
                 self._is_selling(self.get_nmi(negotiator_id)) for _ in agreements
             ]
             if agreements:
-                util = self.ufun.from_offers(agreements, is_selling)
+                util = self.ufun.from_offers(tuple(agreements), tuple(is_selling))
 
         self.best_agr_util = max(self.best_agr_util, util)
 
@@ -1995,7 +2001,7 @@ class LearningSyncAgentT(LearningSyncAgent, ABC):
             for comb in itertools.combinations(names, n):
                 is_selling = (self._is_selling(self.get_nmi(_)) for _ in comb)
                 select_offers = [offers[_] for _ in comb]
-                util = self.ufun.from_offers(select_offers, is_selling)
+                util = self.ufun.from_offers(tuple(select_offers), tuple(is_selling))
 
                 if util > best_util:
                     best_util = util
@@ -2015,14 +2021,14 @@ class LearningSyncAgentT(LearningSyncAgent, ABC):
 
         # max_utilityを決定
         if self._is_selling(nmi):
-            max_utility = self.ufun.from_offers([edge_offers[0]], [is_selling])
+            max_utility = self.ufun.from_offers((edge_offers[0],), (is_selling,))
         else:
-            max_utility = self.ufun.from_offers([edge_offers[1]], [is_selling])
+            max_utility = self.ufun.from_offers((edge_offers[1],), (is_selling,))
 
         # min_utilityを決定
-        do_nothing_util = self.ufun.from_offers([], [is_selling])
+        do_nothing_util = self.ufun.from_offers(tuple(), (is_selling,))
         tp_util = self.ufun.from_offers(
-            [(my_need, 0, self.awi.trading_prices[1])], [is_selling]
+            ((my_need, 0, self.awi.trading_prices[1]),), (is_selling,)
         )
         mn = do_nothing_util
         min_utility = min(

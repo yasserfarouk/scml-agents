@@ -1,6 +1,5 @@
 from pytest import mark
 
-import scml_agents
 from scml_agents import get_agents
 
 

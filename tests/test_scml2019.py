@@ -5,7 +5,8 @@ from scml.scml2019.world import SCML2019World
 
 from scml_agents import get_agents
 from scml_agents.scml2019 import *
-from tests.switches import (
+
+from .switches import (
     SCMLAGENTS_RUN2019,
     SCMLAGENTS_RUN_COLLUSION_TOURNAMENTS,
     SCMLAGENTS_RUN_SABOTAGE_TOURNAMENTS,

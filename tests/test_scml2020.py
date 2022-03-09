@@ -4,7 +4,8 @@ from scml.scml2020 import SCML2020World
 from scml_agents import get_agents
 from scml_agents.scml2020 import *
 from scml_agents.scml2020.monty_hall import MontyHall
-from tests.switches import (
+
+from .switches import (
     SCMLAGENTS_RUN2020,
     SCMLAGENTS_RUN_COLLUSION_TOURNAMENTS,
     SCMLAGENTS_RUN_SABOTAGE_TOURNAMENTS,

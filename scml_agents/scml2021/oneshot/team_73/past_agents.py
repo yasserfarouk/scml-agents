@@ -824,8 +824,8 @@ class AgentT064(AdaptiveAgent, ABC):
         """提案or受諾するOfferの効用値を何もしない時と比べる"""
         nmi = self.get_nmi(name)
 
-        util = self.ufun.from_offers([offer], [self._is_selling(nmi)])
-        do_nothing_util = self.ufun.from_offers([], [self._is_selling(nmi)])
+        util = self.ufun.from_offers((offer,), (self._is_selling(nmi),))
+        do_nothing_util = self.ufun.from_offers(tuple(), (self._is_selling(nmi),))
         # print_log(["util", "do_nothing_util"], [util, do_nothing_util])
 
         if util <= do_nothing_util:
@@ -1513,8 +1513,8 @@ class AgentT063(AdaptiveAgent, ABC):
         """提案or受諾するOfferの効用値を何もしない時と比べる"""
         nmi = self.get_nmi(name)
 
-        util = self.ufun.from_offers([offer], [self._is_selling(nmi)])
-        do_nothing_util = self.ufun.from_offers([], [self._is_selling(nmi)])
+        util = self.ufun.from_offers((offer,), (self._is_selling(nmi),))
+        do_nothing_util = self.ufun.from_offers(tuple(), (self._is_selling(nmi),))
         # print_log(["util", "do_nothing_util"], [util, do_nothing_util])
 
         if util <= do_nothing_util:
@@ -2201,8 +2201,8 @@ class AgentT062(AdaptiveAgent, ABC):
         """提案or受諾するOfferの効用値を何もしない時と比べる"""
         nmi = self.get_nmi(name)
 
-        util = self.ufun.from_offers([offer], [self._is_selling(nmi)])
-        do_nothing_util = self.ufun.from_offers([], [self._is_selling(nmi)])
+        util = self.ufun.from_offers((offer,), (self._is_selling(nmi),))
+        do_nothing_util = self.ufun.from_offers(tuple(), (self._is_selling(nmi),))
         # print_log(["util", "do_nothing_util"], [util, do_nothing_util])
 
         if util <= do_nothing_util:
@@ -2889,8 +2889,8 @@ class AgentT061(AdaptiveAgent, ABC):
         """提案or受諾するOfferの効用値を何もしない時と比べる"""
         nmi = self.get_nmi(name)
 
-        util = self.ufun.from_offers([offer], [self._is_selling(nmi)])
-        do_nothing_util = self.ufun.from_offers([], [self._is_selling(nmi)])
+        util = self.ufun.from_offers((offer,), (self._is_selling(nmi),))
+        do_nothing_util = self.ufun.from_offers(tuple(), (self._is_selling(nmi),))
         # print_log(["util", "do_nothing_util"], [util, do_nothing_util])
 
         if util <= do_nothing_util:
@@ -3577,8 +3577,8 @@ class AgentT060(AdaptiveAgent, ABC):
         """提案or受諾するOfferの効用値を何もしない時と比べる"""
         nmi = self.get_nmi(name)
 
-        util = self.ufun.from_offers([offer], [self._is_selling(nmi)])
-        do_nothing_util = self.ufun.from_offers([], [self._is_selling(nmi)])
+        util = self.ufun.from_offers((offer,), (self._is_selling(nmi),))
+        do_nothing_util = self.ufun.from_offers(tuple(), (self._is_selling(nmi),))
         # print_log(["util", "do_nothing_util"], [util, do_nothing_util])
 
         if util <= do_nothing_util:
@@ -4260,8 +4260,8 @@ class AgentT056(AdaptiveAgent, ABC):
         """提案or受諾するOfferの効用値を何もしない時と比べる"""
         nmi = self.get_nmi(name)
 
-        util = self.ufun.from_offers([offer], [self._is_selling(nmi)])
-        do_nothing_util = self.ufun.from_offers([], [self._is_selling(nmi)])
+        util = self.ufun.from_offers((offer,), (self._is_selling(nmi),))
+        do_nothing_util = self.ufun.from_offers(tuple(), (self._is_selling(nmi),))
         # print_log(["util", "do_nothing_util"], [util, do_nothing_util])
 
         if util <= do_nothing_util:
@@ -4943,8 +4943,8 @@ class AgentT055(AdaptiveAgent, ABC):
         """提案or受諾するOfferの効用値を何もしない時と比べる"""
         nmi = self.get_nmi(name)
 
-        util = self.ufun.from_offers([offer], [self._is_selling(nmi)])
-        do_nothing_util = self.ufun.from_offers([], [self._is_selling(nmi)])
+        util = self.ufun.from_offers((offer,), (self._is_selling(nmi),))
+        do_nothing_util = self.ufun.from_offers(tuple(), (self._is_selling(nmi),))
         # print_log(["util", "do_nothing_util"], [util, do_nothing_util])
 
         if util <= do_nothing_util:
@@ -5626,8 +5626,8 @@ class AgentT054(AdaptiveAgent, ABC):
         """提案or受諾するOfferの効用値を何もしない時と比べる"""
         nmi = self.get_nmi(name)
 
-        util = self.ufun.from_offers([offer], [self._is_selling(nmi)])
-        do_nothing_util = self.ufun.from_offers([], [self._is_selling(nmi)])
+        util = self.ufun.from_offers((offer,), (self._is_selling(nmi),))
+        do_nothing_util = self.ufun.from_offers(tuple(), (self._is_selling(nmi),))
         # print_log(["util", "do_nothing_util"], [util, do_nothing_util])
 
         if util <= do_nothing_util:
@@ -6309,8 +6309,8 @@ class AgentT053(AdaptiveAgent, ABC):
         """提案or受諾するOfferの効用値を何もしない時と比べる"""
         nmi = self.get_nmi(name)
 
-        util = self.ufun.from_offers([offer], [self._is_selling(nmi)])
-        do_nothing_util = self.ufun.from_offers([], [self._is_selling(nmi)])
+        util = self.ufun.from_offers((offer,), (self._is_selling(nmi),))
+        do_nothing_util = self.ufun.from_offers(tuple(), (self._is_selling(nmi),))
         # print_log(["util", "do_nothing_util"], [util, do_nothing_util])
 
         if util <= do_nothing_util:
@@ -6992,8 +6992,8 @@ class AgentT052(AdaptiveAgent, ABC):
         """提案or受諾するOfferの効用値を何もしない時と比べる"""
         nmi = self.get_nmi(name)
 
-        util = self.ufun.from_offers([offer], [self._is_selling(nmi)])
-        do_nothing_util = self.ufun.from_offers([], [self._is_selling(nmi)])
+        util = self.ufun.from_offers((offer,), [self._is_selling(nmi)])
+        do_nothing_util = self.ufun.from_offers(tuple(), (self._is_selling(nmi),))
         # print_log(["util", "do_nothing_util"], [util, do_nothing_util])
 
         if util <= do_nothing_util:
@@ -7675,8 +7675,8 @@ class AgentT051(AdaptiveAgent, ABC):
         """提案or受諾するOfferの効用値を何もしない時と比べる"""
         nmi = self.get_nmi(name)
 
-        util = self.ufun.from_offers([offer], [self._is_selling(nmi)])
-        do_nothing_util = self.ufun.from_offers([], [self._is_selling(nmi)])
+        util = self.ufun.from_offers((offer,), (self._is_selling(nmi),))
+        do_nothing_util = self.ufun.from_offers(tuple(), (self._is_selling(nmi),))
         # print_log(["util", "do_nothing_util"], [util, do_nothing_util])
 
         if util <= do_nothing_util:
@@ -8349,8 +8349,8 @@ class AgentT050(AdaptiveAgent, ABC):
         """提案or受諾するOfferの効用値を何もしない時と比べる"""
         nmi = self.get_nmi(name)
 
-        util = self.ufun.from_offers([offer], [self._is_selling(nmi)])
-        do_nothing_util = self.ufun.from_offers([], [self._is_selling(nmi)])
+        util = self.ufun.from_offers((offer,), (self._is_selling(nmi),))
+        do_nothing_util = self.ufun.from_offers(tuple(), (self._is_selling(nmi),))
         # print_log(["util", "do_nothing_util"], [util, do_nothing_util])
 
         if util <= do_nothing_util:
@@ -8972,8 +8972,8 @@ class AgentT049(AdaptiveAgent, ABC):
         """提案or受諾するOfferの効用値を何もしない時と比べる"""
         nmi = self.get_nmi(name)
 
-        util = self.ufun.from_offers([offer], [self._is_selling(nmi)])
-        do_nothing_util = self.ufun.from_offers([], [self._is_selling(nmi)])
+        util = self.ufun.from_offers((offer,), (self._is_selling(nmi),))
+        do_nothing_util = self.ufun.from_offers(tuple(), (self._is_selling(nmi),))
         # print_log(["util", "do_nothing_util"], [util, do_nothing_util])
 
         if util <= do_nothing_util:
@@ -9505,8 +9505,8 @@ class AgentT048(AdaptiveAgent, ABC):
         """提案or受諾するOfferの効用値を何もしない時と比べる"""
         nmi = self.get_nmi(name)
 
-        util = self.ufun.from_offers([offer], [self._is_selling(nmi)])
-        do_nothing_util = self.ufun.from_offers([], [self._is_selling(nmi)])
+        util = self.ufun.from_offers((offer,), (self._is_selling(nmi),))
+        do_nothing_util = self.ufun.from_offers(tuple(), (self._is_selling(nmi),))
         # print_log(["util", "do_nothing_util"], [util, do_nothing_util])
 
         if util <= do_nothing_util:

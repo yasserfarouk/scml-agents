@@ -624,7 +624,9 @@ class LearningSyncAgent_(OneShotSyncAgent, ABC):
             outputs.append(is_output)
 
         if my_needs > 0:
-            u, producible = self.from_offers(list(chosen.values()), outputs, True)
+            u, producible = self.from_offers(
+                tuple(chosen.values()), tuple(outputs), True
+            )
         else:
             # my_needsを満たしているときは交渉終了
             responses = dict(
@@ -895,8 +897,12 @@ class LearningSyncAgent_(OneShotSyncAgent, ABC):
         )
 
         return (
-            self.from_offers([max_offer], [True] if self._is_selling(nmi) else [False]),
-            self.from_offers([min_offer], [True] if self._is_selling(nmi) else [False]),
+            self.from_offers(
+                (max_offer,), (True,) if self._is_selling(nmi) else (False,)
+            ),
+            self.from_offers(
+                (min_offer,), (True,) if self._is_selling(nmi) else (False,)
+            ),
         )
 
     def detect_std_utility(self, need, nmi):
@@ -917,7 +923,7 @@ class LearningSyncAgent_(OneShotSyncAgent, ABC):
             offer[UNIT_PRICE] *= 1 + slack
 
         return self.from_offers(
-            [tuple(offer)], [True] if self._is_selling(nmi) else [False]
+            (tuple(offer),), (True,) if self._is_selling(nmi) else (False,)
         )
 
     # その日の交渉の結果を表示
@@ -952,7 +958,7 @@ class LearningSyncAgent_(OneShotSyncAgent, ABC):
         self.ufun.find_limit(False)
         print("ufun", self.ufun.max_utility, self.ufun.min_utility)
         # offers = [v[-1] for k, v in self.success_list.items() if v[-1][TIME] == self.awi.current_step]
-        # print("current profit", self.ufun.from_offers(offers, [True] * len(offers)))
+        # print("current profit", self.ufun.from_offers(tuple(offers), tuple([True] * len(offers))))
         # print("success contracts", self.success_contracts)
         print(
             "current profit",

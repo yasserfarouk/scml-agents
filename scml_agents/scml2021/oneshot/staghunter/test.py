@@ -57,15 +57,16 @@ class GreedyTestAgent(GreedyOneShotAgent):
                     other_offers.append(self.cur_offer_list[oppo_id_])
 
             u_total = self.ufun.from_offers(
-                other_offers, [self.awi.is_first_level] * (len(other_offers))
+                tuple(other_offers),
+                tuple([self.awi.is_first_level] * (len(other_offers))),
             )
 
             marginal_utilities = []
 
             for (step, offer, _) in self._oppo_neg_history[oppo_id]:
                 u_p = self.ufun.from_offers(
-                    other_offers + [offer],
-                    [self.awi.is_first_level] * (len(other_offers) + 1),
+                    tuple(other_offers + [offer]),
+                    tuple([self.awi.is_first_level] * (len(other_offers) + 1)),
                 )
                 marginal_utilities.append((step, u_p - u_total))
 
@@ -108,12 +109,13 @@ class GreedyTestAgent(GreedyOneShotAgent):
     def respond(self, negotiator_id, state, offer):
         is_selling = self.awi.is_first_level
         u1 = self.ufun.from_offers(
-            list(self.cur_offer_list.values()), [is_selling] * len(self.cur_offer_list)
+            tuple(self.cur_offer_list.values()),
+            tuple([is_selling] * len(self.cur_offer_list)),
         )
 
         offers = [offer] + list(self.cur_offer_list.values())
         u2 = self.ufun.from_offers(
-            offers, [is_selling] * (len(self.cur_offer_list) + 1)
+            tuple(offers), tuple([is_selling] * (len(self.cur_offer_list) + 1))
         )
 
         self._oppo_neg_history[negotiator_id].append(
