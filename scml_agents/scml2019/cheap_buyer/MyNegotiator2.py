@@ -2,7 +2,7 @@ import math
 import random
 from typing import Optional
 
-from negmas import MechanismState, PreferencesChange, ResponseType, SAONegotiator
+from negmas import MechanismState, PreferencesChange, ResponseType, SAONegotiator, PreferencesChangeType
 
 
 class MyNegotiator2(SAONegotiator):
@@ -56,7 +56,7 @@ class MyNegotiator2(SAONegotiator):
             return self.respond_only_the_best(offer, state)
 
     def on_preferences_changed(self, changes=tuple()):
-        super().on_preferences_changed([PreferencesChange.General])
+        super().on_preferences_changed([PreferencesChange(PreferencesChangeType.General)])
         if self.nmi is None:
             return
         outcomes = self.nmi.discrete_outcomes()
@@ -98,7 +98,7 @@ class MyNegotiator2(SAONegotiator):
 
     def propose_only_the_best(self, state):
         if self.ordered_outcomes is None or len(self.ordered_outcomes) < 1:
-            self.on_preferences_changed([PreferencesChange.General])
+            self.on_preferences_changed([PreferencesChange(PreferencesChangeType.General)])
         our_offer = self.ordered_outcomes[0][1]
         return our_offer
 
@@ -110,7 +110,7 @@ class MyNegotiator2(SAONegotiator):
 
     def propose_time_based_concession(self, state):
         if self.ordered_outcomes is None or len(self.ordered_outcomes) < 1:
-            self.on_preferences_changed([PreferencesChange.General])
+            self.on_preferences_changed([PreferencesChange(PreferencesChangeType.General)])
         our_offer = self.ordered_outcomes[0][1]
         concession_score = self.get_concession_score(state)
         for ordered_outcome in self.ordered_outcomes:

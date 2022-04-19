@@ -90,7 +90,8 @@ class MyTestnegotiator(AspirationNegotiator):
         a = 0
 
     def on_preferences_changed(self, changes=tuple()):
-        super().on_preferences_changed([PreferencesChange.General])
+
+        super().on_preferences_changed([PreferencesChange(PreferencesChangeType.General)])
         outcomes = self.nmi.discrete_outcomes()
         self.ordered_outcomes = sorted(
             ((self.ufun(outcome), outcome) for outcome in outcomes),

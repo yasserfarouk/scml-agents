@@ -2,7 +2,7 @@ import random
 from typing import Optional
 
 from negmas import ResponseType
-from negmas.common import MechanismState, PreferencesChange
+from negmas.common import MechanismState, PreferencesChange, PreferencesChangeType
 from negmas.sao import AspirationNegotiator
 from scml.scml2019 import CFP, INVALID_UTILITY
 
@@ -176,7 +176,7 @@ class Mynegotiator(AspirationNegotiator):
                     )
 
     def on_preferences_changed(self, changes=tuple()):
-        super().on_preferences_changed([PreferencesChange.General])
+        super().on_preferences_changed([PreferencesChange(PreferencesChangeType.General)])
         outcomes = self.nmi.discrete_outcomes()
         self.ordered_outcomes = sorted(
             ((self.ufun(outcome), outcome) for outcome in outcomes),
@@ -226,7 +226,7 @@ class Mynegotiator(AspirationNegotiator):
             # @ todo : Frequency heurstic
 
     def notify_ufun_changed(self, changes=tuple()):
-        self.on_preferences_changed([PreferencesChange.General])
+        self.on_preferences_changed([PreferencesChange(PreferencesChangeType.General)])
 
     def propose_(self, state: MechanismState) -> Optional["Outcome"]:
         if self.ufun and self.ufun.changes:

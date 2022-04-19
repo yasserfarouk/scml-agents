@@ -229,7 +229,10 @@ class SyncController(SAOSyncController):
     def on_negotiation_end(self, negotiator_id: str, state: "MechanismState") -> None:
         """Update accepted buyer and sellers when it is accepted."""
         super().on_negotiation_end(negotiator_id, state)
-        partner_id = self.partner_agent_ids(negotiator_id)[0]
+        partner_id = self.partner_agent_ids(negotiator_id)
+        if not partner_id:
+            return
+        partner_id = partner_id[0]
         negotiator, _ = self.negotiators.get(negotiator_id, (None, None))
         if state.agreement:
             self.nego_history[negotiator.nmi.id]["Acceptance"] = {

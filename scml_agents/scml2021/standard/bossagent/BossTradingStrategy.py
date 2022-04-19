@@ -103,7 +103,7 @@ class BossTradingStrategy:
                 # Get contract index.
                 contract_index = contract_ids.index(contract_id)
                 contract = contracts[contract_index]
-                contract_partners = copy.deepcopy(contract.partners)
+                contract_partners = list(copy.deepcopy(contract.partners))
                 contract_partners.remove(self.id)
                 # Get agent id from contract.
                 agent_id = contract_partners[0]
@@ -184,7 +184,7 @@ class BossTradingStrategy:
                 # Get contract index.
                 contract_index = contract_ids.index(contract_id)
                 contract = contracts[contract_index]
-                contract_partners = copy.deepcopy(contract.partners)
+                contract_partners = list(copy.deepcopy(contract.partners))
                 contract_partners.remove(self.id)
                 # Get agent id from contract.
                 agent_id = contract_partners[0]
@@ -213,7 +213,7 @@ class BossTradingStrategy:
         else:
             # Iterate every contract again to sign (or not).
             for contract in contracts:
-                contract_partners = copy.deepcopy(contract.partners)
+                contract_partners = list(copy.deepcopy(contract.partners))
                 contract_partners.remove(self.id)
                 # Get agent id from contract.
                 agent_id = contract_partners[0]

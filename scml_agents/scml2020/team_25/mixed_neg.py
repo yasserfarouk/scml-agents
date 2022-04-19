@@ -8,7 +8,7 @@ from negmas import (
     SAOSyncController,
     outcome_is_valid,
 )
-from negmas.common import PreferencesChange
+from negmas.common import PreferencesChange, PreferencesChangeType
 from negmas.sao import SAOResponse
 from negmas.sao.negotiators.controlled import ControlledSAONegotiator
 from scml.scml2020 import (
@@ -262,7 +262,7 @@ class MyAsp(AspirationNegotiator):
 
     def respond(self, state, offer):
         if self.ufun_max is None or self.ufun_min is None:
-            self.on_preferences_changed([PreferencesChange.General])
+            self.on_preferences_changed([PreferencesChange(PreferencesChangeType.General)])
         if self.ufun is None:
             return ResponseType.REJECT_OFFER
         u = self.ufun(offer)
@@ -291,7 +291,7 @@ class MyAsp(AspirationNegotiator):
 
     def propose(self, state):
         if self.ufun_max is None or self.ufun_min is None:
-            self.on_preferences_changed([PreferencesChange.General])
+            self.on_preferences_changed([PreferencesChange(PreferencesChangeType.General)])
         if self.ufun_max < self.reserved_value:
             return None
         asp = (

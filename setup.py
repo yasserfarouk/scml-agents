@@ -1,4 +1,4 @@
-"""A setuptools based setup module.
+"""A etuptools based setup module.
 
 See:
 https://packaging.python.org/en/latest/distributing.html>=0.5.0>=0.5.0>=0.5.0
@@ -78,9 +78,10 @@ setup(
         'dataclasses; python_version < "3.7"',
         "scml>=0.5.0",
         "torch",
-        "tensorflow",
         "pulp",
         "xgboost",
+        "tensorflow; sys_platform != 'darwin' ",
+        "tensorflow-macos; sys_platform == 'darwin' ",
     ],  # Optional
     # extras_require={},
     # https://setuptools.readthedocs.io/en/latest/setuptools.html#dependencies-that-aren-t-in-pypi

@@ -143,3 +143,9 @@ This is a list of all the agents accepted for the SCML 2020 qualifications round
  You can get these agents after installing scml-agents by running:
 
 >>> scml_agents.get_agents(2020, track="any")
+
+
+Installation Note
+=================
+
+If you are on Apple M1, you will need to install tensorflow **before** installing this package on conda using the method described at `https://developer.apple.com/metal/tensorflow-plugin/`_

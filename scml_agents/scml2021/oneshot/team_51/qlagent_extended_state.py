@@ -747,6 +747,8 @@ class QlAgent(OneShotAgent):
 
         DEBUG_PRINT("on_negotiation_failure, " + partner)
 
+        if partner not in self.negotiators.keys():
+            return None
         nmi = self.get_nmi(partner)
         unit_price_issue = nmi.issues[OFFER_FIELD_IDX.UNIT_PRICE]
         quantity_issue = nmi.issues[OFFER_FIELD_IDX.QUANTITY]

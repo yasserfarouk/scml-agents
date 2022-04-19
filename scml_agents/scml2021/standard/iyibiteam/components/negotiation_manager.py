@@ -13,7 +13,7 @@ from negmas import (
     SAONegotiator,
     ToughNegotiator,
 )
-from negmas.common import PreferencesChange
+from negmas.common import PreferencesChange, PreferencesChangeType
 from negmas.helpers import get_class
 from scipy.stats import linregress
 from scml.scml2020 import (
@@ -37,7 +37,7 @@ from sklearn.linear_model import LinearRegression
 class ModifiedAspirationAgent(AspirationNegotiator):
     def respond(self, state, offer):
         if self.ufun_max is None or self.ufun_min is None:
-            self.on_preferences_changed([PreferencesChange.General])
+            self.on_preferences_changed([PreferencesChange(PreferencesChangeType.General)])
 
         if self.ufun is None or self.ufun_max is None or self.ufun_min is None:
             return ResponseType.REJECT_OFFER

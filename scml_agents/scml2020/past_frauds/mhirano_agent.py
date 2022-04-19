@@ -57,7 +57,7 @@ from negmas import (
     SAONegotiator,
     UtilityFunction,
 )
-from negmas.common import PreferencesChange
+from negmas.common import PreferencesChange, PreferencesChangeType
 from negmas.helpers import get_class, humanize_time
 from scipy.stats import poisson
 from scml.scml2020 import (
@@ -1192,7 +1192,7 @@ class MhiranoNegotiator(AspirationNegotiator):
         return result
 
     def on_preferences_changed(self, changes=tuple()):
-        super().on_preferences_changed([PreferencesChange.General])
+        super().on_preferences_changed([PreferencesChange(PreferencesChangeType.General)])
 
     def on_negotiation_start(self, state: MechanismState) -> None:
         nmi: AgentMechanismInterface = self.nmi

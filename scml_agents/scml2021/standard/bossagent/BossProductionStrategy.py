@@ -215,7 +215,7 @@ class BossProductionStrategy:
             agent_sign = 1
             opp_sign = 1
 
-            contract_partners = copy.deepcopy(signed_contract.partners)
+            contract_partners = list(copy.deepcopy(signed_contract.partners))
             contract_partners.remove(self.id)
             # Get agent id from contract.
             agent_id = contract_partners[0]
@@ -230,7 +230,7 @@ class BossProductionStrategy:
                 )
 
         for contract_index, cancelled_contract in enumerate(cancelled):
-            contract_partners = copy.deepcopy(cancelled_contract.partners)
+            contract_partners = list(copy.deepcopy(cancelled_contract.partners))
             if self.id in rejectors[contract_index]:
                 agent_sign = 0
             else:

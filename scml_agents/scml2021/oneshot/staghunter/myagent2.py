@@ -894,7 +894,7 @@ class StagHunterV5(OneShotAgent):
         self._secured = 0
 
         u_total = self.ufun.from_offers(
-            tuple(self.cur_offer_list.values()),
+            tuple(tuple(_) for _ in self.cur_offer_list.values()),
             tuple([self.awi.is_first_level] * (len(self.cur_offer_list))),
         )
 

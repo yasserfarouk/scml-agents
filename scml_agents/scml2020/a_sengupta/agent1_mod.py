@@ -32,7 +32,7 @@ from negmas import (
     SAONegotiator,
     ToughNegotiator,
 )
-from negmas.common import PreferencesChange
+from negmas.common import PreferencesChange, PreferencesChangeType
 from negmas.helpers import get_class, instantiate
 from negmas.outcomes.base_issue import make_issue
 from scml.scml2020 import (
@@ -96,7 +96,7 @@ class ToughAspirationNegotiator(AspirationNegotiator):
             return ResponseType.ACCEPT_OFFER
 
         if self.ufun_max is None or self.ufun_min is None:
-            self.on_preferences_changed([PreferencesChange.General])
+            self.on_preferences_changed([PreferencesChange(PreferencesChangeType.General)])
         if self.ufun is None:
             return ResponseType.REJECT_OFFER
         u = self.ufun(offer)

@@ -1,7 +1,9 @@
 click
 scml>=0.5.0
 torch
-tensorflow
 pulp
 xgboost
 -e .
+tensorflow; sys_platform != "darwin"
+tensorflow-macos; sys_platform == "darwin"
+tensorflow-metal; sys_platform == "darwin"
