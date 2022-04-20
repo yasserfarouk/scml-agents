@@ -1,4 +1,4 @@
-name: CI
+name: CI (GitHub SCML and Negmas)
 
 on:
   push:
@@ -30,6 +30,10 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel pytest
           python -m pip install --upgrade  virtualenv
           python -m pip install -r requirements.txt
+          yes | python -m pip uninstall negmas
+          python -m pip install git+https://github.com/yasserfarouk/negmas.git
+          yes | python -m pip uninstall scml
+          python -m pip install git+https://github.com/yasserfarouk/scml.git
       - name: "Run pytest for ${{ matrix.python-version }}"
         run: "python -W ignore -m pytest tests"
 
