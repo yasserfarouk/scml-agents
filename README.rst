@@ -148,4 +148,4 @@ This is a list of all the agents accepted for the SCML 2020 qualifications round
 Installation Note
 =================
 
-If you are on Apple M1, you will need to install tensorflow **before** installing this package on conda using the method described at `https://developer.apple.com/metal/tensorflow-plugin/`_
+If you are on Apple M1, you will need to install tensorflow **before** installing this package on conda using the method described `here <https://developer.apple.com/metal/tensorflow-plugin/>`_
