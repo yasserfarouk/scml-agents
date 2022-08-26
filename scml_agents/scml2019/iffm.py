@@ -838,7 +838,7 @@ class NonDemandDrivenAgent(PrintingFactoryManager):
         hatL = 10
 
         tlambda1 = hatL / (1 + hatL) * mu
-        tlambda2 = (-hatL + math.sqrt(hatL ** 2 + 4 * hatL)) * 0.5 * mu
+        tlambda2 = (-hatL + math.sqrt(hatL**2 + 4 * hatL)) * 0.5 * mu
 
         # 切り替え可能
         tlambda = tlambda1
@@ -1623,7 +1623,7 @@ class InsuranceFraudFactoryManager(NonDemandDrivenAgent):
             neg2 = InsuranceFraudNegotiator(agent=self, cfp=cfp)
             self.request_negotiation(negotiator=neg2, cfp=cfp, ufun=ufun_)
         elif cfp.max_unit_price in [
-            self._collusion_para2 * i for i in [10 ** i for i in range(4)]
+            self._collusion_para2 * i for i in [10**i for i in range(4)]
         ]:
             # print("publisher: "+ str(cfp.publisher)+" me:" + self.id)
             # print("find_collusion")
@@ -1665,7 +1665,7 @@ class InsuranceFraudFactoryManager(NonDemandDrivenAgent):
             neg2 = InsuranceFraudNegotiator(agent=self, cfp=cfp)
             return neg2
         elif cfp.max_unit_price in [
-            self._collusion_para2 * i for i in [10 ** i for i in range(4)]
+            self._collusion_para2 * i for i in [10**i for i in range(4)]
         ]:
             ufun_ = PessimisticNegotiatorUtility(
                 self, self._create_annotation(cfp=cfp, partner=partner)
@@ -1711,7 +1711,7 @@ class InsuranceFraudFactoryManager(NonDemandDrivenAgent):
             # print(contract.agreement["quantity"])
             return signature
         elif contract.agreement["unit_price"] in [
-            self._collusion_para2 * i for i in [10 ** i for i in range(4)]
+            self._collusion_para2 * i for i in [10**i for i in range(4)]
         ]:
             # print(">>>>>>>>>>>>>> 詐欺するよ2")
             # print(contract)
@@ -1753,7 +1753,7 @@ class InsuranceFraudFactoryManager(NonDemandDrivenAgent):
             self._adjustMoney(100)
             return None
         elif contract.agreement["unit_price"] in [
-            self._collusion_para2 * i for i in [10 ** i for i in range(4)]
+            self._collusion_para2 * i for i in [10**i for i in range(4)]
         ]:
             if _is_buy:
                 return None

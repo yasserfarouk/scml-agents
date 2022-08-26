@@ -767,7 +767,7 @@ class SyncController(SAOSyncController):
         normalized_target = (
             ((1 - current_time) ** 2) * P0
             + 2 * (1 - current_time) * current_time * P1
-            + (current_time ** 2) * P2
+            + (current_time**2) * P2
         )
         target = math.floor(normalized_target * upper_bound)
 
@@ -789,7 +789,7 @@ class SyncController(SAOSyncController):
         normalized_target = (
             ((1 - current_time) ** 2) * P0
             + 2 * (1 - current_time) * current_time * P1
-            + (current_time ** 2) * P2
+            + (current_time**2) * P2
         )
         target = math.floor(lower_bound / normalized_target)
 

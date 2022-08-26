@@ -96,7 +96,9 @@ class ToughAspirationNegotiator(AspirationNegotiator):
             return ResponseType.ACCEPT_OFFER
 
         if self.ufun_max is None or self.ufun_min is None:
-            self.on_preferences_changed([PreferencesChange(PreferencesChangeType.General)])
+            self.on_preferences_changed(
+                [PreferencesChange(PreferencesChangeType.General)]
+            )
         if self.ufun is None:
             return ResponseType.REJECT_OFFER
         u = self.ufun(offer)

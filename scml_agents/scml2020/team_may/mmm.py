@@ -124,8 +124,8 @@ class StdAgent(
             self.op -= 1
         self.n_arrivals, self.n_shipments = 0, 0
         time = self.awi.current_step / self.awi.n_steps
-        self.Pbuy = 2 - time ** 0.9
-        self.Psell = 1 + time ** 2
+        self.Pbuy = 2 - time**0.9
+        self.Psell = 1 + time**2
 
     def acceptable_unit_price(self, step, sell):
         if sell:

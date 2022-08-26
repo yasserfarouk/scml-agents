@@ -63,19 +63,19 @@ class BilatUFun:
             x = xy[:, 0]
             y = xy[:, 1]
             return (
-                a * x ** 4
-                + b * x ** 3 * y
-                + c * x ** 3
-                + d * x ** 2 * y ** 2
-                + e * x ** 2 * y
-                + f * x ** 2
-                + g * x * y ** 3
-                + h * x * y ** 2
+                a * x**4
+                + b * x**3 * y
+                + c * x**3
+                + d * x**2 * y**2
+                + e * x**2 * y
+                + f * x**2
+                + g * x * y**3
+                + h * x * y**2
                 + i * x * y
                 + j * x
-                + k * y ** 4
-                + l * y ** 3
-                + m * y ** 2
+                + k * y**4
+                + l * y**3
+                + m * y**2
                 + n * y
                 + o
             )
@@ -100,14 +100,14 @@ class BilatUFun:
             x = xy[:, 0]
             y = xy[:, 1]
             return (
-                a * x ** 3
-                + b * x ** 2 * y
-                + c * x ** 2
-                + d * x * y ** 2
+                a * x**3
+                + b * x**2 * y
+                + c * x**2
+                + d * x * y**2
                 + e * x * y
                 + f * x
-                + g * y ** 3
-                + h * y ** 2
+                + g * y**3
+                + h * y**2
                 + i * y
                 + j
             )
@@ -132,20 +132,20 @@ class BilatUFun:
             x = xy[:, 0]
             y = xy[:, 1]
             return (
-                a * x ** 3 * y ** 3
-                + b * x ** 3 * y ** 2
-                + c * x ** 3 * y
-                + d * x ** 3
-                + e * x ** 2 * y ** 3
-                + f * x ** 2 * y ** 2
-                + e * x ** 2 * y
-                + f * x ** 2
-                + g * x * y ** 3
-                + h * x * y ** 2
+                a * x**3 * y**3
+                + b * x**3 * y**2
+                + c * x**3 * y
+                + d * x**3
+                + e * x**2 * y**3
+                + f * x**2 * y**2
+                + e * x**2 * y
+                + f * x**2
+                + g * x * y**3
+                + h * x * y**2
                 + i * x * y
                 + j * x
-                + k * y ** 3
-                + l * y ** 2
+                + k * y**3
+                + l * y**2
                 + m * y
                 + n
             )
@@ -170,13 +170,13 @@ class BilatUFun:
             x = xy[:, 0]
             y = xy[:, 1]
             return (
-                a * x ** 2 * y ** 2
-                + b * x ** 2 * y
-                + c * x ** 2
-                + d * x * y ** 2
+                a * x**2 * y**2
+                + b * x**2 * y
+                + c * x**2
+                + d * x * y**2
                 + e * x * y
                 + f * x
-                + g * y ** 2
+                + g * y**2
                 + h * y
                 + i
             )

@@ -570,7 +570,7 @@ class MhiranoController(PrintingSAOController):
             return outcomes[new_eval.argmin()], dot[new_eval.argmin()]
 
     def _get_current_thr(self, relative_time: float) -> float:
-        thr: float = (1 - (relative_time ** self.power)) * (
+        thr: float = (1 - (relative_time**self.power)) * (
             self.ufun_max - self.ufun_min
         ) + self.ufun_min
         return thr
@@ -1192,7 +1192,9 @@ class MhiranoNegotiator(AspirationNegotiator):
         return result
 
     def on_preferences_changed(self, changes=tuple()):
-        super().on_preferences_changed([PreferencesChange(PreferencesChangeType.General)])
+        super().on_preferences_changed(
+            [PreferencesChange(PreferencesChangeType.General)]
+        )
 
     def on_negotiation_start(self, state: MechanismState) -> None:
         nmi: AgentMechanismInterface = self.nmi

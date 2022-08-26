@@ -683,7 +683,7 @@ def power_set(iterable):
 
 
 def gauss(x, a=1, mu=0, sigma=1):
-    return a * np.exp(-((x - mu) ** 2) / (2 * sigma ** 2))
+    return a * np.exp(-((x - mu) ** 2) / (2 * sigma**2))
 
 
 debug = True

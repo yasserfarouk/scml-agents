@@ -808,13 +808,13 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
     def sell_utility_func(self, p, q, t, breach_score=0):
         delivery_delay = t - self.awi.current_step
         if self.is_last_level:
-            return q * min(p ** 1.1, 1.5) * (1 + delivery_delay ** 0.1)
+            return q * min(p**1.1, 1.5) * (1 + delivery_delay**0.1)
 
         return (
             q
-            * min(p ** 1.1, 1.5)
-            / (1 + delivery_delay ** 0.1)
-            / (1 + breach_score ** 0.5)
+            * min(p**1.1, 1.5)
+            / (1 + delivery_delay**0.1)
+            / (1 + breach_score**0.5)
         )
 
     def buy_utility_func(self, p, q, t, breach_score=0):
@@ -823,8 +823,8 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
         return (
             q
             / (max(0, p - self.buy_pmin) + 1)
-            / (1 + delivery_delay ** 0.1)
-            / (1 + breach_score ** 0.5)
+            / (1 + delivery_delay**0.1)
+            / (1 + breach_score**0.5)
         )
 
     def sign_all_contracts(self, contracts: List[Contract]) -> List[Optional[str]]:
@@ -1225,7 +1225,7 @@ class MediocreNegotiator(SAONegotiator):
             q, p = bid
 
         if self.to_sell:
-            utility = q * min((p ** 1.1), p * 1.5)
+            utility = q * min((p**1.1), p * 1.5)
         else:
             if p >= self.valid_p_bounds[0]:
                 utility = q / (p - self.valid_p_bounds[0] + 1)

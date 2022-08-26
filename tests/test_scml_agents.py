@@ -5,7 +5,7 @@ from scml_agents import get_agents
 
 @mark.parametrize(
     "version",
-    [2019, 2020, 2021],
+    [2019, 2020, 2021, 2022],
 )
 def test_get_agents_per_year(version):
     from pprint import pprint
@@ -131,6 +131,33 @@ def test_get_agents_per_year(version):
             "scml_agents.scml2021.oneshot.team_corleone.godfather.godfather.TrainingCollectionGodfatherAgent",
             "scml_agents.scml2021.oneshot.team_corleone.godfather.godfather.ChristopherTheGoldfishAgent",
         )
+    elif version == 2022:
+        assert agents == (
+            "scml_agents.scml2022.standard.bossagent.charlies.CharliesAgent",
+            "scml_agents.scml2022.standard.team_100.skyagent.SkyAgent",
+            "scml_agents.scml2022.standard.team_137.lobster.Lobster",
+            "scml_agents.scml2022.standard.team_9.salesagent.SalesAgent",
+            "scml_agents.scml2022.standard.team_99.smartagent.SmartAgent",
+            "scml_agents.scml2022.standard.team_may.m5.M5",
+            "scml_agents.scml2022.standard.wabisabikoalas.artisan_kangaroo.ArtisanKangaroo",
+            "scml_agents.scml2022.collusion.bossagent.charlies.CharliesAgentCollusion",
+            "scml_agents.scml2022.collusion.team_may.m5.M5Collusion",
+            "scml_agents.scml2022.oneshot.team_102.agents.GentleS",
+            "scml_agents.scml2022.oneshot.team_102.agents.LearningSyncAgent",
+            "scml_agents.scml2022.oneshot.team_102.agents.Daruma",
+            "scml_agents.scml2022.oneshot.team_103.agent.MMMPersonalized",
+            "scml_agents.scml2022.oneshot.team_105.agent.AdaptivePercentile",
+            "scml_agents.scml2022.oneshot.team_106.moving_average_agent.AdamAgent",
+            "scml_agents.scml2022.oneshot.team_107.regression_agent.EVEAgent",
+            "scml_agents.scml2022.oneshot.team_123.neko.Neko",
+            "scml_agents.scml2022.oneshot.team_124.agent.LearningAdaptiveAgent",
+            "scml_agents.scml2022.oneshot.team_126.agents_learning.AgentSAS",
+            "scml_agents.scml2022.oneshot.team_131.agentrm.AgentRM",
+            "scml_agents.scml2022.oneshot.team_134.agent119.PatientAgent",
+            "scml_agents.scml2022.oneshot.team_62.uc_oneshot_agent_v3_4.UcOneshotAgent3_4",
+            "scml_agents.scml2022.oneshot.team_94.qlagent3.AdaptiveQlAgent",
+            "scml_agents.scml2022.oneshot.team_96.agent125.Agent125",
+        )
 
 
 def test_finalists_2020():
@@ -146,6 +173,15 @@ def test_finalists_2021():
     agents = get_agents(2021, track="collusion", finalists_only=True)
     assert len(agents) == 5
     agents = get_agents(2021, track="oneshot", finalists_only=True)
+    assert len(agents) == 8
+
+
+def test_finalists_2022():
+    agents = get_agents(2022, track="std", finalists_only=True)
+    assert len(agents) == 5
+    agents = get_agents(2022, track="collusion", finalists_only=True)
+    assert len(agents) == 2
+    agents = get_agents(2022, track="oneshot", finalists_only=True)
     assert len(agents) == 8
 
 
@@ -168,6 +204,17 @@ def test_winners_2021():
     agents = get_agents(2021, track="oneshot", winners_only=True)
     assert len(agents) == 3 and len(agents[-1]) == 2
     agents = get_agents(2021, track="all", winners_only=True)
+    assert len(agents) == 7
+
+
+def test_winners_2022():
+    agents = get_agents(2022, track="std", winners_only=True)
+    assert len(agents) == 3
+    agents = get_agents(2022, track="collusion", winners_only=True)
+    assert len(agents) == 1
+    agents = get_agents(2022, track="oneshot", winners_only=True)
+    assert len(agents) == 3 and len(agents[-1]) == 1
+    agents = get_agents(2022, track="all", winners_only=True)
     assert len(agents) == 7
 
 

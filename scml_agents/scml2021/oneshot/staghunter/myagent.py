@@ -367,7 +367,7 @@ class EstimatedUtility(UtilityFunction):
                     2
                     * (term2 / term1 - ground_truth)
                     * (term3 * term2 - term4 * term1)
-                    / (term1 ** 2)
+                    / (term1**2)
                 )
                 grad_weights_t += cur_grad
             if len(self.historical_offers[t]):

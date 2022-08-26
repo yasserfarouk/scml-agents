@@ -37,7 +37,9 @@ from sklearn.linear_model import LinearRegression
 class ModifiedAspirationAgent(AspirationNegotiator):
     def respond(self, state, offer):
         if self.ufun_max is None or self.ufun_min is None:
-            self.on_preferences_changed([PreferencesChange(PreferencesChangeType.General)])
+            self.on_preferences_changed(
+                [PreferencesChange(PreferencesChangeType.General)]
+            )
 
         if self.ufun is None or self.ufun_max is None or self.ufun_min is None:
             return ResponseType.REJECT_OFFER

@@ -41,7 +41,7 @@ class UcOneshotAgent3_4(OneShotAgent):
             if self.awi.level == 1
             else len(self.awi.all_consumers[1]) / len(self.awi.all_consumers[0])
         )
-        self.p_c_ratio = self.p_c_ratio ** 0.8
+        self.p_c_ratio = self.p_c_ratio**0.8
 
         # default value of concession_rate, upper and lower th limits
         self.default_concession_rate = 0.35
