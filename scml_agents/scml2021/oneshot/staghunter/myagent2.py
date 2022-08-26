@@ -109,9 +109,9 @@ from tabulate import tabulate
 # warnings.filterwarnings('error')
 
 __all__ = [
-    "StagHunter",
-    "StagHunterV5",
-    "StagHunterV6",
+    # "StagHunter",
+    # "StagHunterV5",
+    # "StagHunterV6",
     "StagHunterV7",
 ]
 
