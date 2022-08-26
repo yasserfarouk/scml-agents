@@ -307,7 +307,7 @@ sel_contracts = [
     (14, 1, 10),
 ]
 
-
-x = solve_signer(buy_contracts, sel_contracts, True)
-print(x[0])
-print(x[1])
+if __name__ == "__main__":
+    x = solve_signer(buy_contracts, sel_contracts, True)
+    print(x[0])
+    print(x[1])
