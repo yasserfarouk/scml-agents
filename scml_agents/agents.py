@@ -9,6 +9,7 @@ from negmas.situated import Agent
 import scml_agents.scml2019 as scml2019
 import scml_agents.scml2020 as scml2020
 import scml_agents.scml2021 as scml2021
+import scml_agents.scml2022 as scml2022
 
 __all__ = ["get_agents"]
 
@@ -76,7 +77,7 @@ def get_agents(
     """
     if version in ("all", "any"):
         results = []
-        for v in (2019, 2020, 2021, "contrib"):
+        for v in (2019, 2020, 2021, 2022, "contrib"):
             results += get_agents(
                 v,
                 track=track,
@@ -453,6 +454,192 @@ def get_agents(
                         ]
                         for _ in dir(scml2021.oneshot)
                         if ismodule(eval(f"scml2021.oneshot.{_}"))
+                    ],
+                    [],
+                )
+            )
+    elif isinstance(version, int) and version == 2022:
+        if bird_only:
+            classes = tuple()
+        elif track in ("std", "standard") and winners_only:
+            classes = (
+                (scml2022.standard.team_137.MAIN_AGENT,),
+                (scml2022.standard.team_may.MAIN_AGENT,),
+                (scml2022.standard.wabisabikoalas.MAIN_AGENT,),
+            )
+        elif track in ("coll", "collusion") and winners_only:
+            classes = ((scml2022.collusion.team_may.MAIN_AGENT,),)
+        elif track in ("one", "oneshot") and winners_only:
+            classes = (
+                (scml2022.oneshot.team_134.MAIN_AGENT,),
+                (scml2022.oneshot.team_102.MAIN_AGENT,),
+                (scml2022.oneshot.team_126.MAIN_AGENT,),
+            )
+        elif track in ("any", "all") and winners_only:
+            classes = (
+                scml2022.standard.team_137.MAIN_AGENT,
+                scml2022.standard.team_may.MAIN_AGENT,
+                scml2022.standard.wabisabikoalas.MAIN_AGENT,
+                scml2022.collusion.team_may.MAIN_AGENT,
+                scml2022.oneshot.team_134.MAIN_AGENT,
+                scml2022.oneshot.team_102.MAIN_AGENT,
+                scml2022.oneshot.team_126.MAIN_AGENT,
+            )
+        elif track in ("std", "standard") and finalists_only:
+            classes = (
+                scml2022.standard.team_137.MAIN_AGENT,
+                scml2022.standard.team_may.MAIN_AGENT,
+                scml2022.standard.wabisabikoalas.MAIN_AGENT,
+                scml2022.standard.team_100.MAIN_AGENT,
+                scml2022.standard.bossagent.MAIN_AGENT,
+            )
+        elif track in ("coll", "collusion") and finalists_only:
+            classes = (
+                scml2022.collusion.team_may.MAIN_AGENT,
+                scml2022.collusion.bossagent.MAIN_AGENT,
+            )
+        elif track in ("oneshot", "one") and finalists_only:
+            classes = (
+                scml2022.oneshot.team_134.MAIN_AGENT,
+                scml2022.oneshot.team_102.MAIN_AGENT,
+                scml2022.oneshot.team_126.MAIN_AGENT,
+                scml2022.oneshot.team_106.MAIN_AGENT,
+                scml2022.oneshot.team_107.MAIN_AGENT,
+                scml2022.oneshot.team_124.MAIN_AGENT,
+                scml2022.oneshot.team_131.MAIN_AGENT,
+                scml2022.oneshot.team_123.MAIN_AGENT,
+            )
+        elif track in ("all", "any") and finalists_only:
+            classes = (
+                scml2022.standard.team_137.MAIN_AGENT,
+                scml2022.standard.team_may.MAIN_AGENT,
+                scml2022.standard.wabisabikoalas.MAIN_AGENT,
+                scml2022.standard.team_100.MAIN_AGENT,
+                scml2022.standard.bossagent.MAIN_AGENT,
+                scml2022.oneshot.team_134.MAIN_AGENT,
+                scml2022.oneshot.team_102.MAIN_AGENT,
+                scml2022.oneshot.team_126.MAIN_AGENT,
+                scml2022.oneshot.team_106.MAIN_AGENT,
+                scml2022.oneshot.team_107.MAIN_AGENT,
+                scml2022.oneshot.team_124.MAIN_AGENT,
+                scml2022.oneshot.team_131.MAIN_AGENT,
+                scml2022.oneshot.team_123.MAIN_AGENT,
+                scml2022.collusion.team_may.MAIN_AGENT,
+                scml2022.collusion.bossagent.MAIN_AGENT,
+            )
+        elif track in ("std", "standard") and qualified_only:
+            classes = (
+                scml2022.standard.team_137.MAIN_AGENT,
+                scml2022.standard.team_may.MAIN_AGENT,
+                scml2022.standard.wabisabikoalas.MAIN_AGENT,
+                scml2022.standard.team_100.MAIN_AGENT,
+                scml2022.standard.bossagent.MAIN_AGENT,
+                scml2022.standard.team_9.MAIN_AGENT,
+                scml2022.standard.team_99.MAIN_AGENT,
+            )
+        elif track in ("coll", "collusion") and qualified_only:
+            classes = (
+                scml2022.collusion.team_may.MAIN_AGENT,
+                scml2022.collusion.bossagent.MAIN_AGENT,
+            )
+        elif track in ("oneshot", "one") and qualified_only:
+            classes = (
+                scml2022.oneshot.team_134.MAIN_AGENT,
+                scml2022.oneshot.team_102.MAIN_AGENT,
+                scml2022.oneshot.team_126.MAIN_AGENT,
+                scml2022.oneshot.team_106.MAIN_AGENT,
+                scml2022.oneshot.team_107.MAIN_AGENT,
+                scml2022.oneshot.team_124.MAIN_AGENT,
+                scml2022.oneshot.team_131.MAIN_AGENT,
+                scml2022.oneshot.team_123.MAIN_AGENT,
+                scml2022.oneshot.team_94.MAIN_AGENT,
+                scml2022.oneshot.team_96.MAIN_AGENT,
+                scml2022.oneshot.team_105.MAIN_AGENT,
+                scml2022.oneshot.team_103.MAIN_AGENT,
+                scml2022.oneshot.team_62.MAIN_AGENT,
+            )
+        elif track in ("all", "any") and qualified_only:
+            classes = (
+                scml2022.oneshot.team_134.MAIN_AGENT,
+                scml2022.oneshot.team_102.MAIN_AGENT,
+                scml2022.oneshot.team_126.MAIN_AGENT,
+                scml2022.oneshot.team_106.MAIN_AGENT,
+                scml2022.oneshot.team_107.MAIN_AGENT,
+                scml2022.oneshot.team_124.MAIN_AGENT,
+                scml2022.oneshot.team_131.MAIN_AGENT,
+                scml2022.oneshot.team_123.MAIN_AGENT,
+                scml2022.oneshot.team_94.MAIN_AGENT,
+                scml2022.oneshot.team_96.MAIN_AGENT,
+                scml2022.oneshot.team_105.MAIN_AGENT,
+                scml2022.oneshot.team_103.MAIN_AGENT,
+                scml2022.oneshot.team_62.MAIN_AGENT,
+                scml2021.oneshot.team_86.MAIN_AGENT,
+                scml2021.oneshot.team_50.MAIN_AGENT,
+                scml2022.standard.team_137.MAIN_AGENT,
+                scml2022.standard.team_may.MAIN_AGENT,
+                scml2022.standard.wabisabikoalas.MAIN_AGENT,
+                scml2022.standard.team_100.MAIN_AGENT,
+                scml2022.standard.bossagent.MAIN_AGENT,
+                scml2022.standard.team_9.MAIN_AGENT,
+                scml2022.standard.team_99.MAIN_AGENT,
+                scml2021.standard.wabisabikoalas.MAIN_AGENT,
+                scml2022.collusion.team_may.MAIN_AGENT,
+                scml2022.collusion.bossagent.MAIN_AGENT,
+            )
+        elif track in ("std", "coll", "standard", "collusion"):
+            classes = tuple(
+                sum(
+                    (
+                        [
+                            eval(f"scml2022.standard.{_}.{a}")
+                            for a in eval(f"scml2022.standard.{_}").__all__
+                        ]
+                        for _ in dir(scml2022.standard)
+                        if ismodule(eval(f"scml2022.standard.{_}"))
+                    ),
+                    [],
+                )
+            )
+        elif track in ("one", "oneshot"):
+            classes = tuple(
+                sum(
+                    (
+                        [
+                            eval(f"scml2022.oneshot.{_}.{a}")
+                            for a in eval(f"scml2022.oneshot.{_}").__all__
+                        ]
+                        for _ in dir(scml2022.oneshot)
+                        if ismodule(eval(f"scml2022.oneshot.{_}"))
+                    ),
+                    [],
+                )
+            )
+        elif track in ("any", "all"):
+            classes = tuple(
+                sum(
+                    [
+                        [
+                            eval(f"scml2022.standard.{_}.{a}")
+                            for a in eval(f"scml2022.standard.{_}").__all__
+                        ]
+                        for _ in dir(scml2022.standard)
+                        if ismodule(eval(f"scml2022.standard.{_}"))
+                    ]
+                    + [
+                        [
+                            eval(f"scml2022.collusion.{_}.{a}")
+                            for a in eval(f"scml2022.collusion.{_}").__all__
+                        ]
+                        for _ in dir(scml2022.collusion)
+                        if ismodule(eval(f"scml2022.collusion.{_}"))
+                    ]
+                    + [
+                        [
+                            eval(f"scml2022.oneshot.{_}.{a}")
+                            for a in eval(f"scml2022.oneshot.{_}").__all__
+                        ]
+                        for _ in dir(scml2022.oneshot)
+                        if ismodule(eval(f"scml2022.oneshot.{_}"))
                     ],
                     [],
                 )

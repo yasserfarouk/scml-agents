@@ -29,9 +29,40 @@ has the following parameters:
 * as_class: If true, the agent classes will be returned otherwise their full class names.
 
 
-For example, to get the top 10% of the Oneshot track finalists in year 2021 as strings, you can use:
+For example, to get the top 10% of the Oneshot track finalists in year 2022 as strings, you can use:
 
->>> get_agents(version=2021, track="oneshot", finalists_only=True, top_only=0.1, as_class=False)
+>>> get_agents(version=2022, track="oneshot", finalists_only=True, top_only=0.1, as_class=False)
+
+Winners of the SCML 2022 Competition
+====================================
+
+Oneshot Track
+-------------
+* First Place: Chris Mascioli and Amy Greenwald for **PatientAgent**
+* Second Place: Takumu Shimizu for **GentleS**
+* Third Place: Shiraz Nave, Amit Dayan, Sariel Turayfor **AgentSAS**
+
+You can get these agents after installing scml-agents by running:
+
+>>> scml_agents.get_agents(2022, track="oneshot", winners_only=True)
+
+Standard Track
+--------------
+* First Place: Ito Nobuhiro and Takanobu Otsukafor **Lobster**
+* Second Place: Kazuki Komori for **M5**
+* Third Place: Koki Katagiri and Tatanobu Otsuka for **Artisan Kangaroo**
+
+You can get these agents after installing scml-agents by running:
+
+>>> scml_agents.get_agents(2022, track="std", winners_only=True)
+
+Collusion Track
+---------------
+* Honorary Mention: Kazuki Komori for **M5**
+
+You can get this agent after installing scml-agents by running:
+
+>>> scml_agents.get_agents(2022, track="collusion", winners_only=True)
 
 Winners of the SCML 2021 Competition
 ====================================
@@ -88,10 +119,16 @@ You can get these agents after installing scml-agents by running:
 >>> scml_agents.get_agents(2020, track="collusion", winners_only=True)
 
 
+Agents accepted for the SCML 2022 qualifications
+================================================
+
+A list of all agents accepted for the SCML 2022 qualifications round can be found at `https://scml.cs.brown.edu/scml2022 <https://scml.cs.brown.edu/scml2022>`_
+
 Agents accepted for the SCML 2021 qualifications
 ================================================
 
-A list of all agents accepted for the SCML 2021 qualifications round can be found at `https://scml.cs.brown.edu <https://scml.cs.brown.edu>`_
+A list of all agents accepted for the SCML 2021 qualifications round can be found at `https://scml.cs.brown.edu/scml2021 <https://scml.cs.brown.edu/scml2021>`_
+
 
 Agents accepted for the SCML 2020 qualifications
 ================================================
