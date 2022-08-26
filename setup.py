@@ -76,7 +76,7 @@ setup(
     install_requires=[
         "Click (>=6.0)",
         'dataclasses; python_version < "3.7"',
-        "scml>=0.5.0",
+        "scml>=0.5.5",
         "torch",
         "pulp",
         "xgboost",
