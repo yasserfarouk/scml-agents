@@ -109,23 +109,7 @@ def test_get_agents_per_year(version):
             "scml_agents.scml2021.oneshot.team_86.agent112.BetterAgent",
             "scml_agents.scml2021.oneshot.team_86.agent112.Agent112",
             "scml_agents.scml2021.oneshot.team_90.run.PDPSyncAgent",
-            "scml_agents.scml2021.oneshot.team_corleone.godfather.godfather.MinDisagreementGodfatherAgent",
-            "scml_agents.scml2021.oneshot.team_corleone.godfather.godfather.MinEmpiricalGodfatherAgent",
-            "scml_agents.scml2021.oneshot.team_corleone.godfather.godfather.AspirationUniformGodfatherAgent",
-            "scml_agents.scml2021.oneshot.team_corleone.godfather.godfather.NonconvergentGodfatherAgent",
-            "scml_agents.scml2021.oneshot.team_corleone.godfather.godfather.ParetoEmpiricalGodfatherAgent",
             "scml_agents.scml2021.oneshot.team_corleone.godfather.godfather.GoldfishParetoEmpiricalGodfatherAgent",
-            "scml_agents.scml2021.oneshot.team_corleone.godfather.godfather.SlowGoldfish",
-            "scml_agents.scml2021.oneshot.team_corleone.godfather.godfather.HardnosedGoldfishGodfatherAgent",
-            "scml_agents.scml2021.oneshot.team_corleone.godfather.godfather.HardnosedGoldfishBiggerAgent",
-            "scml_agents.scml2021.oneshot.team_corleone.godfather.godfather.HardnosedGoldfishSmallerAgent",
-            "scml_agents.scml2021.oneshot.team_corleone.godfather.godfather.SoftnosedGoldfishGodfatherAgent",
-            "scml_agents.scml2021.oneshot.team_corleone.godfather.godfather.QuickLearningGodfather",
-            "scml_agents.scml2021.oneshot.team_corleone.godfather.godfather.MediumLearningGodfather",
-            "scml_agents.scml2021.oneshot.team_corleone.godfather.godfather.SlowLearningGodfather",
-            "scml_agents.scml2021.oneshot.team_corleone.godfather.godfather.ZooGodfather",
-            "scml_agents.scml2021.oneshot.team_corleone.godfather.godfather.TrainingCollectionGodfatherAgent",
-            "scml_agents.scml2021.oneshot.team_corleone.godfather.godfather.ChristopherTheGoldfishAgent",
         }
     elif version == 2022:
         assert agents == {

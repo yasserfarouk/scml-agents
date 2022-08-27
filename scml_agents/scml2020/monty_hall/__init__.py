@@ -7,6 +7,7 @@ Created on Mon May 18 14:09:59 2020
 """
 from .myagent import *
 
+MAIN_AGENT = MontyHall
 __all__ = myagent.__all__
 
 __author__ = ""
