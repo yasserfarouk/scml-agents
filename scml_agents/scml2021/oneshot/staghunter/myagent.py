@@ -108,7 +108,7 @@ from tabulate import tabulate
 SOFTMAX = 0
 
 __all__ = [
-    "StagHunter",
+    # "StagHunter",
     "StagHunterTough",
 ]
 

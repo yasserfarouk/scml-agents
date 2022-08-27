@@ -10,10 +10,10 @@ from scml_agents import get_agents
 def test_get_agents_per_year(version):
     from pprint import pprint
 
-    agents = get_agents(version, as_class=False)
+    agents = set(get_agents(version, as_class=False))
     pprint(agents)
     if version == 2019:
-        assert agents == (
+        assert agents == {
             "scml_agents.scml2019.fj2.FJ2FactoryManager",
             "scml_agents.scml2019.rapt_fm.RaptFactoryManager",
             "scml_agents.scml2019.iffm.InsuranceFraudFactoryManager",
@@ -22,9 +22,9 @@ def test_get_agents_per_year(version):
             "scml_agents.scml2019.nvm.nmv_agent.NVMFactoryManager",
             "scml_agents.scml2019.monopoly.Monopoly",
             "scml_agents.scml2019.psfm.PenaltySabotageFactoryManager",
-        )
+        }
     elif version == 2020:
-        assert agents == (
+        assert agents == {
             "scml_agents.scml2020.team_may.MMM",
             "scml_agents.scml2020.team_22.SavingAgent",
             "scml_agents.scml2020.team_25.Agent30",
@@ -44,9 +44,9 @@ def test_get_agents_per_year(version):
             "scml_agents.scml2020.team_18.MercuAgent",
             "scml_agents.scml2020.biu_th.THBiuAgent",
             "scml_agents.scml2020.team_32.BeerAgent",
-        )
+        }
     elif version == 2021:
-        assert agents == (
+        assert agents == {
             "scml_agents.scml2021.standard.bossagent.boss_agent.CharliesAgent",
             "scml_agents.scml2021.standard.iyibiteam.agent.IYIBIAgent",
             "scml_agents.scml2021.standard.team_41.a.SteadyMgr",
@@ -64,11 +64,7 @@ def test_get_agents_per_year(version):
             "scml_agents.scml2021.standard.team_may.m4.M4",
             "scml_agents.scml2021.standard.team_mediocre.mediocre.Mediocre",
             "scml_agents.scml2021.standard.wabisabikoalas.artisan_kangaroo.ArtisanKangaroo",
-            "scml_agents.scml2021.oneshot.staghunter.myagent2.StagHunter",
             "scml_agents.scml2021.oneshot.staghunter.myagent.StagHunterTough",
-            "scml_agents.scml2021.oneshot.staghunter.myagent2.StagHunter",
-            "scml_agents.scml2021.oneshot.staghunter.myagent2.StagHunterV5",
-            "scml_agents.scml2021.oneshot.staghunter.myagent2.StagHunterV6",
             "scml_agents.scml2021.oneshot.staghunter.myagent2.StagHunterV7",
             "scml_agents.scml2021.oneshot.team_50.sagiagent.Agent74",
             "scml_agents.scml2021.oneshot.team_51.qlagent_extended_state.QlAgent",
@@ -130,9 +126,9 @@ def test_get_agents_per_year(version):
             "scml_agents.scml2021.oneshot.team_corleone.godfather.godfather.ZooGodfather",
             "scml_agents.scml2021.oneshot.team_corleone.godfather.godfather.TrainingCollectionGodfatherAgent",
             "scml_agents.scml2021.oneshot.team_corleone.godfather.godfather.ChristopherTheGoldfishAgent",
-        )
+        }
     elif version == 2022:
-        assert agents == (
+        assert agents == {
             "scml_agents.scml2022.standard.bossagent.charlies.CharliesAgent",
             "scml_agents.scml2022.standard.team_100.skyagent.SkyAgent",
             "scml_agents.scml2022.standard.team_137.lobster.Lobster",
@@ -144,7 +140,6 @@ def test_get_agents_per_year(version):
             "scml_agents.scml2022.collusion.team_may.m5.M5Collusion",
             "scml_agents.scml2022.oneshot.team_102.agents.GentleS",
             "scml_agents.scml2022.oneshot.team_102.agents.LearningSyncAgent",
-            "scml_agents.scml2022.oneshot.team_102.agents.Daruma",
             "scml_agents.scml2022.oneshot.team_103.agent.MMMPersonalized",
             "scml_agents.scml2022.oneshot.team_105.agent.AdaptivePercentile",
             "scml_agents.scml2022.oneshot.team_106.moving_average_agent.AdamAgent",
@@ -157,7 +152,7 @@ def test_get_agents_per_year(version):
             "scml_agents.scml2022.oneshot.team_62.uc_oneshot_agent_v3_4.UcOneshotAgent3_4",
             "scml_agents.scml2022.oneshot.team_94.qlagent3.AdaptiveQlAgent",
             "scml_agents.scml2022.oneshot.team_96.agent125.Agent125",
-        )
+        }
 
 
 def test_finalists_2020():
