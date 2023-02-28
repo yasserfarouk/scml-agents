@@ -25,10 +25,10 @@ class MyTradePredictionStrategy(MarketAwareTradePredictionStrategy):
     """
 
     def upgradeSVC(self, SklearnPredictor):
-        class UpgradedPredictor(SklearnPredictor):
+        class UpgradedPredictor:
             def __init__(self, *args, **kwargs):
                 self._single_class_label = None
-                super().__init__(*args, **kwargs)
+                self.__predictor = SklearnPredictor(*args, **kwargs)
 
             @staticmethod
             def _has_only_one_class(y):
@@ -41,14 +41,14 @@ class MyTradePredictionStrategy(MarketAwareTradePredictionStrategy):
                 if self._has_only_one_class(y):
                     self._single_class_label = y[0]
                 else:
-                    super().fit(X, y)
+                    self.__predictor.fit(X, y)
                 return self
 
             def predict(self, X):
                 if self._fitted_on_single_class():
                     return np.full(X.shape[0], self._single_class_label)
                 else:
-                    return super().predict(X)
+                    return self.__predictor.predict(X)
 
         return UpgradedPredictor
 

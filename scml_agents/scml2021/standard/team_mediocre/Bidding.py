@@ -49,7 +49,6 @@ class SellBidding:
         self.bid_func = self.get_good_bid if use_bid_func else self.generate_random_bid
 
     def generate_offerable_set(self):
-
         # defining reference points for points for offerable set
         self.center = np.mean([self.q_bounds, self.p_bounds], axis=1)
         self.r_1 = np.array([self.q_range[0], self.p_range[0]])
@@ -124,7 +123,6 @@ class SellBidding:
             return "M_zero"
 
     def evaluate(self, opponent_bid, nego_relative_time, opponent_behaviour_params):
-
         q, t, p = opponent_bid
 
         o_delivery_time = np.ceil(np.mean(opponent_behaviour_params["t_bounds"]))
@@ -141,7 +139,6 @@ class SellBidding:
         oppo_bid_utility = self.utility_func(opponent_bid)
 
         if self.q_bounds[0] <= q and q <= self.q_bounds[1] and self.p_bounds[0] <= p:
-
             if opponent_bid_zone == "above_M_alpha" and self.t_bounds[0] <= t:
                 return (True, None)  # Accept
 
@@ -165,8 +162,7 @@ class SellBidding:
         my_bid_utility = self.utility_func(my_bid)
 
         if p >= self.p_bounds[0] and q <= self.q_bounds[1]:
-
-            if (
+            if abs(my_bid_utility) > 1e-12 and (
                 nego_relative_time > 0.75
                 and (my_bid_utility - oppo_bid_utility) / my_bid_utility
                 <= max(0, self.neediness) / 10
@@ -181,7 +177,6 @@ class SellBidding:
     def generate_responsive_bid(
         self, opponent_bid, nego_relative_time, delivery_time, opponent_behaviour_params
     ):
-
         opponent_concession = (
             opponent_behaviour_params["concession_rate"]
             if nego_relative_time >= 0.25
@@ -277,7 +272,6 @@ class SellBidding:
     def generate_random_bid(
         self, nego_relative_time, delivery_time, offer_set=None
     ):  # NOT USED
-
         if type(offer_set) == type(None):
             offer_set = self.offerable_bids
 
@@ -407,7 +401,6 @@ class BuyBidding:
             return "M_zero"
 
     def evaluate(self, opponent_bid, nego_relative_time, opponent_behaviour_params):
-
         q, t, p = opponent_bid
         o_delivery_time = np.ceil(np.mean(opponent_behaviour_params["t_bounds"]))
         o_delivery_delay = o_delivery_time - self.current_step
@@ -463,7 +456,6 @@ class BuyBidding:
     def generate_responsive_bid(
         self, opponent_bid, nego_relative_time, delivery_time, opponent_behaviour_params
     ):
-
         opponent_concession = (
             opponent_behaviour_params["concession_rate"]
             if nego_relative_time >= 0.25
@@ -516,7 +508,6 @@ class BuyBidding:
         return bid
 
     def get_good_bid(self, nego_relative_time, delivery_time, offer_set=None):
-
         if type(offer_set) == type(None) or len(offer_set) == 0:
             offer_set = self.offerable_bids
 
@@ -553,7 +544,6 @@ class BuyBidding:
     def generate_random_bid(
         self, nego_relative_time, delivery_time, offer_set=None
     ):  # NOT USED
-
         if type(offer_set) == type(None):
             offer_set = self.offerable_bids
 

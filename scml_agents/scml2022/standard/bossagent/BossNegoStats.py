@@ -1,7 +1,8 @@
-from collections import defaultdict
-import json
-import pandas as pd
 import copy
+import json
+from collections import defaultdict
+
+import pandas as pd
 
 
 class BossNegoStats:
@@ -61,14 +62,17 @@ class BossNegoStats:
     def set_negotiation_bid_sign(
         self, step, agentID, mechanism_id, agent_sign, opponent_sign
     ):
-        if agentID in self.__parent.my_consumers:
-            self.negotiation_bid_history["buyer"][step][agentID][mechanism_id][
-                "Acceptance"
-            ]["agent_sign"] = agent_sign
-        else:
-            self.negotiation_bid_history["seller"][step][agentID][mechanism_id][
-                "Acceptance"
-            ]["opponent_sign"] = opponent_sign
+        try:
+            if agentID in self.__parent.my_consumers:
+                self.negotiation_bid_history["buyer"][step][agentID][mechanism_id][
+                    "Acceptance"
+                ]["agent_sign"] = agent_sign
+            else:
+                self.negotiation_bid_history["seller"][step][agentID][mechanism_id][
+                    "Acceptance"
+                ]["opponent_sign"] = opponent_sign
+        except:
+            return
 
         # Save it as json.
         self.save_dict(

@@ -10,6 +10,8 @@ There are two ways to submit agents to this repository:
 2. Submit a pull-request with your agent added to the contrib directory.
 
 
+**Please note that torch does not yet fully support python 3.11. If you face issues installing (especially on a mac), try to use Python 3.10.**
+
 Getting lists of agents
 =======================
 
