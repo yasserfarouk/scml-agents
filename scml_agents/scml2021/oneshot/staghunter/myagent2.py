@@ -1493,7 +1493,7 @@ class StagHunterV7(StagHunter):
 
         offer[UNIT_PRICE] = int(
             self._prev_opp_price[negotiator_id][-3]
-            / self._prev_opp_price[negotiator_id][-2]
+            / max(1, self._prev_opp_price[negotiator_id][-2])
             * self._prev_self_price[-1]
         )
 
