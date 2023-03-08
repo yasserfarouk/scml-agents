@@ -52,9 +52,8 @@ setup(
     classifiers=[
         "License :: OSI Approved :: GNU General Public License v2 or later (GPLv2+)",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
     ],  # Optional
     keywords=" ".join(
         ["negotiation", "mas", "multi-agent", "simulation", "AI"]
@@ -75,7 +74,6 @@ setup(
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=[
         "Click (>=6.0)",
-        'dataclasses; python_version < "3.7"',
         "scml>=0.5.5",
         "torch; sys_platform != 'darwin' ",
         "torch==1.12.1; sys_platform == 'darwin' ",
@@ -94,5 +92,5 @@ setup(
     # },
     # https://packaging.python.org/specifications/core-metadata/#project-url-multiple-use
     project_urls={"homepage": "https://github.com/yasserfarouk/negmas"},  # Optional
-    python_requires=">=3.6",
+    python_requires=">=3.10",
 )
