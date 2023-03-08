@@ -38,7 +38,7 @@ setup(
     name="scml-agents",  # Required
     # https://www.python.org/dev/peps/pep-0440/
     # https://packaging.python.org/en/latest/single_source_version.html
-    version="0.2.0",  # Required
+    version="0.3.0",  # Required
     # https://packaging.python.org/specifications/core-metadata/#summary
     description="Agents submitted to the SCML competition or contributed by the community",  # Required
     # https://packaging.python.org/specifications/core-metadata/#description-optional
