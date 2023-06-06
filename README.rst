@@ -42,7 +42,7 @@ Oneshot Track
 -------------
 * First Place: Pedro Hrosz Turini and Jaime Sichman for **QuantityOrientedAgent**
 * Second Place: Shota Kimata and Yuko Sakurai for **CCAgent**
-* Third Place: Masato Kijima for **Kanbe**
+* Third Place: Masato Kijima for **KanbeAgent**
 
 You can get these agents after installing scml-agents by running:
 
