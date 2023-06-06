@@ -52,7 +52,7 @@ Standard Track
 --------------
 * First Place: Sadahiro Atsunaga for **AgentSDH**
 
-You can get these agents after installing scml-agents by running:
+You can get this agent after installing scml-agents by running:
 
 >>> scml_agents.get_agents(2023, track="std", winners_only=True)
 
