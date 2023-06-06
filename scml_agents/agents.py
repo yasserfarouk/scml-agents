@@ -10,6 +10,7 @@ import scml_agents.scml2019 as scml2019
 import scml_agents.scml2020 as scml2020
 import scml_agents.scml2021 as scml2021
 import scml_agents.scml2022 as scml2022
+import scml_agents.scml2023 as scml2023
 
 __all__ = ["get_agents"]
 
@@ -77,7 +78,7 @@ def get_agents(
     """
     if version in ("all", "any"):
         results = []
-        for v in (2019, 2020, 2021, 2022, "contrib"):
+        for v in (2019, 2020, 2021, 2022, 2023, "contrib"):
             results += get_agents(
                 v,
                 track=track,
@@ -86,7 +87,7 @@ def get_agents(
                 winners_only=winners_only,
                 bird_only=bird_only,
                 top_only=top_only,
-                as_class=as_class,
+                as_class=as_class,  # type: ignore
             )
         return tuple(results)
     classes = tuple()
@@ -131,7 +132,7 @@ def get_agents(
                 scml2019.SAHAFactoryManager,
                 scml2019.FJ2FactoryManager,
             )
-        elif track in ("coll", "collusion") and winners_only:
+        elif track in ("col", "collusion") and winners_only:
             classes = (
                 scml2019.InsuranceFraudFactoryManager,
                 scml2019.NVMFactoryManager,
@@ -163,7 +164,7 @@ def get_agents(
                     [],
                 )
             )
-        elif track in ("coll", "collusion") and finalists_only:
+        elif track in ("col", "collusion") and finalists_only:
             classes = tuple(
                 sum(
                     (
@@ -240,7 +241,7 @@ def get_agents(
                     [],
                 )
             )
-        elif track in ("coll", "collusion") and winners_only:
+        elif track in ("col", "collusion") and winners_only:
             classes = tuple(
                 sum(
                     (
@@ -262,7 +263,7 @@ def get_agents(
                 (scml2021.standard.bossagent.MAIN_AGENT,),
                 (scml2021.standard.wabisabikoalas.MAIN_AGENT,),
             )
-        elif track in ("coll", "collusion") and winners_only:
+        elif track in ("col", "collusion") and winners_only:
             classes = (
                 (scml2021.standard.team_may.MAIN_AGENT,),
                 (scml2021.standard.bossagent.MAIN_AGENT,),
@@ -294,7 +295,7 @@ def get_agents(
                 scml2021.standard.team_mediocre.MAIN_AGENT,
                 scml2021.standard.team_53.MAIN_AGENT,
             )
-        elif track in ("coll", "collusion") and finalists_only:
+        elif track in ("col", "collusion") and finalists_only:
             classes = (
                 scml2021.standard.team_may.MAIN_AGENT,
                 scml2021.standard.bossagent.MAIN_AGENT,
@@ -347,7 +348,7 @@ def get_agents(
                 scml2021.standard.team_mediocre.MAIN_AGENT,
                 scml2021.standard.wabisabikoalas.MAIN_AGENT,
             )
-        elif track in ("coll", "collusion") and qualified_only:
+        elif track in ("col", "collusion") and qualified_only:
             classes = (
                 scml2021.standard.bossagent.MAIN_AGENT,
                 scml2021.standard.iyibiteam.MAIN_AGENT,
@@ -408,7 +409,7 @@ def get_agents(
                 scml2021.oneshot.team_90.MAIN_AGENT,
                 scml2021.oneshot.team_corleone.MAIN_AGENT,
             )
-        elif track in ("std", "coll", "standard", "collusion"):
+        elif track in ("std", "col", "standard", "collusion"):
             classes = tuple(
                 sum(
                     (
@@ -467,7 +468,7 @@ def get_agents(
                 (scml2022.standard.team_may.MAIN_AGENT,),
                 (scml2022.standard.wabisabikoalas.MAIN_AGENT,),
             )
-        elif track in ("coll", "collusion") and winners_only:
+        elif track in ("col", "collusion") and winners_only:
             classes = ((scml2022.collusion.team_may.MAIN_AGENT,),)
         elif track in ("one", "oneshot") and winners_only:
             classes = (
@@ -493,7 +494,7 @@ def get_agents(
                 scml2022.standard.team_100.MAIN_AGENT,
                 scml2022.standard.bossagent.MAIN_AGENT,
             )
-        elif track in ("coll", "collusion") and finalists_only:
+        elif track in ("col", "collusion") and finalists_only:
             classes = (
                 scml2022.collusion.team_may.MAIN_AGENT,
                 scml2022.collusion.bossagent.MAIN_AGENT,
@@ -537,7 +538,7 @@ def get_agents(
                 scml2022.standard.team_9.MAIN_AGENT,
                 scml2022.standard.team_99.MAIN_AGENT,
             )
-        elif track in ("coll", "collusion") and qualified_only:
+        elif track in ("col", "collusion") and qualified_only:
             classes = (
                 scml2022.collusion.team_may.MAIN_AGENT,
                 scml2022.collusion.bossagent.MAIN_AGENT,
@@ -586,7 +587,7 @@ def get_agents(
                 scml2022.collusion.team_may.MAIN_AGENT,
                 scml2022.collusion.bossagent.MAIN_AGENT,
             )
-        elif track in ("std", "coll", "standard", "collusion"):
+        elif track in ("std", "col", "standard", "collusion"):
             classes = tuple(
                 sum(
                     (
@@ -644,6 +645,152 @@ def get_agents(
                     [],
                 )
             )
+    elif isinstance(version, int) and version == 2023:
+        if bird_only:
+            classes = tuple()
+        elif track in ("std", "standard") and winners_only:
+            classes = ((scml2023.standard.team_150.MAIN_AGENT,),)
+        elif track in ("col", "collusion") and winners_only:
+            classes = ((scml2023.collusion.team_150.MAIN_AGENT,),)
+        elif track in ("one", "oneshot") and winners_only:
+            classes = (
+                (scml2023.oneshot.team_poli_usp.MAIN_AGENT,),
+                (scml2023.oneshot.team_144.MAIN_AGENT,),
+                (scml2023.oneshot.team_143.MAIN_AGENT,),
+            )
+        elif track in ("any", "all") and winners_only:
+            classes = (
+                (scml2023.oneshot.team_poli_usp.MAIN_AGENT,),
+                (scml2023.oneshot.team_144.MAIN_AGENT,),
+                (scml2023.oneshot.team_143.MAIN_AGENT,),
+                (scml2023.collusion.team_150.MAIN_AGENT,),
+            )
+        elif track in ("std", "standard") and (finalists_only or qualified_only):
+            classes = (
+                scml2023.standard.team_150.MAIN_AGENT,
+                scml2023.standard.team_140.MAIN_AGENT,
+            )
+        elif track in ("col", "collusion") and (finalists_only or qualified_only):
+            classes = (
+                scml2023.collusion.team_150.MAIN_AGENT,
+                scml2023.collusion.team_140.MAIN_AGENT,
+            )
+        elif track in ("oneshot", "one") and finalists_only:
+            classes = (
+                scml2023.oneshot.team_poli_usp.MAIN_AGENT,
+                scml2023.oneshot.team_144.MAIN_AGENT,
+                scml2023.oneshot.team_143.MAIN_AGENT,
+                scml2023.oneshot.team_148.MAIN_AGENT,
+                scml2023.oneshot.team_145.MAIN_AGENT,
+                scml2023.oneshot.team_127.MAIN_AGENT,
+                scml2023.oneshot.team_126.MAIN_AGENT,
+                scml2023.oneshot.team_151.MAIN_AGENT,
+            )
+        elif track in ("all", "any") and finalists_only:
+            classes = (
+                scml2023.oneshot.team_poli_usp.MAIN_AGENT,
+                scml2023.oneshot.team_144.MAIN_AGENT,
+                scml2023.oneshot.team_143.MAIN_AGENT,
+                scml2023.oneshot.team_148.MAIN_AGENT,
+                scml2023.oneshot.team_145.MAIN_AGENT,
+                scml2023.oneshot.team_127.MAIN_AGENT,
+                scml2023.oneshot.team_126.MAIN_AGENT,
+                scml2023.oneshot.team_151.MAIN_AGENT,
+                scml2023.collusion.team_150.MAIN_AGENT,
+                scml2023.collusion.team_140.MAIN_AGENT,
+            )
+        elif track in ("oneshot", "one") and qualified_only:
+            classes = (
+                scml2023.oneshot.team_102.MAIN_AGENT,
+                scml2023.oneshot.team_123.MAIN_AGENT,
+                scml2023.oneshot.team_126.MAIN_AGENT,
+                scml2023.oneshot.team_127.MAIN_AGENT,
+                scml2023.oneshot.team_134.MAIN_AGENT,
+                scml2023.oneshot.team_139.MAIN_AGENT,
+                scml2023.oneshot.team_143.MAIN_AGENT,
+                scml2023.oneshot.team_144.MAIN_AGENT,
+                scml2023.oneshot.team_145.MAIN_AGENT,
+                scml2023.oneshot.team_148.MAIN_AGENT,
+                scml2023.oneshot.team_149.MAIN_AGENT,
+                scml2023.oneshot.team_151.MAIN_AGENT,
+                scml2023.oneshot.team_poli_usp.MAIN_AGENT,
+            )
+        elif track in ("all", "any") and qualified_only:
+            classes = (
+                scml2023.oneshot.team_102.MAIN_AGENT,
+                scml2023.oneshot.team_123.MAIN_AGENT,
+                scml2023.oneshot.team_126.MAIN_AGENT,
+                scml2023.oneshot.team_127.MAIN_AGENT,
+                scml2023.oneshot.team_134.MAIN_AGENT,
+                scml2023.oneshot.team_139.MAIN_AGENT,
+                scml2023.oneshot.team_143.MAIN_AGENT,
+                scml2023.oneshot.team_144.MAIN_AGENT,
+                scml2023.oneshot.team_145.MAIN_AGENT,
+                scml2023.oneshot.team_148.MAIN_AGENT,
+                scml2023.oneshot.team_149.MAIN_AGENT,
+                scml2023.oneshot.team_151.MAIN_AGENT,
+                scml2023.oneshot.team_poli_usp.MAIN_AGENT,
+                scml2023.collusion.team_150.MAIN_AGENT,
+                scml2023.collusion.team_140.MAIN_AGENT,
+            )
+        elif track in ("std", "col", "standard", "collusion"):
+            classes = tuple(
+                sum(
+                    (
+                        [
+                            eval(f"scml2023.standard.{_}.{a}")
+                            for a in eval(f"scml2023.standard.{_}").__all__
+                        ]
+                        for _ in dir(scml2023.standard)
+                        if ismodule(eval(f"scml2023.standard.{_}"))
+                    ),
+                    [],
+                )
+            )
+        elif track in ("one", "oneshot"):
+            classes = tuple(
+                sum(
+                    (
+                        [
+                            eval(f"scml2023.oneshot.{_}.{a}")
+                            for a in eval(f"scml2023.oneshot.{_}").__all__
+                        ]
+                        for _ in dir(scml2023.oneshot)
+                        if ismodule(eval(f"scml2023.oneshot.{_}"))
+                    ),
+                    [],
+                )
+            )
+        elif track in ("any", "all"):
+            classes = tuple(
+                sum(
+                    [
+                        [
+                            eval(f"scml2023.standard.{_}.{a}")
+                            for a in eval(f"scml2023.standard.{_}").__all__
+                        ]
+                        for _ in dir(scml2023.standard)
+                        if ismodule(eval(f"scml2023.standard.{_}"))
+                    ]
+                    + [
+                        [
+                            eval(f"scml2023.collusion.{_}.{a}")
+                            for a in eval(f"scml2023.collusion.{_}").__all__
+                        ]
+                        for _ in dir(scml2023.collusion)
+                        if ismodule(eval(f"scml2023.collusion.{_}"))
+                    ]
+                    + [
+                        [
+                            eval(f"scml2023.oneshot.{_}.{a}")
+                            for a in eval(f"scml2023.oneshot.{_}").__all__
+                        ]
+                        for _ in dir(scml2023.oneshot)
+                        if ismodule(eval(f"scml2023.oneshot.{_}"))
+                    ],
+                    [],
+                )
+            )
     elif isinstance(version, str) and version == "contrib":
         classes = tuple()
     else:
@@ -658,6 +805,6 @@ def get_agents(
     if top_only is not None:
         n = int(top_only) if top_only >= 1 else (top_only * len(classes))
         if n > 0:
-            return classes[: min(n, len(classes))]
+            return classes[: min(n, len(classes))]  # type: ignore
 
-    return classes
+    return classes  # type: ignore
