@@ -69,13 +69,14 @@ __all__ = ["PolymorphicAgent"]
 class PrintLogger:
     def __init__(self, is_active=True):
         self.is_active = is_active
-        if self.is_active:
-            self.log_file = open("log_out.txt", "w")
-            self.log_file.truncate(0)
+        # if self.is_active:
+        #     self.log_file = open("log_out.txt", "w")
+        #     self.log_file.truncate(0)
 
     def log(self, data):
-        if self.is_active:
-            self.log_file.write(str(data) + "\n")
+        ...
+        # if self.is_active:
+        #     self.log_file.write(str(data) + "\n")
 
 
 logger = PrintLogger(is_active=True)

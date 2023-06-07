@@ -10,10 +10,12 @@ from sklearn.linear_model import LinearRegression, LogisticRegression
 
 class PrintLogger:
     def __init__(self):
-        self.log_file = open("log_out.txt", "w")
+        ...
+        # self.log_file = open("log_out.txt", "w")
 
     def log(self, data):
-        self.log_file.write(data + "\n")
+        ...
+        # self.log_file.write(data + "\n")
 
 
 logger = PrintLogger()
