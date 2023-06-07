@@ -28,7 +28,7 @@ from .tutorials.example_agents_oneshot import SimpleAgent, SyncAgent
 # sys.path.append(os.path.dirname(__file__))
 
 
-__all__ = ["RLSyncAgent", "RLIndAgent"]
+__all__ = ["RLIndAgent"]
 
 
 class RLSyncAgent(SyncAgent):

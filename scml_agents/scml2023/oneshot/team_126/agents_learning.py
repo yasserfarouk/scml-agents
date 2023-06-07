@@ -93,7 +93,7 @@ from scml.scml2020.common import QUANTITY, TIME, UNIT_PRICE
 from scml.scml2020.utils import anac2022_collusion, anac2022_oneshot, anac2022_std
 from tabulate import tabulate
 
-__all__ = ["AgentSAS", "SimpleAgent", "BetterAgent", "AdaptiveAgent", "LearningAgent"]
+__all__ = ["AgentSAS"]
 
 
 class SimpleAgent(OneShotAgent):

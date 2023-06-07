@@ -43,7 +43,7 @@ from tabulate import tabulate
 
 import scml_agents
 
-__all__ = ["SimpleAgent", "BetterAgent", "AdaptiveAgent", "LearningAgent", "Shochan"]
+__all__ = ["Shochan"]
 
 
 class SimpleAgent(OneShotAgent):

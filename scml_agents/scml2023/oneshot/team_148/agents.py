@@ -4,7 +4,7 @@ from negmas import ResponseType, SAOResponse
 from scml.oneshot import *
 from scml.scml2020 import QUANTITY, TIME, UNIT_PRICE
 
-__all__ = ["BetterAgent", "SimpleAgent", "MyOneShotDoNothing", "AgentVSCforOneShot"]
+__all__ = ["AgentVSCforOneShot"]
 
 
 class MyOneShotDoNothing(OneShotAgent):

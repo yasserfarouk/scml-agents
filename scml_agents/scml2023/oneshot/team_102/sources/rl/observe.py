@@ -8,18 +8,18 @@ from negmas.sao.common import SAONMI, SAOState
 from scml.oneshot import *
 
 __all__ = [
-    'SyncObserveManager',
-    'SyncBoxOM',
-    'SyncMultiDiscreteOM',
-    'IndObserveManager',
-    'IndBoxOM',
-    'IndMultiDiscreteOM',
+    "SyncObserveManager",
+    "SyncBoxOM",
+    "SyncMultiDiscreteOM",
+    "IndObserveManager",
+    "IndBoxOM",
+    "IndMultiDiscreteOM",
 ]
 
 
 class SyncObserveManager:
     def __str__(self):
-        return 'S-OM'
+        return "S-OM"
 
     @property
     def state_dim(self) -> int:
@@ -27,37 +27,32 @@ class SyncObserveManager:
 
     @abstractmethod
     def encode(
-            self,
-            offers: Dict[str, tuple],
-            states: Dict[str, SAOState],
-            needs: int,
-            nmi: SAONMI,
+        self,
+        offers: Dict[str, tuple],
+        states: Dict[str, SAOState],
+        needs: int,
+        nmi: SAONMI,
     ) -> torch.Tensor:
         ...
 
     @abstractmethod
-    def decode(
-            self,
-            state: torch.Tensor,
-            opp_ids: List[str]
-    ) -> Dict[str, tuple]:
+    def decode(self, state: torch.Tensor, opp_ids: List[str]) -> Dict[str, tuple]:
         ...
 
 
 class SyncBoxOM(SyncObserveManager):
-
     def __init__(
-            self,
-            n_common=2,
-            n_per_offer=3,
-            n_opp_agents=10,
+        self,
+        n_common=2,
+        n_per_offer=3,
+        n_opp_agents=10,
     ):
         self.n_common = n_common
         self.n_per_offer = n_per_offer
         self.n_opp_agents = n_opp_agents
 
     def __str__(self):
-        return 'S-B-OM'
+        return "S-B-OM"
 
     @property
     def state_dim(self) -> int:
@@ -65,18 +60,20 @@ class SyncBoxOM(SyncObserveManager):
         return n_state
 
     def encode(
-            self,
-            offers: Dict[str, tuple],
-            states: Dict[str, SAOState],
-            needs: int,
+        self,
+        offers: Dict[str, tuple],
+        states: Dict[str, SAOState],
+        needs: int,
     ) -> torch.Tensor:
         state = torch.zeros(self.state_dim)
 
         # common state
-        for i, s in enumerate([
-            list(states.values())[0].step,
-            needs,
-        ]):
+        for i, s in enumerate(
+            [
+                list(states.values())[0].step,
+                needs,
+            ]
+        ):
             state[i] = s
 
         # offers
@@ -89,22 +86,18 @@ class SyncBoxOM(SyncObserveManager):
 
         return state
 
-    def decode(
-            self,
-            state: torch.Tensor,
-            opp_ids: List[str]
-    ) -> Dict[str, tuple]:
+    def decode(self, state: torch.Tensor, opp_ids: List[str]) -> Dict[str, tuple]:
         pass
 
 
 class SyncMultiDiscreteOM(SyncObserveManager):
     def __init__(
-            self,
-            n_rounds=21,
-            n_needs=11,
-            n_prices=2,
-            n_quantity=11,
-            n_opp_agents=10,
+        self,
+        n_rounds=21,
+        n_needs=11,
+        n_prices=2,
+        n_quantity=11,
+        n_opp_agents=10,
     ):
         self.n_rounds = n_rounds
         self.n_needs = n_needs
@@ -113,27 +106,30 @@ class SyncMultiDiscreteOM(SyncObserveManager):
         self.n_opp_agents = n_opp_agents
 
     def __str__(self):
-        return 'S-MD-OM'
+        return "S-MD-OM"
 
     @property
     def state_dim(self) -> int:
-        n_state = sum([
-                          self.n_rounds,
-                          self.n_needs,
-                      ] + [
-                          self.n_quantity,
-                          self.n_rounds,
-                          self.n_prices,
-                      ] * self.n_opp_agents
-                      )
+        n_state = sum(
+            [
+                self.n_rounds,
+                self.n_needs,
+            ]
+            + [
+                self.n_quantity,
+                self.n_rounds,
+                self.n_prices,
+            ]
+            * self.n_opp_agents
+        )
         return n_state
 
     def encode(
-            self,
-            offers: Dict[str, tuple],
-            states: Dict[str, SAOState],
-            needs: int,
-            nmi: SAONMI,
+        self,
+        offers: Dict[str, tuple],
+        states: Dict[str, SAOState],
+        needs: int,
+        nmi: SAONMI,
     ) -> torch.Tensor:
         state = []
 
@@ -160,21 +156,17 @@ class SyncMultiDiscreteOM(SyncObserveManager):
             ]
         pad = torch.full([self.state_dim - sum([len(_) for _ in state])], 0)
         state += [pad]
-        state = torch.concatenate(state, dim=0)
+        state = torch.cat(state, dim=0)
 
         return state
 
-    def decode(
-            self,
-            state: torch.Tensor,
-            opp_ids: List[str]
-    ) -> Dict[str, tuple]:
+    def decode(self, state: torch.Tensor, opp_ids: List[str]) -> Dict[str, tuple]:
         pass
 
 
 class IndObserveManager:
     def __str__(self):
-        return 'I-OM'
+        return "I-OM"
 
     @property
     def state_dim(self) -> int:
@@ -182,34 +174,33 @@ class IndObserveManager:
 
     @abstractmethod
     def encode(
-            self,
-            offer: tuple,
-            state: MechanismState,
-            needs: int,
-            nmi: SAONMI,
+        self,
+        offer: tuple,
+        state: MechanismState,
+        needs: int,
+        nmi: SAONMI,
     ) -> torch.Tensor:
         ...
 
     @abstractmethod
     def decode(
-            self,
-            state: torch.Tensor,
+        self,
+        state: torch.Tensor,
     ) -> tuple:
         ...
 
 
 class IndBoxOM(IndObserveManager):
-
     def __init__(
-            self,
-            n_common=2,
-            n_per_offer=3,
+        self,
+        n_common=2,
+        n_per_offer=3,
     ):
         self.n_common = n_common
         self.n_per_offer = n_per_offer
 
     def __str__(self):
-        return 'I-B-OM'
+        return "I-B-OM"
 
     @property
     def state_dim(self) -> int:
@@ -217,41 +208,43 @@ class IndBoxOM(IndObserveManager):
         return n_state
 
     def encode(
-            self,
-            offer: tuple,
-            state: MechanismState,
-            needs: int,
-            nmi: SAONMI,
+        self,
+        offer: tuple,
+        state: MechanismState,
+        needs: int,
+        nmi: SAONMI,
     ) -> torch.Tensor:
         obs = torch.zeros(self.state_dim)
 
         # common state
-        for i, s in enumerate([
-            state.step,
-            needs,
-        ]):
+        for i, s in enumerate(
+            [
+                state.step,
+                needs,
+            ]
+        ):
             obs[i] = s
 
         # offers
         idx = self.n_common
-        obs[idx: idx + self.n_per_offer] = torch.tensor(offer)
+        obs[idx : idx + self.n_per_offer] = torch.tensor(offer)
 
         return obs
 
     def decode(
-            self,
-            state: torch.Tensor,
+        self,
+        state: torch.Tensor,
     ) -> tuple:
         pass
 
 
 class IndMultiDiscreteOM(IndObserveManager):
     def __init__(
-            self,
-            n_rounds=21,
-            n_needs=11,
-            n_prices=2,
-            n_quantity=11,
+        self,
+        n_rounds=21,
+        n_needs=11,
+        n_prices=2,
+        n_quantity=11,
     ):
         self.n_rounds = n_rounds
         self.n_needs = n_needs
@@ -259,27 +252,29 @@ class IndMultiDiscreteOM(IndObserveManager):
         self.n_quantity = n_quantity
 
     def __str__(self):
-        return 'I-MD-OM'
+        return "I-MD-OM"
 
     @property
     def state_dim(self) -> int:
-        n_state = sum([
-                          self.n_rounds,
-                          self.n_needs,
-                      ] + [
-                          self.n_quantity,
-                          self.n_rounds,
-                          self.n_prices,
-                      ]
-                      )
+        n_state = sum(
+            [
+                self.n_rounds,
+                self.n_needs,
+            ]
+            + [
+                self.n_quantity,
+                self.n_rounds,
+                self.n_prices,
+            ]
+        )
         return n_state
 
     def encode(
-            self,
-            offer: tuple,
-            state: MechanismState,
-            needs: int,
-            nmi: SAONMI,
+        self,
+        offer: tuple,
+        state: MechanismState,
+        needs: int,
+        nmi: SAONMI,
     ) -> torch.Tensor:
         obs = []
 
@@ -303,12 +298,12 @@ class IndMultiDiscreteOM(IndObserveManager):
             int_to_array(price, self.n_prices),
         ]
 
-        obs = torch.concatenate(obs, dim=0)
+        obs = torch.cat(obs, dim=0)
 
         return obs
 
     def decode(
-            self,
-            state: torch.Tensor,
+        self,
+        state: torch.Tensor,
     ) -> tuple:
         pass
