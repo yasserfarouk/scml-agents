@@ -1,6 +1,6 @@
 import time
 
-from negmas import ResponseType
+from negmas import ResponseType, SAOState
 from negmas.common import AgentMechanismInterface, MechanismState
 from negmas.situated import Contract
 from scml.oneshot import QUANTITY, UNIT_PRICE
@@ -277,8 +277,11 @@ class UcOneshotAgent3_4(OneShotAgent):
                 target_price,
             )
 
-    def respond(self, negotiator_id: str, state: MechanismState, offer) -> ResponseType:
+    def respond(self, negotiator_id: str, state: SAOState) -> ResponseType:
         """Called when the agent is asked to respond to an offer"""
+        offer = state.current_offer
+        if offer is None:
+            return ResponseType.REJECT_OFFER
         # collect info
         nmi = self.get_nmi(negotiator_id)
         partner = (

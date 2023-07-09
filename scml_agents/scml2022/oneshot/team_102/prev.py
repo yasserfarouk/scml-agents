@@ -4,12 +4,12 @@ from copy import deepcopy
 from typing import Iterable, Tuple, Union
 
 import matplotlib.colors
+from Agents.tutorial_agents import *
 from matplotlib import pyplot as plt
-from negmas import ResponseType, SAOResponse, MechanismState
+from negmas import MechanismState, ResponseType, SAOResponse
 from negmas.outcomes import Outcome
 from scml.oneshot import *
 
-from Agents.tutorial_agents import *
 from .nego_utils import *
 
 Buy = 0
@@ -155,7 +155,10 @@ class Gentle(AdaptiveAgent):
 
         return tuple(offer)
 
-    def respond(self, negotiator_id, state, offer):
+    def respond(self, negotiator_id, state):
+        offer = state.current_offer
+        if not offer:
+            return ResponseType.REJECT_OFFER
         # find the quantity I still need and end negotiation if I need nothing more
         self.nego_info["negotiation_step"] = state.step  # 交渉ステップを記録
         self._record_information(
@@ -173,7 +176,7 @@ class Gentle(AdaptiveAgent):
             partner = ami.annotation["seller"]
             self._best_opp_buying[partner] = min(up, self._best_buying)
 
-        response = super().respond(negotiator_id, state, offer)
+        response = super().respond(negotiator_id, state)
 
         # デバッグ用
         # if self.nego_info["negotiation_step"] == 19:

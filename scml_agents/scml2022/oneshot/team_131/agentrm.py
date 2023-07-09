@@ -102,7 +102,10 @@ class AgentRM(OneShotAgent):
 
         return tuple(offer)
 
-    def respond(self, negotiator_id, state, offer):
+    def respond(self, negotiator_id, state):
+        offer = state.current_offer
+        if not offer:
+            return ResponseType.REJECT_OFFER
         if self.first_proposer == None:
             self.first_proposer = False
 

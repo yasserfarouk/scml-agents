@@ -20,7 +20,10 @@ class SimpleAgent(OneShotAgent):
     def propose(self, negotiator_id: str, state) -> Outcome | None:
         return self.best_offer(negotiator_id)
 
-    def respond(self, negotiator_id, state, offer):
+    def respond(self, negotiator_id, state):
+        offer = state.current_offer
+        if not offer:
+            return ResponseType.REJECT_OFFER
         my_needs = self._needed(negotiator_id)
         if my_needs <= 0:
             return ResponseType.END_NEGOTIATION
@@ -90,7 +93,10 @@ class CCAgent(SimpleAgent):
 
         return tuple(offer)
 
-    def respond(self, negotiator_id, state, offer):
+    def respond(self, negotiator_id, state):
+        offer = state.current_offer
+        if not offer:
+            return ResponseType.REJECT_OFFER
         # update q_opp_offer
         ami = self.get_nmi(negotiator_id)
         q = offer[QUANTITY]

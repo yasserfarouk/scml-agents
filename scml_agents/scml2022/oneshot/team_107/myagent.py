@@ -106,7 +106,7 @@ class MyAgent(OneShotAgent):
         pass
 
     def respond(
-        self, negotiator_id: str, state: SAOState, offer: Outcome
+        self, negotiator_id: str, state: SAOState
     ) -> ResponseType:
         """Called when the agent is asked to respond to an offer"""
         return ResponseType.END_NEGOTIATION

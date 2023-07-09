@@ -367,10 +367,8 @@ class PrintingSAOController(SAOController):
     def propose(self, negotiator_id: str, state: MechanismState) -> Optional["Outcome"]:
         return super().propose(negotiator_id=negotiator_id, state=state)
 
-    def respond(
-        self, negotiator_id: str, state: MechanismState, offer: "Outcome"
-    ) -> "ResponseType":
-        return super().respond(negotiator_id=negotiator_id, state=state, offer=offer)
+    def respond(self, negotiator_id: str, state) -> "ResponseType":
+        return super().respond(negotiator_id=negotiator_id, state=state)
 
     def on_negotiation_end(self, negotiator_id: str, state: MechanismState) -> None:
         super().on_negotiation_end(negotiator_id=negotiator_id, state=state)

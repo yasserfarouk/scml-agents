@@ -108,7 +108,10 @@ class MatchingAgent(OneShotAgent):
                 f"{self.patient} patient at {self.awi.level}"
             )
 
-    def respond(self, negotiator_id, state, offer, source=""):
+    def respond(self, negotiator_id, state, source=""):
+        offer = state.current_offer
+        if not offer:
+            return ResponseType.REJECT_OFFER
         step = state.step
         ami = self.get_nmi(negotiator_id)
         try:
@@ -289,6 +292,8 @@ class MatchingAgent(OneShotAgent):
         if self.verbose:
             pass  # print('I am giving the first offer')
         offer = [-1] * 3
+        if self.remaining_partners == 0:
+            return None
         offer[QUANTITY] = floor(self.needed / self.remaining_partners)
         total_q = offer[QUANTITY] * self.remaining_partners
         gap = self.needed - total_q
@@ -361,7 +366,10 @@ class TestAgent(OneShotAgent):
         offer = tuple(offer)
         return offer
 
-    def respond(self, negotiator_id, state, offer):
+    def respond(self, negotiator_id, state):
+        offer = state.current_offer
+        if not offer:
+            return ResponseType.REJECT_OFFER
         if state.step == 5:
             return ResponseType.ACCEPT_OFFER
         return ResponseType.REJECT_OFFER

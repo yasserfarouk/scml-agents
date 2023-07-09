@@ -28,7 +28,10 @@ class Agent125(OneShotAgent):
         price = self.find_good_price(self.get_nmi(negotiator_id), state)
         return (*offer, price)
 
-    def respond(self, negotiator_id, state, offer):
+    def respond(self, negotiator_id, state):
+        offer = state.current_offer
+        if not offer:
+            return ResponseType.REJECT_OFFER
         quantity, time, price = offer
         agent_needs = self.needs()
         if agent_needs <= 0:

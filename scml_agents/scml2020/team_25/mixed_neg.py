@@ -260,7 +260,10 @@ class MyAsp(AspirationNegotiator):
         else:
             return offer[2] <= ok_price
 
-    def respond(self, state, offer):
+    def respond(self, state):
+        offer = state.current_offer
+        if offer is None:
+            return ResponseType.REJECT_OFFER
         if self.ufun_max is None or self.ufun_min is None:
             self.on_preferences_changed(
                 [PreferencesChange(PreferencesChangeType.General)]
@@ -513,7 +516,6 @@ class StepBuyBestSellNegManager(StepNegotiationManager):
         annotation,
         mechanism,
     ):
-
         # find negotiation parameters
         is_seller = annotation["seller"] == self.id
         tmin, tmax = issues[TIME].min_value, issues[TIME].max_value + 1

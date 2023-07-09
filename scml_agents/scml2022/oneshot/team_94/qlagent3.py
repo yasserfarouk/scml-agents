@@ -4,6 +4,7 @@ import ast
 import csv
 import itertools
 import math
+import os
 import pickle
 import random
 
@@ -13,7 +14,6 @@ import sys
 # required for running tournaments and printing
 import time
 from collections import defaultdict
-import os
 
 # required for typing
 from typing import Any, Dict, List, Optional
@@ -62,6 +62,7 @@ if ENABLE_GRAPH:
     matplotlib.use("TkAgg")
     # matplotlib.use('Agg')
     from scipy.signal import butter, filtfilt
+
 
 # Debug print type #1
 def DEBUG_PRINT(msg):
@@ -1228,7 +1229,10 @@ class AdaptiveQlAgent(OneShotAgent):
     :return: the response for the opponent partner (accept/reject(and offer something else in next propose())/end)
     """
 
-    def respond(self, negotiator_id, state, offer):
+    def respond(self, negotiator_id, state):
+        offer = state.current_offer
+        if not offer:
+            return ResponseType.REJECT_OFFER
         # DEBUG_PRINT("respond " + negotiator_id)
         DEBUG_PRINT("^^^^^ start of respond " + negotiator_id + " " + str(id(self)))
         DEBUG_PRINT("started: " + str(self.started) + " " + str(id(self)))
@@ -1696,7 +1700,6 @@ class AdaptiveQlAgent(OneShotAgent):
                         # print(a)
                         return a
             else:
-
                 # map current MDP state to "index space" state
                 state_m = self._state_mapper(state, unit_price_issue, quantity_issue)
                 # print("q")
@@ -2118,7 +2121,6 @@ class AdaptiveQlAgent(OneShotAgent):
                                     for i_q_so, q_so in enumerate(q_range):
                                         for i_p_s, p_s in enumerate(my_p_range):
                                             for i_q_s, q_s in enumerate(my_q_range):
-
                                                 # for needs in range(-1,self.awi.n_lines+1,self.needs_res):
                                                 for i_n, needs in enumerate(
                                                     self.ne_range
@@ -2188,7 +2190,6 @@ class AdaptiveQlAgent(OneShotAgent):
                                     for i_q_so, q_so in enumerate(q_range):
                                         for i_p_s, p_s in enumerate(my_p_range):
                                             for i_q_s, q_s in enumerate(my_q_range):
-
                                                 # for needs in range(-1,self.awi.n_lines+1,self.needs_res):
                                                 for i_n, needs in enumerate(
                                                     self.ne_range
@@ -2496,6 +2497,7 @@ class AdaptiveQlAgent(OneShotAgent):
     :param: ami - the AMI object of the framework
     :return: the penalty per unit
     """
+
     # storage : buying to much == disposal, delivery : selling too much == shortfall
     def _too_much_penalty(self, ami):
         if self._is_selling(ami):

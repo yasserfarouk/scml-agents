@@ -35,7 +35,10 @@ from sklearn.linear_model import LinearRegression
 
 
 class ModifiedAspirationAgent(AspirationNegotiator):
-    def respond(self, state, offer):
+    def respond(self, state):
+        offer = state.current_offer
+        if offer is None:
+            return ResponseType.REJECT_OFFER
         if self.ufun_max is None or self.ufun_min is None:
             self.on_preferences_changed(
                 [PreferencesChange(PreferencesChangeType.General)]
@@ -78,7 +81,6 @@ class MyNegotiationManager(StepNegotiationManager):
         negotiator_params=None,
         **kwargs
     ):
-
         super().__init__(*args, **kwargs)
 
         self.negotiator_type = get_class(negotiator_type)

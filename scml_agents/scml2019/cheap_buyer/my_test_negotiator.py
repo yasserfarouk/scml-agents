@@ -1,7 +1,7 @@
 import random
 from typing import Optional
 
-from negmas import ResponseType
+from negmas import ResponseType, SAOSingleAgreementRandomController, SAOState
 from negmas.common import MechanismState
 from negmas.sao import AspirationNegotiator
 from scml.scml2019.common import INVALID_UTILITY
@@ -11,7 +11,10 @@ class MyTestnegotiator(AspirationNegotiator):
     def __init__(self, name, ufun):
         super().__init__(name=name, ufun=ufun)
 
-    def respond(self, state: MechanismState, offer: "Outcome") -> "ResponseType":
+    def respond(self, state: SAOState) -> "ResponseType":
+        offer = state.current_offer
+        if offer is None:
+            return ResponseType.REJECT_OFFER
         # print("RESPONSE CALLED")
         if self.ufun is None:
             return ResponseType.REJECT_OFFER
@@ -90,7 +93,6 @@ class MyTestnegotiator(AspirationNegotiator):
         a = 0
 
     def on_preferences_changed(self, changes=tuple()):
-
         super().on_preferences_changed(
             [PreferencesChange(PreferencesChangeType.General)]
         )

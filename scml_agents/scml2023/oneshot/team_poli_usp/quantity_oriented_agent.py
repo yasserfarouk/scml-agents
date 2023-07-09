@@ -50,7 +50,10 @@ class QuantityOrientedAgent(OneShotAgent):
         else:  # tries to settle using the best offer for its partners
             return self.quick_offer(negotiator_id, step)
 
-    def respond(self, negotiator_id, state, offer, source=""):
+    def respond(self, negotiator_id, state, source=""):
+        offer = state.current_offer
+        if not offer:
+            return ResponseType.REJECT_OFFER
         ami = self.get_nmi(negotiator_id)
         step = state.step
         my_needs = self._needed(negotiator_id)

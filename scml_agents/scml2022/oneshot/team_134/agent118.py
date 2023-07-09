@@ -78,7 +78,10 @@ class DelayAgent(OneShotAgent):
         self.needed = self.q
         self.first = False
 
-    def respond(self, negotiator_id, state, offer):
+    def respond(self, negotiator_id, state):
+        offer = state.current_offer
+        if not offer:
+            return ResponseType.REJECT_OFFER
         step = state.step
         ami = self.get_nmi(negotiator_id)
         self.cleanup(negotiator_id, offer)

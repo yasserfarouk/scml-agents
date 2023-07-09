@@ -1,14 +1,17 @@
-from scml.oneshot import OneShotAgent, QUANTITY, UNIT_PRICE, TIME
-from typing import Dict, List, Optional
-from negmas import (
-    Outcome,
-    Contract,
-    NegotiatorMechanismInterface,
-    MechanismState,
-    ResponseType,
-)
-from .utils import get_proposal, simple_round, clamp
 from abc import ABC, abstractmethod
+from typing import Dict, List, Optional
+
+from negmas import (
+    Contract,
+    MechanismState,
+    NegotiatorMechanismInterface,
+    Outcome,
+    ResponseType,
+    SAOState,
+)
+from scml.oneshot import QUANTITY, TIME, UNIT_PRICE, OneShotAgent
+
+from .utils import clamp, get_proposal, simple_round
 
 
 class BaseAgent(OneShotAgent, ABC):
@@ -69,9 +72,10 @@ class BaseAgent(OneShotAgent, ABC):
         )
         return verified_proposal
 
-    def respond(
-        self, negotiator_id: str, state: MechanismState, offer: Outcome
-    ) -> ResponseType:
+    def respond(self, negotiator_id: str, state: SAOState) -> ResponseType:
+        offer = state.current_offer
+        if not offer:
+            return ResponseType.REJECT_OFFER
         if not self._initialized_last_proposer:
             self._last_proposer = False
             self._after_know_offering_order()

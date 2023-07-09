@@ -5,9 +5,10 @@ from typing import Optional
 from negmas import (
     MechanismState,
     PreferencesChange,
+    PreferencesChangeType,
     ResponseType,
     SAONegotiator,
-    PreferencesChangeType,
+    SAOState,
 )
 
 
@@ -50,7 +51,10 @@ class MyNegotiator2(SAONegotiator):
         )
         return our_offer
 
-    def respond(self, state: MechanismState, offer: "Outcome") -> "ResponseType":
+    def respond(self, state: SAOState) -> "ResponseType":
+        offer = state.current_offer
+        if offer is None:
+            return ResponseType.REJECT_OFFER
         self.offers_to_us.append("STEP : " + str(state.step) + " OFFER : " + str(offer))
         if self.strategy == self.STRATEGY_ONLY_THE_BEST:
             return self.respond_only_the_best(offer, state)
@@ -90,10 +94,10 @@ class MyNegotiator2(SAONegotiator):
             self.on_preferences_changed(self.ufun.changes)
         return self.propose(state)
 
-    def respond_(self, state: MechanismState, offer: "Outcome") -> "ResponseType":
+    def respond_(self, state: SAOState) -> "ResponseType":
         if self.ufun and self.ufun.changes:
             self.on_preferences_changed(self.ufun.changes)
-        return self.respond(state=state, offer=offer)
+        return self.respond(state=state)
 
     def get_utility_value(self, offer):
         return self.utility_values_of_offers.get(str(offer), 0.0)

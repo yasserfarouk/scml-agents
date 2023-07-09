@@ -128,11 +128,9 @@ class ObedientNegotiator(SAONegotiator):
         """Simply calls the corresponding method on the owner"""
         return self.owner.propose(state, self.nmi, self.is_selling, self.is_requested)
 
-    def respond(self, state: MechanismState, offer: Outcome) -> ResponseType:
+    def respond(self, state: SAOState) -> ResponseType:
         """Simply calls the corresponding method on the owner"""
-        return self.owner.respond(
-            state, self.nmi, offer, self.is_selling, self.is_requested
-        )
+        return self.owner.respond(state, self.nmi, self.is_selling, self.is_requested)
 
 
 class BlueWolf(
@@ -151,7 +149,6 @@ class BlueWolf(
     """
 
     def init(self):
-
         super().init()
 
         self._prev_oppo_agg_prices = defaultdict(lambda: [])
@@ -309,7 +306,10 @@ class BlueWolf(
 
         return tuple(offer)
 
-    def respond(self, state, nmi, offer, is_selling, is_requested):
+    def respond(self, state, nmi, is_selling, is_requested):
+        offer = state.current_offer
+        if offer is None:
+            return ResponseType.REJECT_OFFER
         offer = list(offer)
 
         partner_id = (

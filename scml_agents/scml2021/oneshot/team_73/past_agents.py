@@ -59,7 +59,10 @@ class SimpleAgent(OneShotAgent, ABC):
     def propose(self, negotiator_id: str, state) -> "Outcome":
         return self.best_offer(negotiator_id)
 
-    def respond(self, negotiator_id, state, offer):
+    def respond(self, negotiator_id, state):
+        offer = state.current_offer
+        if offer is None:
+            return ResponseType.REJECT_OFFER
         my_needs = self._needed(negotiator_id)
         if my_needs <= 0:
             return ResponseType.END_NEGOTIATION
@@ -117,8 +120,11 @@ class BetterAgent(SimpleAgent, ABC):
         offer[UNIT_PRICE] = self._find_good_price(self.get_nmi(negotiator_id), state)
         return tuple(offer)
 
-    def respond(self, negotiator_id, state, offer):
-        response = super().respond(negotiator_id, state, offer)
+    def respond(self, negotiator_id, state):
+        offer = state.current_offer
+        if offer is None:
+            return ResponseType.REJECT_OFFER
+        response = super().respond(negotiator_id, state)
         if response != ResponseType.ACCEPT_OFFER:
             return response
         nmi = self.get_nmi(negotiator_id)
@@ -181,9 +187,12 @@ class AdaptiveAgent(BetterAgent, ABC):
         super().step()
         self._best_selling, self._best_buying = 0.0, float("inf")
 
-    def respond(self, negotiator_id, state, offer):
+    def respond(self, negotiator_id, state):
+        offer = state.current_offer
+        if offer is None:
+            return ResponseType.REJECT_OFFER
         """Save the best price received"""
-        response = super().respond(negotiator_id, state, offer)
+        response = super().respond(negotiator_id, state)
         nmi = self.get_nmi(negotiator_id)
         if self._is_selling(nmi):
             self._best_selling = max(offer[UNIT_PRICE], self._best_selling)
@@ -335,7 +344,10 @@ class AgentT064(AdaptiveAgent, ABC):
 
         return tuple(offer)
 
-    def respond(self, negotiator_id, state, offer):
+    def respond(self, negotiator_id, state):
+        offer = state.current_offer
+        if offer is None:
+            return ResponseType.REJECT_OFFER
         # find the quantity I still need and end negotiation if I need nothing more
         self.nego_info["negotiation_step"] = state.step  # 交渉ステップを記録
         self._record_information(
@@ -353,7 +365,7 @@ class AgentT064(AdaptiveAgent, ABC):
             partner = nmi.annotation["seller"]
             self._best_opp_buying[partner] = min(up, self._best_buying)
 
-        response = super().respond(negotiator_id, state, offer)
+        response = super().respond(negotiator_id, state)
 
         # デバッグ用
         # if self.nego_info["negotiation_step"] == 19:
@@ -1005,7 +1017,10 @@ class AgentT063(AdaptiveAgent, ABC):
 
         return tuple(offer)
 
-    def respond(self, negotiator_id, state, offer):
+    def respond(self, negotiator_id, state):
+        offer = state.current_offer
+        if offer is None:
+            return ResponseType.REJECT_OFFER
         # find the quantity I still need and end negotiation if I need nothing more
         self.nego_info["negotiation_step"] = state.step  # 交渉ステップを記録
         self._record_information(
@@ -1023,7 +1038,7 @@ class AgentT063(AdaptiveAgent, ABC):
             partner = nmi.annotation["seller"]
             self._best_opp_buying[partner] = min(up, self._best_buying)
 
-        response = super().respond(negotiator_id, state, offer)
+        response = super().respond(negotiator_id, state)
 
         # # opp_best_offerのリセット
         # if self.nego_info["negotiation_step"] <= nmi.n_steps / 2:
@@ -1694,7 +1709,10 @@ class AgentT062(AdaptiveAgent, ABC):
 
         return tuple(offer)
 
-    def respond(self, negotiator_id, state, offer):
+    def respond(self, negotiator_id, state):
+        offer = state.current_offer
+        if offer is None:
+            return ResponseType.REJECT_OFFER
         # find the quantity I still need and end negotiation if I need nothing more
         self.nego_info["negotiation_step"] = state.step  # 交渉ステップを記録
         self._record_information(
@@ -1712,7 +1730,7 @@ class AgentT062(AdaptiveAgent, ABC):
             partner = nmi.annotation["seller"]
             self._best_opp_buying[partner] = min(up, self._best_buying)
 
-        response = super().respond(negotiator_id, state, offer)
+        response = super().respond(negotiator_id, state)
 
         # # opp_best_offerのリセット
         # if self.nego_info["negotiation_step"] <= nmi.n_steps / 2:
@@ -2382,7 +2400,10 @@ class AgentT061(AdaptiveAgent, ABC):
 
         return tuple(offer)
 
-    def respond(self, negotiator_id, state, offer):
+    def respond(self, negotiator_id, state):
+        offer = state.current_offer
+        if offer is None:
+            return ResponseType.REJECT_OFFER
         # find the quantity I still need and end negotiation if I need nothing more
         self.nego_info["negotiation_step"] = state.step  # 交渉ステップを記録
         self._record_information(
@@ -2400,7 +2421,7 @@ class AgentT061(AdaptiveAgent, ABC):
             partner = nmi.annotation["seller"]
             self._best_opp_buying[partner] = min(up, self._best_buying)
 
-        response = super().respond(negotiator_id, state, offer)
+        response = super().respond(negotiator_id, state)
 
         # # opp_best_offerのリセット
         # if self.nego_info["negotiation_step"] <= nmi.n_steps / 2:
@@ -3070,7 +3091,10 @@ class AgentT060(AdaptiveAgent, ABC):
 
         return tuple(offer)
 
-    def respond(self, negotiator_id, state, offer):
+    def respond(self, negotiator_id, state):
+        offer = state.current_offer
+        if offer is None:
+            return ResponseType.REJECT_OFFER
         # find the quantity I still need and end negotiation if I need nothing more
         self.nego_info["negotiation_step"] = state.step  # 交渉ステップを記録
         self._record_information(
@@ -3088,7 +3112,7 @@ class AgentT060(AdaptiveAgent, ABC):
             partner = nmi.annotation["seller"]
             self._best_opp_buying[partner] = min(up, self._best_buying)
 
-        response = super().respond(negotiator_id, state, offer)
+        response = super().respond(negotiator_id, state)
 
         # # opp_best_offerのリセット
         # if self.nego_info["negotiation_step"] <= nmi.n_steps / 2:
@@ -3758,7 +3782,10 @@ class AgentT056(AdaptiveAgent, ABC):
 
         return tuple(offer)
 
-    def respond(self, negotiator_id, state, offer):
+    def respond(self, negotiator_id, state):
+        offer = state.current_offer
+        if offer is None:
+            return ResponseType.REJECT_OFFER
         # find the quantity I still need and end negotiation if I need nothing more
         self.nego_info["negotiation_step"] = state.step  # 交渉ステップを記録
         self._record_information(
@@ -3776,7 +3803,7 @@ class AgentT056(AdaptiveAgent, ABC):
             partner = nmi.annotation["seller"]
             self._best_opp_buying[partner] = min(up, self._best_buying)
 
-        response = super().respond(negotiator_id, state, offer)
+        response = super().respond(negotiator_id, state)
 
         # # opp_best_offerのリセット
         # if self.nego_info["negotiation_step"] <= nmi.n_steps / 2:
@@ -4441,7 +4468,10 @@ class AgentT055(AdaptiveAgent, ABC):
 
         return tuple(offer)
 
-    def respond(self, negotiator_id, state, offer):
+    def respond(self, negotiator_id, state):
+        offer = state.current_offer
+        if offer is None:
+            return ResponseType.REJECT_OFFER
         # find the quantity I still need and end negotiation if I need nothing more
         self.nego_info["negotiation_step"] = state.step  # 交渉ステップを記録
         self._record_information(
@@ -4459,7 +4489,7 @@ class AgentT055(AdaptiveAgent, ABC):
             partner = nmi.annotation["seller"]
             self._best_opp_buying[partner] = min(up, self._best_buying)
 
-        response = super().respond(negotiator_id, state, offer)
+        response = super().respond(negotiator_id, state)
 
         # # opp_best_offerのリセット
         # if self.nego_info["negotiation_step"] <= nmi.n_steps / 2:
@@ -5124,7 +5154,10 @@ class AgentT054(AdaptiveAgent, ABC):
 
         return tuple(offer)
 
-    def respond(self, negotiator_id, state, offer):
+    def respond(self, negotiator_id, state):
+        offer = state.current_offer
+        if offer is None:
+            return ResponseType.REJECT_OFFER
         # find the quantity I still need and end negotiation if I need nothing more
         self.nego_info["negotiation_step"] = state.step  # 交渉ステップを記録
         self._record_information(
@@ -5142,7 +5175,7 @@ class AgentT054(AdaptiveAgent, ABC):
             partner = nmi.annotation["seller"]
             self._best_opp_buying[partner] = min(up, self._best_buying)
 
-        response = super().respond(negotiator_id, state, offer)
+        response = super().respond(negotiator_id, state)
 
         # # opp_best_offerのリセット
         # if self.nego_info["negotiation_step"] <= nmi.n_steps / 2:
@@ -5807,7 +5840,10 @@ class AgentT053(AdaptiveAgent, ABC):
 
         return tuple(offer)
 
-    def respond(self, negotiator_id, state, offer):
+    def respond(self, negotiator_id, state):
+        offer = state.current_offer
+        if offer is None:
+            return ResponseType.REJECT_OFFER
         # find the quantity I still need and end negotiation if I need nothing more
         self.nego_info["negotiation_step"] = state.step  # 交渉ステップを記録
         self._record_information(
@@ -5825,7 +5861,7 @@ class AgentT053(AdaptiveAgent, ABC):
             partner = nmi.annotation["seller"]
             self._best_opp_buying[partner] = min(up, self._best_buying)
 
-        response = super().respond(negotiator_id, state, offer)
+        response = super().respond(negotiator_id, state)
 
         # # opp_best_offerのリセット
         # if self.nego_info["negotiation_step"] <= nmi.n_steps / 2:
@@ -6490,7 +6526,10 @@ class AgentT052(AdaptiveAgent, ABC):
 
         return tuple(offer)
 
-    def respond(self, negotiator_id, state, offer):
+    def respond(self, negotiator_id, state):
+        offer = state.current_offer
+        if offer is None:
+            return ResponseType.REJECT_OFFER
         # find the quantity I still need and end negotiation if I need nothing more
         self.nego_info["negotiation_step"] = state.step  # 交渉ステップを記録
         self._record_information(
@@ -6508,7 +6547,7 @@ class AgentT052(AdaptiveAgent, ABC):
             partner = nmi.annotation["seller"]
             self._best_opp_buying[partner] = min(up, self._best_buying)
 
-        response = super().respond(negotiator_id, state, offer)
+        response = super().respond(negotiator_id, state)
 
         # # opp_best_offerのリセット
         # if self.nego_info["negotiation_step"] <= nmi.n_steps / 2:
@@ -7173,7 +7212,10 @@ class AgentT051(AdaptiveAgent, ABC):
 
         return tuple(offer)
 
-    def respond(self, negotiator_id, state, offer):
+    def respond(self, negotiator_id, state):
+        offer = state.current_offer
+        if offer is None:
+            return ResponseType.REJECT_OFFER
         # find the quantity I still need and end negotiation if I need nothing more
         self.nego_info["negotiation_step"] = state.step  # 交渉ステップを記録
         self._record_information(
@@ -7191,7 +7233,7 @@ class AgentT051(AdaptiveAgent, ABC):
             partner = nmi.annotation["seller"]
             self._best_opp_buying[partner] = min(up, self._best_buying)
 
-        response = super().respond(negotiator_id, state, offer)
+        response = super().respond(negotiator_id, state)
 
         # # opp_best_offerのリセット
         # if self.nego_info["negotiation_step"] <= nmi.n_steps / 2:
@@ -7856,7 +7898,10 @@ class AgentT050(AdaptiveAgent, ABC):
 
         return tuple(offer)
 
-    def respond(self, negotiator_id, state, offer):
+    def respond(self, negotiator_id, state):
+        offer = state.current_offer
+        if offer is None:
+            return ResponseType.REJECT_OFFER
         # find the quantity I still need and end negotiation if I need nothing more
         self.nego_info["negotiation_step"] = state.step  # 交渉ステップを記録
         self._record_information(
@@ -7874,7 +7919,7 @@ class AgentT050(AdaptiveAgent, ABC):
             partner = nmi.annotation["seller"]
             self._best_opp_buying[partner] = min(up, self._best_buying)
 
-        response = super().respond(negotiator_id, state, offer)
+        response = super().respond(negotiator_id, state)
 
         # # opp_best_offerのリセット
         # if self.nego_info["negotiation_step"] <= nmi.n_steps / 2:
@@ -8533,7 +8578,10 @@ class AgentT049(AdaptiveAgent, ABC):
         #         break
         return tuple(offer)
 
-    def respond(self, negotiator_id, state, offer):
+    def respond(self, negotiator_id, state):
+        offer = state.current_offer
+        if offer is None:
+            return ResponseType.REJECT_OFFER
         # find the quantity I still need and end negotiation if I need nothing more
         self.nego_info["negotiation_step"] = state.step  # 交渉ステップを記録
         self.record_information({shorten_name(negotiator_id): offer}, False)  # offerの保存
@@ -8549,7 +8597,7 @@ class AgentT049(AdaptiveAgent, ABC):
             partner = nmi.annotation["seller"]
             self._best_opp_buying[partner] = min(up, self._best_buying)
 
-        response = super().respond(negotiator_id, state, offer)
+        response = super().respond(negotiator_id, state)
 
         # opp_best_offerのリセット
         if self.nego_info["negotiation_step"] <= nmi.n_steps / 2:
@@ -9152,7 +9200,10 @@ class AgentT048(AdaptiveAgent, ABC):
         #         break
         return tuple(offer)
 
-    def respond(self, negotiator_id, state, offer):
+    def respond(self, negotiator_id, state):
+        offer = state.current_offer
+        if offer is None:
+            return ResponseType.REJECT_OFFER
         # find the quantity I still need and end negotiation if I need nothing more
         self.nego_info["negotiation_step"] = state.step  # 交渉ステップを記録
         self.record_information({shorten_name(negotiator_id): offer}, False)  # offerの保存
@@ -9168,7 +9219,7 @@ class AgentT048(AdaptiveAgent, ABC):
             partner = nmi.annotation["seller"]
             self._best_opp_buying[partner] = min(up, self._best_buying)
 
-        response = super().respond(negotiator_id, state, offer)
+        response = super().respond(negotiator_id, state)
 
         # opp_best_offerのリセット
         if self.nego_info["negotiation_step"] <= nmi.n_steps / 2:

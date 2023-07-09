@@ -88,7 +88,10 @@ class ToughAspirationNegotiator(AspirationNegotiator):
         self.all_money = all_money
         self.exec_time = exec_time
 
-    def respond(self, state, offer):
+    def respond(self, state):
+        offer = state.current_offer
+        if offer is None:
+            return ResponseType.REJECT_OFFER
 
         if self.brother == True and offer[0] == 1 and offer[2] > 1000:
             return ResponseType.ACCEPT_OFFER
@@ -157,13 +160,11 @@ class GryffindorIndependentNegotiationsManager(IndependentNegotiationsManager):
         )
 
     def step(self):
-
         my_brother_consumers = []
         my_brother_suppliers = []
         price_max = []
 
         def exploit_condition():
-
             for agent in self.awi.my_consumers:
                 if agent in self.brothers and agent not in my_brother_consumers:
                     for item in self.brothers_nt:
@@ -259,7 +260,6 @@ class GryffindorIndependentNegotiationsManager(IndependentNegotiationsManager):
 
         # standard
         if len(self.brothers) < 2 or test_proximity():
-
             self._start_negotiations(
                 self.awi.my_input_product,
                 False,
@@ -364,7 +364,6 @@ class GryffindorIndependentNegotiationsManager(IndependentNegotiationsManager):
         # collusion
         else:
             if self.awi.state.balance > 100 and len(my_brother_suppliers) > 0:
-
                 self.neg_extras = {
                     "threshold": 0.8,
                     "behave": "suicidal",
@@ -404,9 +403,7 @@ class GryffindorIndependentNegotiationsManager(IndependentNegotiationsManager):
         cancelled: List[Contract],
         rejectors: List[List[str]],
     ) -> None:
-
         for contract in signed:
-
             if contract.agreement["time"] >= self.awi.current_step:
                 if contract.annotation["buyer"] == self.id:
                     self.step_wise_inventory[
@@ -441,7 +438,6 @@ class GryffindorIndependentNegotiationsManager(IndependentNegotiationsManager):
     def _start_negotiations(
         self, product, sell, step, qvalues, uvalues, tvalues, partners
     ):
-
         issues = [
             make_issue((int(qvalues[0]), int(max(qvalues))), name="quantity"),
             make_issue((int(tvalues[0]), int(max(tvalues))), name="time"),
@@ -610,7 +606,6 @@ class GryffindorTradingStrategy(TradingStrategy, SignAll):
             return True
 
         if len(self.brothers) < 2 or test_proximity() and profit_estimate() < 1:
-
             # greedy signing policy
             for b in buy:
                 for s in sell:
@@ -659,7 +654,6 @@ class GryffindorTradingStrategy(TradingStrategy, SignAll):
                 sum(self.step_wise_sell_inventory[self.awi.current_step :]) == 0
                 and sum(self.step_wise_buy_inventory[self.awi.current_step :]) == 0
             ):
-
                 for i, b in enumerate(buy):
                     sign[contracts.index(b)] = self.id
                     if i == 2:

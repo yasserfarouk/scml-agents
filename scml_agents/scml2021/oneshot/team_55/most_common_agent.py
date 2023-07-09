@@ -188,10 +188,11 @@ class ZilberanBackup(OneShotAgent):
         )
         return propose
 
-    def respond(
-        self, negotiator_id: str, state: SAOState, offer: Outcome
-    ) -> ResponseType:
+    def respond(self, negotiator_id: str, state: SAOState) -> ResponseType:
         """Called when the agent is asked to respond to an offer"""
+        offer = state.current_offer
+        if offer is None:
+            return ResponseType.REJECT_OFFER
         responds = [
             agent.respond(negotiator_id, state, offer) for agent in self.base_agents
         ]

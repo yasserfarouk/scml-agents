@@ -123,8 +123,11 @@ class TheSopranos78(OneShotAgent):
 
         return tuple(offers)
 
-    def respond(self, negotiator_id, state, offers):
-        response = self._get_negotiation_status(negotiator_id, state, offers)
+    def respond(self, negotiator_id, state):
+        offer = state.current_offer
+        if offer is None:
+            return ResponseType.REJECT_OFFER
+        response = self._get_negotiation_status(negotiator_id, state, offer)
 
         if response != ResponseType.ACCEPT_OFFER:
             return response
@@ -133,7 +136,7 @@ class TheSopranos78(OneShotAgent):
 
         return (
             response
-            if self._is_good_price(agent_machine_interface, state, offers[UNIT_PRICE])
+            if self._is_good_price(agent_machine_interface, state, offer[UNIT_PRICE])
             else ResponseType.REJECT_OFFER
         )
 

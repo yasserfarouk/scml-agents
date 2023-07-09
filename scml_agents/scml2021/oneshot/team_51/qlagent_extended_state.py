@@ -1277,7 +1277,10 @@ class QlAgent(OneShotAgent):
     :return: the response for the opponent partner (accept/reject(and offer something else in next propose())/end)
     """
 
-    def respond(self, negotiator_id, state, offer):
+    def respond(self, negotiator_id, state):
+        offer = state.current_offer
+        if offer is None:
+            return ResponseType.REJECT_OFFER
         # DEBUG_PRINT("respond " + negotiator_id)
         DEBUG_PRINT("^^^^^ start of respond " + negotiator_id + " " + str(id(self)))
         DEBUG_PRINT("started: " + str(self.started) + " " + str(id(self)))
@@ -3006,7 +3009,10 @@ class QlAgent(OneShotAgent):
         )
         return (offer[OFFER_FIELD_IDX.UNIT_PRICE], offer[OFFER_FIELD_IDX.QUANTITY])
 
-    def respond_greedy(self, negotiator_id, state, offer):
+    def respond_greedy(self, negotiator_id, state):
+        offer = state.current_offer
+        if offer is None:
+            return ResponseType.REJECT_OFFER
         # find the quantity I still need and end negotiation if I need nothing more
         my_needs = self._needed(negotiator_id)
         if my_needs <= 0:

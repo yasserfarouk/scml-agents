@@ -229,7 +229,10 @@ class Zilberan(OneShotAgent):
                 up, self._best_opp_acc_buying[partner]
             )
 
-    def respond(self, negotiator_id, state, offer):
+    def respond(self, negotiator_id, state):
+        offer = state.current_offer
+        if offer is None:
+            return ResponseType.REJECT_OFFER
         # find the quantity I still need and end negotiation if I need nothing more
         nmi = self.get_nmi(negotiator_id)
         my_needs = self._needed(negotiator_id)

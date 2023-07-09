@@ -19,6 +19,7 @@ from negmas import (
     Outcome,
     ResponseType,
     SAONegotiator,
+    SAOState,
     Value,
 )
 from scml.scml2020 import SCML2020Agent
@@ -1277,7 +1278,10 @@ class MediocreNegotiator(SAONegotiator):
         self.negotiator_id = self.agent_id + "@" + "step=" + str(self.current_step)
         self.nego_no += 1  # there can be multiple negotiations with the same partner in the same step
 
-    def respond(self, state: MechanismState, offer):
+    def respond(self, state: SAOState):
+        offer = state.current_offer
+        if offer is None:
+            return ResponseType.REJECT_OFFER
 
         offer_utility = self.utility_func(offer)
         norm_offer_utility = round(offer_utility / self.max_utility, 3)

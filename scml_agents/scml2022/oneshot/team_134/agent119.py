@@ -1,10 +1,12 @@
+import itertools
+from math import ceil, floor
+
+import numpy as np
 from negmas import ResponseType
 from scml.oneshot import *
 from scml.scml2020.common import QUANTITY, TIME, UNIT_PRICE
-import numpy as np
+
 from .tier1_agent import AdaptiveAgent
-import itertools
-from math import ceil, floor
 
 __all__ = ["PatientAgent"]
 
@@ -99,7 +101,10 @@ class PatientAgent(AdaptiveAgent):
                 f"{self.patient} patient"
             )
 
-    def respond(self, negotiator_id, state, offer):
+    def respond(self, negotiator_id, state):
+        offer = state.current_offer
+        if not offer:
+            return ResponseType.REJECT_OFFER
         if self._donothing:
             return None
         step = state.step
@@ -109,7 +114,7 @@ class PatientAgent(AdaptiveAgent):
         if self.needed <= 0:
             response = ResponseType.END_NEGOTIATION
         if self.first:
-            response = super().respond(negotiator_id, state, offer)
+            response = super().respond(negotiator_id, state)
         elif self.is_saa[negotiator_id]:
             response = self.saa_response(negotiator_id, state, offer)
         elif self.patient:

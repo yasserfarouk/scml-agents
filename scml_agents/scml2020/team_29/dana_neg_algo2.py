@@ -297,14 +297,15 @@ class DanasController(MaintainFairPrice, UpdateUfunc, SAOController, Notifier):
         outcome = self.__negotiator.propose(state)
         return self.propose_based_on_all_neg(outcome)
 
-    def respond(
-        self, negotiator_id: str, state: MechanismState, offer: "Outcome"
-    ) -> ResponseType:
+    def respond(self, negotiator_id: str, state: SAOState) -> ResponseType:
+        offer = state.current_offer
+        if not offer:
+            return ResponseType.REJECT_OFFER
         if self.secured >= self.target:
             return ResponseType.END_NEGOTIATION
         self.set_ufun_members(negotiator_id)
         self.__negotiator._nmi = self.negotiators[negotiator_id][0]._nmi
-        resp = self.__negotiator.respond(offer=offer, state=state)
+        resp = self.__negotiator.respond(state=state)
         return self.respond_based_on_all_neg(resp, offer)
 
     def __str__(self):

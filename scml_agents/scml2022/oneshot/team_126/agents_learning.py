@@ -1,47 +1,41 @@
 #!/usr/bin/env python
 from __future__ import annotations
 
+import statistics
+
 # required for running tournaments and printing
 import time
+from collections import defaultdict
 
 # required for typing
 from typing import Any, Dict, List
 
-
+import numpy as np
+from negmas import (
+    AgentMechanismInterface,
+    Contract,
+    MechanismState,
+    Outcome,
+    ResponseType,
+    SAOResponse,
+    SAOState,
+)
 from negmas.helpers import humanize_time
-from negmas.sao import SAOState
 from negmas.preferences import LinearAdditiveUtilityFunction, LinearUtilityFunction
 from negmas.preferences.value_fun import AffineFun, IdentityFun
-
+from negmas.sao import SAOState
 
 # required for development
 from scml.oneshot import (
     OneShotAgent,
+    OneShotIndNegotiatorsAgent,
     OneShotSingleAgreementAgent,
     OneShotSyncAgent,
-    OneShotIndNegotiatorsAgent,
 )
 from scml.oneshot.agents import RandomOneShotAgent, SyncRandomOneShotAgent
-from scml.scml2020.utils import anac2022_collusion, anac2022_oneshot, anac2022_std
 from scml.scml2020.common import QUANTITY, TIME, UNIT_PRICE
-
-
+from scml.scml2020.utils import anac2022_collusion, anac2022_oneshot, anac2022_std
 from tabulate import tabulate
-
-from negmas import (
-    Contract,
-    SAOState,
-    SAOResponse,
-    Outcome,
-    ResponseType,
-    AgentMechanismInterface,
-    MechanismState,
-)
-
-from collections import defaultdict
-
-import statistics
-import numpy as np
 
 __all__ = ["AgentSAS"]
 
@@ -58,7 +52,10 @@ class SimpleAgent(OneShotAgent):
     def propose(self, negotiator_id: str, state) -> "Outcome":
         return self.best_offer(negotiator_id)
 
-    def respond(self, negotiator_id, state, offer):
+    def respond(self, negotiator_id, state):
+        offer = state.current_offer
+        if not offer:
+            return ResponseType.REJECT_OFFER
         my_needs = self._needed(negotiator_id)
         if my_needs <= 0:
             return ResponseType.END_NEGOTIATION
@@ -115,8 +112,11 @@ class BetterAgent(SimpleAgent):
         offer[UNIT_PRICE] = self._find_good_price(self.get_nmi(negotiator_id), state)
         return tuple(offer)
 
-    def respond(self, negotiator_id, state, offer):
-        response = super().respond(negotiator_id, state, offer)
+    def respond(self, negotiator_id, state):
+        offer = state.current_offer
+        if not offer:
+            return ResponseType.REJECT_OFFER
+        response = super().respond(negotiator_id, state)
         if (
             response != ResponseType.ACCEPT_OFFER
         ):  ## The change is that I may reject offers that my father would accept
@@ -166,9 +166,12 @@ class AdaptiveAgent(BetterAgent):
         super().before_step()
         self._best_selling, self._best_buying = 0.0, float("inf")
 
-    def respond(self, negotiator_id, state, offer):
+    def respond(self, negotiator_id, state):
         """Save the best price received"""
-        response = super().respond(negotiator_id, state, offer)
+        offer = state.current_offer
+        if not offer:
+            return ResponseType.REJECT_OFFER
+        response = super().respond(negotiator_id, state)
         ami = self.get_nmi(negotiator_id)
         if self._is_selling(ami):
             self._best_selling = max(offer[UNIT_PRICE], self._best_selling)
@@ -255,9 +258,12 @@ class LearningAgent(AdaptiveAgent):
                 up, self._best_opp_acc_buying[partner]
             )
 
-    def respond(self, negotiator_id, state, offer):
+    def respond(self, negotiator_id, state):
+        offer = state.current_offer
+        if not offer:
+            return ResponseType.REJECT_OFFER
         # find the quantity I still need and end negotiation if I need nothing more
-        response = super().respond(negotiator_id, state, offer)
+        response = super().respond(negotiator_id, state)
         # update my current best price to use for limiting concession in other
         # negotiations
         ami = self.get_nmi(negotiator_id)
@@ -348,8 +354,11 @@ class AgentSAS(LearningAgent):
             self.History
         ), defaultdict(self.History)
 
-    def respond(self, negotiator_id, state, offer):
-        response = super().respond(negotiator_id, state, offer)
+    def respond(self, negotiator_id, state):
+        offer = state.current_offer
+        if not offer:
+            return ResponseType.REJECT_OFFER
+        response = super().respond(negotiator_id, state)
         """Save the best price received"""
         ami = self.get_nmi(negotiator_id)
         if self._is_selling(ami):

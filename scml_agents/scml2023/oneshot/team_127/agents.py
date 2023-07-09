@@ -53,7 +53,10 @@ class SimpleAgent(OneShotAgent):
     def propose(self, negotiator_id: str, state) -> "Outcome":
         return self.best_offer(negotiator_id)
 
-    def respond(self, negotiator_id, state, offer):
+    def respond(self, negotiator_id, state):
+        offer = state.current_offer
+        if not offer:
+            return ResponseType.REJECT_OFFER
         my_needs = self._needed(negotiator_id)
         if my_needs <= 0:
             return ResponseType.END_NEGOTIATION
@@ -110,8 +113,11 @@ class BetterAgent(SimpleAgent):
         offer[UNIT_PRICE] = self._find_good_price(self.get_nmi(negotiator_id), state)
         return tuple(offer)
 
-    def respond(self, negotiator_id, state, offer):
-        response = super().respond(negotiator_id, state, offer)
+    def respond(self, negotiator_id, state):
+        offer = state.current_offer
+        if not offer:
+            return ResponseType.REJECT_OFFER
+        response = super().respond(negotiator_id, state)
         if response != ResponseType.ACCEPT_OFFER:
             return response
         ami = self.get_nmi(negotiator_id)
@@ -159,9 +165,12 @@ class AdaptiveAgent(BetterAgent):
         super().before_step()
         self._best_selling, self._best_buying = 0.0, float("inf")
 
-    def respond(self, negotiator_id, state, offer):
+    def respond(self, negotiator_id, state):
         """Save the best price received"""
-        response = super().respond(negotiator_id, state, offer)
+        offer = state.current_offer
+        if not offer:
+            return ResponseType.REJECT_OFFER
+        response = super().respond(negotiator_id, state)
         ami = self.get_nmi(negotiator_id)
         if self._is_selling(ami):
             self._best_selling = max(offer[UNIT_PRICE], self._best_selling)
@@ -232,9 +241,12 @@ class LearningAgent(AdaptiveAgent):
                 up, self._best_opp_acc_buying[partner]
             )
 
-    def respond(self, negotiator_id, state, offer):
+    def respond(self, negotiator_id, state):
+        offer = state.current_offer
+        if not offer:
+            return ResponseType.REJECT_OFFER
         # find the quantity I still need and end negotiation if I need nothing more
-        response = super().respond(negotiator_id, state, offer)
+        response = super().respond(negotiator_id, state)
         # update my current best price to use for limiting concession in other
         # negotiations
         ami = self.get_nmi(negotiator_id)
@@ -332,9 +344,12 @@ class PHLA(LearningAgent):
         self.selling_history.clear()
         self.buying_history.clear()
 
-    def respond(self, negotiator_id, state, offer):
+    def respond(self, negotiator_id, state):
         """Save the best price received"""
-        response = super().respond(negotiator_id, state, offer)
+        offer = state.current_offer
+        if not offer:
+            return ResponseType.REJECT_OFFER
+        response = super().respond(negotiator_id, state)
         nmi = self.get_nmi(negotiator_id)
         if self._is_selling(nmi):
             partner = nmi.annotation["buyer"]

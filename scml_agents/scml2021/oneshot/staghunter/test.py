@@ -63,7 +63,7 @@ class GreedyTestAgent(GreedyOneShotAgent):
 
             marginal_utilities = []
 
-            for (step, offer, _) in self._oppo_neg_history[oppo_id]:
+            for step, offer, _ in self._oppo_neg_history[oppo_id]:
                 u_p = self.ufun.from_offers(
                     tuple(other_offers + [offer]),
                     tuple([self.awi.is_first_level] * (len(other_offers) + 1)),
@@ -106,7 +106,10 @@ class GreedyTestAgent(GreedyOneShotAgent):
 
         self.cur_offer_list[partner] = offer
 
-    def respond(self, negotiator_id, state, offer):
+    def respond(self, negotiator_id, state):
+        offer = state.current_offer
+        if offer is None:
+            return ResponseType.REJECT_OFFER
         is_selling = self.awi.is_first_level
         u1 = self.ufun.from_offers(
             tuple(self.cur_offer_list.values()),
@@ -125,7 +128,7 @@ class GreedyTestAgent(GreedyOneShotAgent):
                 u2 - u1,
             )
         )
-        return super().respond(negotiator_id, state, offer)
+        return super().respond(negotiator_id, state)
 
 
 def run(
@@ -134,7 +137,6 @@ def run(
     n_steps=50,
     n_configs=5,
 ):
-
     competitors = [
         GreedyTestAgent,
         GreedyOneShotAgent,

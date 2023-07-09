@@ -286,7 +286,6 @@ class Agent97(OneShotAgent):
                 return nmi.issues[UNIT_PRICE].min_value
 
     def get_image(self, negotiator_id, state, offer, nmi):
-
         maxx, minn = self._find_good_price(nmi, state)
         expected_quantity = self._needed()
         if self._is_selling(nmi):
@@ -375,10 +374,13 @@ class Agent97(OneShotAgent):
         # print(self.failure_list)
         return self.reputation[image[0]]
 
-    def respond(self, negotiator_id, state, offer):
+    def respond(self, negotiator_id, state):
         """Called when the agent is asked to respond to an offer
         relate time with the prices
         """
+        offer = state.current_offer
+        if offer is None:
+            return ResponseType.REJECT_OFFER
         nmi = self.get_nmi(negotiator_id)
         image = self.get_image(negotiator_id, state, offer, nmi)
         reputation = self.get_reputation(image, state, nmi)
@@ -402,7 +404,6 @@ class Agent97(OneShotAgent):
                     return ResponseType.REJECT_OFFER
 
         if self._is_selling(nmi):
-
             self.best_offered_sell = max(self.best_offered_sell, offer[UNIT_PRICE])
 
             # if self._selling_log[nmi.annotation["buyer"]]:
@@ -460,7 +461,6 @@ class Agent97(OneShotAgent):
             if maxx - offer[UNIT_PRICE] <= th:
                 return ResponseType.ACCEPT_OFFER
             else:
-
                 # print("I reject")
                 return ResponseType.REJECT_OFFER
         else:
@@ -619,7 +619,6 @@ def run(
     n_configs=2,
     n_runs_per_world=1,
 ):
-
     if competition == "oneshot":
         competitors = [
             MyAgent,

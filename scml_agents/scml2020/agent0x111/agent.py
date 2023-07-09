@@ -22,6 +22,7 @@ from negmas import (
     Outcome,
     PolyAspiration,
     ResponseType,
+    SAOState,
     UtilityFunction,
     make_issue,
 )
@@ -140,13 +141,14 @@ class StepController(SAOController, Notifier):
         self.__negotiator._nmi = self.negotiators[negotiator_id][0]._nmi
         return self.__negotiator.propose(state)
 
-    def respond(
-        self, negotiator_id: str, state: MechanismState, offer: "Outcome"
-    ) -> ResponseType:
+    def respond(self, negotiator_id: str, state: SAOState) -> ResponseType:
+        offer = state.current_offer
+        if offer is None:
+            return ResponseType.REJECT_OFFER
         if self.secured >= self.target:
             return ResponseType.END_NEGOTIATION
         self.__negotiator._nmi = self.negotiators[negotiator_id][0]._nmi
-        return self.__negotiator.respond(offer=offer, state=state)
+        return self.__negotiator.respond(state=state)
 
     def __str__(self):
         return (
@@ -662,7 +664,7 @@ class ElaboratedStepNegotiationManager(ElaboratedMeanERPStrategy, NegotiationMan
 
     def del_no_relevant_suspects(self):
         tmp = list()
-        for (x, y) in self.steps_of_suspicious.items():
+        for x, y in self.steps_of_suspicious.items():
             if y - self.awi.current_step > 5:
                 tmp.append(x)
         for x in tmp:
@@ -1061,7 +1063,7 @@ class ASMASH(
         self.suspects_to_bankrupt.clear()
         self.steps_of_suspicious.clear()
 
-        for (k, value) in dic_counter.items():
+        for k, value in dic_counter.items():
             # Check if key is even then add pair to new dictionary
             if value >= 3:
                 self.suspects_to_bankrupt[k] = value

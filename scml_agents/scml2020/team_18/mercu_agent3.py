@@ -63,6 +63,7 @@ from negmas import (
     PolyAspiration,
     ResponseType,
     SAONegotiator,
+    SAOState,
     UtilityFunction,
     num_outcomes,
 )
@@ -108,10 +109,10 @@ class MyNegotiator(SAONegotiator):
         if self._Negotiator__parent:
             return self._Negotiator__parent.propose(self.id, state)
 
-    def respond(self, state: MechanismState, offer: "Outcome") -> "ResponseType":
+    def respond(self, state: MechanismState) -> "ResponseType":
         """Calls parent controller"""
         if self._Negotiator__parent:
-            return self._Negotiator__parent.respond(self.id, state, offer)
+            return self._Negotiator__parent.respond(self.id, state)
         return ResponseType.REJECT_OFFER
 
     def on_negotiation_start(self, state: MechanismState) -> None:
@@ -226,14 +227,12 @@ class MyController(SAOController, Notifier):
         self.__negotiator._nmi = self.negotiators[negotiator_id][0]._nmi
         return self.__negotiator.propose(state)
 
-    def respond(
-        self, negotiator_id: str, state: MechanismState, offer: "Outcome"
-    ) -> ResponseType:
+    def respond(self, negotiator_id: str, state: SAOState) -> ResponseType:
         # 必要数量達成済み
         if self.secured >= self.target:
             return ResponseType.END_NEGOTIATION
         self.__negotiator._nmi = self.negotiators[negotiator_id][0]._nmi
-        return self.__negotiator.respond(offer=offer, state=state)
+        return self.__negotiator.respond(state=state)
 
     def __str__(self):
         return (
@@ -437,7 +436,6 @@ class MyNegotiationManager(NegotiationManager):
         annotation: Dict[str, Any],
         mechanism: AgentMechanismInterface,
     ) -> Optional[Negotiator]:
-
         # find negotiation parameters
         is_seller = annotation["seller"] == self.id
         tmin, tmax = issues[TIME].min_value, issues[TIME].max_value + 1

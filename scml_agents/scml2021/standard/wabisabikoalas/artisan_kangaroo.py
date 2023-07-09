@@ -55,7 +55,7 @@ You should see a short tournament running and results reported.
 # required for development
 from typing import Any, Dict, List, Optional
 
-from negmas import ResponseType
+from negmas import ResponseType, SAOState
 from negmas.common import AgentMechanismInterface, MechanismState
 from negmas.negotiators import Controller
 from negmas.sao.negotiators import SAONegotiator
@@ -291,18 +291,19 @@ class MyNegotiator(SAONegotiator):
 
         self.add_capabilities({"respond": True, "propose": True, "max-proposals": 1})
 
-    def propose_(self, state: MechanismState) -> Optional["Outcome"]:
+    def propose_(self, state: SAOState) -> Optional["Outcome"]:
         if not self._capabilities["propose"] or self.__end_negotiation:
             return None
         proposal = self.propose(state=state)
         return proposal
 
-    def respond_(self, state: MechanismState, offer: "Outcome") -> "ResponseType":
+    def respond_(self, state: SAOState, source="") -> "ResponseType":
         if self.__end_negotiation:
             return ResponseType.END_NEGOTIATION
-        return self.respond(state=state, offer=offer)
+        return self.respond(state=state)
 
-    def respond(self, state: MechanismState, offer: "Outcome") -> "ResponseType":
+    def respond(self, state: SAOState, source="") -> "ResponseType":
+        offer = state.current_offer
         if offer is None:
             return ResponseType.REJECT_OFFER
         else:
@@ -833,7 +834,7 @@ class ArtisanKangaroo(
             for c in name.split("@")[0]:
                 try:
                     n = int(c)
-                except (Exception):
+                except Exception:
                     agent_name += c
 
             return agent_name

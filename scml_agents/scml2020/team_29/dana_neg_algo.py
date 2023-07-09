@@ -247,14 +247,12 @@ class DanasController(UpdateUfunc, SAOController, Notifier):
         a = self.__negotiator.propose(state)
         return a
 
-    def respond(
-        self, negotiator_id: str, state: MechanismState, offer: "Outcome"
-    ) -> ResponseType:
+    def respond(self, negotiator_id: str, state: SAOState) -> ResponseType:
         if self.secured >= self.target:
             return ResponseType.END_NEGOTIATION
         self.set_ufun_members(negotiator_id)
         self.__negotiator._nmi = self.negotiators[negotiator_id][0]._nmi
-        a = self.__negotiator.respond(offer=offer, state=state)
+        a = self.__negotiator.respond(state=state)
         return a
 
     def __str__(self):

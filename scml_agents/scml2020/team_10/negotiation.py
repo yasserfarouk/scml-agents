@@ -1,6 +1,8 @@
 import os
 import sys
 
+from negmas.preferences.value_fun import asdict
+
 sys.path.append(os.path.dirname(__file__))
 
 from math import ceil, floor
@@ -15,6 +17,7 @@ from negmas import (
     Issue,
     Negotiator,
     ResponseType,
+    SAOState,
     SAOSyncController,
     outcome_is_valid,
 )
@@ -113,7 +116,10 @@ class MyFixedUtilityNegotiator(SAONegotiator):
             RESPONSE_RELATIVE_TIME:
         ] = data[OFFER_RELATIVE_TIME : OFFER_UTILITY + 1]
 
-    def respond(self, state: MechanismState, offer: "Outcome") -> "ResponseType":
+    def respond(self, state: SAOState) -> "ResponseType":
+        offer = state.current_offer
+        if offer is None:
+            return ResponseType.REJECT_OFFER
         assert len(offer) == 3
 
         my_offer = self.propose(state)
@@ -121,7 +127,7 @@ class MyFixedUtilityNegotiator(SAONegotiator):
         self.manager.neg_history[self._is_seller][self.id].append(data)
         self.fill_response_data(state, offer)
 
-        return super().respond(state, offer)
+        return super().respond(state)
 
     def predict_outcome(self, history, prediction_model):
         to_features = np.array(
@@ -372,15 +378,20 @@ class MyUtilityNegotiator(SAONegotiator):
             RESPONSE_RELATIVE_TIME:
         ] = data[OFFER_RELATIVE_TIME : OFFER_UTILITY + 1]
 
-    def respond(self, state: MechanismState, offer: "Outcome") -> "ResponseType":
+    def respond(self, state: SAOState) -> "ResponseType":
+        offer = state.current_offer
+        if offer is None:
+            return ResponseType.REJECT_OFFER
         my_offer = self.propose(state)
         data = self.build_data(state, my_offer)
         self.manager.neg_history[self._is_seller][self.id].append(data)
         self.fill_response_data(state, offer)
 
         expanded_offer = self.build_data(state, offer)[:OFFER_UTILITY]
-
-        return super().respond(state, expanded_offer)
+        d = asdict(state, recurse=False)
+        d["current_offer"] = expanded_offer
+        state = SAOState(**d)
+        return super().respond(state)
 
     def predict_outcome(self, history, prediction_model):
         to_features = np.array(

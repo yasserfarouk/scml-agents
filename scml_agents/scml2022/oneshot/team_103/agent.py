@@ -46,7 +46,10 @@ class SimpleAgent(OneShotAgent):
     def propose(self, negotiator_id: str, state) -> "Outcome":
         return self.best_offer(negotiator_id)
 
-    def respond(self, negotiator_id, state, offer):
+    def respond(self, negotiator_id, state):
+        offer = state.current_offer
+        if not offer:
+            return ResponseType.REJECT_OFFER
         my_needs = self._needed(negotiator_id)
         if my_needs <= 0:
             return ResponseType.END_NEGOTIATION
@@ -100,8 +103,11 @@ class BetterAgent(SimpleAgent):
         offer[UNIT_PRICE] = self._find_good_price(self.get_nmi(negotiator_id), state)
         return tuple(offer)
 
-    def respond(self, negotiator_id, state, offer):
-        response = super().respond(negotiator_id, state, offer)
+    def respond(self, negotiator_id, state):
+        offer = state.current_offer
+        if not offer:
+            return ResponseType.REJECT_OFFER
+        response = super().respond(negotiator_id, state)
         if response != ResponseType.ACCEPT_OFFER:
             return response
         nmi = self.get_nmi(negotiator_id)
@@ -149,8 +155,11 @@ class Winner(BetterAgent):
         self._best_selling = []
         self._best_buying = []
 
-    def respond(self, negotiator_id, state, offer):
-        response = super().respond(negotiator_id, state, offer)
+    def respond(self, negotiator_id, state):
+        offer = state.current_offer
+        if not offer:
+            return ResponseType.REJECT_OFFER
+        response = super().respond(negotiator_id, state)
         nmi = self.get_nmi(negotiator_id)
         if self._is_selling(nmi):
             if len(self._best_selling) > 0:
@@ -185,8 +194,11 @@ class AgentX(BetterAgent):
         self._best_selling = []
         self._best_buying = []
 
-    def respond(self, negotiator_id, state, offer):
-        response = super().respond(negotiator_id, state, offer)
+    def respond(self, negotiator_id, state):
+        offer = state.current_offer
+        if not offer:
+            return ResponseType.REJECT_OFFER
+        response = super().respond(negotiator_id, state)
         nmi = self.get_nmi(negotiator_id)
         if self._is_selling(nmi):
             if len(self._best_selling) > 0:
@@ -264,8 +276,11 @@ class MMMPersonalized(BetterAgent):
         # print('Buyers:')
         # print(self.id2buyer_deals)
 
-    def respond(self, negotiator_id, state, offer):
-        response = super().respond(negotiator_id, state, offer)
+    def respond(self, negotiator_id, state):
+        offer = state.current_offer
+        if not offer:
+            return ResponseType.REJECT_OFFER
+        response = super().respond(negotiator_id, state)
 
         if response == ResponseType.ACCEPT_OFFER:
             if self.id2reject_counter[negotiator_id] > self.nrejections:

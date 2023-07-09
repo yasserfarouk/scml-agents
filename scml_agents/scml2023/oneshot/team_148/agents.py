@@ -13,7 +13,7 @@ class MyOneShotDoNothing(OneShotAgent):
     def propose(self, negotiator_id, state):
         return None
 
-    def respond(self, negotiator_id, state, offer, source=""):
+    def respond(self, negotiator_id, state, source=""):
         return ResponseType.END_NEGOTIATION
 
 
@@ -39,7 +39,10 @@ class SimpleAgent(OneShotAgent):
 
         return self.best_offer(negotiator_id)
 
-    def respond(self, negotiator_id, state, offer, source=""):
+    def respond(self, negotiator_id, state, source=""):
+        offer = state.current_offer
+        if not offer:
+            return ResponseType.REJECT_OFFER
         # print(f'step{self.awi.current_step} round{state.step} {self.awi.agent.id} respond to {negotiator_id}')
 
         my_needs = self._needed(negotiator_id)
@@ -103,8 +106,11 @@ class BetterAgent(SimpleAgent):
         offer[UNIT_PRICE] = self._find_good_price(self.get_nmi(negotiator_id), state)
         return tuple(offer)
 
-    def respond(self, negotiator_id, state, offer, source=""):
-        response = super().respond(negotiator_id, state, offer, source)
+    def respond(self, negotiator_id, state, source=""):
+        offer = state.current_offer
+        if not offer:
+            return ResponseType.REJECT_OFFER
+        response = super().respond(negotiator_id, state, source)
         if response != ResponseType.ACCEPT_OFFER:
             return response
         ami = self.get_nmi(negotiator_id)

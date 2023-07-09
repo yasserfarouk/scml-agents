@@ -1,7 +1,7 @@
 import random
 from typing import Optional
 
-from negmas import ResponseType
+from negmas import ResponseType, SAOState
 from negmas.common import MechanismState, PreferencesChange, PreferencesChangeType
 from negmas.sao import AspirationNegotiator
 from scml.scml2019 import CFP, INVALID_UTILITY
@@ -27,7 +27,10 @@ class Mynegotiator(AspirationNegotiator):
         """"""
         super().__init__(name=name, ufun=ufun, partner_id=partner_id)
 
-    def respond(self, state: MechanismState, offer: "Outcome") -> "ResponseType":
+    def respond(self, state: SAOState) -> "ResponseType":
+        offer = state.current_offer
+        if offer is None:
+            return ResponseType.REJECT_OFFER
         self.notify_ufun_changed()
         self._set_offers(offer)
         self.update_weights(offer)
@@ -237,7 +240,10 @@ class Mynegotiator(AspirationNegotiator):
         self.my_last_proposal = result
         return result
 
-    def respond_(self, state: MechanismState, offer: "Outcome") -> "ResponseType":
+    def respond_(self, state: MechanismState) -> "ResponseType":
+        offer = state.current_offer
+        if offer is None:
+            return ResponseType.REJECT_OFFER
         if self.ufun and self.ufun.changes:
             self.on_preferences_changed(self.ufun.changes)
-        return self.respond(state=state, offer=offer)
+        return self.respond(state=state)

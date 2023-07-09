@@ -128,10 +128,11 @@ class TwoOneFive(OneShotAgent):
         average_quant = (mx_q + self._required_quantity()) / 2
         return average_quant
 
-    def respond(
-        self, negotiator_id: str, state: MechanismState, offer, source
-    ) -> ResponseType:
+    def respond(self, negotiator_id: str, state, source) -> ResponseType:
         """Called when the agent is asked to respond to an offer"""
+        offer = state.current_offer
+        if not offer:
+            return ResponseType.REJECT_OFFER
         # collect info
         nmi = self.get_nmi(negotiator_id)
         offer_quantity = offer[QUANTITY]

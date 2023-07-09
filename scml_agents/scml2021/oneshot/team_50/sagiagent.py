@@ -176,9 +176,11 @@ class Agent74(OneShotAgent):
 
             return tuple(offer)
 
-    def respond(self, negotiator_id, state, offer):
-
+    def respond(self, negotiator_id, state):
         """Called when the agent is asked to respond to an offer"""
+        offer = state.current_offer
+        if offer is None:
+            return ResponseType.REJECT_OFFER
         nmi = self.get_nmi(negotiator_id)
         if not nmi:
             return None
@@ -413,7 +415,6 @@ class Agent74(OneShotAgent):
         # self._outFile.write(f"Step {self.awi.current_step}, My balance={myBalance}\n\n")
 
     def on_negotiation_success(self, contract, mechanism):
-
         unit_price = contract.agreement["unit_price"]
         quantity = contract.agreement["quantity"]
 

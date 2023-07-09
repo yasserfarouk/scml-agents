@@ -55,6 +55,7 @@ from negmas import (
     ResponseType,
     SAOController,
     SAONegotiator,
+    SAOState,
     UtilityFunction,
 )
 from negmas.common import PreferencesChange, PreferencesChangeType
@@ -761,7 +762,7 @@ class MhiranoController(PrintingSAOController):
         # agreementsを評価 + 全てのt_upの組みを入れていく
         # inputベースの時間軸なのでそのまま比較可能
         awi: AWI = self.parent.awi
-        for (t, up) in t_up_list:
+        for t, up in t_up_list:
             if all_q == 0:
                 evaluation_dict[(t, up)] = [0.0 for i in range(1, q_max + 1)]
             else:
@@ -858,7 +859,7 @@ class MhiranoController(PrintingSAOController):
                     _q_max=q_max, _start_time=t, _line_usage_list=line_usage_list
                 )
                 possible_time: Set[int] = set(products_available_time_at_q)
-                for (q_target, outcome_space) in negotiating_opponents:
+                for q_target, outcome_space in negotiating_opponents:
                     probs_by_time: Dict[int, float] = {}
                     for _t in possible_time:
                         prob = _get_profit_prob(
@@ -880,7 +881,7 @@ class MhiranoController(PrintingSAOController):
                     _q_max=q_max, _end_time=t, _line_usage_list=line_usage_list
                 )
                 possible_time: Set[int] = set(products_need_time_at_q)
-                for (q_target, outcome_space) in negotiating_opponents:
+                for q_target, outcome_space in negotiating_opponents:
                     probs_by_time: Dict[int, float] = {}
                     for _t in possible_time:
                         prob = _get_profit_prob(
@@ -1004,9 +1005,10 @@ class MhiranoController(PrintingSAOController):
     ) -> None:
         self._negotiating[negotiator_id]["last_offer"] = offer
 
-    def respond_(
-        self, negotiator_id: str, state: MechanismState, offer: "Outcome"
-    ) -> "ResponseType":
+    def respond_(self, negotiator_id: str, state: SAOState) -> "ResponseType":
+        offer = state.current_offer
+        if offer is None:
+            return ResponseType.REJECT_OFFER
         self._negotiating[negotiator_id]["last_opponent_offer"] = offer
         # ここにきている時点で前回のproposeがrejectされているか，新しいpropose
         is_seller: bool = self._negotiating[negotiator_id]["is_seller"]
@@ -1123,7 +1125,7 @@ class MhiranoController(PrintingSAOController):
         t_max: int = 0
         t_min: int = np.inf
         _outcomes = outcomes
-        for (q, t, up) in _outcomes:
+        for q, t, up in _outcomes:
             if q > q_max:
                 q_max = q
             if up > up_max:
@@ -1209,8 +1211,8 @@ class MhiranoNegotiator(AspirationNegotiator):
         )
         super().on_negotiation_start(state=state)
 
-    def respond(self, state: MechanismState, offer: "Outcome") -> "ResponseType":
-        return self.__parent.respond_(negotiator_id=self.name, state=state, offer=offer)
+    def respond(self, state: MechanismState) -> "ResponseType":
+        return self.__parent.respond_(negotiator_id=self.name, state=state)
 
     def propose(self, state: MechanismState) -> Optional["Outcome"]:
         offer: "Outcome" = self.__parent.propose_(negotiator_id=self.name, state=state)
@@ -1286,7 +1288,7 @@ def run(
     print(tabulate(results.total_scores, headers="keys", tablefmt="psql"))
     print(f"Finished in {humanize_time(time.perf_counter() - start)}")
     result_dict = {}
-    for (name, score) in zip(
+    for name, score in zip(
         results.total_scores["agent_type"].apply(lambda x: x.split(".")[-1]),
         results.total_scores["score"],
     ):

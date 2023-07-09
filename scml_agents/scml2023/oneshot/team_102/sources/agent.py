@@ -513,15 +513,19 @@ class RLIndAgent(SimpleAgent):
                 if self.is_selling
                 else nmi.issues[UNIT_PRICE].max_value
             )
-            self.respond(negotiator_id, state, offer=(q, t, p))
+            self.respond(negotiator_id, state)
 
         my_needs = self._needed(negotiator_id)
         if my_needs <= 0:
             return None
 
-        return self.opp_offers[negotiator_id]
+        return self.opp_offers.get(negotiator_id, None)
 
-    def respond(self, negotiator_id, state, offer, source=""):
+    def respond(self, negotiator_id, state, source=""):
+        offer = state.current_offer
+        if not offer:
+            self.opp_offers[negotiator_id] = None
+            return ResponseType.REJECT_OFFER
         my_needs = self._needed(negotiator_id)
         nmi = self.get_nmi(negotiator_id)
 

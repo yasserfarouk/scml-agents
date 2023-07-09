@@ -29,10 +29,10 @@ __all__ = ["MMM"]
 
 
 class YesMan(RandomNegotiator):
-    def respond_(self, state, offer):
-        return self.respond(state, offer)
+    def respond_(self, state):
+        return self.respond(state)
 
-    def respond(self, state, offer):
+    def respond(self, state):
         return ResponseType.ACCEPT_OFFER
 
 

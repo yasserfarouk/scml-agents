@@ -1,32 +1,32 @@
 import itertools
 from abc import ABC
 from collections import defaultdict
-from typing import Optional, Union, Any
+from typing import Any, Optional, Union
 
 from negmas import (
-    ResponseType,
-    MechanismState,
-    SAOResponse,
-    NegotiatorMechanismInterface,
-    Contract,
     Breach,
-    RenegotiationRequest,
-    Negotiator,
-    UtilityFunction,
+    Contract,
     LinearUtilityFunction,
+    MechanismState,
+    Negotiator,
+    NegotiatorMechanismInterface,
+    RenegotiationRequest,
+    ResponseType,
     SAONegotiator,
+    SAOResponse,
     SAOState,
+    UtilityFunction,
 )
 from negmas.outcomes import Outcome
 from scml import (
-    ProductionStrategy,
-    SupplyDrivenProductionStrategy,
-    PredictionBasedTradingStrategy,
-    IndependentNegotiationsManager,
-    ExecutionRatePredictionStrategy,
-    SCML2020Agent,
-    FixedERPStrategy,
     AWI,
+    ExecutionRatePredictionStrategy,
+    FixedERPStrategy,
+    IndependentNegotiationsManager,
+    PredictionBasedTradingStrategy,
+    ProductionStrategy,
+    SCML2020Agent,
+    SupplyDrivenProductionStrategy,
 )
 from scml.oneshot import *
 
@@ -154,7 +154,10 @@ class GentleS(LearningAgent, ABC):
 
         return tuple(offer)
 
-    def respond(self, negotiator_id, state, offer):
+    def respond(self, negotiator_id, state):
+        offer = state.current_offer
+        if not offer:
+            return ResponseType.REJECT_OFFER
         self.nego_info["negotiation_step"] = state.step  # 交渉ステップを記録
         self._record_information(
             {shorten_name(negotiator_id): offer}, False
@@ -169,7 +172,7 @@ class GentleS(LearningAgent, ABC):
             partner = ami.annotation["seller"]
             self._best_opp_buying[partner] = min(up, self._best_buying)
 
-        response = super().respond(negotiator_id, state, offer)
+        response = super().respond(negotiator_id, state)
 
         # デバッグ用
         # if self.nego_info["negotiation_step"] == 19:
@@ -467,7 +470,7 @@ class LearningSyncAgent(OneShotSyncAgent, GentleS, ABC):
         secured, outputs, chosen = 0, [], dict()
         for i, k in enumerate(offers.keys()):
             offer, is_output, name = sorted_offers[i]
-            response = GentleS.respond(self, name, states[name], offer)
+            response = GentleS.respond(self, name, states[name])
 
             if response == ResponseType.ACCEPT_OFFER:
                 if secured < my_needs:
@@ -656,7 +659,10 @@ class MyNegotiator(SAONegotiator):
 
         return tuple(offer)
 
-    def respond(self, state: SAOState, offer: Outcome) -> ResponseType:
+    def respond(self, state: SAOState) -> ResponseType:
+        offer = state.current_offer
+        if not offer:
+            return ResponseType.REJECT_OFFER
         self._record_information({self.opp_name: offer}, False)  # offerの保存
 
         # unit price の保存
@@ -670,7 +676,7 @@ class MyNegotiator(SAONegotiator):
                 up, self._best_opp_buying[self.opp_name]
             )
 
-        respond = super(MyNegotiator, self).respond(state, offer)
+        respond = super(MyNegotiator, self).respond(state)
 
         if respond == ResponseType.REJECT_OFFER:
             return ResponseType.REJECT_OFFER

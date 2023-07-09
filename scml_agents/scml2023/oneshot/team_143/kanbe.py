@@ -259,9 +259,12 @@ class KanbeAgent(AdaptiveAgent):
         self.en_opponents += 1
         self.remain_partners -= 1
 
-    def respond(self, negotiator_id, state, offer, source=""):
+    def respond(self, negotiator_id, state, source=""):
+        offer = state.current_offer
+        if not offer:
+            return ResponseType.REJECT_OFFER
         # find the quantity I still need and end negotiation if I need nothing more
-        response = super().respond(negotiator_id, state, offer, source)
+        response = super().respond(negotiator_id, state, source)
         # update my current best price to use for limiting concession in other
         # negotiations
         self._received_offers[negotiator_id][self.awi.current_step].append(offer)

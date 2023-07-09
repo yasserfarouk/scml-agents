@@ -1823,7 +1823,7 @@ class InsuranceFraudNegotiator(negmas.sao.AspirationNegotiator):
         self.cfp = cfp
         self.outcomes = cfp.outcomes
 
-    def respond(self, state: MechanismState, offer: "Outcome") -> "ResponseType":
+    def respond(self, state: MechanismState) -> "ResponseType":
         # print("!!!!!!!!!!!!!!!")
         # if self._collusion_type == 2:
         #    print(">>>>>>>>>>>>>>>")
