@@ -97,7 +97,7 @@ from scml.scml2020.components.production import (
     ProductionStrategy,
 )
 from scml.scml2020.components.trading import PredictionBasedTradingStrategy
-from scml.scml2020.utils import anac2021_collusion, anac2021_oneshot, anac2021_std
+from scml.utils import anac2021_collusion, anac2021_oneshot, anac2021_std
 from tabulate import tabulate
 
 __all__ = [

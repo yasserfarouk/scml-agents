@@ -3,7 +3,7 @@ import pandas as pd
 from agents import BetterAgent, BondAgent, SimpleAgent
 from scml.oneshot import *
 from scml.scml2020 import *
-from scml.scml2020.utils import anac2021_oneshot
+from scml.utils import anac2021_oneshot
 
 
 def shorten_names(results):

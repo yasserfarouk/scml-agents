@@ -66,7 +66,7 @@ from scml.scml2020 import (
     TradeDrivenProductionStrategy,
 )
 from scml.scml2020.agents import BuyCheapSellExpensiveAgent, DecentralizingAgent
-from scml.scml2020.utils import anac2021_collusion, anac2021_oneshot, anac2021_std
+from scml.utils import anac2021_collusion, anac2021_oneshot, anac2021_std
 from tabulate import tabulate
 
 __all__ = [

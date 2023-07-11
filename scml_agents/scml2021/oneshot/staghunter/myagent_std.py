@@ -79,7 +79,7 @@ from scml.scml2020.agents import (
     DecentralizingAgent,
     DoNothingAgent,
 )
-from scml.scml2020.utils import anac2021_collusion, anac2021_oneshot, anac2021_std
+from scml.utils import anac2021_collusion, anac2021_oneshot, anac2021_std
 from tabulate import tabulate
 
 import scml_agents

@@ -14,7 +14,7 @@ from collections import defaultdict
 # required for development
 from scml.oneshot import OneShotAgent
 from scml.oneshot.agents import RandomOneShotAgent, SyncRandomOneShotAgent
-from scml.scml2020.utils import anac2022_collusion, anac2022_oneshot, anac2022_std
+from scml.utils import anac2022_collusion, anac2022_oneshot, anac2022_std
 from tabulate import tabulate
 
 from negmas import (

@@ -21,7 +21,7 @@ from scml.scml2020 import SCML2020Agent
 from scml.scml2020.agents import DecentralizingAgent
 from scml.scml2020.common import QUANTITY, TIME, UNIT_PRICE
 from scml.scml2020.components import IndependentNegotiationsManager
-from scml.scml2020.utils import anac2020_collusion, anac2020_std
+from scml.utils import anac2020_collusion, anac2020_std
 from scml.scml2020.world import Failure
 
 # from tabulate import tabulate

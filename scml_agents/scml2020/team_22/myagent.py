@@ -69,7 +69,7 @@ from scml.scml2020.components import (
     SupplyDrivenProductionStrategy,
 )
 from scml.scml2020.components.trading import PredictionBasedTradingStrategy
-from scml.scml2020.utils import anac2020_collusion, anac2020_std
+from scml.utils import anac2020_collusion, anac2020_std
 from tabulate import tabulate
 
 __all__ = ["SavingAgent"]

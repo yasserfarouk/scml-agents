@@ -850,7 +850,7 @@ if __name__ == "__main__":
     show_agent_scores(world)
 
     import seaborn as sns
-    from scml.scml2020.utils import anac2021_std
+    from scml.utils import anac2021_std
 
     tournament_types = [
         ProactiveFromScratch,

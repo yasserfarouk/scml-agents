@@ -23,7 +23,7 @@ import warnings
 # required for running the test tournament
 import time
 from tabulate import tabulate
-from scml.scml2020.utils import anac2021_std, anac2021_collusion, anac2021_oneshot
+from scml.utils import anac2021_std, anac2021_collusion, anac2021_oneshot
 
 from negmas import LinearUtilityFunction
 from negmas.helpers import humanize_time

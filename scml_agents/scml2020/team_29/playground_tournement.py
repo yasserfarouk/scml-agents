@@ -1,9 +1,9 @@
 import matplotlib.pyplot as plt
 import numpy as np
 from scml.scml2020 import *
-from scml.scml2020.utils import anac2020_std
+from scml.utils import anac2020_std
 
-# to run collusion tournament from scml.scml2020.utils import anac2020_collusion
+# to run collusion tournament from scml.utils import anac2020_collusion
 
 
 agent_types = [

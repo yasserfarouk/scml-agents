@@ -72,7 +72,7 @@ from negmas.sao import SAOState
 from scml import QUANTITY, UNIT_PRICE, GreedyOneShotAgent
 from scml.oneshot import OneShotAgent
 from scml.oneshot.agents import RandomOneShotAgent, SyncRandomOneShotAgent
-from scml.scml2020.utils import anac2021_collusion, anac2021_oneshot, anac2021_std
+from scml.utils import anac2021_collusion, anac2021_oneshot, anac2021_std
 from tabulate import tabulate
 
 from .worker_agents import AdaptiveAgent, BetterAgent, LearningAgent, SimpleAgent

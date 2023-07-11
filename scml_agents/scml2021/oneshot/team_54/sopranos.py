@@ -84,7 +84,7 @@ from scml.oneshot.agents import (
     SyncRandomOneShotAgent,
 )
 from scml.scml2020.common import QUANTITY, TIME, UNIT_PRICE
-from scml.scml2020.utils import anac2021_collusion, anac2021_oneshot, anac2021_std
+from scml.utils import anac2021_collusion, anac2021_oneshot, anac2021_std
 
 # required for development
 from tabulate import tabulate

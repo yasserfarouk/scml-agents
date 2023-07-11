@@ -90,7 +90,7 @@ from scml.scml2020 import (
 )
 from scml.scml2020.agents import BuyCheapSellExpensiveAgent, DecentralizingAgent
 from scml.scml2020.common import ANY_LINE, QUANTITY, TIME, UNIT_PRICE, is_system_agent
-from scml.scml2020.utils import anac2021_collusion, anac2021_oneshot, anac2021_std
+from scml.utils import anac2021_collusion, anac2021_oneshot, anac2021_std
 from tabulate import tabulate
 
 __all__ = [

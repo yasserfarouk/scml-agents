@@ -80,7 +80,7 @@ from scml.scml2020 import Failure
 # required for running the test tournament
 import time
 from tabulate import tabulate
-from scml.scml2020.utils import anac2022_collusion, anac2022_std, anac2022_oneshot
+from scml.utils import anac2022_collusion, anac2022_std, anac2022_oneshot
 from scml.scml2020 import (
     SCML2020Agent,
     ProductionStrategy,

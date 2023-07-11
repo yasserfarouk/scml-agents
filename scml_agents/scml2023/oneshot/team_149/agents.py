@@ -33,7 +33,7 @@ from negmas.sao import SAOResponse, SAOState
 from scml.oneshot import *
 from scml.oneshot import OneShotAWI, OneShotSyncAgent
 from scml.scml2020 import *
-from scml.scml2020.utils import (
+from scml.utils import (
     anac2022_oneshot,
     anac2023_collusion,
     anac2023_oneshot,

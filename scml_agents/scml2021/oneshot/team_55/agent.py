@@ -30,7 +30,7 @@ from negmas import AgentMechanismInterface, MechanismState, ResponseType
 from negmas.helpers import humanize_time
 from scml import QUANTITY, TIME, UNIT_PRICE, RandomOneShotAgent
 from scml.oneshot import OneShotAgent
-from scml.scml2020.utils import anac2021_collusion, anac2021_oneshot, anac2021_std
+from scml.utils import anac2021_collusion, anac2021_oneshot, anac2021_std
 from sklearn.linear_model import LinearRegression
 from tabulate import tabulate
 

@@ -5,7 +5,7 @@ from scml.oneshot import (
     RandomOneShotAgent,
     SyncRandomOneShotAgent,
 )
-from scml.scml2020.utils import anac2023_oneshot
+from scml.utils import anac2023_oneshot
 
 # トーナメントの実行（Standard, Collusion)
 

@@ -34,7 +34,7 @@ from scml.scml2020 import *
 from scml.scml2020 import DecentralizingAgent, SCML2020Agent
 from scml.scml2020.common import TIME
 from scml.scml2020.components.negotiation import ControllerInfo
-from scml.scml2020.utils import anac2020_collusion, anac2020_std
+from scml.utils import anac2020_collusion, anac2020_std
 from tabulate import tabulate
 
 __all__ = ["ASMASH"]

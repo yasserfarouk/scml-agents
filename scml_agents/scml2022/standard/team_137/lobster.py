@@ -15,7 +15,7 @@ from scml.scml2020 import Failure
 import time
 from setuptools import PEP420PackageFinder
 from tabulate import tabulate
-from scml.scml2020.utils import anac2022_collusion, anac2022_std, anac2022_oneshot
+from scml.utils import anac2022_collusion, anac2022_std, anac2022_oneshot
 from scml.scml2020 import SCML2020Agent
 from scml.scml2020.agents import (
     BuyCheapSellExpensiveAgent,

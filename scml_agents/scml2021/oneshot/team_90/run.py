@@ -52,7 +52,7 @@ from scml.scml2020.agents import (
     MarketAwareBuyCheapSellExpensiveAgent,
 )
 from scml.scml2020.common import QUANTITY, UNIT_PRICE
-from scml.scml2020.utils import anac2020_collusion, anac2020_std, anac2021_oneshot
+from scml.utils import anac2020_collusion, anac2020_std, anac2021_oneshot
 from scml.scml2020.world import Failure
 from tabulate import tabulate
 

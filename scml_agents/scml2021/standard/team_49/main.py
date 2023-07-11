@@ -10,7 +10,7 @@ from scml import (
     IndependentNegotiationsAgent,
     RandomAgent,
 )
-from scml.scml2020.utils import anac2020_collusion, anac2020_std
+from scml.utils import anac2020_collusion, anac2020_std
 from tabulate import tabulate
 
 

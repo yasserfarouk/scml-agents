@@ -9,7 +9,7 @@ import datetime
 from typing import Dict, Any
 
 import pandas as pd
-from scml.scml2020.utils import anac2023_oneshot
+from scml.utils import anac2023_oneshot
 from scml_agents.agents import get_agents
 
 from agent import RLIndAgent, RLSyncAgent

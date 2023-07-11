@@ -63,7 +63,7 @@ from scml.scml2020.agents import (
     DecentralizingAgent,
     DoNothingAgent,
 )
-from scml.scml2020.utils import anac2020_collusion, anac2020_std
+from scml.utils import anac2020_collusion, anac2020_std
 from scml.scml2020.world import Failure
 from tabulate import tabulate
 

@@ -30,7 +30,7 @@ from scml.oneshot import *
 from scml.oneshot import OneShotAgent
 from scml.oneshot.agents import RandomOneShotAgent, SyncRandomOneShotAgent
 from scml.scml2020 import is_system_agent
-from scml.scml2020.utils import anac2021_collusion, anac2021_oneshot, anac2021_std
+from scml.utils import anac2021_collusion, anac2021_oneshot, anac2021_std
 from tabulate import tabulate
 
 __all__ = [
