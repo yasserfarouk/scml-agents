@@ -71,7 +71,7 @@ import sys
 # required for running tournaments and printing
 import time
 from collections import defaultdict
-from os import PRIO_PROCESS
+# from os import PRIO_PROCESS
 
 # required for typing
 from typing import Any, Dict, List, Optional
