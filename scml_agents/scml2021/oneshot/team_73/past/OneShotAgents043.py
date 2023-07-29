@@ -715,7 +715,7 @@ class LearningAgentT(AdaptiveAgent, ABC):
         nmi = self.get_nmi(name)
 
         util = self.ufun.from_offers((offer,), (self._is_selling(nmi),))
-        do_nothing_util = self.ufun.from_offers(tuple(), (self._is_selling(nmi),))
+        do_nothing_util = self.ufun.from_offers(tuple(), tuple())
         # print_log(["util", "do_nothing_util"], [util, do_nothing_util])
 
         if util <= do_nothing_util:

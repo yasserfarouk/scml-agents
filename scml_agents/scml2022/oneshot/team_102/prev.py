@@ -1762,7 +1762,7 @@ class LearningSyncAgentT(LearningSyncAgent):
             max_utility = self.ufun.from_offers([edge_offers[1]], [is_selling])
 
         # min_utilityを決定
-        do_nothing_util = self.ufun.from_offers([], [is_selling])
+        do_nothing_util = self.ufun.from_offers([], [])
         tp_util = self.ufun.from_offers(
             [(my_need, 0, self.awi.trading_prices[1])], [is_selling]
         )
