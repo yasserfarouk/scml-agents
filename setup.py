@@ -79,8 +79,9 @@ setup(
         "torch==1.12.1; sys_platform == 'darwin' ",
         "pulp",
         "xgboost",
-        "tensorflow; sys_platform != 'darwin' ",
-        "tensorflow-macos; sys_platform == 'darwin' ",
+        "tensorflow",
+        # "tensorflow; sys_platform != 'darwin' ",
+        # "tensorflow-macos; sys_platform == 'darwin' ",
     ],  # Optional
     # extras_require={},
     # https://setuptools.readthedocs.io/en/latest/setuptools.html#dependencies-that-aren-t-in-pypi
