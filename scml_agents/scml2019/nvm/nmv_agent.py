@@ -1,8 +1,6 @@
 import sys
 
-from scml.scml2019 import QUANTITY
-
-from scml_agents.scml2021.oneshot.team_73.nego_utils import UNIT_PRICE
+from scml.scml2019 import QUANTITY, UNIT_PRICE
 
 sys.path.append("/".join(__file__.split("/")[:-1]))
 import math

@@ -387,7 +387,6 @@ class EstimatedUtility(UtilityFunction):
             )
 
         while True:
-
             res = 0
             counter = 0
             for i in range(
@@ -725,7 +724,6 @@ class StagHunter(OneShotAgent):
     #     return self._ufuns__
 
     def step(self):
-
         for id_ in self.oppo_id_list:
             self._ufuns__[id_].update(
                 self.dataset[id_][self.awi.current_step], self.awi.current_step

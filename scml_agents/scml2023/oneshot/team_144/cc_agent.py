@@ -70,9 +70,9 @@ class CCAgent(SimpleAgent):
         super().before_step()
 
         if self.awi.level == 0:
-            self.q_need = self.awi.state().exogenous_input_quantity
+            self.q_need = self.awi.state.exogenous_input_quantity
         elif self.awi.level == 1:
-            self.q_need = self.awi.state().exogenous_output_quantity
+            self.q_need = self.awi.state.exogenous_output_quantity
 
         self.q_opp_offer = defaultdict(lambda: float("inf"))
 

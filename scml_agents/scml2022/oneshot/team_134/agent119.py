@@ -75,7 +75,7 @@ class PatientAgent(AdaptiveAgent):
         self.patient = True
 
         if self.awi.level == 0:
-            self.q = self.awi.state().exogenous_input_quantity
+            self.q = self.awi.current_exogenous_input_quantity
             self.min_price = self.awi.current_output_issues[UNIT_PRICE].min_value
             self.max_price = self.awi.current_output_issues[UNIT_PRICE].max_value
             self.best_price = self.max_price
@@ -83,7 +83,7 @@ class PatientAgent(AdaptiveAgent):
                 self.patient = False
 
         elif self.awi.level == 1:
-            self.q = self.awi.state().exogenous_output_quantity
+            self.q = self.awi.current_exogenous_output_quantity
             self.min_price = self.awi.current_input_issues[UNIT_PRICE].min_value
             self.max_price = self.awi.current_input_issues[UNIT_PRICE].max_value
             self.best_price = self.min_price
