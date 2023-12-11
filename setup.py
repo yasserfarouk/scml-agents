@@ -76,7 +76,7 @@ setup(
         "Click (>=6.0)",
         "scml>=0.5.5",
         "torch; sys_platform != 'darwin' ",
-        "torch==1.12.1; sys_platform == 'darwin' ",
+        "torch>=1.12.1; sys_platform == 'darwin' ",
         "pulp",
         "xgboost",
         "tensorflow",
