@@ -69,36 +69,19 @@ from typing import Any, Collection, Dict, Iterable, List, Optional, Tuple, Union
 import numpy as np
 from negmas import (
     AgentMechanismInterface,
-    Breach,
     Contract,
     Issue,
     MechanismState,
-    Negotiator,
     ResponseType,
 )
-from negmas.genius.gnegotiators import Atlas3
 from negmas.helpers import humanize_time
 from negmas.outcomes import Issue
 from negmas.preferences import UtilityFunction
-from negmas.sao import (
-    AspirationNegotiator,
-    NaiveTitForTatNegotiator,
-    NiceNegotiator,
-    SimpleTitForTatNegotiator,
-    TopFractionNegotiator,
-    ToughNegotiator,
-)
+from negmas.sao import AspirationNegotiator, ToughNegotiator
 
 # required for development
 from scml.oneshot import OneShotAgent
 from scml.oneshot.agent import *
-from scml.oneshot.agents import (
-    GreedyOneShotAgent,
-    GreedySingleAgreementAgent,
-    GreedySyncAgent,
-    RandomOneShotAgent,
-    SyncRandomOneShotAgent,
-)
 from scml.scml2020.common import QUANTITY, TIME, UNIT_PRICE
 from scml.utils import anac2021_collusion, anac2021_oneshot, anac2021_std
 from tabulate import tabulate
@@ -928,8 +911,17 @@ def run(
         - To speed it up, use a smaller `n_step` value
 
     """
+    from scml.oneshot.agents import (
+        GreedyOneShotAgent,
+        GreedySingleAgreementAgent,
+        GreedySyncAgent,
+        RandomOneShotAgent,
+        SyncRandomOneShotAgent,
+    )
+
     if competition == "oneshot":
         # competitors = [StagHungerAsp, StagHunterOB, StagHunterNice, StagHunterNTFT, StagHunterSTFT, StagHunterTough, RandomOneShotAgent, SyncRandomOneShotAgent, GreedyOneShotAgent, GreedySyncAgent, GreedySingleAgreementAgent]
+
         competitors = [
             StagHunter,
             StagHunterTough,
