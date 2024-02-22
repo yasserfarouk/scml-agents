@@ -44,7 +44,7 @@ def get_agents(
     bird_only: bool = False,
     top_only: int | float | None = None,
     as_class: Literal[True] = True,
-) -> tuple[Agent, ...]:
+) -> tuple[type[Agent], ...]:
     ...
 
 
@@ -58,7 +58,7 @@ def get_agents(
     bird_only: bool = False,
     top_only: int | float | None = None,
     as_class: bool = True,
-) -> tuple[Agent | str, ...]:
+) -> tuple[type[Agent] | str, ...]:
     """
     Gets agent classes/full class names for a version which can either be a competition year (int) or "contrib".
 
@@ -801,7 +801,7 @@ def get_agents(
             f"The version {version} is unknown. Valid versions are 2019, 2020 (as ints), 'contrib' as a string"
         )
     classes: tuple[type[Agent] | type[OneShotAgent] | type[SCML2020Agent] | str, ...]
-    classes = tuple(itertools.chain(*classes))
+    classes = tuple(itertools.chain(*classes))  # type: ignore
     # breakpoint()
     if as_class:
         classes = tuple(get_class(_) for _ in classes)
@@ -811,6 +811,6 @@ def get_agents(
     if top_only is not None:
         n = int(top_only) if top_only >= 1 else (top_only * len(classes))
         if n > 0:
-            return tuple(classes[: min(n, len(classes))])
+            return tuple(classes[: min(n, len(classes))])  # type: ignore
 
-    return classes
+    return classes  # type: ignore
