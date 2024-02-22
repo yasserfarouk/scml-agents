@@ -4,6 +4,7 @@ from inspect import ismodule
 from typing import Literal, overload
 
 from negmas.helpers import get_class, get_full_type_name
+from negmas.helpers.strings import itertools
 from negmas.situated import Agent
 from scml.oneshot import OneShotAgent
 from scml.scml2020 import SCML2020Agent
@@ -258,7 +259,7 @@ def get_agents(
             )
     elif isinstance(version, int) and version == 2021:
         if bird_only:
-            classes = (scml2021.oneshot.team_corleone.MAIN_AGENT,)
+            classes = ((scml2021.oneshot.team_corleone.MAIN_AGENT,),)  # type: ignore
         elif track in ("std", "standard") and winners_only:
             classes = (  # type: ignore
                 (scml2021.standard.team_may.MAIN_AGENT,),
@@ -800,6 +801,8 @@ def get_agents(
             f"The version {version} is unknown. Valid versions are 2019, 2020 (as ints), 'contrib' as a string"
         )
     classes: tuple[type[Agent] | type[OneShotAgent] | type[SCML2020Agent] | str, ...]
+    classes = list(itertools.chain(*classes))
+    # breakpoint()
     if as_class:
         classes = tuple(get_class(_) for _ in classes)
     else:
