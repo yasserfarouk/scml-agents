@@ -801,7 +801,7 @@ def get_agents(
             f"The version {version} is unknown. Valid versions are 2019, 2020 (as ints), 'contrib' as a string"
         )
     classes: tuple[type[Agent] | type[OneShotAgent] | type[SCML2020Agent] | str, ...]
-    classes = list(itertools.chain(*classes))
+    classes = tuple(itertools.chain(*classes))
     # breakpoint()
     if as_class:
         classes = tuple(get_class(_) for _ in classes)
@@ -811,6 +811,6 @@ def get_agents(
     if top_only is not None:
         n = int(top_only) if top_only >= 1 else (top_only * len(classes))
         if n > 0:
-            return classes[: min(n, len(classes))]  # type: ignore
+            return tuple(classes[: min(n, len(classes))])
 
-    return classes  # type: ignore
+    return classes
