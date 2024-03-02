@@ -4,7 +4,6 @@ from inspect import ismodule
 from typing import Literal, overload
 
 from negmas.helpers import get_class, get_full_type_name
-from negmas.helpers.strings import itertools
 from negmas.situated import Agent
 from scml.oneshot import OneShotAgent
 from scml.scml2020 import SCML2020Agent
@@ -82,15 +81,17 @@ def get_agents(
     if version in ("all", "any"):
         results = []
         for v in (2019, 2020, 2021, 2022, 2023, "contrib"):
-            results += get_agents(
-                v,
-                track=track,
-                qualified_only=qualified_only,
-                finalists_only=finalists_only,
-                winners_only=winners_only,
-                bird_only=bird_only,
-                top_only=top_only,
-                as_class=as_class,  # type: ignore
+            results += list(
+                get_agents(
+                    v,
+                    track=track,
+                    qualified_only=qualified_only,
+                    finalists_only=finalists_only,
+                    winners_only=winners_only,
+                    bird_only=bird_only,
+                    top_only=top_only,
+                    as_class=as_class,  # type: ignore
+                )
             )
         return tuple(results)
     classes = tuple()
@@ -262,23 +263,21 @@ def get_agents(
             classes = ((scml2021.oneshot.team_corleone.MAIN_AGENT,),)  # type: ignore
         elif track in ("std", "standard") and winners_only:
             classes = (  # type: ignore
-                (scml2021.standard.team_may.MAIN_AGENT,),
-                (scml2021.standard.bossagent.MAIN_AGENT,),
-                (scml2021.standard.wabisabikoalas.MAIN_AGENT,),
+                scml2021.standard.team_may.MAIN_AGENT,
+                scml2021.standard.bossagent.MAIN_AGENT,
+                scml2021.standard.wabisabikoalas.MAIN_AGENT,
             )
         elif track in ("col", "collusion") and winners_only:
             classes = (  # type: ignore
-                (scml2021.standard.team_may.MAIN_AGENT,),
-                (scml2021.standard.bossagent.MAIN_AGENT,),
+                scml2021.standard.team_may.MAIN_AGENT,
+                scml2021.standard.bossagent.MAIN_AGENT,
             )
         elif track in ("one", "oneshot") and winners_only:
             classes = (  # type: ignore
-                (scml2021.oneshot.team_86.MAIN_AGENT,),
-                (scml2021.oneshot.team_73.MAIN_AGENT,),
-                (
-                    scml2021.oneshot.team_50.MAIN_AGENT,
-                    scml2021.oneshot.team_62.MAIN_AGENT,
-                ),
+                scml2021.oneshot.team_86.MAIN_AGENT,
+                scml2021.oneshot.team_73.MAIN_AGENT,
+                scml2021.oneshot.team_50.MAIN_AGENT,
+                scml2021.oneshot.team_62.MAIN_AGENT,
             )
         elif track in ("any", "all") and winners_only:
             classes = (
@@ -467,17 +466,17 @@ def get_agents(
             classes = tuple()
         elif track in ("std", "standard") and winners_only:
             classes = (  # type: ignore
-                (scml2022.standard.team_137.MAIN_AGENT,),
-                (scml2022.standard.team_may.MAIN_AGENT,),
-                (scml2022.standard.wabisabikoalas.MAIN_AGENT,),
+                scml2022.standard.team_137.MAIN_AGENT,
+                scml2022.standard.team_may.MAIN_AGENT,
+                scml2022.standard.wabisabikoalas.MAIN_AGENT,
             )
         elif track in ("col", "collusion") and winners_only:
-            classes = ((scml2022.collusion.team_may.MAIN_AGENT,),)  # type: ignore
+            classes = (scml2022.collusion.team_may.MAIN_AGENT,)
         elif track in ("one", "oneshot") and winners_only:
             classes = (  # type: ignore
-                (scml2022.oneshot.team_134.MAIN_AGENT,),
-                (scml2022.oneshot.team_102.MAIN_AGENT,),
-                (scml2022.oneshot.team_126.MAIN_AGENT,),
+                scml2022.oneshot.team_134.MAIN_AGENT,
+                scml2022.oneshot.team_102.MAIN_AGENT,
+                scml2022.oneshot.team_126.MAIN_AGENT,
             )
         elif track in ("any", "all") and winners_only:
             classes = (
@@ -657,16 +656,16 @@ def get_agents(
             classes = ((scml2023.collusion.team_150.MAIN_AGENT,),)  # type: ignore
         elif track in ("one", "oneshot") and winners_only:
             classes = (  # type: ignore
-                (scml2023.oneshot.team_poli_usp.MAIN_AGENT,),
-                (scml2023.oneshot.team_144.MAIN_AGENT,),
-                (scml2023.oneshot.team_143.MAIN_AGENT,),
+                scml2023.oneshot.team_poli_usp.MAIN_AGENT,
+                scml2023.oneshot.team_144.MAIN_AGENT,
+                scml2023.oneshot.team_143.MAIN_AGENT,
             )
         elif track in ("any", "all") and winners_only:
             classes = (  # type: ignore
-                (scml2023.oneshot.team_poli_usp.MAIN_AGENT,),
-                (scml2023.oneshot.team_144.MAIN_AGENT,),
-                (scml2023.oneshot.team_143.MAIN_AGENT,),
-                (scml2023.collusion.team_150.MAIN_AGENT,),
+                scml2023.oneshot.team_poli_usp.MAIN_AGENT,
+                scml2023.oneshot.team_144.MAIN_AGENT,
+                scml2023.oneshot.team_143.MAIN_AGENT,
+                scml2023.collusion.team_150.MAIN_AGENT,
             )
         elif track in ("std", "standard") and (finalists_only or qualified_only):
             classes = (
@@ -801,7 +800,7 @@ def get_agents(
             f"The version {version} is unknown. Valid versions are 2019, 2020 (as ints), 'contrib' as a string"
         )
     classes: tuple[type[Agent] | type[OneShotAgent] | type[SCML2020Agent] | str, ...]
-    classes = tuple(itertools.chain(*classes))  # type: ignore
+    # classes = tuple(itertools.chain(*classes))
     # breakpoint()
     if as_class:
         classes = tuple(get_class(_) for _ in classes)

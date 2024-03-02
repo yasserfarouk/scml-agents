@@ -1,6 +1,6 @@
 import pytest
 from scml.scml2019.factory_managers.builtins import GreedyFactoryManager
-from scml.scml2019.utils import anac2019_collusion, anac2019_sabotage, anac2019_std
+from scml.scml2019.utils19 import anac2019_collusion, anac2019_sabotage, anac2019_std
 from scml.scml2019.world import SCML2019World
 
 from scml_agents import get_agents
