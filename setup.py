@@ -74,12 +74,17 @@ setup(
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=[
         "Click (>=6.0)",
-        "scml>=0.5.5",
+        "scml>=0.7.0",
         "torch; sys_platform != 'darwin' ",
         "torch>=1.12.1; sys_platform == 'darwin' ",
         "pulp",
         "xgboost",
         "tensorflow",
+        "python-constraint",
+        "prettytable",
+        "pulp",
+        "mip",
+        "stable-baselines3",
         # "tensorflow; sys_platform != 'darwin' ",
         # "tensorflow-macos; sys_platform == 'darwin' ",
     ],  # Optional

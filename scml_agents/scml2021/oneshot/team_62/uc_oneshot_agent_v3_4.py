@@ -381,10 +381,10 @@ class UcOneshotAgent3_4(OneShotAgent):
             if self.awi.level == 0
             else mechanism.annotation["seller"]
         )
-        no_of_step = len(mechanism["mechanism"]._history)
+        no_of_step = len(mechanism["_mechanism"]._history)
         if (
             partner
-            == mechanism["mechanism"]._history[no_of_step - 1].current_proposer_agent
+            == mechanism["_mechanism"]._history[no_of_step - 1].current_proposer_agent
         ):
             accepted_by = 1
         else:
@@ -411,13 +411,13 @@ class UcOneshotAgent3_4(OneShotAgent):
             if self.awi.level == 0
             else mechanism.annotation["seller"]
         )
-        no_of_step = len(mechanism["mechanism"].history)
+        no_of_step = len(mechanism["_mechanism"].history)
         if no_of_step >= 19:
             self.neg_results[partner] = (False, 19, 2)  # 2:time(step) over
             return
         if (
             partner
-            == mechanism["mechanism"].history[no_of_step - 1].current_proposer_agent
+            == mechanism["_mechanism"].history[no_of_step - 1].current_proposer_agent
         ):
             rejected_by = 1
         else:

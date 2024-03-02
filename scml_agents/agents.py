@@ -805,7 +805,7 @@ def get_agents(
     if as_class:
         classes = tuple(get_class(_) for _ in classes)
     else:
-        classes = tuple(get_full_type_name(_) for _ in classes)
+        classes = tuple(get_full_type_name(_) for _ in classes)  # type: ignore
 
     if top_only is not None:
         n = int(top_only) if top_only >= 1 else (top_only * len(classes))
