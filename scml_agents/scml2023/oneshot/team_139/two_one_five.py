@@ -6,12 +6,9 @@ Last modified: March-04-2023
 negmas version: 0.9.8
 scml version: 0.5.6
 """
-import statistics
-import sys
 import time
 
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 from negmas import ResponseType
 from negmas.common import AgentMechanismInterface, MechanismState
@@ -19,15 +16,10 @@ from negmas.situated import Contract
 from scml.oneshot import QUANTITY, TIME, UNIT_PRICE
 from scml.oneshot.agent import OneShotAgent
 
-from scml_agents.scml2021.oneshot.team_62.uc_oneshot_agent_v3_4 import UcOneshotAgent3_4
 from scml_agents.scml2021.oneshot.team_73.oneshot_agents import (
     AdaptiveAgent,
     BetterAgent,
-    Gentle,
-    SimpleAgent,
 )
-from scml_agents.scml2021.oneshot.team_86.agent112 import Agent112
-from scml_agents.scml2022.oneshot.team_107.regression_agent import EVEAgent
 
 __all__ = ["TwoOneFive"]
 
@@ -189,10 +181,10 @@ class TwoOneFive(OneShotAgent):
             if self.awi.level == 0
             else mechanism.annotation["seller"]
         )
-        no_of_step = len(mechanism["mechanism"]._history)
+        no_of_step = len(mechanism["_mechanism"]._history)
         if (
             partner
-            == mechanism["mechanism"]._history[no_of_step - 1].current_proposer_agent
+            == mechanism["_mechanism"]._history[no_of_step - 1].current_proposer_agent
         ):
             accepted_by = 1
         else:
@@ -234,11 +226,11 @@ class TwoOneFive(OneShotAgent):
             if self.awi.level == 0
             else mechanism.annotation["seller"]
         )
-        no_of_step = len(mechanism["mechanism"]._history)
+        no_of_step = len(mechanism["_mechanism"]._history)
 
         if (
             partner
-            == mechanism["mechanism"]._history[no_of_step - 1].current_proposer_agent
+            == mechanism["_mechanism"]._history[no_of_step - 1].current_proposer_agent
         ):
             rejected_by = 1
         else:
@@ -346,7 +338,6 @@ def analyze_contracts(world):
     """
     Analyzes the contracts signed in the given world
     """
-    import pandas as pd
 
     data = pd.DataFrame.from_records(world.saved_contracts)
     pd.set_option("display.max_columns", None)

@@ -82,7 +82,7 @@ def get_agents(
         results = []
         for v in (2019, 2020, 2021, 2022, 2023, "contrib"):
             results += list(
-                get_agents(
+                get_agents(  # type: ignore
                     v,
                     track=track,
                     qualified_only=qualified_only,
@@ -94,7 +94,7 @@ def get_agents(
                 )
             )
         return tuple(results)
-    classes = tuple()
+    classes: tuple[str | type[Agent], ...] = tuple()  # type: ignore
     track = track.lower()
     if isinstance(version, int) and version == 2019:
         if track in ("any", "all") and not winners_only:
@@ -260,20 +260,20 @@ def get_agents(
             )
     elif isinstance(version, int) and version == 2021:
         if bird_only:
-            classes = ((scml2021.oneshot.team_corleone.MAIN_AGENT,),)  # type: ignore
+            classes = (scml2021.oneshot.team_corleone.MAIN_AGENT,)
         elif track in ("std", "standard") and winners_only:
-            classes = (  # type: ignore
+            classes = (
                 scml2021.standard.team_may.MAIN_AGENT,
                 scml2021.standard.bossagent.MAIN_AGENT,
                 scml2021.standard.wabisabikoalas.MAIN_AGENT,
             )
         elif track in ("col", "collusion") and winners_only:
-            classes = (  # type: ignore
+            classes = (
                 scml2021.standard.team_may.MAIN_AGENT,
                 scml2021.standard.bossagent.MAIN_AGENT,
             )
         elif track in ("one", "oneshot") and winners_only:
-            classes = (  # type: ignore
+            classes = (
                 scml2021.oneshot.team_86.MAIN_AGENT,
                 scml2021.oneshot.team_73.MAIN_AGENT,
                 scml2021.oneshot.team_50.MAIN_AGENT,
@@ -465,7 +465,7 @@ def get_agents(
         if bird_only:
             classes = tuple()
         elif track in ("std", "standard") and winners_only:
-            classes = (  # type: ignore
+            classes = (
                 scml2022.standard.team_137.MAIN_AGENT,
                 scml2022.standard.team_may.MAIN_AGENT,
                 scml2022.standard.wabisabikoalas.MAIN_AGENT,
@@ -473,7 +473,7 @@ def get_agents(
         elif track in ("col", "collusion") and winners_only:
             classes = (scml2022.collusion.team_may.MAIN_AGENT,)
         elif track in ("one", "oneshot") and winners_only:
-            classes = (  # type: ignore
+            classes = (
                 scml2022.oneshot.team_134.MAIN_AGENT,
                 scml2022.oneshot.team_102.MAIN_AGENT,
                 scml2022.oneshot.team_126.MAIN_AGENT,
@@ -651,17 +651,17 @@ def get_agents(
         if bird_only:
             classes = tuple()
         elif track in ("std", "standard") and winners_only:
-            classes = ((scml2023.standard.team_150.MAIN_AGENT,),)  # type: ignore
+            classes = (scml2023.standard.team_150.MAIN_AGENT,)
         elif track in ("col", "collusion") and winners_only:
-            classes = ((scml2023.collusion.team_150.MAIN_AGENT,),)  # type: ignore
+            classes = (scml2023.collusion.team_150.MAIN_AGENT,)
         elif track in ("one", "oneshot") and winners_only:
-            classes = (  # type: ignore
+            classes = (
                 scml2023.oneshot.team_poli_usp.MAIN_AGENT,
                 scml2023.oneshot.team_144.MAIN_AGENT,
                 scml2023.oneshot.team_143.MAIN_AGENT,
             )
         elif track in ("any", "all") and winners_only:
-            classes = (  # type: ignore
+            classes = (
                 scml2023.oneshot.team_poli_usp.MAIN_AGENT,
                 scml2023.oneshot.team_144.MAIN_AGENT,
                 scml2023.oneshot.team_143.MAIN_AGENT,
@@ -810,6 +810,6 @@ def get_agents(
     if top_only is not None:
         n = int(top_only) if top_only >= 1 else (top_only * len(classes))
         if n > 0:
-            return tuple(classes[: min(n, len(classes))])  # type: ignore
+            return tuple(classes[: min(n, len(classes))])
 
     return classes  # type: ignore

@@ -177,24 +177,24 @@ def test_winners_2019():
 
 def test_winners_2021():
     agents = get_agents(2021, track="std", winners_only=True)
-    assert len(agents) == 3
+    assert len(agents) == 3, f"{agents}"
     agents = get_agents(2021, track="collusion", winners_only=True)
-    assert len(agents) == 2
-    agents = get_agents(2021, track="oneshot", winners_only=True)
-    assert len(agents) == 3 and len(agents[-1]) == 2
+    assert len(agents) == 2, f"{agents}"
     agents = get_agents(2021, track="all", winners_only=True)
-    assert len(agents) == 7
+    assert len(agents) == 7, f"{agents}"
+    agents = get_agents(2021, track="oneshot", winners_only=True)
+    assert len(agents) == 4, f"{agents}"
 
 
 def test_winners_2022():
     agents = get_agents(2022, track="std", winners_only=True)
-    assert len(agents) == 3
+    assert len(agents) == 3, f"{agents}"
     agents = get_agents(2022, track="collusion", winners_only=True)
-    assert len(agents) == 1
-    agents = get_agents(2022, track="oneshot", winners_only=True)
-    assert len(agents) == 3 and len(agents[-1]) == 1
+    assert len(agents) == 1, f"{agents}"
     agents = get_agents(2022, track="all", winners_only=True)
-    assert len(agents) == 7
+    assert len(agents) == 7, f"{agents}"
+    agents = get_agents(2022, track="oneshot", winners_only=True)
+    assert len(agents) == 3, f"{agents}"
 
 
 def test_winners_2020():

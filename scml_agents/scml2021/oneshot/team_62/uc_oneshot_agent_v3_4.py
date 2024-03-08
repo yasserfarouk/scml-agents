@@ -1,7 +1,7 @@
 import time
 
-from negmas import ResponseType, SAOState
-from negmas.common import AgentMechanismInterface, MechanismState
+from negmas import SAONMI, ResponseType, SAOState
+from negmas.common import MechanismState
 from negmas.situated import Contract
 from scml.oneshot import QUANTITY, UNIT_PRICE
 from scml.oneshot.agent import OneShotAgent
@@ -362,9 +362,7 @@ class UcOneshotAgent3_4(OneShotAgent):
                     else:
                         return ResponseType.REJECT_OFFER
 
-    def on_negotiation_success(
-        self, contract: Contract, mechanism: AgentMechanismInterface
-    ) -> None:
+    def on_negotiation_success(self, contract: Contract, mechanism: SAONMI) -> None:
         """Called when a negotiation the agent is a party of ends with agreement"""
         # update required_quantity
         quantity = contract.agreement["quantity"]
@@ -381,14 +379,16 @@ class UcOneshotAgent3_4(OneShotAgent):
             if self.awi.level == 0
             else mechanism.annotation["seller"]
         )
-        no_of_step = len(mechanism["_mechanism"]._history)
-        if (
-            partner
-            == mechanism["_mechanism"]._history[no_of_step - 1].current_proposer_agent
-        ):
-            accepted_by = 1
-        else:
-            accepted_by = 0
+        accepted_by = int(partner == mechanism.state.current_proposer_agent)
+        no_of_step = mechanism.state.step
+        # no_of_step = len(mechanism["_mechanism"]._history)
+        # if (
+        #     partner
+        #     == mechanism["_mechanism"]._history[no_of_step - 1].current_proposer_agent
+        # ):
+        #     accepted_by = 1
+        # else:
+        #     accepted_by = 0
 
         self.neg_results[partner] = (True, no_of_step, accepted_by)
 
@@ -396,7 +396,7 @@ class UcOneshotAgent3_4(OneShotAgent):
         self,
         partners,
         annotation,
-        mechanism: AgentMechanismInterface,
+        mechanism: SAONMI,
         state: MechanismState,
     ) -> None:
         """Called when a negotiation the agent is a party of ends without agreement"""
@@ -411,17 +411,20 @@ class UcOneshotAgent3_4(OneShotAgent):
             if self.awi.level == 0
             else mechanism.annotation["seller"]
         )
-        no_of_step = len(mechanism["_mechanism"].history)
+
+        no_of_step = mechanism.state.step
+        # no_of_step = len(mechanism["_mechanism"].history)
         if no_of_step >= 19:
             self.neg_results[partner] = (False, 19, 2)  # 2:time(step) over
             return
-        if (
-            partner
-            == mechanism["_mechanism"].history[no_of_step - 1].current_proposer_agent
-        ):
-            rejected_by = 1
-        else:
-            rejected_by = 0
+        rejected_by = int(partner == mechanism.state.current_proposer_agent)
+        # if (
+        #     partner
+        #     == mechanism["_mechanism"].history[no_of_step - 1].current_proposer_agent
+        # ):
+        #     rejected_by = 1
+        # else:
+        #     rejected_by = 0
 
         self.neg_results[partner] = (False, no_of_step, rejected_by)
 
