@@ -235,7 +235,7 @@ class MatchingAgent(OneShotAgent):
                 offer[TIME] = self.awi.current_step
                 self.sent_offers[nid] = tuple(offer)
                 if offer[QUANTITY] == 0:
-                    if self.wait_count[nid] < self.max_wait:
+                    if self.wait_count.get(nid, 0) < self.max_wait:
                         self.responses[nid] = ResponseType.WAIT
                     else:
                         self.responses[nid] = ResponseType.END_NEGOTIATION
