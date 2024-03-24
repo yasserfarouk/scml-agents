@@ -125,7 +125,7 @@ class MatchingAgent(OneShotAgent):
                 self.responses[negotiator_id] = ResponseType.END_NEGOTIATION
             elif (
                 len(self.received_offers) < self.remaining_partners
-                and self.wait_count[negotiator_id] < self.max_wait
+                and self.wait_count.get(negotiator_id, 0) < self.max_wait
             ):
                 self.responses[negotiator_id] = ResponseType.WAIT
             elif self.patient:
