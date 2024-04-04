@@ -5,15 +5,10 @@ from scml.scml2020 import SCML2021World
 
 from scml_agents import get_agents
 from scml_agents.scml2020 import *
-from scml_agents.scml2021.oneshot.team_73.oneshot_agents import Gentle
-from scml_agents.scml2021.standard.team_67.polymorphic_agent import PolymorphicAgent
 from scml_agents.scml2021.standard.team_82.perry import PerryTheAgent
 
 from .switches import (
     SCMLAGENTS_RUN2021,
-    SCMLAGENTS_RUN_COLLUSION_TOURNAMENTS,
-    SCMLAGENTS_RUN_SABOTAGE_TOURNAMENTS,
-    SCMLAGENTS_RUN_STD_TOURNAMENTS,
 )
 
 

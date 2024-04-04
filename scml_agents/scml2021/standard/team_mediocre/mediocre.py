@@ -1,26 +1,22 @@
 import sys
 
 sys.path.append("./")
-import math
 import warnings
 from copy import deepcopy
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 import pandas as pd
 from negmas import (
     AgentMechanismInterface,
-    Breach,
     Contract,
     Issue,
     MechanismState,
     Negotiator,
-    Outcome,
     ResponseType,
     SAONegotiator,
     SAOState,
-    Value,
 )
 from scml.scml2020 import SCML2020Agent
 from scml.scml2020.common import QUANTITY, TIME, UNIT_PRICE
@@ -28,7 +24,7 @@ from scml.scml2020.components.negotiation import NegotiationManager
 from scml.scml2020.components.production import ProductionStrategy
 from scml.scml2020.components.trading import TradingStrategy
 from sklearn.linear_model import LinearRegression
-from sklearn.preprocessing import MinMaxScaler, StandardScaler
+from sklearn.preprocessing import MinMaxScaler
 
 from .Bidding import BuyBidding, SellBidding
 
@@ -201,10 +197,13 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
         """
 
         for partner in self.partners:
-            if partner in [
-                "SELLER",
-                "BUYER",
-            ]:  # no negotiation with global players, so, trade_stats is not needed for them
+            if (
+                partner
+                in [
+                    "SELLER",
+                    "BUYER",
+                ]
+            ):  # no negotiation with global players, so, trade_stats is not needed for them
                 continue
 
             n_negotiations, n_agree, n_signs = 0, 0, 0
@@ -219,7 +218,6 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
                     n_agree = past_negotiations["agree"].sum()
 
             if partner in self.past_contracts.index.get_level_values(0):
-
                 contracts = self.past_contracts.loc[partner]
                 n_signs = self.past_contracts.loc[partner].shape[0]
                 hist_utility = contracts["utility"].mean()
@@ -321,7 +319,6 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
         """
 
         if self.current_step > 0:
-
             eagerness = pd.DataFrame(index=partner_states.keys())
 
             eagerness["nego_parameters"] = [
@@ -422,9 +419,7 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
         )
 
     def request_negotiations(self):
-
         for partner, negotiator_ in self.negotiators[self.awi.current_step].items():
-
             is_sell = True if partner in self.my_consumers else False
             product = (
                 self.awi.my_output_product if is_sell else self.awi.my_input_product
@@ -433,7 +428,6 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
 
             # do not request with the negotiatiors allocated 0 quantity
             if negotiator.q_bounds[1] > 0:
-
                 negotiator.valid_q_bounds = negotiator.q_bounds
                 negotiator.valid_t_bounds = negotiator.t_bounds
                 negotiator.valid_p_bounds = negotiator.p_bounds
@@ -467,7 +461,6 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
         annotation: Dict[str, Any],
         mechanism: AgentMechanismInterface,
     ) -> Optional[Negotiator]:
-
         if self.awi.current_step not in self.negotiators:
             return None
 
@@ -477,12 +470,9 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
 
         # do not allow the negotiatiors allocated 0 quantity to engage in negotiators
         if negotiator.q_bounds[1] > 0:
-
             negotiator.params[
                 "alpha"
-            ] = (
-                -1
-            )  # counter agenda might not be suitable for us, therefore all desirable bids are allowed to propose
+            ] = -1  # counter agenda might not be suitable for us, therefore all desirable bids are allowed to propose
             negotiator.valid_q_bounds = [qvalues.min_value, qvalues.max_value]
             negotiator.valid_t_bounds = [tvalues.min_value, tvalues.max_value]
             negotiator.valid_p_bounds = [pvalues.min_value, pvalues.max_value]
@@ -572,9 +562,8 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
         """
         Calculates own trading price as sqrt(weighted historical price * weighted last price) based on contracts.
         """
-        if (
-            partner == None
-            or partner not in self.past_contracts.index.get_level_values(0)
+        if partner == None or partner not in self.past_contracts.index.get_level_values(
+            0
         ):
             pcs = self.past_contracts
         else:
@@ -585,7 +574,6 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
         )
 
         if pcs[pcs.is_sell == is_sell].shape[0] > 0:
-
             try:
                 last_sign_step = pcs[pcs.is_sell == is_sell].sign_step.max()
 
@@ -762,7 +750,6 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
         wealth = partner_state["wealth"]
 
         if wealth != "unknown":
-
             if wealth >= -0.05:  # good
                 alpha = -1
             elif wealth >= -0.1:  # not bad
@@ -773,7 +760,6 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
                 alpha = -1
 
         if self.trade_stats.loc[partner, "agree_rate"] > 0:
-
             contract_rate = (
                 self.trade_stats.loc[partner, "sign_rate"]
                 * self.trade_stats.loc[partner, "agree_rate"]
@@ -812,10 +798,7 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
             return q * min(p**1.1, 1.5) * (1 + delivery_delay**0.1)
 
         return (
-            q
-            * min(p**1.1, 1.5)
-            / (1 + delivery_delay**0.1)
-            / (1 + breach_score**0.5)
+            q * min(p**1.1, 1.5) / (1 + delivery_delay**0.1) / (1 + breach_score**0.5)
         )
 
     def buy_utility_func(self, p, q, t, breach_score=0):
@@ -915,7 +898,6 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
             volume_to_buy = total_production_capacity
 
         if suppliers.shape[0] > 0:
-
             selected_sup_contracts = pd.DataFrame(
                 {
                     "sign_indx": suppliers.sign_indx,
@@ -946,7 +928,6 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
             ).T.to_dict()
 
             for _, contract in selected_sup_contracts.items():
-
                 if contract["quantity"] <= volume_to_buy:
                     signatures[int(contract["sign_indx"])] = self.id
                     volume_to_buy -= contract["quantity"]
@@ -988,7 +969,6 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
             if buying_contracts.shape[0] > 0:
                 if not self.is_first_level:
                     for (partner, cid), contract in buying_contracts.iterrows():
-
                         if partner not in self.supplier_states:  # bankrupted
                             buying_contracts.loc[(partner, cid), "q"] = 0
 
@@ -1010,7 +990,7 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
                     buying_contracts.set_index("t").groupby("t", axis=0)["q"].sum()
                 )
 
-                for t, q in signed_future_inputs.iteritems():
+                for t, q in signed_future_inputs.items():
                     stepwise_future_input_inventory[t:] += q
 
                 stepwise_future_output_inventory = (
@@ -1025,13 +1005,12 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
                         stepwise_future_input_inventory[t:] -= production_amount
                         stepwise_future_output_inventory[t:] += production_amount
 
-                for t, q in signed_sell_quantities.iteritems():
+                for t, q in signed_sell_quantities.items():
                     stepwise_future_output_inventory[t:] -= q
 
                 signeds = []
                 extra_q = 0
                 for _, contract in selected_cons_contracts.iterrows():
-
                     delivery_t = contract["delivery_t"]
                     if isinstance(delivery_t, complex):  # bug
                         delivery_t = int(delivery_t.real)
@@ -1042,7 +1021,6 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
                         int(contract["quantity"])
                         <= stepwise_future_output_inventory[int(delivery_t)]
                     ):
-
                         signatures[int(contract["sign_indx"])] = self.id
                         stepwise_future_output_inventory[int(delivery_t) :] -= int(
                             contract["quantity"]
@@ -1125,7 +1103,6 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
         self.past_contracts.set_index(["partner", "cid"], inplace=True)
 
     def contract_utility(self, contract):
-
         q = int(contract.agreement["quantity"])
         t = int(contract.agreement["time"])
         p = int(contract.agreement["unit_price"])
@@ -1219,7 +1196,6 @@ class MediocreNegotiator(SAONegotiator):
         return str(self)
 
     def utility_func(self, bid):
-
         if len(bid) == 3:
             q, t, p = bid
         else:
@@ -1236,7 +1212,6 @@ class MediocreNegotiator(SAONegotiator):
         return round(utility, 3)
 
     def init(self):
-
         self.valid_bounds = [
             self.valid_q_bounds,
             self.valid_t_bounds,
@@ -1273,7 +1248,6 @@ class MediocreNegotiator(SAONegotiator):
         return self.offer_availability
 
     def on_negotiation_start(self, state: MechanismState) -> None:
-
         self.nego_start_time = datetime.now().time().strftime("%H-%M-%S-%f")
         self.negotiator_id = self.agent_id + "@" + "step=" + str(self.current_step)
         self.nego_no += 1  # there can be multiple negotiations with the same partner in the same step
@@ -1322,7 +1296,6 @@ class MediocreNegotiator(SAONegotiator):
             return ResponseType.REJECT_OFFER
 
     def propose(self, state: MechanismState):
-
         my_bid = (
             self.next_bid
             if self.next_bid
@@ -1343,7 +1316,6 @@ class MediocreNegotiator(SAONegotiator):
         return my_bid
 
     def on_negotiation_end(self, state: MechanismState) -> None:
-
         if state.agreement:
             self.agreement_utility[state.agreement] = round(
                 self.utility_func(state.agreement) / self.max_utility, 3

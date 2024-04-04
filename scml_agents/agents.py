@@ -14,7 +14,16 @@ import scml_agents.scml2021 as scml2021
 import scml_agents.scml2022 as scml2022
 import scml_agents.scml2023 as scml2023
 
-__all__ = ["get_agents"]
+__all__ = ["get_agents", "FAILING_AGENTS"]
+
+FAILING_AGENTS = {
+    get_full_type_name(scml2021.YIYAgent): "Needs scikit-learn<=1.3.*",
+    get_full_type_name(scml2021.QlAgent): "Failure in saving and loading Q tables",
+    get_full_type_name(
+        scml2022.AdaptiveQlAgent
+    ): "Failure in saving and loading Q tables",
+}
+"""Maps agents known to fail to the failure reason."""
 
 
 @overload
@@ -27,9 +36,9 @@ def get_agents(
     winners_only: bool = False,
     bird_only: bool = False,
     top_only: int | float | None = None,
+    ignore_failing=False,
     as_class: Literal[False] = False,
-) -> tuple[str, ...]:
-    ...
+) -> tuple[str, ...]: ...
 
 
 @overload
@@ -42,9 +51,9 @@ def get_agents(
     winners_only: bool = False,
     bird_only: bool = False,
     top_only: int | float | None = None,
+    ignore_failing=False,
     as_class: Literal[True] = True,
-) -> tuple[type[Agent], ...]:
-    ...
+) -> tuple[type[Agent], ...]: ...
 
 
 def get_agents(
@@ -56,6 +65,7 @@ def get_agents(
     winners_only: bool = False,
     bird_only: bool = False,
     top_only: int | float | None = None,
+    ignore_failing=True,
     as_class: bool = True,
 ) -> tuple[type[Agent] | str, ...]:
     """
@@ -93,6 +103,10 @@ def get_agents(
                     as_class=as_class,  # type: ignore
                 )
             )
+        if ignore_failing:
+            results = [
+                _ for _ in results if get_full_type_name(_) not in FAILING_AGENTS.keys()
+            ]
         return tuple(results)
     classes: tuple[str | type[Agent], ...] = tuple()  # type: ignore
     track = track.lower()
@@ -807,6 +821,10 @@ def get_agents(
     else:
         classes = tuple(get_full_type_name(_) for _ in classes)  # type: ignore
 
+    if ignore_failing:
+        classes = tuple(
+            [_ for _ in classes if get_full_type_name(_) not in FAILING_AGENTS.keys()]
+        )
     if top_only is not None:
         n = int(top_only) if top_only >= 1 else (top_only * len(classes))
         if n > 0:

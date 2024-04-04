@@ -86,6 +86,7 @@ setup(
         "pulp",
         "mip",
         "stable-baselines3",
+        "tqdm",
         # "tensorflow; sys_platform != 'darwin' ",
         # "tensorflow-macos; sys_platform == 'darwin' ",
     ],  # Optional
