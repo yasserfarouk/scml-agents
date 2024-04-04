@@ -9,6 +9,12 @@ __all__ = ["QuantityOrientedAgent"]
 class QuantityOrientedAgent(OneShotAgent):
     """Based on OneShotAgent"""
 
+    def __init__(self, *args, **kwargs):
+        self.rejection = 0
+        self.secured = 0
+        self.n_partners = 0
+        super().__init__(*args, **kwargs)
+
     def init(self):
         """Initializes some values needed for the negotiations"""
         if self.awi.level == 0:  # L0 agent
