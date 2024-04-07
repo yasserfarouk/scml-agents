@@ -13,7 +13,9 @@ from .switches import (
 
 
 @pytest.mark.skipif(not SCMLAGENTS_RUN2021, reason="Skipping 2021")
-@mark.parametrize("fm", get_agents(2021, as_class=True, track="collusion"))
+@mark.parametrize(
+    "fm", get_agents(2021, as_class=True, track="collusion", ignore_failing=True)
+)
 def test_can_run_collusion(fm):
     n_steps = 10
     world = SCML2021World(
@@ -41,7 +43,9 @@ def test_can_run_std_example():
 
 
 @pytest.mark.skipif(not SCMLAGENTS_RUN2021, reason="Skipping 2021")
-@mark.parametrize("fm", get_agents(2021, as_class=True, track="std"))
+@mark.parametrize(
+    "fm", get_agents(2021, as_class=True, track="std", ignore_failing=True)
+)
 def test_can_run_std(fm):
     n_steps = 10
     world = SCML2021World(
@@ -56,7 +60,10 @@ def test_can_run_std(fm):
 
 @pytest.mark.skipif(not SCMLAGENTS_RUN2021, reason="Skipping 2021")
 @mark.parametrize(
-    "fm", get_agents(2021, as_class=True, track="oneshot", finalists_only=True)
+    "fm",
+    get_agents(
+        2021, as_class=True, track="oneshot", finalists_only=True, ignore_failing=True
+    ),
 )
 def test_can_run_oneshot_finalists(fm):
     n_steps = 10
@@ -72,7 +79,9 @@ def test_can_run_oneshot_finalists(fm):
 
 
 @pytest.mark.skipif(not SCMLAGENTS_RUN2021, reason="Skipping 2021")
-@mark.parametrize("fm", get_agents(2021, as_class=True, track="oneshot"))
+@mark.parametrize(
+    "fm", get_agents(2021, as_class=True, track="oneshot", ignore_failing=True)
+)
 def test_can_run_oneshot(fm):
     n_steps = 10
     world = SCML2020OneShotWorld(

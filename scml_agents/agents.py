@@ -17,11 +17,15 @@ import scml_agents.scml2023 as scml2023
 __all__ = ["get_agents", "FAILING_AGENTS"]
 
 FAILING_AGENTS = {
-    get_full_type_name(scml2021.YIYAgent): "Needs scikit-learn<=1.3.*",
-    get_full_type_name(scml2021.QlAgent): "Failure in saving and loading Q tables",
+    get_full_type_name(
+        scml2021.YIYAgent
+    ): "Needs scikit-learn<=1.3.* and is tested on python 3.10 only",
+    get_full_type_name(
+        scml2021.QlAgent
+    ): "Needs scikit-learn<=1.3.* and is tested on python 3.10 only",
     get_full_type_name(
         scml2022.AdaptiveQlAgent
-    ): "Failure in saving and loading Q tables",
+    ): "Needs scikit-learn<=1.3.* and is tested on python 3.10 only",
 }
 """Maps agents known to fail to the failure reason."""
 
@@ -65,7 +69,7 @@ def get_agents(
     winners_only: bool = False,
     bird_only: bool = False,
     top_only: int | float | None = None,
-    ignore_failing=True,
+    ignore_failing=False,
     as_class: bool = True,
 ) -> tuple[type[Agent] | str, ...]:
     """
