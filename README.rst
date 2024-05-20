@@ -31,9 +31,31 @@ has the following parameters:
 * as_class: If true, the agent classes will be returned otherwise their full class names.
 
 
-For example, to get the top 10% of the Oneshot track finalists in year 2023 as strings, you can use:
+For example, to get the top 10% of the Oneshot track finalists in year 2024 as strings, you can use:
 
->>> get_agents(version=2023, track="oneshot", finalists_only=True, top_only=0.1, as_class=False)
+>>> get_agents(version=2024, track="oneshot", finalists_only=True, top_only=0.1, as_class=False)
+
+Winners of the SCML 2024 Competition
+====================================
+
+Oneshot Track
+-------------
+* First Place: Ryoga Miyajima for **CautiousOneShotAgent**
+* Second Place: Arnie He, Akash Singirikonda, and Amy Greenwald for **MatchingPennies**
+* Third Place: Hajime Endo for **DistRedistAgent**
+* Third Place: Yuzuru Kitamura for **EpsilonGreedyAgent**
+
+You can get these agents after installing scml-agents by running:
+
+>>> scml_agents.get_agents(2024, track="oneshot", winners_only=True)
+
+Standard Track
+--------------
+* First Place: Gou Kazusa for **PenguinAgent**
+
+You can get this agent after installing scml-agents by running:
+
+>>> scml_agents.get_agents(2024, track="std", winners_only=True)
 
 Winners of the SCML 2023 Competition
 ====================================
