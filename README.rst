@@ -19,15 +19,15 @@ You can get any specific subset of the agents in the library using `get_agents()
 has the following parameters:
 
 * version: Either a competition year (2019, 2020, 2021, ....) or the value "contrib" for all other agents. You can also pass "all" or "any" to get all agents.
-* track: The track (any, collusion, std, sabotage[only for 2019], oneshot [from 2021]).
+* track: The track (any, std, oneshot [from 2021], sabotage[only for 2019], collusion [until 2023]).
 * qualified_only: If true, only agents that were submitted to SCML and ran in the qualifications round will be
-                  returned
+                  returned.
 * finalists_only: If true, only agents that were submitted to SCML and passed qualifications will be
-                  returned
+                  returned.
 * winners_only: If true, only winners of SCML (the given version) will be returned.
-* bird_only: If true, only winners the bird award are returned (new in 2021)
+* bird_only: If true, only winners the bird award are returned (new in 2021).
 * top_only: Either a fraction of finalists or the top n finalists with highest scores in the finals of
-            SCML
+            SCML.
 * as_class: If true, the agent classes will be returned otherwise their full class names.
 
 
@@ -42,8 +42,8 @@ Oneshot Track
 -------------
 * First Place: Ryoga Miyajima for **CautiousOneShotAgent**
 * Second Place: Arnie He, Akash Singirikonda, and Amy Greenwald for **MatchingPennies**
-* Third Place: Hajime Endo for **DistRedistAgent**
-* Third Place: Yuzuru Kitamura for **EpsilonGreedyAgent**
+* Third Place (tie): Hajime Endo for **DistRedistAgent**
+* Third Place (tie): Yuzuru Kitamura for **EpsilonGreedyAgent**
 
 You can get these agents after installing scml-agents by running:
 
