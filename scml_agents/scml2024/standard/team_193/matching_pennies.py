@@ -343,7 +343,7 @@ class MatchingPennies(OneShotSyncAgent):
     def init(self):
         """Called once after the agent-world interface is initialized"""
 
-        self.verbose = True
+        self.verbose = False
         self.first = True
         self.days = 0
         self.expected_contract_quantity = [0] * 25
@@ -404,14 +404,15 @@ class MatchingPennies(OneShotSyncAgent):
             else 0
         )
         if self.verbose:
-            print(
-                f"Today I need {self.q} contracts, I managed to get {self.todays_contracts_num} contracts with the price of {uprice} each. Today I accumulated a profit of {self.ufun.from_contracts(self.contracts)}."
-            )
-            pass  # print(f"Today's best price is {self.best_price}")
-            print(
-                f"Today's exorgenous contracts are at {self.p/self.q} for each of the {self.q} items"
-            )
-            pass  # print(f"Expected quantities: {self.expected_contract_quantity}")
+            try:
+                print(
+                    f"Today I need {self.q} contracts, I managed to get {self.todays_contracts_num} contracts with the price of {uprice} each. Today I accumulated a profit of {self.ufun.from_contracts(self.contracts)}."
+                )
+                print(
+                    f"Today's exorgenous contracts are at {self.p/self.q} for each of the {self.q} items"
+                )
+            except:
+                pass  # print(f"Expected quantities: {self.expected_contract_quantity}")
 
     # ================================
     # Negotiation Control and Feedback

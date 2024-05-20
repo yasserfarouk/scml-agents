@@ -204,3 +204,14 @@ def test_winners_2020():
     assert len(agents) == 2
     agents = get_agents(2020, track="all", winners_only=True)
     assert len(agents) == 4
+
+
+def test_winners_2024():
+    agents = get_agents(2024, track="std", winners_only=True)
+    assert len(agents) == 1
+    agents = get_agents(2024, track="oneshot", winners_only=True)
+    assert len(agents) == 4
+    agents = get_agents(2024, track="collusion", winners_only=True)
+    assert len(agents) == 0
+    agents = get_agents(2024, track="all", winners_only=True)
+    assert len(agents) == 5
