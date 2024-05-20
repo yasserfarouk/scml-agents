@@ -1,0 +1,75 @@
+#     if self.awi.level == 0:
+    #         self.partners = self.awi.my_consumers
+    #         self.output = [True]
+    #         self.partner = "buyer"
+
+    #     elif self.awi.level == 1:
+    #         self.partners = self.awi.my_suppliers
+    #         self.output = [False]
+    #         self.partner = "seller"
+
+    #     self.balances = {c: [0] for c in self.partners}
+    #     self.is_saa = {c: False for c in self.partners}
+    #     # n_negotiation_rounds is still 20!
+    #     self.n_negotiation_rounds = self.awi.settings["neg_n_steps"]
+
+    #     # print(f"balance: {self.balances}")
+    #     # print(f"is_saa: {self.is_saa}")
+    #     # print(f"n_negotiation_rounds: {self.n_negotiation_rounds}")
+
+    # def before_step(self):
+    #     """Called at at the BEGINNING of every production step (day)"""
+
+    #     # ================ agent119
+    #     if (self.awi.current_step - 1) % 5 == 0:
+    #         for c in self.partners:
+    #             self.balances[c].append(
+    #                 self.awi.reports_at_step(self.awi.current_step - 1)[c].cash
+    #             )
+
+    #     self.accepted_offers = {}
+    #     self.received_offers = {}
+    #     self.sent_offers = {c: "First" for c in self.partners}
+    #     self.queue_offers = {c: "First" for c in self.partners}
+    #     self.signed_contracts = ()
+
+    #     # self.proposal_count = {c: 0 for c in self.partners}
+    #     # self.response_count = {c: 0 for c in self.partners}
+    #     self.wait_count = {c: 0 for c in self.partners}
+    #     self.q_needed = {c: 10 for c in self.partners}
+    #     self.final_offers = {}
+
+    #     self.num_in = self.awi.exogenous_contract_summary[0][0]
+    #     self.num_out = self.awi.exogenous_contract_summary[-1][0]
+    #     self.ufun.find_limit(True)
+    #     self.ufun.find_limit(False)
+
+    #     self.patient = True
+
+    #     if self.awi.level == 0:
+    #         self.q = self.awi.current_exogenous_input_quantity
+    #         self.min_price = self.awi.current_output_issues[UNIT_PRICE].min_value
+    #         self.max_price = self.awi.current_output_issues[UNIT_PRICE].max_value
+    #         self.best_price = self.max_price
+    #         if self.num_in > self.num_out:
+    #             self.patient = False
+
+    #     elif self.awi.level == 1:
+    #         self.q = self.awi.current_exogenous_output_quantity
+    #         self.min_price = self.awi.current_input_issues[UNIT_PRICE].min_value
+    #         self.max_price = self.awi.current_input_issues[UNIT_PRICE].max_value
+    #         self.best_price = self.min_price
+    #         if self.num_in < self.num_out:
+    #             self.patient = False
+
+    #     self.needed = self.q
+    #     self.first = False
+    #     self.remaining_partners = len(self.partners)
+    #     self.calc_final = False
+
+    #     if self.verbose:
+    #         print(
+    #             f"There are {self.num_in} produced and {self.num_out} needed. I need {self.q} contracts. I am at {self.awi.level}. The min price is {self.min_price} and the max price is {self.max_price}"
+    #         )
+
+    # ================ agent 119
