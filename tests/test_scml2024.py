@@ -25,7 +25,7 @@ def test_can_run_std_example():
     n_steps = 10
     world = SCML2024StdWorld(
         **SCML2024StdWorld.generate(
-            agent_types=["scml.scml2020.agents.MarketAwareDecentralizingAgent", fm],
+            agent_types=["scml.std.agents.rand.RandomStdAgent", fm],
             n_steps=n_steps,
         )
     )
@@ -41,7 +41,7 @@ def test_can_run_std(fm):
     n_steps = 10
     world = SCML2024StdWorld(
         **SCML2024StdWorld.generate(
-            agent_types=["scml.scml2020.agents.MarketAwareDecentralizingAgent", fm],
+            agent_types=["scml.std.agents.rand.RandomStdAgent", fm],
             n_steps=n_steps,
         )
     )
