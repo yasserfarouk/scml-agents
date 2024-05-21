@@ -4,7 +4,7 @@ from scml.oneshot import SCML2020OneShotWorld
 from scml.std import SCML2024StdWorld
 
 from scml_agents import get_agents
-from scml_agents.scml2024.oneshot.team_miyajima_oneshot import CautiousOneShotAgent
+from scml_agents.scml2024.standard.team_atsunaga.S22s import S5s
 
 from .switches import (
     SCMLAGENTS_RUN2024,
@@ -21,7 +21,7 @@ from .switches import (
     not SCMLAGENTS_RUN2024 or not SCMLAGENTS_RUN2024_STD, reason="Skipping 2024"
 )
 def test_can_run_std_example():
-    fm = CautiousOneShotAgent
+    fm = S5s
     n_steps = 10
     world = SCML2024StdWorld(
         **SCML2024StdWorld.generate(
