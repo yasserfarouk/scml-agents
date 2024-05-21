@@ -436,8 +436,10 @@ class S5s(StdAgent):
             quantity = contract.agreement["quantity"]
             price = contract.agreement["unit_price"]
             time = contract.agreement["time"]
+            # ignore out of range contracts (Yasser)
             if time >= self.awi.n_steps:
                 return
+
             if len(contract.partners) != 2:
                 return
             if contract.partners[0] == self.id:
