@@ -291,10 +291,10 @@ class MyNegotiator(SAONegotiator):
 
         self.add_capabilities({"respond": True, "propose": True, "max-proposals": 1})
 
-    def propose_(self, state: SAOState) -> Optional["Outcome"]:
+    def propose_(self, state: SAOState, dest: str | None = None) -> Optional["Outcome"]:
         if not self._capabilities["propose"] or self.__end_negotiation:
             return None
-        proposal = self.propose(state=state)
+        proposal = self.propose(state=state, dest=dest)
         return proposal
 
     def respond_(self, state: SAOState, source="") -> "ResponseType":
@@ -372,7 +372,9 @@ class MyNegotiator(SAONegotiator):
 
         return ResponseType.ACCEPT_OFFER
 
-    def propose(self, state: MechanismState) -> Optional["Outcome"]:
+    def propose(
+        self, state: MechanismState, dest: str | None = None
+    ) -> Optional["Outcome"]:
         # initialize last_offer
         if self.last_offer == None:
             self.last_offer = (

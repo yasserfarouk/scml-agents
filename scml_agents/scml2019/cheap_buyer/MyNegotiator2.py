@@ -37,7 +37,9 @@ class MyNegotiator2(SAONegotiator):
         self.interval = interval
         self.reserved_valuee = reserved_value
 
-    def propose(self, state: MechanismState) -> Optional["Outcome"]:
+    def propose(
+        self, state: MechanismState, dest: str | None = None
+    ) -> Optional["Outcome"]:
         if self.strategy == self.STRATEGY_ONLY_THE_BEST:
             our_offer = self.propose_only_the_best(state)
         elif self.strategy == self.STRATEGY_TIME_BASED_CONCESSION:
@@ -84,12 +86,14 @@ class MyNegotiator2(SAONegotiator):
             a = 0
         for outcome in self.ordered_outcomes:
             self.ordered_outcomes[index] = outcome[0] / biggest_utility, outcome[1]
-            self.utility_values_of_offers[
-                str(self.ordered_outcomes[index][1])
-            ] = self.ordered_outcomes[index][0]
+            self.utility_values_of_offers[str(self.ordered_outcomes[index][1])] = (
+                self.ordered_outcomes[index][0]
+            )
             index = index + 1
 
-    def propose_(self, state: MechanismState) -> Optional["Outcome"]:
+    def propose_(
+        self, state: MechanismState, dest: str | None = None
+    ) -> Optional["Outcome"]:
         if self.ufun and self.ufun.changes:
             self.on_preferences_changed(self.ufun.changes)
         return self.propose(state)

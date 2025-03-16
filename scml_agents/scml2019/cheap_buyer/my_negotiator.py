@@ -55,7 +55,9 @@ class Mynegotiator(AspirationNegotiator):
             return ResponseType.END_NEGOTIATION
         return ResponseType.REJECT_OFFER
 
-    def propose(self, state: MechanismState) -> Optional["Outcome"]:
+    def propose(
+        self, state: MechanismState, dest: str | None = None
+    ) -> Optional["Outcome"]:
         self.notify_ufun_changed()
         util_lst = self._get_util()
         tot_util = len(util_lst)
@@ -233,7 +235,9 @@ class Mynegotiator(AspirationNegotiator):
     def notify_ufun_changed(self, changes=tuple()):
         self.on_preferences_changed([PreferencesChange(PreferencesChangeType.General)])
 
-    def propose_(self, state: MechanismState) -> Optional["Outcome"]:
+    def propose_(
+        self, state: MechanismState, dest: str | None = None
+    ) -> Optional["Outcome"]:
         if self.ufun and self.ufun.changes:
             self.on_preferences_changed(self.ufun.changes)
         result = self.propose(state=state)
