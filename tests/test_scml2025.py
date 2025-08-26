@@ -1,10 +1,10 @@
 import pytest
 from pytest import mark
 from scml.oneshot import SCML2020OneShotWorld
-from scml.std import SCML2025StdWorld
+from scml.std import SCML2024StdWorld as SCML2025StdWorld
 
 from scml_agents import get_agents
-from scml_agents.scml2025.standard.team_atsunaga.S22s import S5s
+from scml_agents.scml2025.standard.team_atsunaga.as0 import AS0
 
 from .switches import (
     SCMLAGENTS_RUN2025,
@@ -12,16 +12,12 @@ from .switches import (
     SCMLAGENTS_RUN2025_STD,
 )
 
-# from scml_agents.scml2025.oneshot.team102 import GentleS as Gentle
-# from scml_agents.scml2025.standard.team_67.polymorphic_agent import PolymorphicAgent
-# from scml_agents.scml2025.standard.team_82.perry import PerryTheAgent
-
 
 @pytest.mark.skipif(
     not SCMLAGENTS_RUN2025 or not SCMLAGENTS_RUN2025_STD, reason="Skipping 2025"
 )
 def test_can_run_std_example():
-    fm = S5s
+    fm = AS0
     n_steps = 10
     world = SCML2025StdWorld(
         **SCML2025StdWorld.generate(

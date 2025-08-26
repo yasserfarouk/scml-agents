@@ -226,3 +226,14 @@ def test_winners_2025():
     assert len(agents) == 0
     agents = get_agents(2025, track="all", winners_only=True)
     assert len(agents) == 6
+
+
+def test_finalists_2025():
+    agents = get_agents(2025, track="std", finalists_only=True)
+    assert len(agents) == 4
+    agents = get_agents(2025, track="oneshot", finalists_only=True)
+    assert len(agents) == 5
+    agents = get_agents(2025, track="collusion", finalists_only=True)
+    assert len(agents) == 0
+    agents = get_agents(2025, track="all", finalists_only=True)
+    assert len(agents) == 9

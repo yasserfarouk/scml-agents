@@ -7,24 +7,22 @@ LitaAgentCIR — 库存敏感型统一策略（SDK 对接版）
 =================================================
 """
 
-from dataclasses import dataclass
 from copy import deepcopy
-from typing import Dict, List, Sequence, Tuple, Optional  # Added Optional
-import numpy as np
+from typing import Dict, List, Tuple, Optional  # Added Optional
 
-from .inventory_manager_cirs import InventoryManagerCIR, IMContract, IMContractType, MaterialType
+from .inventory_manager_cirs import (
+    InventoryManagerCIR,
+    IMContract,
+    IMContractType,
+    MaterialType,
+)
 
 # ------------------ 基础依赖 ------------------
-from typing import Any, Dict, List, Tuple, Iterable, Optional  # Added Optional
-from dataclasses import dataclass
 from itertools import combinations as iter_combinations  # Added for combinations
 import random
-import os
 import math
-from collections import Counter, defaultdict  # Added defaultdict
 from uuid import uuid4
 
-from numpy.random import choice as np_choice  # type: ignore
 
 from scml.std import (
     StdSyncAgent,
@@ -36,15 +34,11 @@ from scml.std import (
 from negmas import SAOState, SAOResponse, Outcome, Contract, ResponseType
 
 # 内部工具 & manager
-from .inventory_manager_cirs import (
-    IMContract,
-    IMContractType,
-    MaterialType,
-)
-__all = ["LitaAgentCIRS"]
+__all__ = ["LitaAgentCIRS"]
 
 # ------------------ 主代理实现 ------------------
 # Main agent implementation
+
 
 class LitaAgentCIRS(StdSyncAgent):
     """重构后的 LitaAgent CIR。"""
@@ -55,47 +49,46 @@ class LitaAgentCIRS(StdSyncAgent):
     # ------------------------------------------------------------------
 
     def __init__(
-            self,
-            *args,
-            concession_curve_power: float = 1.5,
-            capacity_tight_margin_increase: float = 0.07,
-            procurement_cash_flow_limit_percent: float = 0.75,
-            p_threshold: float = 0.5,
-            q_threshold: float = -0.2,
-            # 新增参数用于控制组合评估策略
-            # ---
-            # New parameters to control combination evaluation strategy
-            combo_evaluation_strategy: str = "simulated_annealing",
-            # 可选 "k_max", "beam_search", "simulated_annealing", "exhaustive_search" / Options: "k_max", "beam_search", "simulated_annealing", "exhaustive_search" # MODIFIED
-            max_combo_size_for_k_max: int = 6,  # 当 strategy == "k_max" 时使用 / Used when strategy == "k_max"
-            beam_width_for_beam_search: int = 3,
-            # 当 strategy == "beam_search" 时使用 / Used when strategy == "beam_search"
-            iterations_for_sa: int = 200,
-            # 当 strategy == "simulated_annealing" 时使用 / Used when strategy == "simulated_annealing"
-            sa_initial_temp: float = 1.0,  # SA 初始温度 / SA initial temperature
-            sa_cooling_rate: float = 0.95,  # SA 冷却速率 / SA cooling rate
-            threshold_time_decay_factor: float = 0.98,
-            inventory_pressure_threshold_raw: float = 50.0,
-            inventory_pressure_threshold_product: float = 50.0,
-            price_concession_opponent_factor: float = 0.5,
-            price_concession_time_factor: float = 0.02,
-            price_concession_round_factor: float = 0.05,
-            # 修改：over_procurement_factor 变为 initial_over_procurement_factor
-            # MODIFIED: over_procurement_factor becomes initial_over_procurement_factor
-            initial_over_procurement_factor: float = 0.1,  # 初始超采购比例 / Initial over-procurement percentage
-            # 新增参数用于自动调节超采购因子
-            # ---
-            # New parameters for automatic adjustment of over-procurement factor
-            over_procurement_adjustment_rate: float = 0.02,  # 每次调整的步长 / Adjustment step size
-            over_procurement_min_factor: float = 0.0,  # 最小超采购因子 / Minimum over-procurement factor
-            over_procurement_max_factor: float = 0.5,
-            # 最大超采购因子 (例如，最多超采50%) / Maximum over-procurement factor (e.g., at most 50% over)
-            over_procurement_success_lower_bound: float = 0.7,
-            # 采购成功率低于此值则增加因子 / Increase factor if procurement success rate is below this
-            over_procurement_success_upper_bound: float = 1.2,
-            # 采购成功率高于此值则减少因子 / Decrease factor if procurement success rate is above this
-
-            **kwargs,
+        self,
+        *args,
+        concession_curve_power: float = 1.5,
+        capacity_tight_margin_increase: float = 0.07,
+        procurement_cash_flow_limit_percent: float = 0.75,
+        p_threshold: float = 0.5,
+        q_threshold: float = -0.2,
+        # 新增参数用于控制组合评估策略
+        # ---
+        # New parameters to control combination evaluation strategy
+        combo_evaluation_strategy: str = "simulated_annealing",
+        # 可选 "k_max", "beam_search", "simulated_annealing", "exhaustive_search" / Options: "k_max", "beam_search", "simulated_annealing", "exhaustive_search" # MODIFIED
+        max_combo_size_for_k_max: int = 6,  # 当 strategy == "k_max" 时使用 / Used when strategy == "k_max"
+        beam_width_for_beam_search: int = 3,
+        # 当 strategy == "beam_search" 时使用 / Used when strategy == "beam_search"
+        iterations_for_sa: int = 200,
+        # 当 strategy == "simulated_annealing" 时使用 / Used when strategy == "simulated_annealing"
+        sa_initial_temp: float = 1.0,  # SA 初始温度 / SA initial temperature
+        sa_cooling_rate: float = 0.95,  # SA 冷却速率 / SA cooling rate
+        threshold_time_decay_factor: float = 0.98,
+        inventory_pressure_threshold_raw: float = 50.0,
+        inventory_pressure_threshold_product: float = 50.0,
+        price_concession_opponent_factor: float = 0.5,
+        price_concession_time_factor: float = 0.02,
+        price_concession_round_factor: float = 0.05,
+        # 修改：over_procurement_factor 变为 initial_over_procurement_factor
+        # MODIFIED: over_procurement_factor becomes initial_over_procurement_factor
+        initial_over_procurement_factor: float = 0.1,  # 初始超采购比例 / Initial over-procurement percentage
+        # 新增参数用于自动调节超采购因子
+        # ---
+        # New parameters for automatic adjustment of over-procurement factor
+        over_procurement_adjustment_rate: float = 0.02,  # 每次调整的步长 / Adjustment step size
+        over_procurement_min_factor: float = 0.0,  # 最小超采购因子 / Minimum over-procurement factor
+        over_procurement_max_factor: float = 0.5,
+        # 最大超采购因子 (例如，最多超采50%) / Maximum over-procurement factor (e.g., at most 50% over)
+        over_procurement_success_lower_bound: float = 0.7,
+        # 采购成功率低于此值则增加因子 / Increase factor if procurement success rate is below this
+        over_procurement_success_upper_bound: float = 1.2,
+        # 采购成功率高于此值则减少因子 / Decrease factor if procurement success rate is above this
+        **kwargs,
     ) -> None:
         super().__init__(*args, **kwargs)
 
@@ -134,7 +127,6 @@ class LitaAgentCIRS(StdSyncAgent):
         self.over_procurement_success_lower_bound = over_procurement_success_lower_bound
         self.over_procurement_success_upper_bound = over_procurement_success_upper_bound
 
-
         # —— 运行时变量 ——
         self.im: Optional[InventoryManagerCIR] = None  # Updated type hint
         self._market_price_avg: float = 0.0
@@ -146,7 +138,9 @@ class LitaAgentCIRS(StdSyncAgent):
         self.model = None
         self.concession_model = None
         self.sales_completed: Dict[int, int] = {}
-        self.purchase_completed: Dict[int, int] = {}  # 用于记录每日实际完成的采购总量（非超采购目标）
+        self.purchase_completed: Dict[
+            int, int
+        ] = {}  # 用于记录每日实际完成的采购总量（非超采购目标）
 
         self.partner_stats: Dict[str, Dict[str, float]] = {}
         self.partner_models: Dict[str, Dict[str, float]] = {}
@@ -179,7 +173,7 @@ class LitaAgentCIRS(StdSyncAgent):
             processing_cost=processing_cost,
             daily_production_capacity=daily_capacity,
             max_simulation_day=self.awi.n_steps,
-            current_day=self.awi.current_step
+            current_day=self.awi.current_step,
         )
 
     def before_step(self) -> None:
@@ -212,7 +206,7 @@ class LitaAgentCIRS(StdSyncAgent):
                     price=exogenous_contract_price,
                     delivery_time=current_day,  # Exogenous are for current day
                     bankruptcy_risk=0,
-                    material_type=MaterialType.RAW
+                    material_type=MaterialType.RAW,
                 )
                 self.im.add_transaction(exogenous_contract)
 
@@ -226,19 +220,22 @@ class LitaAgentCIRS(StdSyncAgent):
                     contract_id=exogenous_contract_id,
                     partner_id=exogenous_contract_partner,
                     type=IMContractType.DEMAND,
-                    quantity=int(exogenous_contract_quantity),  # 确保是整数 / Ensure it's an integer
+                    quantity=int(
+                        exogenous_contract_quantity
+                    ),  # 确保是整数 / Ensure it's an integer
                     price=exogenous_contract_price,
                     delivery_time=current_day,  # Exogenous are for current day
                     bankruptcy_risk=0,
-                    material_type=MaterialType.PRODUCT
+                    material_type=MaterialType.PRODUCT,
                 )
                 self.im.add_transaction(exogenous_contract)
 
         # 在外生协议添加并重新规划生产后，再计算不足量
         # After exogenous contracts are added and production is replanned, then calculate the insufficiency
         self.today_insufficient = self.im.get_today_insufficient_raw(current_day)
-        self.total_insufficient = self.im.get_total_insufficient_raw(current_day, horizon=14)  # Default horizon 14 days
-
+        self.total_insufficient = self.im.get_total_insufficient_raw(
+            current_day, horizon=14
+        )  # Default horizon 14 days
 
     def step(self) -> None:
         """每天结束时调用：执行 IM 的日终操作并刷新市场均价，并调整超采购因子。"""
@@ -247,20 +244,32 @@ class LitaAgentCIRS(StdSyncAgent):
 
         # --- 调整超采购因子 ---
         # --- Adjust Over-Procurement Factor ---
-        targeted_today = self.daily_targeted_procurement_for_adjustment.get(current_day, 0)
-        achieved_today = self.daily_achieved_procurement_for_adjustment.get(current_day, 0)
+        targeted_today = self.daily_targeted_procurement_for_adjustment.get(
+            current_day, 0
+        )
+        achieved_today = self.daily_achieved_procurement_for_adjustment.get(
+            current_day, 0
+        )
 
         original_over_proc_factor = self.over_procurement_factor
 
         if targeted_today > 0:
             success_ratio = achieved_today / targeted_today
-            if success_ratio < self.over_procurement_success_lower_bound:  # 例如，低于70%的目标
+            if (
+                success_ratio < self.over_procurement_success_lower_bound
+            ):  # 例如，低于70%的目标
                 self.over_procurement_factor += self.over_procurement_adjustment_rate
-            elif success_ratio > self.over_procurement_success_upper_bound:  # 例如，超过120%的目标
-                self.over_procurement_factor -= self.over_procurement_adjustment_rate * 0.5  # 减少时幅度小一些
+            elif (
+                success_ratio > self.over_procurement_success_upper_bound
+            ):  # 例如，超过120%的目标
+                self.over_procurement_factor -= (
+                    self.over_procurement_adjustment_rate * 0.5
+                )  # 减少时幅度小一些
 
-            self.over_procurement_factor = max(self.over_procurement_min_factor,
-                                               min(self.over_procurement_max_factor, self.over_procurement_factor))
+            self.over_procurement_factor = max(
+                self.over_procurement_min_factor,
+                min(self.over_procurement_max_factor, self.over_procurement_factor),
+            )
 
         # 让 IM 完成收货 / 生产 / 交付 / 规划
         # CustomInventoryManager.process_day_end_operations advances its own current_day
@@ -269,10 +278,13 @@ class LitaAgentCIRS(StdSyncAgent):
         # —— 更新市场均价估计 ——
         # Ensure lists are not empty before calculating average
         if self._recent_material_prices:
-            self._market_material_price_avg = sum(self._recent_material_prices) / len(self._recent_material_prices)
+            self._market_material_price_avg = sum(self._recent_material_prices) / len(
+                self._recent_material_prices
+            )
         if self._recent_product_prices:
-            self._market_product_price_avg = sum(self._recent_product_prices) / len(self._recent_product_prices)
-
+            self._market_product_price_avg = sum(self._recent_product_prices) / len(
+                self._recent_product_prices
+            )
 
         self._print_daily_status_report(result)
 
@@ -308,20 +320,30 @@ class LitaAgentCIRS(StdSyncAgent):
             return proposals
 
         # --- 1. 采购原材料以满足短缺 (Procure raw materials to meet shortfall) ---
-        base_target_procurement_quantity = self.total_insufficient if self.total_insufficient is not None else 0
+        base_target_procurement_quantity = (
+            self.total_insufficient if self.total_insufficient is not None else 0
+        )
 
         adjusted_target_procurement_quantity = 0
         if base_target_procurement_quantity > 0:
             adjusted_target_procurement_quantity = int(
-                round(base_target_procurement_quantity * (1 + self.over_procurement_factor)))
+                round(
+                    base_target_procurement_quantity
+                    * (1 + self.over_procurement_factor)
+                )
+            )
 
         # 记录当日的目标采购量（用于后续调整超采购因子）
         # Record today's target procurement quantity (for later adjustment of over-procurement factor)
-        self.daily_targeted_procurement_for_adjustment[current_day] = adjusted_target_procurement_quantity
+        self.daily_targeted_procurement_for_adjustment[current_day] = (
+            adjusted_target_procurement_quantity
+        )
 
         supplier_negotiators = [
-            nid for nid in self.negotiators.keys()
-            if self._is_supplier(nid) and not (self.awi.is_first_level and nid in self.awi.my_suppliers)
+            nid
+            for nid in self.negotiators.keys()
+            if self._is_supplier(nid)
+            and not (self.awi.is_first_level and nid in self.awi.my_suppliers)
         ]
 
         if adjusted_target_procurement_quantity > 0 and supplier_negotiators:
@@ -337,9 +359,10 @@ class LitaAgentCIRS(StdSyncAgent):
 
             # Sort suppliers by their min_q_nmi to prioritize those with smaller minimums if total need is low
             # This is a simple heuristic. More complex would be to solve a knapsack-like problem.
-            sorted_supplier_nids = sorted(supplier_negotiators, key=lambda nid: supplier_min_q_map[nid])
+            sorted_supplier_nids = sorted(
+                supplier_negotiators, key=lambda nid: supplier_min_q_map[nid]
+            )
             remaining_procurement_need = adjusted_target_procurement_quantity
-
 
             for nid in sorted_supplier_nids:
                 if remaining_procurement_need <= 0:
@@ -347,11 +370,11 @@ class LitaAgentCIRS(StdSyncAgent):
 
                 nmi = self.get_nmi(nid)
                 min_q_nmi = supplier_min_q_map[nid]
-                max_q_nmi = float('inf')
+                max_q_nmi = float("inf")
                 min_p_nmi = 0.01
                 # max_p_nmi is not strictly needed for proposing our best price (min_p_nmi for buying)
                 # but good to have for clamping if we were to use a different pricing strategy.
-                max_p_nmi_from_nmi = float('inf')
+                max_p_nmi_from_nmi = float("inf")
                 min_t_nmi, max_t_nmi = current_day + 1, n_steps - 1
 
                 if nmi:
@@ -368,16 +391,24 @@ class LitaAgentCIRS(StdSyncAgent):
                 # Determine proposal quantity for this supplier
                 # Propose up to remaining need, but not less than NMI min, and not more than NMI max.
                 propose_q_for_this_supplier = min(remaining_procurement_need, max_q_nmi)
-                propose_q_for_this_supplier = max(propose_q_for_this_supplier, min_q_nmi)
+                propose_q_for_this_supplier = max(
+                    propose_q_for_this_supplier, min_q_nmi
+                )
 
-                if propose_q_for_this_supplier <= 0 or propose_q_for_this_supplier > remaining_procurement_need:
+                if (
+                    propose_q_for_this_supplier <= 0
+                    or propose_q_for_this_supplier > remaining_procurement_need
+                ):
                     # If min_q_nmi is greater than remaining need, we can't propose to this supplier for this need.
                     # Or if calculated quantity is invalid.
                     continue
 
                 propose_q = int(round(propose_q_for_this_supplier))
                 propose_t = current_day + 1
-                if self.total_insufficient and self.total_insufficient > self.im.daily_production_capacity * 2:
+                if (
+                    self.total_insufficient
+                    and self.total_insufficient > self.im.daily_production_capacity * 2
+                ):
                     propose_t = max(current_day + 1, min_t_nmi)
                 else:
                     propose_t = max(current_day + 2, min_t_nmi)
@@ -392,28 +423,37 @@ class LitaAgentCIRS(StdSyncAgent):
                     proposals[nid] = (propose_q, propose_t, propose_p)
                     remaining_procurement_need -= propose_q
 
-
         # --- 2. 销售产成品 (Sell finished products) ---
         # ... (销售逻辑保持不变) ...
         if not self.awi.is_last_level:
             sellable_horizon = min(3, n_steps - (current_day + 1))
             estimated_sellable_quantity = 0
             if sellable_horizon > 0:
-                current_product_stock = self.im.get_inventory_summary(current_day, MaterialType.PRODUCT).get(
-                    'current_stock', 0)
+                current_product_stock = self.im.get_inventory_summary(
+                    current_day, MaterialType.PRODUCT
+                ).get("current_stock", 0)
                 planned_production_in_horizon = 0
                 for d_offset in range(sellable_horizon):
-                    planned_production_in_horizon += self.im.production_plan.get(current_day + d_offset, 0)
+                    planned_production_in_horizon += self.im.production_plan.get(
+                        current_day + d_offset, 0
+                    )
                 committed_sales_in_horizon = 0
                 for contract_s in self.im.pending_demand_contracts:
-                    if current_day <= contract_s.delivery_time < current_day + sellable_horizon:
+                    if (
+                        current_day
+                        <= contract_s.delivery_time
+                        < current_day + sellable_horizon
+                    ):
                         committed_sales_in_horizon += contract_s.quantity
-                estimated_sellable_quantity = current_product_stock + planned_production_in_horizon - committed_sales_in_horizon
+                estimated_sellable_quantity = (
+                    current_product_stock
+                    + planned_production_in_horizon
+                    - committed_sales_in_horizon
+                )
                 estimated_sellable_quantity = max(0, estimated_sellable_quantity)
 
             consumer_negotiators = [
-                nid for nid in self.negotiators.keys()
-                if self._is_consumer(nid)
+                nid for nid in self.negotiators.keys() if self._is_consumer(nid)
             ]
 
             if estimated_sellable_quantity > 0 and consumer_negotiators:
@@ -426,9 +466,10 @@ class LitaAgentCIRS(StdSyncAgent):
                         min_q_c = int(round(nmi_c.issues[QUANTITY].min_value))
                     consumer_min_q_map[nid_c] = max(1, min_q_c)
 
-                sorted_consumer_nids = sorted(consumer_negotiators, key=lambda nid: consumer_min_q_map[nid])
+                sorted_consumer_nids = sorted(
+                    consumer_negotiators, key=lambda nid: consumer_min_q_map[nid]
+                )
                 remaining_sellable_quantity = estimated_sellable_quantity
-
 
                 for nid in sorted_consumer_nids:
                     if remaining_sellable_quantity <= 0:
@@ -436,10 +477,10 @@ class LitaAgentCIRS(StdSyncAgent):
 
                     nmi = self.get_nmi(nid)
                     min_q_nmi = consumer_min_q_map[nid]
-                    max_q_nmi = float('inf')
+                    max_q_nmi = float("inf")
                     # min_p_nmi is not strictly needed for proposing our best price (max_p_nmi for selling)
                     min_p_nmi_from_nmi = 0.01
-                    max_p_nmi = float('inf')
+                    max_p_nmi = float("inf")
                     min_t_nmi, max_t_nmi = current_day + 1, n_steps - 1
 
                     if nmi:
@@ -452,10 +493,17 @@ class LitaAgentCIRS(StdSyncAgent):
                             min_t_nmi = max(min_t_nmi, nmi.issues[TIME].min_value)
                             max_t_nmi = min(max_t_nmi, nmi.issues[TIME].max_value)
 
-                    propose_q_for_this_consumer = min(remaining_sellable_quantity, max_q_nmi)
-                    propose_q_for_this_consumer = max(propose_q_for_this_consumer, min_q_nmi)
+                    propose_q_for_this_consumer = min(
+                        remaining_sellable_quantity, max_q_nmi
+                    )
+                    propose_q_for_this_consumer = max(
+                        propose_q_for_this_consumer, min_q_nmi
+                    )
 
-                    if propose_q_for_this_consumer <= 0 or propose_q_for_this_consumer > remaining_sellable_quantity:
+                    if (
+                        propose_q_for_this_consumer <= 0
+                        or propose_q_for_this_consumer > remaining_sellable_quantity
+                    ):
                         continue
 
                     propose_q = int(round(propose_q_for_this_consumer))
@@ -471,7 +519,6 @@ class LitaAgentCIRS(StdSyncAgent):
                         proposals[nid] = (propose_q, propose_t, propose_p)
                         remaining_sellable_quantity -= propose_q
 
-
         return proposals
 
     # ... (score_offers, normalize_final_score, calculate_inventory_cost_score, _evaluate_offer_combinations*, _calculate_combination_profit_and_normalize, _generate_counter_offer, counter_all, get_partner_id, _print_daily_status_report 保持不变)
@@ -481,10 +528,10 @@ class LitaAgentCIRS(StdSyncAgent):
     # We are only showing the diff for the new functionality.
     # ---
     def score_offers(
-            self,
-            offer_combination: Dict[str, Outcome],  # 一个报价组合
-            current_im: InventoryManagerCIR,  # 当前的库存管理器状态
-            awi: OneShotAWI,  # AWI 实例，用于获取当前日期、总天数等
+        self,
+        offer_combination: Dict[str, Outcome],  # 一个报价组合
+        current_im: InventoryManagerCIR,  # 当前的库存管理器状态
+        awi: OneShotAWI,  # AWI 实例，用于获取当前日期、总天数等
     ) -> Tuple[float, float]:
         """
         评估一个报价组合的分数。
@@ -520,7 +567,7 @@ class LitaAgentCIRS(StdSyncAgent):
             current_day=today,
             last_simulation_day=actual_last_simulation_day,
             unit_shortfall_penalty=unit_shortfall_penalty,
-            unit_storage_cost=current_unit_storage_cost
+            unit_storage_cost=current_unit_storage_cost,
         )
 
         # 3. 计算 score_b: 接受报价组合后的总库存成本
@@ -533,8 +580,16 @@ class LitaAgentCIRS(StdSyncAgent):
                 continue
             quantity, time, unit_price = offer_outcome
             is_supply_contract_for_agent = self._is_supplier(negotiator_id)
-            contract_type = IMContractType.SUPPLY if is_supply_contract_for_agent else IMContractType.DEMAND
-            material_type = MaterialType.RAW if is_supply_contract_for_agent else MaterialType.PRODUCT
+            contract_type = (
+                IMContractType.SUPPLY
+                if is_supply_contract_for_agent
+                else IMContractType.DEMAND
+            )
+            material_type = (
+                MaterialType.RAW
+                if is_supply_contract_for_agent
+                else MaterialType.PRODUCT
+            )
             sim_contract = IMContract(
                 contract_id=str(uuid4()),
                 partner_id=negotiator_id,
@@ -543,7 +598,7 @@ class LitaAgentCIRS(StdSyncAgent):
                 price=unit_price,
                 delivery_time=time,
                 material_type=material_type,
-                bankruptcy_risk=0.0
+                bankruptcy_risk=0.0,
             )
             im_after.add_transaction(sim_contract)
         score_b = self.calculate_inventory_cost_score(
@@ -551,7 +606,7 @@ class LitaAgentCIRS(StdSyncAgent):
             current_day=today,
             last_simulation_day=actual_last_simulation_day,
             unit_shortfall_penalty=unit_shortfall_penalty,
-            unit_storage_cost=current_unit_storage_cost
+            unit_storage_cost=current_unit_storage_cost,
         )
 
         # 4. 确保成本分数 a 和 b 不为负 (成本理论上应 >= 0)
@@ -584,12 +639,12 @@ class LitaAgentCIRS(StdSyncAgent):
         return normalized_value
 
     def calculate_inventory_cost_score(
-            self,
-            im_state: InventoryManagerCIR,
-            current_day: int,
-            last_simulation_day: int,
-            unit_shortfall_penalty: float,
-            unit_storage_cost: float
+        self,
+        im_state: InventoryManagerCIR,
+        current_day: int,
+        last_simulation_day: int,
+        unit_shortfall_penalty: float,
+        unit_storage_cost: float,
     ) -> float:
         total_cost_score = 0.0
         im_state.plan_production(up_to_day=last_simulation_day)
@@ -610,8 +665,11 @@ class LitaAgentCIRS(StdSyncAgent):
             # 注意：get_inventory_summary(d, ...) 返回的是 d 天开始时的库存和基于当前计划的预估可用量
             # ---
             # Note: get_inventory_summary(d, ...) returns stock at the start of day d and estimated availability based on current plans
-            total_available_to_deliver_on_d = sim_eval_im_for_shortfall.get_inventory_summary(d, MaterialType.PRODUCT)[
-                'estimated_available']
+            total_available_to_deliver_on_d = (
+                sim_eval_im_for_shortfall.get_inventory_summary(
+                    d, MaterialType.PRODUCT
+                )["estimated_available"]
+            )
 
             # 3. Calculate shortfall for day 'd'
             if total_demand_qty_on_d > total_available_to_deliver_on_d:
@@ -638,35 +696,43 @@ class LitaAgentCIRS(StdSyncAgent):
         # Its current_day should still be current_day (i.e., the start day of the evaluation).
         # We will simulate end-of-day operations on this copy.
         sim_eval_im_for_storage = deepcopy(
-            im_state)  # 使用一个新的副本来模拟存储成本计算过程 / Use a new copy to simulate the storage cost calculation process
+            im_state
+        )  # 使用一个新的副本来模拟存储成本计算过程 / Use a new copy to simulate the storage cost calculation process
         sim_eval_im_for_storage.is_deepcopy = True
         sim_eval_im_for_storage.current_day = current_day
 
         # Re-initialize a sim for storage cost calculation based on the *final state* of inventory after all demands met/shortfalled
         # This uses the sim_eval_im which has processed deliveries/productions up to last_simulation_day
 
-        for d in range(current_day,
-                       last_simulation_day + 1):  # 循环到 last_simulation_day (包含) / Loop up to last_simulation_day (inclusive)
+        for d in range(
+            current_day, last_simulation_day + 1
+        ):  # 循环到 last_simulation_day (包含) / Loop up to last_simulation_day (inclusive)
             # 获取 d 天开始时的库存用于计算当天的存储成本
             # ---
             # Get stock at the start of day d to calculate storage cost for that day
-            raw_stock_info = sim_eval_im_for_storage.get_inventory_summary(d, MaterialType.RAW)
-            product_stock_info = sim_eval_im_for_storage.get_inventory_summary(d, MaterialType.PRODUCT)
+            raw_stock_info = sim_eval_im_for_storage.get_inventory_summary(
+                d, MaterialType.RAW
+            )
+            product_stock_info = sim_eval_im_for_storage.get_inventory_summary(
+                d, MaterialType.PRODUCT
+            )
         for d in range(current_day, last_simulation_day + 1):
             raw_stock_info = im_state.get_inventory_summary(d, MaterialType.RAW)
             product_stock_info = im_state.get_inventory_summary(d, MaterialType.PRODUCT)
 
             # As per prompt clarification: 'current_stock' is SOD, stored for the entirety of day d.
             daily_storage_cost = (
-                    raw_stock_info.get('current_stock', 0.0) * unit_storage_cost +
-                    product_stock_info.get('current_stock', 0.0) * unit_storage_cost)
+                raw_stock_info.get("current_stock", 0.0) * unit_storage_cost
+                + product_stock_info.get("current_stock", 0.0) * unit_storage_cost
+            )
             total_cost_score += daily_storage_cost
 
             # 推进模拟副本的天数以进行下一天的存储成本计算
             # ---
             # Advance the day of the simulation copy for the next day's storage cost calculation
             sim_eval_im_for_storage.process_day_end_operations(
-                d)  # 这会将 sim_eval_im_for_storage.current_day 推进到 d + 1 / This will advance sim_eval_im_for_storage.current_day to d + 1
+                d
+            )  # 这会将 sim_eval_im_for_storage.current_day 推进到 d + 1 / This will advance sim_eval_im_for_storage.current_day to d + 1
 
         # C. 计算期末库存处置成本
         # ---
@@ -679,19 +745,23 @@ class LitaAgentCIRS(StdSyncAgent):
         # 我们需要的是在 last_simulation_day 结束后，即第 day_for_disposal_check 天开始时的库存
         # ---
         # We need the inventory at the start of day_for_disposal_check, which is after last_simulation_day ends.
-        remain_raw = sim_eval_im_for_storage.get_inventory_summary(day_for_disposal_check, MaterialType.RAW)[
-            'current_stock']
-        remain_product = sim_eval_im_for_storage.get_inventory_summary(day_for_disposal_check, MaterialType.PRODUCT)[
-            'current_stock']
-        inventory_penalty = (remain_raw + remain_product) * self.awi.current_disposal_cost
+        remain_raw = sim_eval_im_for_storage.get_inventory_summary(
+            day_for_disposal_check, MaterialType.RAW
+        )["current_stock"]
+        remain_product = sim_eval_im_for_storage.get_inventory_summary(
+            day_for_disposal_check, MaterialType.PRODUCT
+        )["current_stock"]
+        inventory_penalty = (
+            remain_raw + remain_product
+        ) * self.awi.current_disposal_cost
         total_cost_score += inventory_penalty
         return total_cost_score
 
     def _evaluate_offer_combinations_exhaustive(
-            self,
-            offers: Dict[str, Outcome],
-            im: InventoryManagerCIR,
-            awi: OneShotAWI,
+        self,
+        offers: Dict[str, Outcome],
+        im: InventoryManagerCIR,
+        awi: OneShotAWI,
     ) -> Tuple[Optional[List[Tuple[str, Outcome]]], float]:
         """
         使用“全局搜索”（枚举所有非空子集）策略评估组合，主要基于库存得分。
@@ -708,31 +778,35 @@ class LitaAgentCIRS(StdSyncAgent):
         best_combination_items: Optional[List[Tuple[str, Outcome]]] = None
         highest_norm_score: float = -1.0
 
-        for i in range(1, num_offers_available + 1):  # Loop for all possible combination sizes
+        for i in range(
+            1, num_offers_available + 1
+        ):  # Loop for all possible combination sizes
             for combo_as_tuple_of_tuples in iter_combinations(offer_items_list, i):
                 current_combination_list_of_tuples = list(combo_as_tuple_of_tuples)
                 current_combination_dict = dict(current_combination_list_of_tuples)
                 _raw_cost_reduction, current_norm_score = self.score_offers(
-                    offer_combination=current_combination_dict,
-                    current_im=im,
-                    awi=awi
+                    offer_combination=current_combination_dict, current_im=im, awi=awi
                 )
                 if current_norm_score > highest_norm_score:
                     highest_norm_score = current_norm_score
                     best_combination_items = current_combination_list_of_tuples
-                elif current_norm_score == highest_norm_score and best_combination_items:
+                elif (
+                    current_norm_score == highest_norm_score and best_combination_items
+                ):
                     # 如果分数相同，优先选择包含 offer 数量较少的组合
                     # ---
                     # If scores are the same, prefer combinations with fewer offers
-                    if len(current_combination_list_of_tuples) < len(best_combination_items):
+                    if len(current_combination_list_of_tuples) < len(
+                        best_combination_items
+                    ):
                         best_combination_items = current_combination_list_of_tuples
         return best_combination_items, highest_norm_score
 
     def _evaluate_offer_combinations_k_max(
-            self,
-            offers: Dict[str, Outcome],
-            im: InventoryManagerCIR,
-            awi: OneShotAWI,
+        self,
+        offers: Dict[str, Outcome],
+        im: InventoryManagerCIR,
+        awi: OneShotAWI,
     ) -> Tuple[Optional[List[Tuple[str, Outcome]]], float]:
         """
         使用“限制K大小” 策略评估组合，主要基于库存得分。
@@ -748,7 +822,9 @@ class LitaAgentCIRS(StdSyncAgent):
         offer_items_list: List[Tuple[str, Outcome]] = list(offers.items())
         best_combination_items: Optional[List[Tuple[str, Outcome]]] = None
         highest_norm_score: float = -1.0
-        for i in range(1, min(len(offer_items_list), self.max_combo_size_for_k_max) + 1):
+        for i in range(
+            1, min(len(offer_items_list), self.max_combo_size_for_k_max) + 1
+        ):
             for combo_as_tuple_of_tuples in iter_combinations(offer_items_list, i):
                 # combo_as_tuple_of_tuples 保证了组合非空，因为 i 从 1 开始
                 # ---
@@ -760,23 +836,25 @@ class LitaAgentCIRS(StdSyncAgent):
                 # ---
                 # Directly call score_offers to get norm_score
                 _raw_cost_reduction, current_norm_score = self.score_offers(
-                    offer_combination=current_combination_dict,
-                    current_im=im,
-                    awi=awi
+                    offer_combination=current_combination_dict, current_im=im, awi=awi
                 )
                 if current_norm_score > highest_norm_score:
                     highest_norm_score = current_norm_score
                     best_combination_items = current_combination_list_of_tuples
-                elif current_norm_score == highest_norm_score and best_combination_items:
-                    if len(current_combination_list_of_tuples) < len(best_combination_items):
+                elif (
+                    current_norm_score == highest_norm_score and best_combination_items
+                ):
+                    if len(current_combination_list_of_tuples) < len(
+                        best_combination_items
+                    ):
                         best_combination_items = current_combination_list_of_tuples
         return best_combination_items, highest_norm_score
 
     def _evaluate_offer_combinations_beam_search(
-            self,
-            offers: Dict[str, Outcome],
-            im: InventoryManagerCIR,
-            awi: OneShotAWI,
+        self,
+        offers: Dict[str, Outcome],
+        im: InventoryManagerCIR,
+        awi: OneShotAWI,
     ) -> Tuple[Optional[List[Tuple[str, Outcome]]], float]:
         """
         使用 Beam Search 策略评估组合，主要基于库存得分。
@@ -796,7 +874,7 @@ class LitaAgentCIRS(StdSyncAgent):
         # beam stores (combo_dict, norm_score) tuples
         # Initial beam can contain a "sentinel" empty combo with a very low score to start the process,
         # but we only care about non-empty combinations during selection and expansion.
-        beam: List[Tuple[Dict[str, Outcome], float]] = [({}, -float('inf'))]
+        beam: List[Tuple[Dict[str, Outcome], float]] = [({}, -float("inf"))]
 
         # 迭代构建组合
         # ---
@@ -810,19 +888,25 @@ class LitaAgentCIRS(StdSyncAgent):
 
             for current_combo_dict, _current_norm_score in beam:
                 for offer_idx, (nid, outcome) in enumerate(offer_items_list):
-                    if nid not in current_combo_dict:  # 确保不重复添加同一个伙伴的报价到当前路径
+                    if (
+                        nid not in current_combo_dict
+                    ):  # 确保不重复添加同一个伙伴的报价到当前路径
                         # ---
                         # Ensure not adding the same partner's offer repeatedly to the current path
                         new_combo_dict_list = list(current_combo_dict.items())
                         new_combo_dict_list.append((nid, outcome))
-                        new_combo_dict_list.sort(key=lambda x: x[0])  # 排序以确保组合键的唯一性
+                        new_combo_dict_list.sort(
+                            key=lambda x: x[0]
+                        )  # 排序以确保组合键的唯一性
                         # ---
                         # Sort to ensure uniqueness of the combination key
 
                         # new_combo_dict_list 现在至少包含一个元素
                         # ---
                         # new_combo_dict_list now contains at least one element
-                        new_combo_tuple_key = tuple(item[0] for item in new_combo_dict_list)
+                        new_combo_tuple_key = tuple(
+                            item[0] for item in new_combo_dict_list
+                        )
                         if new_combo_tuple_key in processed_combo_keys_in_this_round:
                             continue
                         processed_combo_keys_in_this_round.add(new_combo_tuple_key)
@@ -835,7 +919,7 @@ class LitaAgentCIRS(StdSyncAgent):
                             _raw, norm_score = self.score_offers(
                                 offer_combination=new_combo_dict_final,
                                 current_im=im,
-                                awi=awi
+                                awi=awi,
                             )
                             candidates.append((new_combo_dict_final, norm_score))
 
@@ -861,17 +945,27 @@ class LitaAgentCIRS(StdSyncAgent):
             # 去重，因为上一轮的beam可能与新生成的candidates有重合
             # ---
             # Deduplicate, as the previous beam might overlap with newly generated candidates
-            unique_candidates_dict: Dict[Tuple[str, ...], Tuple[Dict[str, Outcome], float]] = {}
+            unique_candidates_dict: Dict[
+                Tuple[str, ...], Tuple[Dict[str, Outcome], float]
+            ] = {}
             for cand_dict, cand_score in candidates:
-                if not cand_dict: continue  # 忽略空的候选 / Ignore empty candidates
+                if not cand_dict:
+                    continue  # 忽略空的候选 / Ignore empty candidates
                 cand_key = tuple(sorted(cand_dict.keys()))
-                if cand_key not in unique_candidates_dict or cand_score > unique_candidates_dict[cand_key][1]:
+                if (
+                    cand_key not in unique_candidates_dict
+                    or cand_score > unique_candidates_dict[cand_key][1]
+                ):
                     unique_candidates_dict[cand_key] = (cand_dict, cand_score)
 
-            sorted_candidates = sorted(list(unique_candidates_dict.values()), key=lambda x: x[1], reverse=True)
-            beam = sorted_candidates[:self.beam_width]
+            sorted_candidates = sorted(
+                list(unique_candidates_dict.values()), key=lambda x: x[1], reverse=True
+            )
+            beam = sorted_candidates[: self.beam_width]
 
-            if not beam or not beam[0][0]:  # 如果束为空，或者束中最好的也是空组合（不应发生）
+            if (
+                not beam or not beam[0][0]
+            ):  # 如果束为空，或者束中最好的也是空组合（不应发生）
                 # ---
                 # If beam is empty, or the best in beam is an empty combo (should not happen)
                 break
@@ -898,10 +992,10 @@ class LitaAgentCIRS(StdSyncAgent):
             return None, -1.0
 
     def _evaluate_offer_combinations_simulated_annealing(
-            self,
-            offers: Dict[str, Outcome],
-            im: InventoryManagerCIR,
-            awi: OneShotAWI,
+        self,
+        offers: Dict[str, Outcome],
+        im: InventoryManagerCIR,
+        awi: OneShotAWI,
     ) -> Tuple[Optional[List[Tuple[str, Outcome]]], float]:
         """
         使用模拟退火策略评估组合，主要基于库存得分。
@@ -927,7 +1021,9 @@ class LitaAgentCIRS(StdSyncAgent):
             # Theoretically won't reach here due to the 'if not offers' check above
             return None, -1.0
 
-        _raw_init, current_norm_score = self.score_offers(current_solution_dict, im, awi)
+        _raw_init, current_norm_score = self.score_offers(
+            current_solution_dict, im, awi
+        )
 
         best_solution_dict = deepcopy(current_solution_dict)
         best_norm_score = current_norm_score
@@ -941,7 +1037,8 @@ class LitaAgentCIRS(StdSyncAgent):
                 break
 
             neighbor_solution_dict = deepcopy(current_solution_dict)
-            if num_offers == 0: break  # Should not happen due to initial check / 由于初始检查，不应发生
+            if num_offers == 0:
+                break  # Should not happen due to initial check / 由于初始检查，不应发生
 
             action_type = random.choice(["add", "remove", "swap"])
             action_successful = False  # 标记邻域操作是否成功生成了一个与当前不同的解
@@ -949,12 +1046,18 @@ class LitaAgentCIRS(StdSyncAgent):
             # Flag if neighborhood operation successfully generated a different solution
 
             if action_type == "add" and len(neighbor_solution_dict) < num_offers:
-                available_to_add = [item for item in offer_items_list if item[0] not in neighbor_solution_dict]
+                available_to_add = [
+                    item
+                    for item in offer_items_list
+                    if item[0] not in neighbor_solution_dict
+                ]
                 if available_to_add:
                     nid_to_add, outcome_to_add = random.choice(available_to_add)
                     neighbor_solution_dict[nid_to_add] = outcome_to_add
                     action_successful = True
-            elif action_type == "remove" and len(neighbor_solution_dict) > 1:  # 确保移除后至少还可能有一个（如果目标是保持非空）
+            elif (
+                action_type == "remove" and len(neighbor_solution_dict) > 1
+            ):  # 确保移除后至少还可能有一个（如果目标是保持非空）
                 # 或者允许移除到空，但后续评估要处理
                 # ---
                 # Ensure at least one might remain after removal (if goal is to keep non-empty)
@@ -962,19 +1065,29 @@ class LitaAgentCIRS(StdSyncAgent):
                 nid_to_remove = random.choice(list(neighbor_solution_dict.keys()))
                 del neighbor_solution_dict[nid_to_remove]
                 action_successful = True
-            elif action_type == "swap" and neighbor_solution_dict:  # 确保当前解非空才能交换
+            elif (
+                action_type == "swap" and neighbor_solution_dict
+            ):  # 确保当前解非空才能交换
                 # ---
                 # Ensure current solution is non-empty to swap
-                available_to_add = [item for item in offer_items_list if item[0] not in neighbor_solution_dict]
+                available_to_add = [
+                    item
+                    for item in offer_items_list
+                    if item[0] not in neighbor_solution_dict
+                ]
                 if available_to_add:  # 必须有东西可以换入
                     # ---
                     # Must have something to swap in
                     nid_to_remove = random.choice(list(neighbor_solution_dict.keys()))
                     removed_outcome = neighbor_solution_dict.pop(nid_to_remove)
 
-                    possible_to_add_for_swap = [item for item in available_to_add if item[0] != nid_to_remove]
+                    possible_to_add_for_swap = [
+                        item for item in available_to_add if item[0] != nid_to_remove
+                    ]
                     if possible_to_add_for_swap:
-                        nid_to_add, outcome_to_add = random.choice(possible_to_add_for_swap)
+                        nid_to_add, outcome_to_add = random.choice(
+                            possible_to_add_for_swap
+                        )
                         neighbor_solution_dict[nid_to_add] = outcome_to_add
                         action_successful = True
                     else:  # 没有其他可换入的，把移除的加回去
@@ -982,19 +1095,23 @@ class LitaAgentCIRS(StdSyncAgent):
                         # No other to swap in, add the removed one back
                         neighbor_solution_dict[nid_to_remove] = removed_outcome
 
-            if not action_successful or not neighbor_solution_dict:  # 如果邻域操作未改变解，或导致空解，则跳过此次迭代
+            if (
+                not action_successful or not neighbor_solution_dict
+            ):  # 如果邻域操作未改变解，或导致空解，则跳过此次迭代
                 # （除非我们允许评估空解，但这里我们要求非空）
                 # ---
                 # If neighborhood op didn't change solution, or resulted in empty solution, skip iteration
                 # (unless we allow evaluating empty solutions, but here we require non-empty)
-                if not neighbor_solution_dict and current_solution_dict:  # 如果邻居变空了，但当前非空，则重新生成邻居
+                if (
+                    not neighbor_solution_dict and current_solution_dict
+                ):  # 如果邻居变空了，但当前非空，则重新生成邻居
                     continue  # If neighbor became empty but current is not, regenerate neighbor
 
             # 只有当邻域解非空时才评估
             # ---
             # Only evaluate if the neighbor solution is non-empty
             if not neighbor_solution_dict:
-                neighbor_norm_score = -float('inf')  # 给空解一个极差的分数
+                neighbor_norm_score = -float("inf")  # 给空解一个极差的分数
                 # ---
                 # Give empty solution a very poor score
             else:
@@ -1005,7 +1122,9 @@ class LitaAgentCIRS(StdSyncAgent):
             if neighbor_norm_score > current_norm_score:
                 current_solution_dict = deepcopy(neighbor_solution_dict)
                 current_norm_score = neighbor_norm_score
-                if current_norm_score > best_norm_score and current_solution_dict:  # 确保最佳解也非空
+                if (
+                    current_norm_score > best_norm_score and current_solution_dict
+                ):  # 确保最佳解也非空
                     # ---
                     # Ensure best solution is also non-empty
                     best_solution_dict = deepcopy(current_solution_dict)
@@ -1015,7 +1134,9 @@ class LitaAgentCIRS(StdSyncAgent):
                 # Only consider accepting worse solutions if temperature is high enough
                 delta_fitness = current_norm_score - neighbor_norm_score
                 acceptance_probability = math.exp(-delta_fitness / temp)
-                if random.random() < acceptance_probability and neighbor_solution_dict:  # 确保接受的也是非空解
+                if (
+                    random.random() < acceptance_probability and neighbor_solution_dict
+                ):  # 确保接受的也是非空解
                     # ---
                     # Ensure accepted is also non-empty
                     current_solution_dict = deepcopy(neighbor_solution_dict)
@@ -1029,55 +1150,67 @@ class LitaAgentCIRS(StdSyncAgent):
         return list(best_solution_dict.items()), best_norm_score
 
     def _evaluate_offer_combinations(
-            self,
-            offers: Dict[str, Outcome],
-            im: InventoryManagerCIR,
-            awi: OneShotAWI,
+        self,
+        offers: Dict[str, Outcome],
+        im: InventoryManagerCIR,
+        awi: OneShotAWI,
     ) -> Tuple[Optional[List[Tuple[str, Outcome]]], float, float]:
         """
-            评估报价组合，主要基于库存得分 (norm_score)。
-            在确定最佳组合后，再为其计算一次利润得分 (norm_profit)。
-            确保返回的最佳组合至少包含一个offer（如果输入offers非空）。
-            ---
-            Evaluates offer combinations, primarily based on inventory score (norm_score).
-            Profit score (norm_profit) is calculated once for the determined best combination.
-            Ensures the returned best combination contains at least one offer (if input offers is non-empty).
+        评估报价组合，主要基于库存得分 (norm_score)。
+        在确定最佳组合后，再为其计算一次利润得分 (norm_profit)。
+        确保返回的最佳组合至少包含一个offer（如果输入offers非空）。
+        ---
+        Evaluates offer combinations, primarily based on inventory score (norm_score).
+        Profit score (norm_profit) is calculated once for the determined best combination.
+        Ensures the returned best combination contains at least one offer (if input offers is non-empty).
         """
         if not offers:
             return None, -1.0, 0.0
 
         best_combination_items: Optional[List[Tuple[str, Outcome]]] = None
-        best_norm_score: float = -1.0  # 初始化为无效分数 / Initialize to an invalid score
+        best_norm_score: float = (
+            -1.0
+        )  # 初始化为无效分数 / Initialize to an invalid score
 
         if self.combo_evaluation_strategy == "k_max":
-            best_combination_items, best_norm_score = self._evaluate_offer_combinations_k_max(offers, im, awi)
+            best_combination_items, best_norm_score = (
+                self._evaluate_offer_combinations_k_max(offers, im, awi)
+            )
         elif self.combo_evaluation_strategy == "exhaustive_search":
-            best_combination_items, best_norm_score = self._evaluate_offer_combinations_exhaustive(offers, im, awi)
+            best_combination_items, best_norm_score = (
+                self._evaluate_offer_combinations_exhaustive(offers, im, awi)
+            )
         elif self.combo_evaluation_strategy == "beam_search":
-            best_combination_items, best_norm_score = self._evaluate_offer_combinations_beam_search(offers, im, awi)
+            best_combination_items, best_norm_score = (
+                self._evaluate_offer_combinations_beam_search(offers, im, awi)
+            )
         elif self.combo_evaluation_strategy == "simulated_annealing":
-            best_combination_items, best_norm_score = self._evaluate_offer_combinations_simulated_annealing(offers, im,
-                                                                                                            awi)
+            best_combination_items, best_norm_score = (
+                self._evaluate_offer_combinations_simulated_annealing(offers, im, awi)
+            )
         else:
-            best_combination_items, best_norm_score = self._evaluate_offer_combinations_k_max(offers, im, awi)
+            best_combination_items, best_norm_score = (
+                self._evaluate_offer_combinations_k_max(offers, im, awi)
+            )
 
         if best_combination_items:  # 确保找到了一个非空的最佳组合
             # ---
             # Ensure a non-empty best combination was found
             best_combo_dict = dict(best_combination_items)
-            _actual_profit, norm_profit_of_best = self._calculate_combination_profit_and_normalize(
-                offer_combination=best_combo_dict,
-                awi=awi
+            _actual_profit, norm_profit_of_best = (
+                self._calculate_combination_profit_and_normalize(
+                    offer_combination=best_combo_dict, awi=awi
+                )
             )
             return best_combination_items, best_norm_score, norm_profit_of_best
         else:
             return None, -1.0, 0.0
 
     def _calculate_combination_profit_and_normalize(
-            self,
-            offer_combination: Dict[str, Outcome],
-            awi: OneShotAWI,
-            # production_cost_per_unit: float = 0.0 # 生产成本明确为0
+        self,
+        offer_combination: Dict[str, Outcome],
+        awi: OneShotAWI,
+        # production_cost_per_unit: float = 0.0 # 生产成本明确为0
     ) -> Tuple[float, float]:
         """
         计算报价组合的直接盈利，并将其归一化到 [-1, 1] 区间。
@@ -1094,7 +1227,9 @@ class LitaAgentCIRS(StdSyncAgent):
         # Represents the profit (revenue - cost) in the best-case price scenario for the agent
         max_potential_profit_scenario = 0.0
         # Represents the profit (revenue - cost) in the worst-case price scenario for the agent
-        min_potential_profit_scenario = 0.0  # This will likely be negative, representing max loss
+        min_potential_profit_scenario = (
+            0.0  # This will likely be negative, representing max loss
+        )
 
         for negotiator_id, outcome in offer_combination.items():
             if not outcome:
@@ -1133,7 +1268,9 @@ class LitaAgentCIRS(StdSyncAgent):
         profit_range = max_potential_profit_scenario - min_potential_profit_scenario
 
         if profit_range <= 1e-6:  # Effectively zero or invalid range (e.g. max < min)
-            if actual_profit > 1e-6:  # If there's actual profit despite no discernible range
+            if (
+                actual_profit > 1e-6
+            ):  # If there's actual profit despite no discernible range
                 normalized_profit = 1.0
             elif actual_profit < -1e-6:  # If there's actual loss
                 normalized_profit = -1.0
@@ -1143,23 +1280,25 @@ class LitaAgentCIRS(StdSyncAgent):
             # Linear mapping: y = (y_max - y_min) * (x - x_min) / (x_max - x_min) + y_min
             # Here, x is actual_profit, [x_min, x_max] is [min_potential_profit_scenario, max_potential_profit_scenario]
             # And [y_min, y_max] is [-1, 1]
-            normalized_profit = -1.0 + 2.0 * (actual_profit - min_potential_profit_scenario) / profit_range
+            normalized_profit = (
+                -1.0
+                + 2.0 * (actual_profit - min_potential_profit_scenario) / profit_range
+            )
 
         # Clamp the result to [-1, 1] in case actual_profit falls outside the estimated scenario range
         normalized_profit = max(-1.0, min(1.0, normalized_profit))
 
-
         return actual_profit, normalized_profit
 
     def _generate_counter_offer(
-            self,
-            negotiator_id: str,
-            original_offer: Outcome,
-            states: Dict[str, SAOState],  # 参数名为 states (复数)
-            optimize_for_inventory: bool,
-            optimize_for_profit: bool,
-            inventory_target_quantity: Optional[int] = None
-            # For Case 1.2, specific need from this partner / 针对情况1.2，来自此伙伴的特定需求
+        self,
+        negotiator_id: str,
+        original_offer: Outcome,
+        states: Dict[str, SAOState],  # 参数名为 states (复数)
+        optimize_for_inventory: bool,
+        optimize_for_profit: bool,
+        inventory_target_quantity: Optional[int] = None,
+        # For Case 1.2, specific need from this partner / 针对情况1.2，来自此伙伴的特定需求
     ) -> Optional[Outcome]:
         """
         Generates a counter-offer based on optimization goals using heuristics.
@@ -1174,14 +1313,22 @@ class LitaAgentCIRS(StdSyncAgent):
         nmi = self.get_nmi(negotiator_id)
         if not nmi:
             return None
-        min_q_nmi, max_q_nmi = nmi.issues[QUANTITY].min_value, nmi.issues[QUANTITY].max_value
-        min_p_nmi, max_p_nmi = nmi.issues[UNIT_PRICE].min_value, nmi.issues[UNIT_PRICE].max_value
+        min_q_nmi, max_q_nmi = (
+            nmi.issues[QUANTITY].min_value,
+            nmi.issues[QUANTITY].max_value,
+        )
+        min_p_nmi, max_p_nmi = (
+            nmi.issues[UNIT_PRICE].min_value,
+            nmi.issues[UNIT_PRICE].max_value,
+        )
         min_t_nmi, max_t_nmi = nmi.issues[TIME].min_value, nmi.issues[TIME].max_value
 
         # Initialize new_q, new_t, new_p with original values
         # 用原始值初始化 new_q, new_t, new_p
         new_q, new_t, new_p = orig_q, orig_t, orig_p
-        is_buying = self._is_supplier(negotiator_id)  # True if we are buying from this supplier / 如果我们从此供应商处购买，则为 True
+        is_buying = self._is_supplier(
+            negotiator_id
+        )  # True if we are buying from this supplier / 如果我们从此供应商处购买，则为 True
 
         # Heuristic parameters
         # 启发式参数
@@ -1199,8 +1346,16 @@ class LitaAgentCIRS(StdSyncAgent):
             # Quantity adjustment logic (applied before time evaluation for simplicity in this version)
             # 数量调整逻辑 (在此版本中为简单起见，在时间评估前应用)
             if is_buying:
-                current_agent_shortfall = self.total_insufficient if self.total_insufficient is not None else 0
-                effective_need_delta = inventory_target_quantity if inventory_target_quantity is not None else current_agent_shortfall
+                current_agent_shortfall = (
+                    self.total_insufficient
+                    if self.total_insufficient is not None
+                    else 0
+                )
+                effective_need_delta = (
+                    inventory_target_quantity
+                    if inventory_target_quantity is not None
+                    else current_agent_shortfall
+                )
                 if effective_need_delta > 0:
                     new_q = min(orig_q * 1.2, float(effective_need_delta))
                     new_q = max(new_q, min_q_nmi)
@@ -1222,7 +1377,7 @@ class LitaAgentCIRS(StdSyncAgent):
         elif not is_buying and orig_t < max_t_nmi:
             candidate_times.add(min(max_t_nmi, orig_t + 1))
         best_t_for_inventory = orig_t
-        highest_simulated_score_for_time = -float('inf')
+        highest_simulated_score_for_time = -float("inf")
         price_for_time_eval = orig_p
         for t_candidate in candidate_times:
             offer_to_score = {negotiator_id: (new_q, t_candidate, price_for_time_eval)}
@@ -1239,42 +1394,64 @@ class LitaAgentCIRS(StdSyncAgent):
             base_target_p = max_p_nmi if is_buying else min_p_nmi
 
         relative_time = states.get(negotiator_id).relative_time
-        round_concession_factor = relative_time ** self.concession_curve_power
+        round_concession_factor = relative_time**self.concession_curve_power
         opponent_last_offer_outcome = self._last_partner_offer.get(negotiator_id)
-        opponent_last_price = opponent_last_offer_outcome[UNIT_PRICE] if opponent_last_offer_outcome else orig_p
-        price_towards_opponent = (1.0 - self.price_concession_opponent_factor) * base_target_p + \
-                                 self.price_concession_opponent_factor * opponent_last_price
+        opponent_last_price = (
+            opponent_last_offer_outcome[UNIT_PRICE]
+            if opponent_last_offer_outcome
+            else orig_p
+        )
+        price_towards_opponent = (
+            1.0 - self.price_concession_opponent_factor
+        ) * base_target_p + self.price_concession_opponent_factor * opponent_last_price
         inventory_pressure = 0.0
         if optimize_for_inventory:
             if is_buying:
-                raw_stock = self.im.get_inventory_summary(self.awi.current_step, MaterialType.RAW).get('current_stock',
-                                                                                                       0)
+                raw_stock = self.im.get_inventory_summary(
+                    self.awi.current_step, MaterialType.RAW
+                ).get("current_stock", 0)
                 if raw_stock < self.inventory_pressure_threshold_raw:
                     inventory_pressure = 1.0 - (
-                        raw_stock / self.inventory_pressure_threshold_raw if self.inventory_pressure_threshold_raw > 0 else 1.0)
+                        raw_stock / self.inventory_pressure_threshold_raw
+                        if self.inventory_pressure_threshold_raw > 0
+                        else 1.0
+                    )
                     inventory_pressure = max(0.0, min(1.0, inventory_pressure))
             else:
-                product_stock = self.im.get_inventory_summary(self.awi.current_step, MaterialType.PRODUCT).get(
-                    'current_stock', 0)
+                product_stock = self.im.get_inventory_summary(
+                    self.awi.current_step, MaterialType.PRODUCT
+                ).get("current_stock", 0)
                 if product_stock > self.inventory_pressure_threshold_product:
                     inventory_pressure = (
-                                                     product_stock - self.inventory_pressure_threshold_product) / self.inventory_pressure_threshold_product if self.inventory_pressure_threshold_product > 0 else 0.0
+                        (product_stock - self.inventory_pressure_threshold_product)
+                        / self.inventory_pressure_threshold_product
+                        if self.inventory_pressure_threshold_product > 0
+                        else 0.0
+                    )
                     inventory_pressure = max(0.0, inventory_pressure)
         final_target_p = price_towards_opponent
-        concession_magnitude = (round_concession_factor + inventory_pressure) * self.price_concession_round_factor
+        concession_magnitude = (
+            round_concession_factor + inventory_pressure
+        ) * self.price_concession_round_factor
         if is_buying:
             max_possible_concession_price = max_p_nmi
-            final_target_p = price_towards_opponent + (
-                        max_possible_concession_price - price_towards_opponent) * concession_magnitude
+            final_target_p = (
+                price_towards_opponent
+                + (max_possible_concession_price - price_towards_opponent)
+                * concession_magnitude
+            )
         else:
             min_possible_concession_price = min_p_nmi
-            final_target_p = price_towards_opponent - (
-                        price_towards_opponent - min_possible_concession_price) * concession_magnitude
+            final_target_p = (
+                price_towards_opponent
+                - (price_towards_opponent - min_possible_concession_price)
+                * concession_magnitude
+            )
         if new_t != orig_t:
             if is_buying and new_t < orig_t:
-                final_target_p *= (1 + self.price_concession_time_factor)
+                final_target_p *= 1 + self.price_concession_time_factor
             elif not is_buying and new_t > orig_t:
-                final_target_p *= (1 - self.price_concession_time_factor)
+                final_target_p *= 1 - self.price_concession_time_factor
         new_p = final_target_p
         new_t = int(round(new_t))
         new_t = max(min_t_nmi, min(new_t, max_t_nmi))
@@ -1292,9 +1469,11 @@ class LitaAgentCIRS(StdSyncAgent):
         return new_q, new_t, new_p
 
     def counter_all(
-            self,
-            offers: Dict[str, Outcome],  # partner_id -> (q, t, p) / 伙伴ID -> (数量, 时间, 价格)
-            states: Dict[str, SAOState],
+        self,
+        offers: Dict[
+            str, Outcome
+        ],  # partner_id -> (q, t, p) / 伙伴ID -> (数量, 时间, 价格)
+        states: Dict[str, SAOState],
     ) -> Dict[str, SAOResponse]:
         responses: Dict[str, SAOResponse] = {}
         if not offers:
@@ -1311,20 +1490,21 @@ class LitaAgentCIRS(StdSyncAgent):
             responses[nid] = SAOResponse(ResponseType.REJECT_OFFER, None)
         current_day = self.awi.current_step
         total_steps = self.awi.n_steps
-        time_decay_factor = self.threshold_time_decay_factor ** current_day
+        time_decay_factor = self.threshold_time_decay_factor**current_day
         dynamic_p_threshold = self.p_threshold * time_decay_factor
         dynamic_q_threshold = self.q_threshold * time_decay_factor
-        best_combination_items, norm_score, norm_profit = self._evaluate_offer_combinations(
-            offers, self.im, self.awi
+        best_combination_items, norm_score, norm_profit = (
+            self._evaluate_offer_combinations(offers, self.im, self.awi)
         )
-
 
         # --- 新增调试输出 ---
         # --- Added debug output ---
         # --- 调试输出结束 ---
         # --- End of debug output ---
 
-        if best_combination_items is None:  # No valid combination found / 未找到有效组合
+        if (
+            best_combination_items is None
+        ):  # No valid combination found / 未找到有效组合
             # 信息 ({self.id} @ {self.awi.current_step}): _evaluate_offer_combinations 未找到最佳组合。所有报价均被拒绝。
             return responses  # All already set to REJECT / 所有均已设置为拒绝
 
@@ -1342,39 +1522,57 @@ class LitaAgentCIRS(StdSyncAgent):
             temp_im_for_case1_counters.is_deepcopy = True
             for nid_accepted, outcome_accepted in best_combo_outcomes_dict.items():
                 is_supply_contract = self._is_supplier(nid_accepted)
-                contract_type = IMContractType.SUPPLY if is_supply_contract else IMContractType.DEMAND
-                material_type = MaterialType.RAW if is_supply_contract else MaterialType.PRODUCT
+                contract_type = (
+                    IMContractType.SUPPLY
+                    if is_supply_contract
+                    else IMContractType.DEMAND
+                )
+                material_type = (
+                    MaterialType.RAW if is_supply_contract else MaterialType.PRODUCT
+                )
                 # Create a unique ID for the temporary contract for simulation
                 # 为模拟创建临时合约的唯一ID
                 temp_contract_id = f"temp_accept_{nid_accepted}_{self.id}_{self.awi.current_step}_{uuid4()}"
 
                 sim_contract = IMContract(
-                    contract_id=temp_contract_id, partner_id=nid_accepted, type=contract_type,
-                    quantity=int(outcome_accepted[QUANTITY]), price=outcome_accepted[UNIT_PRICE],
-                    delivery_time=outcome_accepted[TIME], material_type=material_type, bankruptcy_risk=0.0
+                    contract_id=temp_contract_id,
+                    partner_id=nid_accepted,
+                    type=contract_type,
+                    quantity=int(outcome_accepted[QUANTITY]),
+                    price=outcome_accepted[UNIT_PRICE],
+                    delivery_time=outcome_accepted[TIME],
+                    material_type=material_type,
+                    bankruptcy_risk=0.0,
                 )
                 temp_im_for_case1_counters.add_transaction(
-                    sim_contract)  # This updates plan in temp_im / 这会更新 temp_im 中的计划
+                    sim_contract
+                )  # This updates plan in temp_im / 这会更新 temp_im 中的计划
 
             # Get remaining raw material insufficiency after hypothetically accepting the best combo
             # 在假设接受最佳组合后，获取剩余的原材料不足量
-            remaining_need_after_accepts = temp_im_for_case1_counters.get_total_insufficient_raw(
-                self.awi.current_step, horizon=14
+            remaining_need_after_accepts = (
+                temp_im_for_case1_counters.get_total_insufficient_raw(
+                    self.awi.current_step, horizon=14
+                )
             )
 
             if remaining_need_after_accepts > 0:
                 # Identify negotiators not in the best combo, who are suppliers (for raw material needs)
                 # 识别不在最佳组合中且为供应商的谈判者 (针对原材料需求)
                 negotiators_to_counter_case1 = [
-                    nid for nid in offers.keys()
+                    nid
+                    for nid in offers.keys()
                     if nid not in best_combo_nids_set and self._is_supplier(nid)
                 ]
                 if negotiators_to_counter_case1:
                     # Distribute the remaining need among these negotiators
                     # 将剩余需求分配给这些谈判者
                     qty_per_negotiator_case1 = math.ceil(
-                        remaining_need_after_accepts / len(negotiators_to_counter_case1))
-                    qty_per_negotiator_case1 = max(1, qty_per_negotiator_case1)  # Ensure at least 1 / 确保至少为1
+                        remaining_need_after_accepts / len(negotiators_to_counter_case1)
+                    )
+                    qty_per_negotiator_case1 = max(
+                        1, qty_per_negotiator_case1
+                    )  # Ensure at least 1 / 确保至少为1
 
                     for nid_to_counter in negotiators_to_counter_case1:
                         original_offer = offers[nid_to_counter]
@@ -1386,12 +1584,14 @@ class LitaAgentCIRS(StdSyncAgent):
                             states,
                             optimize_for_inventory=True,
                             optimize_for_profit=False,  # Primary focus is filling the need / 主要重点是填补需求
-                            inventory_target_quantity=qty_per_negotiator_case1
+                            inventory_target_quantity=qty_per_negotiator_case1,
                         )
                         if counter_outcome:
-                            responses[nid_to_counter] = SAOResponse(ResponseType.REJECT_OFFER, counter_outcome)
+                            responses[nid_to_counter] = SAOResponse(
+                                ResponseType.REJECT_OFFER, counter_outcome
+                            )
         elif norm_score <= dynamic_p_threshold:
-            also_optimize_for_profit = (norm_profit <= dynamic_q_threshold)
+            also_optimize_for_profit = norm_profit <= dynamic_q_threshold
             if also_optimize_for_profit:
                 # 信息 ({self.id} @ {self.awi.current_step}): 情况2/4 (合并 - 情况4类型): 对所有报价进行库存优化然后利润优化 (分数差, 利润差)。
                 pass
@@ -1409,10 +1609,12 @@ class LitaAgentCIRS(StdSyncAgent):
                     original_offer,
                     states,
                     optimize_for_inventory=True,
-                    optimize_for_profit=also_optimize_for_profit
+                    optimize_for_profit=also_optimize_for_profit,
                 )
                 if counter_outcome:
-                    responses[nid] = SAOResponse(ResponseType.REJECT_OFFER, counter_outcome)
+                    responses[nid] = SAOResponse(
+                        ResponseType.REJECT_OFFER, counter_outcome
+                    )
         elif norm_profit <= dynamic_q_threshold:
             # 信息 ({self.id} @ {self.awi.current_step}): 情况3: 对所有报价进行价格优化 (分数OK, 利润差)。
 
@@ -1422,13 +1624,16 @@ class LitaAgentCIRS(StdSyncAgent):
             # 对所有报价进行还价以提高利润；库存分数被认为是可接受的。
             for nid, original_offer in offers.items():
                 counter_outcome = self._generate_counter_offer(
-                    nid, original_offer,
+                    nid,
+                    original_offer,
                     states,
                     optimize_for_inventory=False,
-                    optimize_for_profit=True
+                    optimize_for_profit=True,
                 )
                 if counter_outcome:
-                    responses[nid] = SAOResponse(ResponseType.REJECT_OFFER, counter_outcome)
+                    responses[nid] = SAOResponse(
+                        ResponseType.REJECT_OFFER, counter_outcome
+                    )
 
         else:
             # This path should ideally not be reached if all conditions are covered.
@@ -1458,29 +1663,41 @@ class LitaAgentCIRS(StdSyncAgent):
             return
 
         new_c = IMContract(
-            contract_id=contract.id, partner_id=partner, type=im_type,
-            quantity=int(agreement["quantity"]), price=agreement["unit_price"],
-            delivery_time=agreement["time"], bankruptcy_risk=0.0,
+            contract_id=contract.id,
+            partner_id=partner,
+            type=im_type,
+            quantity=int(agreement["quantity"]),
+            price=agreement["unit_price"],
+            delivery_time=agreement["time"],
+            bankruptcy_risk=0.0,
             material_type=mat_type,
         )
         added = self.im.add_transaction(new_c)
-        assert added, f"❌ ({self.id}) CustomIM.add_transaction 失败! contract={contract.id}"
+        assert added, (
+            f"❌ ({self.id}) CustomIM.add_transaction 失败! contract={contract.id}"
+        )
 
         self.today_insufficient = self.im.get_today_insufficient_raw(current_day)
-        self.total_insufficient = self.im.get_total_insufficient_raw(current_day, horizon=14)
+        self.total_insufficient = self.im.get_total_insufficient_raw(
+            current_day, horizon=14
+        )
 
         # 更新每日采购/销售完成量
         if is_supply:  # 原材料采购合同
-            self.purchase_completed[current_day] = self.purchase_completed.get(current_day, 0) + agreement["quantity"]
+            self.purchase_completed[current_day] = (
+                self.purchase_completed.get(current_day, 0) + agreement["quantity"]
+            )
             # 更新用于调整超采购因子的实际达成量
             # Update actual achieved quantity for over-procurement factor adjustment
-            self.daily_achieved_procurement_for_adjustment[
-                current_day] = self.daily_achieved_procurement_for_adjustment.get(current_day, 0) + agreement[
-                "quantity"]
+            self.daily_achieved_procurement_for_adjustment[current_day] = (
+                self.daily_achieved_procurement_for_adjustment.get(current_day, 0)
+                + agreement["quantity"]
+            )
 
         elif not is_supply:  # 产成品销售合同
-            self.sales_completed[current_day] = self.sales_completed.get(current_day, 0) + agreement["quantity"]
-
+            self.sales_completed[current_day] = (
+                self.sales_completed.get(current_day, 0) + agreement["quantity"]
+            )
 
     def get_partner_id(self, contract: Contract) -> str:
         for p in contract.partners:
@@ -1496,20 +1713,21 @@ class LitaAgentCIRS(StdSyncAgent):
         header = "|   日期    |  原料真库存  |  原料预计库存   | 计划生产  |  剩余产能  |  产品真库存  |  产品预计库存  |  已签署销售量  |  实际产品交付  |"
         separator = "|" + "-" * (len(header) + 24) + "|"
 
-
         # 当前日期及未来预测
         for day_offset in range(horizon_days):
             forecast_day = current_day + day_offset
 
             # 从IM获取数据
             raw_summary = self.im.get_inventory_summary(forecast_day, MaterialType.RAW)
-            product_summary = self.im.get_inventory_summary(forecast_day, MaterialType.PRODUCT)
+            product_summary = self.im.get_inventory_summary(
+                forecast_day, MaterialType.PRODUCT
+            )
 
-            raw_current_stock = raw_summary.get('current_stock', 0)
-            raw_estimated = raw_summary.get('estimated_available', 0)
+            raw_current_stock = raw_summary.get("current_stock", 0)
+            raw_estimated = raw_summary.get("estimated_available", 0)
 
-            product_current_stock = product_summary.get('current_stock', 0)
-            product_estimated = product_summary.get('estimated_available', 0)
+            product_current_stock = product_summary.get("current_stock", 0)
+            product_estimated = product_summary.get("estimated_available", 0)
 
             # 计划生产量 - CustomIM stores production_plan as Dict[day, qty]
             planned_production = self.im.production_plan.get(forecast_day, 0)
@@ -1527,11 +1745,18 @@ class LitaAgentCIRS(StdSyncAgent):
             # Delivered products might not be directly in result dict from CustomIM.
             # This was from the old IM. Let's assume 0 for now or get from CustomIM if it provides this.
             # For simplicity, let's show 0 if not available in result.
-            delivered_today = result.get("delivered_products", 0) if isinstance(result, dict) and day_offset == 0 else 0
+            delivered_today = (
+                result.get("delivered_products", 0)
+                if isinstance(result, dict) and day_offset == 0
+                else 0
+            )
 
             # 格式化并输出
-            day_str = f"{forecast_day} (T+{day_offset})" if day_offset == 0 else f"{forecast_day} (T+{day_offset})"
-
+            day_str = (
+                f"{forecast_day} (T+{day_offset})"
+                if day_offset == 0
+                else f"{forecast_day} (T+{day_offset})"
+            )
 
 
 # ----------------------------------------------------

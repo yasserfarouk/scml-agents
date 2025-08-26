@@ -37,7 +37,6 @@ single_agent_runner1 = WorldRunner(
 full_market_runner1 = WorldRunner.from_runner(
     single_agent_runner1, control_all_agents=True
 )
-from litaagent_std.litaagent_ys import LitaAgentY
 
 # %% create a world with a single agent and run it
 single_agent_runner1(LitaAgentY)
@@ -54,7 +53,7 @@ single_agent_runner2 = WorldRunner(
 full_market_runner2 = WorldRunner.from_runner(
     single_agent_runner2, control_all_agents=True
 )
-from litaagent_std.litaagent_yr import LitaAgentYR
+from .litaagent_std.litaagent_yr import LitaAgentYR
 
 # %% create a world with a single agent and run it
 single_agent_runner2(LitaAgentYR)

@@ -10,8 +10,10 @@ the authors and the ANAC 2024 SCML competition.
 from scml.oneshot.rl.agent import OneShotRLAgent
 from scml.oneshot.rl.action import FlexibleActionManager
 from scml.oneshot.rl.common import model_wrapper
-from .common import MODEL_PATH, MyObservationManager, TrainingAlgorithm, make_context
+from scml.oneshot.common import UNIT_PRICE, TIME, QUANTITY
+from .common import MODEL_PATH, MyObservationManager, TrainingAlgorithm
 from .mycontext import MySupplierContext, MyConsumerContext
+
 # used to repeat the response to every negotiator.
 # from scml_agents.scml2024.oneshot.team_miyajima_oneshot.cautious import CautiousOneShotAgent # なんかエラー
 from scml.oneshot.agent import OneShotSyncAgent
@@ -19,6 +21,8 @@ from scml.oneshot.agent import OneShotSyncAgent
 """required Cautious"""
 from negmas import Contract, SAOResponse, ResponseType
 import random
+
+
 def distribute(
     q: int,
     n: int,
@@ -86,16 +90,20 @@ def distribute(
     r = Counter(choice(n, q))
     return [r.get(_, 0) + per for _ in range(n)]
 
+
 def powerset(iterable):
     """冪集合"""
     from itertools import chain, combinations
 
     s = list(iterable)
     return chain.from_iterable(combinations(s, r) for r in range(len(s) + 1))
+
+
 """required Cautious"""
 
 
 __all__ = ["PPOAgent"]
+
 
 class PPOAgent(OneShotRLAgent):
     """
@@ -134,7 +142,8 @@ class PPOAgent(OneShotRLAgent):
         )
         # Initialize the base OneShotRLAgent with model paths and observation managers.
         super().__init__(*args, **kwargs)
-        
+
+
 class CautiousOneShotAgent(OneShotSyncAgent):
     """
     An agent that distributes its needs over its partners randomly.

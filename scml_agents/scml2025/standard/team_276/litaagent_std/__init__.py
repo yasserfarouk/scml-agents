@@ -1,10 +1,10 @@
-from litaagent_cir import *
-from litaagent_cirs import *
-from litaagent_n import *
-from litaagent_p import *
-from litaagent_y import *
-from litaagent_yr import *
-from litaagent_ys import *
+from .litaagent_cir import *
+from .litaagent_cirs import *
+from .litaagent_n import *
+from .litaagent_p import *
+from .litaagent_y import *
+from .litaagent_yr import *
+from .litaagent_ys import *
 
 
 __all__ = (

@@ -110,7 +110,7 @@ from .inventory_manager_n import (
     MaterialType,
 )
 
-__all__ = "LitaAgentYR"
+__all__ = ["LitaAgentYR"]
 
 # ------------------ 启发式参数配置 ------------------
 # Heuristic parameter configuration

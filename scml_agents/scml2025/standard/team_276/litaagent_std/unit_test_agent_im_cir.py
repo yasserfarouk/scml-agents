@@ -1,13 +1,18 @@
 import unittest
 from unittest.mock import MagicMock, patch
 import os
-import math  # For math.ceil if needed in agent logic or tests
 import uuid
 
 # Assuming your agent and inventory manager are in these files
 # Adjust the import path if necessary
-from inventory_manager_cir import InventoryManagerCIR, MaterialType, IMContractType, IMContract, Batch
-from litaagent_cir import LitaAgentCIR  # Assuming this is your agent class
+from inventory_manager_cir import (
+    InventoryManagerCIR,
+    MaterialType,
+    IMContractType,
+    IMContract,
+    Batch,
+)
+from .litaagent_cir import LitaAgentCIR  # Assuming this is your agent class
 
 # Constants from SCML or your agent (ensure these match your agent's usage)
 QUANTITY = 0
@@ -16,8 +21,14 @@ UNIT_PRICE = 2
 
 
 # Helper function to create a mock AWI
-def create_mock_awi(current_step=0, n_steps=20, is_first_level=False, is_last_level=False, my_suppliers=None,
-                    my_consumers=None):
+def create_mock_awi(
+    current_step=0,
+    n_steps=20,
+    is_first_level=False,
+    is_last_level=False,
+    my_suppliers=None,
+    my_consumers=None,
+):
     awi = MagicMock()
     awi.current_step = current_step
     awi.n_steps = n_steps
@@ -42,9 +53,15 @@ def create_mock_awi(current_step=0, n_steps=20, is_first_level=False, is_last_le
 def create_mock_nmi(q_min=1, q_max=100, p_min=1.0, p_max=20.0, t_min=1, t_max=10):
     nmi = MagicMock()
     nmi.issues = {
-        QUANTITY: MagicMock(min_value=q_min, max_value=q_max) if q_min is not None else None,
-        UNIT_PRICE: MagicMock(min_value=p_min, max_value=p_max) if p_min is not None else None,
-        TIME: MagicMock(min_value=t_min, max_value=t_max) if t_min is not None else None,
+        QUANTITY: MagicMock(min_value=q_min, max_value=q_max)
+        if q_min is not None
+        else None,
+        UNIT_PRICE: MagicMock(min_value=p_min, max_value=p_max)
+        if p_min is not None
+        else None,
+        TIME: MagicMock(min_value=t_min, max_value=t_max)
+        if t_min is not None
+        else None,
     }
     return nmi
 
@@ -60,7 +77,7 @@ class TestInventoryManagerCIR(unittest.TestCase):
             processing_cost=1.0,
             daily_production_capacity=10,
             max_simulation_day=20,
-            current_day=0
+            current_day=0,
         )
 
     def tearDown(self):
@@ -77,8 +94,12 @@ class TestInventoryManagerCIR(unittest.TestCase):
     # --- 1.2 Inventory Updates ---
     def test_IM_AddMaterial_And_Consume(self):
         batch_id = str(uuid.uuid4())
-        self.im.raw_material_batches.append(Batch(batch_id, 100, 100, 5.0, 0, MaterialType.RAW))
-        self.assertEqual(sum(b.remaining_quantity for b in self.im.raw_material_batches), 100)
+        self.im.raw_material_batches.append(
+            Batch(batch_id, 100, 100, 5.0, 0, MaterialType.RAW)
+        )
+        self.assertEqual(
+            sum(b.remaining_quantity for b in self.im.raw_material_batches), 100
+        )
 
         # Simulate production consuming materials
         # This part would be more realistically tested via _execute_production
@@ -88,7 +109,9 @@ class TestInventoryManagerCIR(unittest.TestCase):
 
     def test_IM_ConsumeMaterial_Insufficient(self):
         batch_id = str(uuid.uuid4())
-        self.im.raw_material_batches.append(Batch(batch_id, 10, 10, 5.0, 0, MaterialType.RAW))
+        self.im.raw_material_batches.append(
+            Batch(batch_id, 10, 10, 5.0, 0, MaterialType.RAW)
+        )
 
         # Attempt to consume more than available (directly manipulating for test simplicity)
         # In real use, _execute_production handles this.
@@ -112,23 +135,44 @@ class TestInventoryManagerCIR(unittest.TestCase):
     def test_IM_PlanProduction_Normal(self):
         # Add a demand contract
         self.im.add_transaction(
-            IMContract("C1", str(uuid.uuid4()), IMContractType.DEMAND, 15, 10.0, 5, MaterialType.PRODUCT))
+            IMContract(
+                "C1",
+                str(uuid.uuid4()),
+                IMContractType.DEMAND,
+                15,
+                10.0,
+                5,
+                MaterialType.PRODUCT,
+            )
+        )
         # plan_production is called within add_transaction
         # Expected: produce 10 on day 5, 5 on day 4 (due to capacity 10)
         self.assertEqual(self.im.production_plan.get(5, 0), 10)
         self.assertEqual(self.im.production_plan.get(4, 0), 5)
 
     def test_IM_ExecuteProduction_Normal(self):
-        self.im.raw_material_batches.append(Batch(str(uuid.uuid4()), 20, 20, 1.0, 0, MaterialType.RAW))
+        self.im.raw_material_batches.append(
+            Batch(str(uuid.uuid4()), 20, 20, 1.0, 0, MaterialType.RAW)
+        )
         self.im.production_plan = {0: 5}  # Plan to produce 5 on day 0
         self.im._execute_production(0)
         self.assertEqual(
-            sum(b.remaining_quantity for b in self.im.product_batches if b.arrival_or_production_time == 0), 5)
-        self.assertEqual(sum(b.remaining_quantity for b in self.im.raw_material_batches), 15)
+            sum(
+                b.remaining_quantity
+                for b in self.im.product_batches
+                if b.arrival_or_production_time == 0
+            ),
+            5,
+        )
+        self.assertEqual(
+            sum(b.remaining_quantity for b in self.im.raw_material_batches), 15
+        )
 
     # --- 1.4 Cost Calculation (Simplified example) ---
     def test_IM_StorageCost_Raw_NonEmpty(self):
-        self.im.raw_material_batches.append(Batch(str(uuid.uuid4()), 10, 10, 1.0, 0, MaterialType.RAW))
+        self.im.raw_material_batches.append(
+            Batch(str(uuid.uuid4()), 10, 10, 1.0, 0, MaterialType.RAW)
+        )
         # This test would be more complex, needing to simulate days passing
         # For now, we'll focus on the structure.
         # A full cost calculation test would involve calling a method that sums up costs over days.
@@ -139,29 +183,54 @@ class TestInventoryManagerCIR(unittest.TestCase):
 
     # --- 1.5 Contract Handling ---
     def test_IM_AddSupplyContract_FutureDelivery(self):
-        contract = IMContract("S1", str(uuid.uuid4()), IMContractType.SUPPLY, 50, 2.0, 3, MaterialType.RAW)
+        contract = IMContract(
+            "S1", str(uuid.uuid4()), IMContractType.SUPPLY, 50, 2.0, 3, MaterialType.RAW
+        )
         self.im.add_transaction(contract)
         self.assertIn(contract, self.im.pending_supply_contracts)
 
     def test_IM_ProcessContracts_SupplyArrival(self):
         day_to_process = 2
         self.im.current_day = day_to_process  # Align current day for _receive_materials
-        contract = IMContract("S1", str(uuid.uuid4()), IMContractType.SUPPLY, 50, 2.0, day_to_process, MaterialType.RAW)
+        contract = IMContract(
+            "S1",
+            str(uuid.uuid4()),
+            IMContractType.SUPPLY,
+            50,
+            2.0,
+            day_to_process,
+            MaterialType.RAW,
+        )
         self.im.pending_supply_contracts.append(contract)
         self.im._receive_materials(day_to_process)
         self.assertEqual(len(self.im.pending_supply_contracts), 0)
-        self.assertEqual(sum(b.remaining_quantity for b in self.im.raw_material_batches), 50)
+        self.assertEqual(
+            sum(b.remaining_quantity for b in self.im.raw_material_batches), 50
+        )
 
     def test_IM_GetTotalInsufficient_WithShortage(self):
         self.im.production_plan = {2: 20, 3: 15}  # Need 20 on day 2, 15 on day 3
         # No raw materials initially
-        shortfall = self.im.get_total_insufficient_raw(target_day=2, horizon=2)  # Check for day 2 and 3
+        shortfall = self.im.get_total_insufficient_raw(
+            target_day=2, horizon=2
+        )  # Check for day 2 and 3
         self.assertEqual(shortfall, 35)  # 20 (day 2) + 15 (day 3)
 
         # Add some supply arriving on day 2
         self.im.pending_supply_contracts.append(
-            IMContract("S1", str(uuid.uuid4()), IMContractType.SUPPLY, 10, 1.0, 2, MaterialType.RAW))
-        shortfall_after_supply = self.im.get_total_insufficient_raw(target_day=2, horizon=2)
+            IMContract(
+                "S1",
+                str(uuid.uuid4()),
+                IMContractType.SUPPLY,
+                10,
+                1.0,
+                2,
+                MaterialType.RAW,
+            )
+        )
+        shortfall_after_supply = self.im.get_total_insufficient_raw(
+            target_day=2, horizon=2
+        )
         # Day 2: Need 20, Have 10 (arriving on day 2). Shortfall = 10. Stock becomes 0.
         # Day 3: Need 15, Have 0. Shortfall = 15.
         # Total = 10 + 15 = 25
@@ -169,7 +238,6 @@ class TestInventoryManagerCIR(unittest.TestCase):
 
 
 class TestLitaAgentCIR(unittest.TestCase):
-
     def setUp(self):
         with open("env.test", "w") as f:
             pass
@@ -199,7 +267,7 @@ class TestLitaAgentCIR(unittest.TestCase):
         # If LitaAgentCIR's __init__ doesn't create self.im, you'll need to do it here
         # or ensure on_inventory_update/before_step is called.
         # For now, let's assume a basic IM is created or accessible.
-        if not hasattr(self.agent, 'im') or self.agent.im is None:
+        if not hasattr(self.agent, "im") or self.agent.im is None:
             self.agent.im = InventoryManagerCIR(0.01, 0.02, 2.0, 10, 20, 0)
 
         # Mock the NMI cache or getter for the agent
@@ -220,9 +288,13 @@ class TestLitaAgentCIR(unittest.TestCase):
     def _get_mock_nmi_for_partner(self, partner_id):
         # Helper to return specific NMIs for tests
         if partner_id == "supplier1":
-            return create_mock_nmi(q_min=10, q_max=50, p_min=5.0, p_max=10.0, t_min=1, t_max=5)
+            return create_mock_nmi(
+                q_min=10, q_max=50, p_min=5.0, p_max=10.0, t_min=1, t_max=5
+            )
         elif partner_id == "consumer1":
-            return create_mock_nmi(q_min=5, q_max=30, p_min=15.0, p_max=25.0, t_min=2, t_max=6)
+            return create_mock_nmi(
+                q_min=5, q_max=30, p_min=15.0, p_max=25.0, t_min=2, t_max=6
+            )
         return create_mock_nmi()  # Default generic NMI
 
     # --- 2.2 NMI Handling ---
@@ -235,7 +307,9 @@ class TestLitaAgentCIR(unittest.TestCase):
     # These tests are complex as score_offers depends heavily on IM state.
     # We'd typically set up specific IM states and then score offers.
 
-    @patch.object(InventoryManagerCIR, 'calculate_inventory_cost_score')  # Mock the deep calculation
+    @patch.object(
+        InventoryManagerCIR, "calculate_inventory_cost_score"
+    )  # Mock the deep calculation
     def test_Score_SingleOffer_Profitable_GoodInventory(self, mock_calc_cost_score):
         # Mock return values: score_a (base_cost), score_b (cost_with_offers)
         # For a profitable, good inventory offer, cost_with_offers < base_cost
@@ -246,7 +320,9 @@ class TestLitaAgentCIR(unittest.TestCase):
         # We need to ensure the agent's IM is in a state where this offer makes sense.
         # For this isolated test of score_offers, we primarily test the logic flow.
         # The profit normalization part also needs NMI.
-        self.agent.negotiator_nmi_cache["supplier1"] = self._get_mock_nmi_for_partner("supplier1")
+        self.agent.negotiator_nmi_cache["supplier1"] = self._get_mock_nmi_for_partner(
+            "supplier1"
+        )
 
         raw_score, norm_score, norm_profit = self.agent._evaluate_offer_combinations(
             test_offers, self.agent.im, self.agent.awi
@@ -264,7 +340,9 @@ class TestLitaAgentCIR(unittest.TestCase):
         # Here, test_offers is the only combo.
         self.assertIsNotNone(raw_score)  # raw_score is best_combo_items here
         self.assertGreater(norm_score, 0.5)  # Assuming good inventory score
-        self.assertGreater(norm_profit, 0)  # Profitable based on NMI (6.0 is good for p_min=5, p_max=10)
+        self.assertGreater(
+            norm_profit, 0
+        )  # Profitable based on NMI (6.0 is good for p_min=5, p_max=10)
 
     # --- 2.4 first_proposals Method ---
     def test_FP_Procurement_SingleSupplier(self):
@@ -287,7 +365,9 @@ class TestLitaAgentCIR(unittest.TestCase):
         self.agent.negotiators = {"consumer1": MagicMock()}
 
         # Simulate available product stock in the agent's IM
-        self.agent.im.product_batches.append(Batch(str(uuid.uuid4()), 50, 50, 10.0, 0, MaterialType.PRODUCT))
+        self.agent.im.product_batches.append(
+            Batch(str(uuid.uuid4()), 50, 50, 10.0, 0, MaterialType.PRODUCT)
+        )
         # And some planned production
         self.agent.im.production_plan = {0: 10, 1: 10}  # Agent is at day 0
 
@@ -308,7 +388,9 @@ class TestLitaAgentCIR(unittest.TestCase):
         self.agent.negotiators = {"supplier1": MagicMock(), "consumer1": MagicMock()}
         self.mock_awi.my_consumers = ["consumer1"]
         self.mock_awi.is_last_level = False
-        self.agent.im.product_batches.append(Batch(str(uuid.uuid4()), 10, 10, 1.0, 0, MaterialType.PRODUCT))
+        self.agent.im.product_batches.append(
+            Batch(str(uuid.uuid4()), 10, 10, 1.0, 0, MaterialType.PRODUCT)
+        )
 
         proposals = self.agent.first_proposals()
         self.assertNotIn("supplier1", proposals)
@@ -317,11 +399,13 @@ class TestLitaAgentCIR(unittest.TestCase):
     # --- 2.5 _generate_counter_offer Method (Conceptual - depends on score_offers) ---
     # These tests require careful setup of IM, NMI, and offer details.
     # We'll mock score_offers to test the logic of _generate_counter_offer itself.
-    @patch.object(LitaAgentCIR, 'score_offers')
+    @patch.object(LitaAgentCIR, "score_offers")
     def test_GCO_InventoryOpt_Buy_TimeImprovesScore(self, mock_score_offers):
         original_offer = (30, 3, 8.0)  # q, t, p
         partner_id = "supplier1"
-        self.agent.negotiator_nmi_cache[partner_id] = self._get_mock_nmi_for_partner(partner_id)
+        self.agent.negotiator_nmi_cache[partner_id] = self._get_mock_nmi_for_partner(
+            partner_id
+        )
         self.agent.total_insufficient = 40  # Agent needs more
 
         # score_offers returns (raw_score, normalized_score)
@@ -330,12 +414,14 @@ class TestLitaAgentCIR(unittest.TestCase):
         # Score for (q_adj, t=2, p_adj_qt): e.g., (any, 0.7) -> this should be chosen
         mock_score_offers.side_effect = [
             (100, 0.6),  # Score for original time (t=3) with adjusted Q, P
-            (120, 0.7)  # Score for earlier time (t=2) with adjusted Q, P
+            (120, 0.7),  # Score for earlier time (t=2) with adjusted Q, P
         ]
 
         counter = self.agent._generate_counter_offer(
-            partner_id, original_offer,
-            optimize_for_inventory=True, optimize_for_profit=False
+            partner_id,
+            original_offer,
+            optimize_for_inventory=True,
+            optimize_for_profit=False,
         )
         self.assertIsNotNone(counter)
         new_q, new_t, new_p = counter
@@ -350,19 +436,23 @@ class TestLitaAgentCIR(unittest.TestCase):
         # p_adj_qt for t=2 = 8.16 * 1.01 = 8.2416
         self.assertAlmostEqual(new_p, 8.0 * 1.02 * 1.01, places=4)
 
-    @patch.object(LitaAgentCIR, 'score_offers')
+    @patch.object(LitaAgentCIR, "score_offers")
     def test_GCO_ProfitOpt_PriceChange(self, mock_score_offers):
         original_offer = (20, 3, 18.0)  # q, t, p
         partner_id = "consumer1"  # Selling
-        self.agent.negotiator_nmi_cache[partner_id] = self._get_mock_nmi_for_partner(partner_id)
+        self.agent.negotiator_nmi_cache[partner_id] = self._get_mock_nmi_for_partner(
+            partner_id
+        )
 
         # Profit opt doesn't call score_offers in the current _generate_counter_offer
         # It directly adjusts price. Let's remove the mock for this specific test path.
         # Or, ensure optimize_for_inventory=False so time eval part is skipped.
 
         counter = self.agent._generate_counter_offer(
-            partner_id, original_offer,
-            optimize_for_inventory=False, optimize_for_profit=True
+            partner_id,
+            original_offer,
+            optimize_for_inventory=False,
+            optimize_for_profit=True,
         )
         self.assertIsNotNone(counter)
         new_q, new_t, new_p = counter
@@ -378,8 +468,8 @@ class TestLitaAgentCIR(unittest.TestCase):
     # We'd mock _evaluate_offer_combinations and _generate_counter_offer
     # to test the decision tree of counter_all.
 
-    @patch.object(LitaAgentCIR, '_evaluate_offer_combinations')
-    @patch.object(LitaAgentCIR, '_generate_counter_offer')
+    @patch.object(LitaAgentCIR, "_evaluate_offer_combinations")
+    @patch.object(LitaAgentCIR, "_generate_counter_offer")
     def test_CA_Case1_AcceptAndCounter(self, mock_gco, mock_eval_comb):
         # Setup for Case 1: norm_score > p_thresh, norm_profit > q_thresh
         # Best combo is one offer, leaves some need.
@@ -406,19 +496,25 @@ class TestLitaAgentCIR(unittest.TestCase):
 
         offers_received = {
             "supplier1": (20, 2, 7.0),  # This one will be in best_combo
-            "supplier2": (10, 1, 6.0)  # This one will be countered
+            "supplier2": (10, 1, 6.0),  # This one will be countered
         }
         # Mock NMI for supplier2 as well
-        self.agent.negotiator_nmi_cache["supplier2"] = create_mock_nmi(p_min=5, p_max=10)
+        self.agent.negotiator_nmi_cache["supplier2"] = create_mock_nmi(
+            p_min=5, p_max=10
+        )
 
         responses = self.agent.counter_all(offers_received, states={})
 
         mock_eval_comb.assert_called_once()
 
-        self.assertEqual(responses["supplier1"].response, self.agent.ResponseType.ACCEPT_OFFER)
+        self.assertEqual(
+            responses["supplier1"].response, self.agent.ResponseType.ACCEPT_OFFER
+        )
         self.assertEqual(responses["supplier1"].offer, best_combo_items[0][1])
 
-        self.assertEqual(responses["supplier2"].response, self.agent.ResponseType.COUNTER_OFFER)
+        self.assertEqual(
+            responses["supplier2"].response, self.agent.ResponseType.COUNTER_OFFER
+        )
         self.assertEqual(responses["supplier2"].offer, counter_outcome_for_s2)
 
         # Check that _generate_counter_offer was called for supplier2
@@ -427,12 +523,12 @@ class TestLitaAgentCIR(unittest.TestCase):
         args, kwargs = mock_gco.call_args
         self.assertEqual(args[0], "supplier2")  # nid
         self.assertEqual(args[1], offers_received["supplier2"])  # original_offer
-        self.assertTrue(kwargs['optimize_for_inventory'])
-        self.assertFalse(kwargs['optimize_for_profit'])
-        self.assertIsNotNone(kwargs['inventory_target_quantity'])
+        self.assertTrue(kwargs["optimize_for_inventory"])
+        self.assertFalse(kwargs["optimize_for_profit"])
+        self.assertIsNotNone(kwargs["inventory_target_quantity"])
 
-    @patch.object(LitaAgentCIR, '_evaluate_offer_combinations')
-    @patch.object(LitaAgentCIR, '_generate_counter_offer')
+    @patch.object(LitaAgentCIR, "_evaluate_offer_combinations")
+    @patch.object(LitaAgentCIR, "_generate_counter_offer")
     def test_CA_Case2_CounterInventory(self, mock_gco, mock_eval_comb):
         # Setup for Case 2: norm_score <= p_thresh, norm_profit > q_thresh
         best_combo_items = [("supplier1", (20, 2, 7.0))]
@@ -447,21 +543,26 @@ class TestLitaAgentCIR(unittest.TestCase):
         self.agent.q_threshold = 0.0
 
         offers_received = {"supplier1": (20, 2, 7.0)}
-        self.agent.negotiator_nmi_cache["supplier1"] = self._get_mock_nmi_for_partner("supplier1")
+        self.agent.negotiator_nmi_cache["supplier1"] = self._get_mock_nmi_for_partner(
+            "supplier1"
+        )
 
         responses = self.agent.counter_all(offers_received, states={})
 
-        self.assertEqual(responses["supplier1"].response, self.agent.ResponseType.COUNTER_OFFER)
+        self.assertEqual(
+            responses["supplier1"].response, self.agent.ResponseType.COUNTER_OFFER
+        )
         self.assertEqual(responses["supplier1"].offer, counter_outcome)
         mock_gco.assert_called_once_with(
-            "supplier1", offers_received["supplier1"],
+            "supplier1",
+            offers_received["supplier1"],
             optimize_for_inventory=True,
-            optimize_for_profit=False  # Case 2: norm_profit > q_thresh
+            optimize_for_profit=False,  # Case 2: norm_profit > q_thresh
         )
 
 
-if __name__ == '__main__':
-    unittest.main(argv=['first-arg-is-ignored'], exit=False)
+if __name__ == "__main__":
+    unittest.main(argv=["first-arg-is-ignored"], exit=False)
     # You can add more selective test runs here if needed
     # suite = unittest.TestSuite()
     # suite.addTest(TestLitaAgentCIR("test_FP_Procurement_SingleSupplier"))

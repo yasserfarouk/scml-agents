@@ -956,26 +956,26 @@ def get_agents(
             )
         elif track in ("std", "standard") and finalists_only:
             classes = (
+                scml2025.standard.team_atsunaga.MAIN_AGENT,
                 scml2025.standard.team_253.MAIN_AGENT,
                 scml2025.standard.team_254.MAIN_AGENT,
                 scml2025.standard.team_280.MAIN_AGENT,
-                scml2025.standard.team_atsunaga.MAIN_AGENT,
             )
         elif track in ("oneshot", "one") and finalists_only:
             classes = (
+                scml2025.oneshot.teamyuzuru.MAIN_AGENT,
                 scml2025.oneshot.takafam.MAIN_AGENT,
                 scml2025.oneshot.team_284.MAIN_AGENT,
-                scml2025.oneshot.team_star_up.MAIN_AGENT,
                 scml2025.oneshot.team_ukku.MAIN_AGENT,
-                scml2025.oneshot.teamyuzuru.MAIN_AGENT,
+                scml2025.oneshot.team_star_up.MAIN_AGENT,
             )
         elif track in ("all", "any") and finalists_only:
             classes = (
+                scml2025.oneshot.teamyuzuru.MAIN_AGENT,
                 scml2025.oneshot.takafam.MAIN_AGENT,
                 scml2025.oneshot.team_284.MAIN_AGENT,
-                scml2025.oneshot.team_star_up.MAIN_AGENT,
                 scml2025.oneshot.team_ukku.MAIN_AGENT,
-                scml2025.oneshot.teamyuzuru.MAIN_AGENT,
+                scml2025.oneshot.team_star_up.MAIN_AGENT,
                 scml2025.standard.team_253.MAIN_AGENT,
                 scml2025.standard.team_254.MAIN_AGENT,
                 scml2025.standard.team_280.MAIN_AGENT,
@@ -983,25 +983,25 @@ def get_agents(
             )
         elif track in ("standard", "std") and qualified_only:
             classes = (
+                scml2025.standard.team_atsunaga.MAIN_AGENT,
                 scml2025.standard.team_253.MAIN_AGENT,
                 scml2025.standard.team_254.MAIN_AGENT,
+                scml2025.standard.team_280.MAIN_AGENT,
                 scml2025.standard.team_255.MAIN_AGENT,
                 scml2025.standard.team_268.MAIN_AGENT,
                 scml2025.standard.team_276.MAIN_AGENT,
-                scml2025.standard.team_280.MAIN_AGENT,
-                scml2025.standard.team_atsunaga.MAIN_AGENT,
             )
         elif track in ("oneshot", "one") and qualified_only:
             classes = (
-                scml2025.oneshot.mat.MAIN_AGENT,
-                scml2025.oneshot.takafam.MAIN_AGENT,
-                scml2025.oneshot.team_276.MAIN_AGENT,
-                scml2025.oneshot.team_283.MAIN_AGENT,
-                scml2025.oneshot.team_284.MAIN_AGENT,
-                scml2025.oneshot.team_293.MAIN_AGENT,
-                scml2025.oneshot.team_star_up.MAIN_AGENT,
-                scml2025.oneshot.team_ukku.MAIN_AGENT,
                 scml2025.oneshot.teamyuzuru.MAIN_AGENT,
+                scml2025.oneshot.takafam.MAIN_AGENT,
+                scml2025.oneshot.team_284.MAIN_AGENT,
+                scml2025.oneshot.team_ukku.MAIN_AGENT,
+                scml2025.oneshot.team_star_up.MAIN_AGENT,
+                scml2025.oneshot.mat.MAIN_AGENT,
+                scml2025.oneshot.team_283.MAIN_AGENT,
+                scml2025.oneshot.team_276.MAIN_AGENT,
+                scml2025.oneshot.team_293.MAIN_AGENT,
             )
         elif track in ("all", "any") and qualified_only:
             classes = (

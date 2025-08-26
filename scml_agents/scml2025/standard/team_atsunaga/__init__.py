@@ -1,7 +1,7 @@
 from .as0 import *
 
 MAIN_AGENT = AS0
-__all__ = as0.__all_
+__all__ = as0.__all__
 
 __author__ = ""
 __team__ = ""

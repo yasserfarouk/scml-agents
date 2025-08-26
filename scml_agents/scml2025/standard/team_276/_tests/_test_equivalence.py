@@ -1,13 +1,16 @@
 import unittest
-from litaagent_std import litaagent_y, litaagent_yr
+from .litaagent_std import litaagent_y, litaagent_yr
+
 
 class DummyState:
     def __init__(self, rel):
         self.relative_time = rel
 
+
 class DummyAWI:
     current_step = 0
     current_shortfall_penalty = 10
+
 
 def stub_agent(agent):
     agent._best_price = lambda pid: 100
@@ -18,6 +21,7 @@ def stub_agent(agent):
     agent._clamp_price = lambda pid, price: price
     agent.im = None
 
+
 class TestAgentEquivalence(unittest.TestCase):
     def test_helper_functions(self):
         partners = ["a", "b", "c", "d", "e"]
@@ -25,10 +29,14 @@ class TestAgentEquivalence(unittest.TestCase):
             litaagent_y._split_partners(partners),
             litaagent_yr._split_partners(partners),
         )
-        import random, numpy as np
-        random.seed(0); np.random.seed(0)
+        import random
+        import numpy as np
+
+        random.seed(0)
+        np.random.seed(0)
         res1 = litaagent_y._distribute(7, 3)
-        random.seed(0); np.random.seed(0)
+        random.seed(0)
+        np.random.seed(0)
         res2 = litaagent_yr._distribute(7, 3)
         self.assertEqual(res1, res2)
 
@@ -50,5 +58,6 @@ class TestAgentEquivalence(unittest.TestCase):
         self.assertEqual(ay.min_profit_margin, ayr.min_profit_ratio)
         self.assertEqual(ay.cheap_price_discount, ayr.bargain_threshold)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

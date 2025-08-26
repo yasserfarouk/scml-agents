@@ -109,7 +109,7 @@ from .inventory_manager_n import (
     MaterialType,
 )
 
-__all__ = "LitaAgentY"
+__all__ = ["LitaAgentY"]
 
 # ------------------ 辅助函数 ------------------
 # Helper functions

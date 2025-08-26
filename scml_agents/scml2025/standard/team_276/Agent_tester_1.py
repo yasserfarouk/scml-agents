@@ -21,11 +21,11 @@ except ImportError:  # pragma: no cover - fallback for older library
 # Import commonly used agents
 from scml.oneshot.agents import GreedyOneShotAgent
 from scml.std.agents import RandomStdAgent, SyncRandomStdAgent, GreedyStdAgent
-from litaagent_std.team_miyajima_oneshot.cautious import CautiousOneShotAgent
+from .litaagent_std.team_miyajima_oneshot.cautious import CautiousOneShotAgent
 
 # Import local agents defined in this repository
-from litaagent_std.litaagent_y import LitaAgentY
-from litaagent_std.litaagent_n import LitaAgentN
+from .litaagent_std.litaagent_y import LitaAgentY
+from .litaagent_std.litaagent_n import LitaAgentN
 
 # Map simple names to classes so they can be provided on the command line
 AVAILABLE_AGENTS = {
@@ -43,8 +43,7 @@ AVAILABLE_AGENTS = {
 # ---------------------------------------------------------------------------
 parser = argparse.ArgumentParser(
     description=(
-        "Run SCML simulation with chosen agents.\n"
-        "使用指定的代理运行SCML模拟。"
+        "Run SCML simulation with chosen agents.\n使用指定的代理运行SCML模拟。"
     )
 )
 parser.add_argument(
@@ -127,9 +126,7 @@ for contract in world.saved_contracts:
     # Compute utility from the perspective of each party
     # 根据买卖双方各自的效用函数计算效用
     if not buyer_agent:
-        print(
-            f"[DEBUG] Buyer agent '{buyer}' not found when evaluating offer {offer}"
-        )
+        print(f"[DEBUG] Buyer agent '{buyer}' not found when evaluating offer {offer}")
         buyer_u = 0
     elif not hasattr(buyer_agent, "ufun") or buyer_agent.ufun is None:
         print(
@@ -154,6 +151,7 @@ for contract in world.saved_contracts:
 
     points.append((buyer_u, seller_u))
 
+
 # ---------------------------------------------------------------------------
 # Compute Pareto frontier / 计算帕累托前沿
 # ---------------------------------------------------------------------------
@@ -166,12 +164,18 @@ def pareto_frontier(data):
     for i, (bu_i, su_i) in enumerate(data):
         dominated = False
         for j, (bu_j, su_j) in enumerate(data):
-            if j != i and bu_j >= bu_i and su_j >= su_i and (bu_j > bu_i or su_j > su_i):
+            if (
+                j != i
+                and bu_j >= bu_i
+                and su_j >= su_i
+                and (bu_j > bu_i or su_j > su_i)
+            ):
                 dominated = True
                 break
         if not dominated:
             result.append((bu_i, su_i))
     return result
+
 
 pareto = pareto_frontier(points)
 pareto.sort(key=lambda x: x[0])
@@ -196,7 +200,7 @@ if points:
     plt.savefig("agreements_pareto.png")
     plt.show()
 else:
-    pass # print("No contracts found / 未找到合约")
+    pass  # print("No contracts found / 未找到合约")
 
 # ---------------------------------------------------------------------------
 # Plot negotiation traces / 绘制谈判轨迹
@@ -216,10 +220,11 @@ for neg in world.saved_negotiations:
                     f"[DEBUG] Buyer '{buyer}' missing when evaluating step offer {offer_t}"
                 )
                 bu = 0
-            elif not hasattr(world.agents[buyer], "ufun") or world.agents[buyer].ufun is None:
-                print(
-                    f"[DEBUG] Buyer '{buyer}' has no ufun for offer {offer_t}"
-                )
+            elif (
+                not hasattr(world.agents[buyer], "ufun")
+                or world.agents[buyer].ufun is None
+            ):
+                print(f"[DEBUG] Buyer '{buyer}' has no ufun for offer {offer_t}")
                 bu = 0
             else:
                 bu = world.agents[buyer].ufun.from_offers((offer_t,), (False,))
@@ -229,10 +234,11 @@ for neg in world.saved_negotiations:
                     f"[DEBUG] Seller '{seller}' missing when evaluating step offer {offer_t}"
                 )
                 su = 0
-            elif not hasattr(world.agents[seller], "ufun") or world.agents[seller].ufun is None:
-                print(
-                    f"[DEBUG] Seller '{seller}' has no ufun for offer {offer_t}"
-                )
+            elif (
+                not hasattr(world.agents[seller], "ufun")
+                or world.agents[seller].ufun is None
+            ):
+                print(f"[DEBUG] Seller '{seller}' has no ufun for offer {offer_t}")
                 su = 0
             else:
                 su = world.agents[seller].ufun.from_offers((offer_t,), (True,))
@@ -251,4 +257,3 @@ for neg in world.saved_negotiations:
     plt.tight_layout()
     plt.savefig(f"neg_trace_{seller}_{buyer}.png")
     plt.show()
-
