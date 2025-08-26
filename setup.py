@@ -74,8 +74,8 @@ setup(
     # https://packaging.python.org/en/latest/requirements.html
     install_requires=[
         "Click (>=6.0)",
-        "scml>=0.7.6",
-        "negmas>=0.11.2",
+        "scml>=0.7.7",
+        "negmas>=0.11.3",
         "torch; sys_platform != 'darwin' ",
         "torch>=1.12.1; sys_platform == 'darwin' ",
         "pulp",
