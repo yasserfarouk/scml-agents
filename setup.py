@@ -78,6 +78,7 @@ setup(
         "negmas>=0.11.3",
         "torch; sys_platform != 'darwin' ",
         "torch>=1.12.1; sys_platform == 'darwin' ",
+        "numpy==1.26.4",
         "pulp",
         "xgboost",
         "tensorflow",
