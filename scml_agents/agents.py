@@ -10,10 +10,13 @@ from scml.scml2020 import SCML2020Agent
 
 import scml_agents.scml2019 as scml2019
 import scml_agents.scml2020 as scml2020
+
+# from scml_agents.scml2020.monty_hall import MAIN_AGENT
 import scml_agents.scml2021 as scml2021
 import scml_agents.scml2022 as scml2022
 import scml_agents.scml2023 as scml2023
 import scml_agents.scml2024 as scml2024
+import scml_agents.scml2025 as scml2025
 
 __all__ = ["get_agents", "FAILING_AGENTS"]
 
@@ -32,7 +35,7 @@ FAILING_AGENTS = {
 
 
 @overload
-def get_agents(
+def get_agents(  # type: ignore
     version: str | int,
     *,
     track: str = "any",
@@ -95,7 +98,7 @@ def get_agents(
     """
     if version in ("all", "any"):
         results = []
-        for v in (2019, 2020, 2021, 2022, 2023, 2024, "contrib"):
+        for v in (2019, 2020, 2021, 2022, 2023, 2024, 2025, "contrib"):
             results += list(
                 get_agents(  # type: ignore
                     v,
@@ -812,6 +815,7 @@ def get_agents(
                     [],
                 )
             )
+
     elif isinstance(version, int) and version == 2024:
         if bird_only:
             classes = tuple()
@@ -920,6 +924,150 @@ def get_agents(
                         ]
                         for _ in dir(scml2024.oneshot)
                         if ismodule(eval(f"scml2024.oneshot.{_}"))
+                    ],
+                    [],
+                )
+            )
+    elif isinstance(version, int) and version == 2025:
+        if bird_only:
+            classes = tuple()
+        elif track in ("collusion", "col"):
+            classes = tuple()
+        elif track in ("std", "standard") and winners_only:
+            classes = (
+                scml2025.standard.team_atsunaga.MAIN_AGENT,
+                scml2025.standard.team_253.MAIN_AGENT,
+                scml2025.standard.team_254.MAIN_AGENT,
+            )
+        elif track in ("one", "oneshot") and winners_only:
+            classes = (
+                scml2025.oneshot.teamyuzuru.MAIN_AGENT,
+                scml2025.oneshot.takafam.MAIN_AGENT,
+                scml2025.oneshot.team_284.MAIN_AGENT,
+            )
+        elif track in ("any", "all") and winners_only:
+            classes = (
+                scml2025.oneshot.teamyuzuru.MAIN_AGENT,
+                scml2025.oneshot.takafam.MAIN_AGENT,
+                scml2025.oneshot.team_284.MAIN_AGENT,
+                scml2025.standard.team_atsunaga.MAIN_AGENT,
+                scml2025.standard.team_253.MAIN_AGENT,
+                scml2025.standard.team_254.MAIN_AGENT,
+            )
+        elif track in ("std", "standard") and finalists_only:
+            classes = (
+                scml2025.standard.team_253.MAIN_AGENT,
+                scml2025.standard.team_254.MAIN_AGENT,
+                scml2025.standard.team_280.MAIN_AGENT,
+                scml2025.standard.team_atsunaga.MAIN_AGENT,
+            )
+        elif track in ("oneshot", "one") and finalists_only:
+            classes = (
+                scml2025.oneshot.takafam.MAIN_AGENT,
+                scml2025.oneshot.team_284.MAIN_AGENT,
+                scml2025.oneshot.team_star_up.MAIN_AGENT,
+                scml2025.oneshot.team_ukku.MAIN_AGENT,
+                scml2025.oneshot.teamyuzuru.MAIN_AGENT,
+            )
+        elif track in ("all", "any") and finalists_only:
+            classes = (
+                scml2025.oneshot.takafam.MAIN_AGENT,
+                scml2025.oneshot.team_284.MAIN_AGENT,
+                scml2025.oneshot.team_star_up.MAIN_AGENT,
+                scml2025.oneshot.team_ukku.MAIN_AGENT,
+                scml2025.oneshot.teamyuzuru.MAIN_AGENT,
+                scml2025.standard.team_253.MAIN_AGENT,
+                scml2025.standard.team_254.MAIN_AGENT,
+                scml2025.standard.team_280.MAIN_AGENT,
+                scml2025.standard.team_atsunaga.MAIN_AGENT,
+            )
+        elif track in ("standard", "std") and qualified_only:
+            classes = (
+                scml2025.standard.team_253.MAIN_AGENT,
+                scml2025.standard.team_254.MAIN_AGENT,
+                scml2025.standard.team_255.MAIN_AGENT,
+                scml2025.standard.team_268.MAIN_AGENT,
+                scml2025.standard.team_276.MAIN_AGENT,
+                scml2025.standard.team_280.MAIN_AGENT,
+                scml2025.standard.team_atsunaga.MAIN_AGENT,
+            )
+        elif track in ("oneshot", "one") and qualified_only:
+            classes = (
+                scml2025.oneshot.mat.MAIN_AGENT,
+                scml2025.oneshot.takafam.MAIN_AGENT,
+                scml2025.oneshot.team_276.MAIN_AGENT,
+                scml2025.oneshot.team_283.MAIN_AGENT,
+                scml2025.oneshot.team_284.MAIN_AGENT,
+                scml2025.oneshot.team_293.MAIN_AGENT,
+                scml2025.oneshot.team_star_up.MAIN_AGENT,
+                scml2025.oneshot.team_ukku.MAIN_AGENT,
+                scml2025.oneshot.teamyuzuru.MAIN_AGENT,
+            )
+        elif track in ("all", "any") and qualified_only:
+            classes = (
+                scml2025.oneshot.mat.MAIN_AGENT,
+                scml2025.oneshot.takafam.MAIN_AGENT,
+                scml2025.oneshot.team_276.MAIN_AGENT,
+                scml2025.oneshot.team_283.MAIN_AGENT,
+                scml2025.oneshot.team_284.MAIN_AGENT,
+                scml2025.oneshot.team_293.MAIN_AGENT,
+                scml2025.oneshot.team_star_up.MAIN_AGENT,
+                scml2025.oneshot.team_ukku.MAIN_AGENT,
+                scml2025.oneshot.teamyuzuru.MAIN_AGENT,
+                scml2025.standard.team_253.MAIN_AGENT,
+                scml2025.standard.team_254.MAIN_AGENT,
+                scml2025.standard.team_255.MAIN_AGENT,
+                scml2025.standard.team_268.MAIN_AGENT,
+                scml2025.standard.team_276.MAIN_AGENT,
+                scml2025.standard.team_280.MAIN_AGENT,
+                scml2025.standard.team_atsunaga.MAIN_AGENT,
+            )
+        elif track in ("std", "standard"):
+            classes = tuple(
+                sum(
+                    (
+                        [
+                            eval(f"scml2025.standard.{_}.{a}")
+                            for a in eval(f"scml2025.standard.{_}").__all__
+                        ]
+                        for _ in dir(scml2025.standard)
+                        if ismodule(eval(f"scml2025.standard.{_}"))
+                    ),
+                    [],
+                )
+            )
+        elif track in ("one", "oneshot"):
+            classes = tuple(
+                sum(
+                    (
+                        [
+                            eval(f"scml2025.oneshot.{_}.{a}")
+                            for a in eval(f"scml2025.oneshot.{_}").__all__
+                        ]
+                        for _ in dir(scml2025.oneshot)
+                        if ismodule(eval(f"scml2025.oneshot.{_}"))
+                    ),
+                    [],
+                )
+            )
+        elif track in ("any", "all"):
+            classes = tuple(
+                sum(
+                    [
+                        [
+                            eval(f"scml2025.standard.{_}.{a}")
+                            for a in eval(f"scml2025.standard.{_}").__all__
+                        ]
+                        for _ in dir(scml2025.standard)
+                        if ismodule(eval(f"scml2025.standard.{_}"))
+                    ]
+                    + [
+                        [
+                            eval(f"scml2025.oneshot.{_}.{a}")
+                            for a in eval(f"scml2025.oneshot.{_}").__all__
+                        ]
+                        for _ in dir(scml2025.oneshot)
+                        if ismodule(eval(f"scml2025.oneshot.{_}"))
                     ],
                     [],
                 )

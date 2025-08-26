@@ -8,5 +8,6 @@ __all__ = agents.__all__ + [
     "scml2022",
     "scml2023",
     "scml2024",
+    "scml2025",
     "contrib",
 ]
