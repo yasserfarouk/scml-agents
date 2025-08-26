@@ -195,6 +195,21 @@ You can get these agents after installing scml-agents by running:
 >>> scml_agents.get_agents(2020, track="collusion", winners_only=True)
 
 
+Agents accepted for the SCML 2025 qualifications
+================================================
+
+A list of all agents accepted for the SCML 2025 qualifications round can be found at `https://scml.cs.brown.edu/scml2025 <https://scml.cs.brown.edu/scml2022>`_
+
+Agents accepted for the SCML 2024 qualifications
+================================================
+
+A list of all agents accepted for the SCML 2024 qualifications round can be found at `https://scml.cs.brown.edu/scml2024 <https://scml.cs.brown.edu/scml2022>`_
+
+Agents accepted for the SCML 2023 qualifications
+================================================
+
+A list of all agents accepted for the SCML 2023 qualifications round can be found at `https://scml.cs.brown.edu/scml2023 <https://scml.cs.brown.edu/scml2022>`_
+
 Agents accepted for the SCML 2022 qualifications
 ================================================
 
