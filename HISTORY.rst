@@ -1,6 +1,11 @@
 Changelog
 =========
 
+0.4.13 (2025.08.27)
+-------------------
+
+* Pinning numpy version to avoid issues with numpy 1.26.
+
 0.4.12 (2025.08.26)
 -------------------
 
