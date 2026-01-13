@@ -29,7 +29,7 @@ dill==0.4.0
 executing==2.2.0
 Farama-Notifications==0.0.4
 fastjsonschema==2.21.1
-filelock==3.18.0
+filelock==3.20.3
 flatbuffers==25.2.10
 fonttools==4.58.0
 fqdn==1.5.1
