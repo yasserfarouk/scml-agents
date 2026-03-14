@@ -48,6 +48,7 @@ include = [
     "HISTORY.rst",
     "LICENSE",
     "README.rst",
+    "MANIFEST.in",
 ]
 exclude = [
     "**/__pycache__",
@@ -57,6 +58,19 @@ exclude = [
 
 [tool.hatch.build.targets.wheel]
 packages = ["scml_agents"]
+# Include all data files (json, pkl, csv, etc.) in the wheel
+artifacts = [
+    "scml_agents/**/*.json",
+    "scml_agents/**/*.pkl",
+    "scml_agents/**/*.csv",
+    "scml_agents/**/*.pt",
+    "scml_agents/**/*.pth",
+    "scml_agents/**/*.npy",
+    "scml_agents/**/*.npz",
+    "scml_agents/**/*.txt",
+    "scml_agents/**/*.yaml",
+    "scml_agents/**/*.yml",
+]
 
 [dependency-groups]
 dev = [
@@ -67,9 +81,17 @@ dev = [
 testpaths = ["tests"]
 filterwarnings = ["ignore"]
 
-[tool.isort]
-profile = "black"
-
-[tool.black]
+[tool.ruff]
 line-length = 88
-target-version = ["py311", "py312"]
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W"]
+ignore = ["E501"]  # Line too long - let formatter handle it
+
+[tool.ruff.lint.isort]
+known-first-party = ["scml_agents"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
