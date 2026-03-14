@@ -229,7 +229,6 @@ class Mynegotiator(AspirationNegotiator):
                         self.estimated_issue_weights.get(key) / weight_sum
                     )
 
-            frequencies = {}
             # @ todo : Frequency heurstic
 
     def notify_ufun_changed(self, changes=tuple()):

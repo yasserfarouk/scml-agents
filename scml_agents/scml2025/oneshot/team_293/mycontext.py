@@ -33,6 +33,7 @@ DefaultAgentsOneShot = (
     # EqualDistOneShotAgent,
 )
 
+
 class MySupplierContext(LimitedPartnerNumbersOneShotContext):
     def __init__(self, *args, **kwargs):
         n_agents_per_process = (
@@ -45,11 +46,10 @@ class MySupplierContext(LimitedPartnerNumbersOneShotContext):
             n_competitors=(N_SUPPLIERS[0] - 1, N_SUPPLIERS[1] - 1),
             n_agents_per_process=n_agents_per_process,
             level=0,  # suppliers are always in the first level
-            non_competitors = DefaultAgentsOneShot,
+            non_competitors=DefaultAgentsOneShot,
         )
         super().__init__(*args, **kwargs)
 
-    
 
 class MyConsumerContext(LimitedPartnerNumbersOneShotContext):
     """A world context that can generate any world compatible with the observation manager"""
@@ -65,6 +65,6 @@ class MyConsumerContext(LimitedPartnerNumbersOneShotContext):
             n_competitors=(N_CONSUMERS[0] - 1, N_CONSUMERS[1] - 1),
             n_agents_per_process=n_agents_per_process,
             level=-1,  # consumers are always in the last level
-            non_competitors = DefaultAgentsOneShot,
+            non_competitors=DefaultAgentsOneShot,
         )
         super().__init__(*args, **kwargs)

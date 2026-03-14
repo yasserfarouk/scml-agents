@@ -1,5 +1,4 @@
 import copy
-from collections import defaultdict
 
 from .helper import (
     buyer_closest_available_delivery,
@@ -39,9 +38,7 @@ class BossDispatch:
         # Get a copy of categories, and schedule.
         dispatch_categories = {"Green": {}, "Yellow": {}, "Red": {}}
         dispatch_schedule = copy.deepcopy(formatted_schedule)
-        dispatch_partners = (
-            {}
-        )  # {buyer_contract_id: {seller_contract_id: schedule} }, schedule: {'1': 3, '2', 5, '3': 7}
+        dispatch_partners = {}  # {buyer_contract_id: {seller_contract_id: schedule} }, schedule: {'1': 3, '2', 5, '3': 7}
 
         if len(buyers) == 0:  # If there are no buyer, all sellers are red.
             for seller in sellers:
@@ -220,9 +217,7 @@ class BossDispatch:
                                     + 1
                                 )
                                 buyer_issues[buyer_issue] = buyer_issue_target
-                            if (
-                                not is_available
-                            ):  # Otherwise check delivery time, since seller can fill this buyer to green.
+                            if not is_available:  # Otherwise check delivery time, since seller can fill this buyer to green.
                                 buyer_issue_target = buyer_closest_available_delivery(
                                     temp_dispatch_schedule,
                                     buyer_remaining_partial_volume,
@@ -234,12 +229,12 @@ class BossDispatch:
                                     buyer_issues[buyer_issue] = buyer_issue_target
                                 else:
                                     buyer_issue = "Volume"
-                                    buyer_issues[
-                                        buyer_issue
-                                    ] = most_available_amount_in_schedule(
-                                        temp_dispatch_schedule,
-                                        seller_delivery_time,
-                                        buyer_delivery_time,
+                                    buyer_issues[buyer_issue] = (
+                                        most_available_amount_in_schedule(
+                                            temp_dispatch_schedule,
+                                            seller_delivery_time,
+                                            buyer_delivery_time,
+                                        )
                                     )
                             # Add buyer to the red list, with problematic issue and the target for offer.
                             dispatch_categories["Red"][buyer_id] = {
@@ -268,17 +263,17 @@ class BossDispatch:
                                     )
                                     if seller_issue_target != -1:
                                         seller_issue = "Delivery"
-                                        seller_issues[
-                                            seller_issue
-                                        ] = seller_issue_target
+                                        seller_issues[seller_issue] = (
+                                            seller_issue_target
+                                        )
                                     else:
                                         seller_issue = "Volume"
-                                        seller_issues[
-                                            seller_issue
-                                        ] = most_available_amount_in_schedule(
-                                            temp_dispatch_schedule,
-                                            seller_delivery_time,
-                                            buyer_delivery_time,
+                                        seller_issues[seller_issue] = (
+                                            most_available_amount_in_schedule(
+                                                temp_dispatch_schedule,
+                                                seller_delivery_time,
+                                                buyer_delivery_time,
+                                            )
                                         )
                                 dispatch_categories["Red"][seller_id] = {
                                     "Offer": seller_offer,
@@ -360,9 +355,7 @@ class BossDispatch:
                                     + 1
                                 )
                                 buyer_issues[buyer_issue] = buyer_issue_target
-                            if (
-                                not is_available
-                            ):  # Otherwise its volume, since seller can fill this buyer to green.
+                            if not is_available:  # Otherwise its volume, since seller can fill this buyer to green.
                                 buyer_issue_target = buyer_closest_available_delivery(
                                     temp_dispatch_schedule,
                                     seller_volume,
@@ -374,12 +367,12 @@ class BossDispatch:
                                     buyer_issues[buyer_issue] = buyer_issue_target
                                 else:
                                     buyer_issue = "Volume"
-                                    buyer_issues[
-                                        buyer_issue
-                                    ] = most_available_amount_in_schedule(
-                                        temp_dispatch_schedule,
-                                        seller_delivery_time,
-                                        buyer_delivery_time,
+                                    buyer_issues[buyer_issue] = (
+                                        most_available_amount_in_schedule(
+                                            temp_dispatch_schedule,
+                                            seller_delivery_time,
+                                            buyer_delivery_time,
+                                        )
                                     )
                             # Add buyer to the red list, with problematic issue and the target for offer.
                             dispatch_categories["Red"][buyer_id] = {
@@ -408,17 +401,17 @@ class BossDispatch:
                                     )
                                     if seller_issue_target != -1:
                                         seller_issue = "Delivery"
-                                        seller_issues[
-                                            seller_issue
-                                        ] = seller_issue_target
+                                        seller_issues[seller_issue] = (
+                                            seller_issue_target
+                                        )
                                     else:
                                         seller_issue = "Volume"
-                                        seller_issues[
-                                            seller_issue
-                                        ] = most_available_amount_in_schedule(
-                                            temp_dispatch_schedule,
-                                            seller_delivery_time,
-                                            buyer_delivery_time,
+                                        seller_issues[seller_issue] = (
+                                            most_available_amount_in_schedule(
+                                                temp_dispatch_schedule,
+                                                seller_delivery_time,
+                                                buyer_delivery_time,
+                                            )
                                         )
                                 dispatch_categories["Red"][seller_id] = {
                                     "Offer": seller_offer,
@@ -451,10 +444,9 @@ class BossDispatch:
                         in dispatch_categories["Red"][buyer_id]["Issues"].keys()
                     ):
                         yellow_id = list(dispatch_categories["Yellow"].keys())[0]
-                        dispatch_categories["Yellow"][yellow_id][
-                            "Target"
-                        ] = dispatch_categories["Yellow"][yellow_id]["Offer"][0] + (
-                            buyer_volume - buyer_paid_partial_volume
+                        dispatch_categories["Yellow"][yellow_id]["Target"] = (
+                            dispatch_categories["Yellow"][yellow_id]["Offer"][0]
+                            + (buyer_volume - buyer_paid_partial_volume)
                         )
 
         # If every buyer is finished and seller is not in any categories (in global), meaning that it is not fulfill anybody, problem is no buyer.

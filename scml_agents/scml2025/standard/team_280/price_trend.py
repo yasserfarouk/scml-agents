@@ -1,20 +1,15 @@
 #!/usr/bin/env python
 from __future__ import annotations
 
+import random
+
 # required for typing
-from typing import Any, Dict, List, Set, Tuple
+# required for typing
+from negmas import Contract, ResponseType, SAOResponse
 
 # required for development
 from scml.oneshot import *
 from scml.std import *
-
-# required for typing
-from negmas import Contract, Outcome, SAOResponse, SAOState, ResponseType
-
-import numpy as np
-import random
-
-from collections import defaultdict
 
 __all__ = ["PriceTrendStdAgent"]
 
@@ -30,10 +25,11 @@ def distribute(
     equal=False,
     concentrated=False,
     allow_zero=False,
-    concentrated_idx: list[int] = []
+    concentrated_idx: list[int] = [],
 ) -> list[int]:
     """Distributes q values over n bins."""
     from collections import Counter
+
     from numpy.random import choice
 
     q, n = int(q), int(n)
@@ -55,7 +51,7 @@ def distribute(
             q += lst[i]
             lst[i] = min(mx, q)
             q -= lst[i]
-        concentrated_lst = sorted(lst, reverse=True)[:len(concentrated_idx)]
+        concentrated_lst = sorted(lst, reverse=True)[: len(concentrated_idx)]
         for x in concentrated_lst:
             lst.remove(x)
         random.shuffle(lst)
@@ -78,11 +74,14 @@ def distribute(
     r = Counter(choice(n, q))
     return [r.get(_, 0) + per for _ in range(n)]
 
+
 def powerset(iterable):
     """冪集合"""
     from itertools import chain, combinations
+
     s = list(iterable)
     return chain.from_iterable(combinations(s, r) for r in range(len(s) + 1))
+
 
 class PriceTrendStdAgent(StdSyncAgent):
     """An agent that distributes its needs over its partners randomly."""
@@ -159,7 +158,7 @@ class PriceTrendStdAgent(StdSyncAgent):
 
         # パートナー評価システムの初期化
         all_partners = self.awi.my_consumers + self.awi.my_suppliers
-        self.partner_reputation = {k: {'score': 1.0, 'trades': 0} for k in all_partners}
+        self.partner_reputation = {k: {"score": 1.0, "trades": 0} for k in all_partners}
 
         self.market_prices_log = {"input": [], "output": []}
 
@@ -172,15 +171,21 @@ class PriceTrendStdAgent(StdSyncAgent):
         )
         self.min_inventory = MIN_INVENTORY
 
-        self.trend_bias = "flat" 
+        self.trend_bias = "flat"
 
         # 市場価格の記録
         if self.awi.current_exogenous_input_quantity > 0:
-            input_price = self.awi.current_exogenous_input_price / self.awi.current_exogenous_input_quantity
+            input_price = (
+                self.awi.current_exogenous_input_price
+                / self.awi.current_exogenous_input_quantity
+            )
             self.market_prices_log["input"].append(input_price)
 
         if self.awi.current_exogenous_output_quantity > 0:
-            output_price = self.awi.current_exogenous_output_price / self.awi.current_exogenous_output_quantity
+            output_price = (
+                self.awi.current_exogenous_output_price
+                / self.awi.current_exogenous_output_quantity
+            )
             self.market_prices_log["output"].append(output_price)
 
         # 価格推移に基づく意思決定への反映
@@ -189,14 +194,20 @@ class PriceTrendStdAgent(StdSyncAgent):
 
         trend = falling = False
         if len(valid_input_prices) >= lookback + 1:
-            recent_prices = valid_input_prices[-(lookback + 1):]
+            recent_prices = valid_input_prices[-(lookback + 1) :]
             trend = all(x < y for x, y in zip(recent_prices, recent_prices[1:]))
             falling = all(x > y for x, y in zip(recent_prices, recent_prices[1:]))
 
             if trend:
-                self.p_max_for_buying = min(self.p_max_for_buying, self.awi.current_input_issues[UNIT_PRICE].max_value)
+                self.p_max_for_buying = min(
+                    self.p_max_for_buying,
+                    self.awi.current_input_issues[UNIT_PRICE].max_value,
+                )
             elif falling:
-                self.p_max_for_buying = max(self.p_max_for_buying, self.awi.current_input_issues[UNIT_PRICE].min_value)
+                self.p_max_for_buying = max(
+                    self.p_max_for_buying,
+                    self.awi.current_input_issues[UNIT_PRICE].min_value,
+                )
 
         # 移動平均を用いたトレンド平滑化
         alpha = 0.3
@@ -209,15 +220,23 @@ class PriceTrendStdAgent(StdSyncAgent):
                 if self.ema_input_price is None:
                     self.ema_input_price = last_price
                 else:
-                    self.ema_input_price = alpha * last_price + (1 - alpha) * self.ema_input_price
+                    self.ema_input_price = (
+                        alpha * last_price + (1 - alpha) * self.ema_input_price
+                    )
 
                 delta = last_price - self.ema_input_price
 
                 if delta > 0.5:
-                    self.p_max_for_buying = min(self.p_max_for_buying, self.awi.current_input_issues[UNIT_PRICE].max_value)
+                    self.p_max_for_buying = min(
+                        self.p_max_for_buying,
+                        self.awi.current_input_issues[UNIT_PRICE].max_value,
+                    )
                     # print(f"# ↑↑ Input price increasing significantly → consider reducing planned order quantity")
                 elif delta < -0.5:
-                    self.p_max_for_buying = max(self.p_max_for_buying, self.awi.current_input_issues[UNIT_PRICE].min_value)
+                    self.p_max_for_buying = max(
+                        self.p_max_for_buying,
+                        self.awi.current_input_issues[UNIT_PRICE].min_value,
+                    )
                     # print(f"# ↓↓ Input price falling significantly → consider increasing planned order quantity")
 
                 # 数量調整倍率の設定（取引量へ影響）
@@ -252,7 +271,9 @@ class PriceTrendStdAgent(StdSyncAgent):
             )
         else:
             if sum(self.awi.current_inventory) > self.max_inventory:
-                self.p_max_for_buying = self.awi.current_input_issues[UNIT_PRICE].min_value + 0.1 * (
+                self.p_max_for_buying = self.awi.current_input_issues[
+                    UNIT_PRICE
+                ].min_value + 0.1 * (
                     self.awi.current_input_issues[UNIT_PRICE].max_value
                     - self.awi.current_input_issues[UNIT_PRICE].min_value
                 )
@@ -261,7 +282,9 @@ class PriceTrendStdAgent(StdSyncAgent):
             ) > sum(self.pre_inventory):
                 self.p_max_for_buying = max(
                     self.p_max_for_buying * 0.8,
-                    self.awi.current_input_issues[UNIT_PRICE].min_value + 0.1 * (
+                    self.awi.current_input_issues[UNIT_PRICE].min_value
+                    + 0.1
+                    * (
                         self.awi.current_input_issues[UNIT_PRICE].max_value
                         - self.awi.current_input_issues[UNIT_PRICE].min_value
                     ),
@@ -280,13 +303,15 @@ class PriceTrendStdAgent(StdSyncAgent):
 
         self.today_agreed_buying_contracts = []
 
-    def on_negotiation_success(self, contract: Contract, mechanism: NegotiatorMechanismInterface) -> None:
+    def on_negotiation_success(
+        self, contract: Contract, mechanism: NegotiatorMechanismInterface
+    ) -> None:
         """交渉成功時の処理 - 価格評価と取引量評価を分離"""
         super().on_negotiation_success(contract, mechanism)
-        
+
         # パートナーを特定
         partner_id = [p for p in contract.partners if p != self.id][0]
-        
+
         # 取引量を記録
         q, t, p, is_seller = (
             contract.agreement["quantity"],
@@ -294,12 +319,12 @@ class PriceTrendStdAgent(StdSyncAgent):
             contract.agreement["unit_price"],
             self.id == contract.annotation["seller"],
         )
-        
+
         self.total_agreed_quantity[partner_id] += q
-        
+
         # 取引したパートナーを記録
         self.early_phase_partners.add(partner_id)
-        
+
         # 既存の処理を維持
         if is_seller and self.awi.current_step < t < self.awi.n_steps:
             self.future_selling_contracts.append(contract)
@@ -311,51 +336,63 @@ class PriceTrendStdAgent(StdSyncAgent):
         self.opp_acc_prices[is_seller][partner_id][-1] = max(
             self.opp_acc_prices[is_seller][partner_id][-1], p
         )
-        
+
         # 取引情報を記録
-        self.transactions.append({
-            "buyer": contract.annotation["buyer"],
-            "seller": contract.annotation["seller"],
-            "quantity": q,
-            "unit_price": p,
-            "step": self.awi.current_step
-        })
-        
+        self.transactions.append(
+            {
+                "buyer": contract.annotation["buyer"],
+                "seller": contract.annotation["seller"],
+                "quantity": q,
+                "unit_price": p,
+                "step": self.awi.current_step,
+            }
+        )
+
         # パートナー評価を更新
         if partner_id in self.partner_reputation:
             # 取引回数を増加
-            self.partner_reputation[partner_id]['trades'] = self.partner_reputation[partner_id].get('trades', 0) + 1
-            
+            self.partner_reputation[partner_id]["trades"] = (
+                self.partner_reputation[partner_id].get("trades", 0) + 1
+            )
+
             # 1. 価格評価の更新
             price_norm = 0
             if is_seller:  # 売り手なら高い価格が良い
                 issues = self.awi.current_output_issues
-                price_range = issues[UNIT_PRICE].max_value - issues[UNIT_PRICE].min_value
+                price_range = (
+                    issues[UNIT_PRICE].max_value - issues[UNIT_PRICE].min_value
+                )
                 if price_range > 0:
                     price_norm = (p - issues[UNIT_PRICE].min_value) / price_range
             else:  # 買い手なら安い価格が良い
                 issues = self.awi.current_input_issues
-                price_range = issues[UNIT_PRICE].max_value - issues[UNIT_PRICE].min_value
+                price_range = (
+                    issues[UNIT_PRICE].max_value - issues[UNIT_PRICE].min_value
+                )
                 if price_range > 0:
                     price_norm = 1 - (p - issues[UNIT_PRICE].min_value) / price_range
-            
+
             # 既存の価格評価を取得または初期化
-            old_price_score = self.partner_reputation[partner_id].get('price_score', price_norm)
+            old_price_score = self.partner_reputation[partner_id].get(
+                "price_score", price_norm
+            )
             # 価格評価を更新（指数平滑化）
             new_price_score = 0.6 * old_price_score + 0.4 * price_norm
-            self.partner_reputation[partner_id]['price_score'] = new_price_score
-            
+            self.partner_reputation[partner_id]["price_score"] = new_price_score
+
             # 2. 取引量評価の更新
             quantity_norm = q / self.awi.n_lines  # 取引量の正規化
             # 既存の取引量評価を取得または初期化
-            old_quantity_score = self.partner_reputation[partner_id].get('quantity_score', quantity_norm)
+            old_quantity_score = self.partner_reputation[partner_id].get(
+                "quantity_score", quantity_norm
+            )
             # 取引量評価を更新（指数平滑化）
             new_quantity_score = 0.6 * old_quantity_score + 0.4 * quantity_norm
-            self.partner_reputation[partner_id]['quantity_score'] = new_quantity_score
-            
+            self.partner_reputation[partner_id]["quantity_score"] = new_quantity_score
+
             # 3. 総合評価スコアの計算
             total_score = new_price_score + 1.5 * new_quantity_score
-            self.partner_reputation[partner_id]['score'] = total_score
+            self.partner_reputation[partner_id]["score"] = total_score
 
     def step(self):
         super().step()
@@ -452,9 +489,13 @@ class PriceTrendStdAgent(StdSyncAgent):
                 # 一日で販売しきれない場合は一人の相手にn_lines個を販売し、残りを翌日以降他の相手に販売する
                 todays_output_needed = self.awi.n_lines
                 concentrated_ids = sorted(
-                    [c for c in self.awi.my_consumers if c in remained_consumers and not self.awi.is_bankrupt(c)],
-                    key=lambda x: self.partner_reputation.get(x, {}).get('score', 0),
-                    reverse=True
+                    [
+                        c
+                        for c in self.awi.my_consumers
+                        if c in remained_consumers and not self.awi.is_bankrupt(c)
+                    ],
+                    key=lambda x: self.partner_reputation.get(x, {}).get("score", 0),
+                    reverse=True,
                 )
                 distribution = dict(
                     zip(
@@ -503,7 +544,7 @@ class PriceTrendStdAgent(StdSyncAgent):
             else SAOResponse(ResponseType.REJECT_OFFER, (0, self.awi.current_step, 0))
         )
         response = {}
-        
+
         today_offers = {
             k: v for k, v in offers.items() if v[TIME] == self.awi.current_step
         }
@@ -587,9 +628,15 @@ class PriceTrendStdAgent(StdSyncAgent):
                 remained_suppliers = set(valid_suppliers).difference(plist[best_indx])
                 if best_diff < 0 and len(remained_suppliers) > 0:
                     concentrated_ids = sorted(
-                    [c for c in self.awi.my_consumers if c in remained_suppliers and not self.awi.is_bankrupt(c)],
-                    key=lambda x: self.partner_reputation.get(x, {}).get('score', 0),
-                    reverse=True
+                        [
+                            c
+                            for c in self.awi.my_consumers
+                            if c in remained_suppliers and not self.awi.is_bankrupt(c)
+                        ],
+                        key=lambda x: self.partner_reputation.get(x, {}).get(
+                            "score", 0
+                        ),
+                        reverse=True,
                     )
                     if (
                         len(concentrated_ids) > 0
@@ -685,17 +732,26 @@ class PriceTrendStdAgent(StdSyncAgent):
                             # トレンドに基づく取引タイミングの調整
                             if self.trend_bias == "rising":
                                 planned_time = self.awi.current_step  # 今すぐ買う
-                            elif self.trend_bias == "falling" and self.awi.current_step + 1 < self.awi.n_steps:
-                                planned_time = self.awi.current_step + 1  # 安くなるまで少し待つ
+                            elif (
+                                self.trend_bias == "falling"
+                                and self.awi.current_step + 1 < self.awi.n_steps
+                            ):
+                                planned_time = (
+                                    self.awi.current_step + 1
+                                )  # 安くなるまで少し待つ
                             else:
                                 planned_time = self.awi.current_step
 
                             # 数量調整（在庫上限考慮 + トレンド倍率）
-                            adjusted_quantity = int(offer[QUANTITY] * self.quantity_multiplier)
+                            adjusted_quantity = int(
+                                offer[QUANTITY] * self.quantity_multiplier
+                            )
                             adjusted_quantity = max(adjusted_quantity, 1)
 
                             if planned_time == self.awi.current_step:
-                                response[partner_id] = SAOResponse(ResponseType.ACCEPT_OFFER, offer)
+                                response[partner_id] = SAOResponse(
+                                    ResponseType.ACCEPT_OFFER, offer
+                                )
                             else:
                                 # 次のステップまで待つ場合は拒否して新しい提案
                                 response[partner_id] = SAOResponse(
@@ -719,13 +775,20 @@ class PriceTrendStdAgent(StdSyncAgent):
                         # トレンドに基づく取引タイミングと数量の調整
                         if self.trend_bias == "rising":
                             planned_time = self.awi.current_step  # 今すぐ買う
-                        elif self.trend_bias == "falling" and self.awi.current_step + 1 < self.awi.n_steps:
-                            planned_time = self.awi.current_step + 1  # 安くなるまで少し待つ
+                        elif (
+                            self.trend_bias == "falling"
+                            and self.awi.current_step + 1 < self.awi.n_steps
+                        ):
+                            planned_time = (
+                                self.awi.current_step + 1
+                            )  # 安くなるまで少し待つ
                         else:
                             planned_time = self.awi.current_step
 
                         # 数量調整（在庫上限考慮 + トレンド倍率）
-                        adjusted_quantity = int(offer[QUANTITY] * self.quantity_multiplier)
+                        adjusted_quantity = int(
+                            offer[QUANTITY] * self.quantity_multiplier
+                        )
                         adjusted_quantity = max(adjusted_quantity, 1)
 
                         response[partner_id] = (
@@ -871,9 +934,13 @@ class PriceTrendStdAgent(StdSyncAgent):
                 continue
 
             concentrated_ids = sorted(
-                    [c for c in self.awi.my_consumers if c in remained_consumers and not self.awi.is_bankrupt(c)],
-                    key=lambda x: self.partner_reputation.get(x, {}).get('score', 0),
-                    reverse=True
+                [
+                    c
+                    for c in self.awi.my_consumers
+                    if c in remained_consumers and not self.awi.is_bankrupt(c)
+                ],
+                key=lambda x: self.partner_reputation.get(x, {}).get("score", 0),
+                reverse=True,
             )
             distribution = dict(
                 zip(
@@ -940,7 +1007,7 @@ class PriceTrendStdAgent(StdSyncAgent):
                     {k for k, q in distribution.items() if q > 0}
                 )
             )
-        
+
         return response
 
     def _allowed_mismatch(self, r: float, is_selling: True):

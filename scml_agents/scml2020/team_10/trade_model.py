@@ -8,7 +8,6 @@ from random import shuffle
 import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 import torch.optim as optim
 from hyperparameters import *
 
@@ -110,7 +109,6 @@ class Model(nn.Module):
     def validate(self, validation_data):
         running_loss = 0.0
         for input, tag in validation_data:
-
             tag_scores = self(input)
             tag = tag.view(-1, UTILITY_OUTPUT_DIM)
 

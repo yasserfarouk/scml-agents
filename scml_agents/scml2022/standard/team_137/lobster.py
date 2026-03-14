@@ -1,39 +1,19 @@
 #!/usr/bin/env python
 from __future__ import annotations
 
-# required for typing
-from typing import Any
-
-import numpy as np
-from negmas import Breach, Contract, Issue
-from negmas.sao import SAONMI, SAOState, SAONegotiator
-from negmas.helpers import humanize_time
-from scml.scml2020 import Failure
-
 # required for development
 # required for running the test tournament
-import time
-from setuptools import PEP420PackageFinder
-from tabulate import tabulate
-from scml.utils import anac2022_collusion, anac2022_std, anac2022_oneshot
-from scml.scml2020 import SCML2020Agent
-from scml.scml2020.agents import (
-    BuyCheapSellExpensiveAgent,
-    DecentralizingAgent,
-    DoNothingAgent,
-)
+# required for typing
+from typing import Any, Dict
 
-from scml.scml2020.common import QUANTITY
-from scml.scml2020.common import TIME
-from scml.scml2020.common import UNIT_PRICE
-from typing import Dict
-from .myinfo import myinfo
+from negmas import Breach, Contract, Issue
+from negmas.sao import SAONMI, SAONegotiator, SAOState, SAOSyncController
+from scml.scml2020 import Failure, SCML2020Agent
+from scml.scml2020.common import QUANTITY, TIME, UNIT_PRICE, is_system_agent
+
 from .controllerA import SyncControllerA
 from .controllerB import SyncControllerB
-from negmas.sao import SAOSyncController
-
-
-from scml.scml2020.common import is_system_agent
+from .myinfo import myinfo
 
 __all__ = ["Lobster"]
 
@@ -157,13 +137,11 @@ class Lobster(SCML2020Agent):
     def _negotiation_request(self, seller, quantity_range, price_range):
         self.awi.request_negotiations(
             not seller,
-            self.awi.my_output_product
-            if (seller == True)
-            else self.awi.my_input_product,
+            self.awi.my_output_product if (seller) else self.awi.my_input_product,
             quantity_range,
             price_range,
             time=(self.Imyinfo.first_day, self.Imyinfo.last_day),
-            controller=self.controllers["B" if (seller == True) else "A"],
+            controller=self.controllers["B" if (seller) else "A"],
         )
 
     def respond_to_negotiation_request(
@@ -268,8 +246,11 @@ class Lobster(SCML2020Agent):
             zip(contracts, range(len(contracts))),
             key=lambda x: (
                 x[0].agreement["time"]
-                if (self.awi.is_last_level == False)
-                else -1 * x[0].agreement["time"],  # いつ買えるか分からないのでできるだけ最後の方からとっていきたい
+                if (not self.awi.is_last_level)
+                else -1
+                * x[0].agreement[
+                    "time"
+                ],  # いつ買えるか分からないのでできるだけ最後の方からとっていきたい
                 -1 * x[0].agreement["unit_price"]
                 if x[0].annotation["seller"] == self.id
                 else x[0].agreement["unit_price"],
@@ -300,13 +281,13 @@ class Lobster(SCML2020Agent):
 
             if is_seller:
                 flag = self.controllers["B"]._check_timequantity((q, t, u))
-                if flag == True:
+                if flag:
                     signatures[indx] = self.id
                     self.controllers["B"].reg_secure((q, t, u))
                 # print(self.awi.current_step,":",contract.annotation["buyer"],":",signatures[indx],":",contract.agreement)
             else:
                 flag = self.controllers["A"]._check_timequantity((q, t, u))
-                if flag == True:
+                if flag:
                     signatures[indx] = self.id
                     self.controllers["A"].reg_secure((q, t, u))
                 # print(self.awi.current_step,":",contract.annotation["seller"],":",signatures[indx],":",contract.agreement)

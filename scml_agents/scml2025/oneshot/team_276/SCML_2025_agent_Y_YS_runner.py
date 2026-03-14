@@ -1,12 +1,9 @@
 # %% Standard imports
 from matplotlib import pyplot as plt
-
-
-from scml.std import *
 from scml.runner import WorldRunner
+from scml.std import *
 
 from .litaagent_std.litaagent_y import LitaAgentY
-
 
 # create a runner that encapsulates a number of configs to evaluate agents
 # in the same conditions every time

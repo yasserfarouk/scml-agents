@@ -1,19 +1,18 @@
 from __future__ import annotations
-from negmas.sao import SAONMI
-import threading
-from scml.oneshot import QUANTITY, TIME, UNIT_PRICE
 
 # required for typing
 import random
+import threading
+
+# required for typing
+from negmas import Contract, ResponseType, SAOState
+from negmas.sao import SAONMI
+from scml.oneshot import QUANTITY, TIME, UNIT_PRICE
+from scml.scml2020.components import *
 
 # from scipy.stats import linregress
 # required for development
 from scml.std import StdAgent
-from scml.scml2020.components import *
-
-# required for typing
-from negmas import Contract, SAOState
-from negmas import ResponseType
 
 
 class Neg_list:
@@ -443,9 +442,9 @@ class S5s(StdAgent):
             if len(contract.partners) != 2:
                 return
             if contract.partners[0] == self.id:
-                neg_id = contract.partners[1]
+                contract.partners[1]
             else:
-                neg_id = contract.partners[0]
+                contract.partners[0]
             # print(contract)
             if contract.annotation["buyer"] == self.id:
                 for t in range(time, self.awi.n_steps):

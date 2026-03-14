@@ -1,10 +1,10 @@
-import numpy as np
 from negmas import LinearUtilityFunction
-from scml.scml2020 import SCML2020Agent
 from scml import SupplyDrivenProductionStrategy
+from scml.scml2020 import SCML2020Agent
 from scml.scml2020.components import IndependentNegotiationsManager
 
 __all__ = ["M5Collusion"]
+
 
 # Standard Strategy
 class M5Std(

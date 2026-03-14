@@ -28,7 +28,7 @@ class MyUtilityFunction(UtilityFunction):
         price_weight=0.7,
         unnecessary_percentage_threshold=0.45,
         neg_parent=None,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(self, *argv, **kwargs)
         self.outcome_type = Any
@@ -121,7 +121,7 @@ class MyRLUtilityFunction(UtilityFunction):
         manager=None,
         _load_model=False,
         neg_parent=None,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(self, *argv, **kwargs)
         self.outcome_type = Any
@@ -161,7 +161,7 @@ class MyRLUtilityFunction(UtilityFunction):
         to_features = np.array(data)
         to_features = torch.from_numpy(to_features).float()
         if len(to_features) != 15:
-            x = 0
+            pass
         return self.model(to_features)
 
     def __call__(self, offer: Outcome) -> Value:

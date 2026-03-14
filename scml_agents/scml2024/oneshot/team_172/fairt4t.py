@@ -9,23 +9,21 @@ the authors and the ANAC 2024 SCML.
 
 from __future__ import annotations
 
+from collections import Counter
 from itertools import chain, combinations
 
 # required for typing
 from typing import Any
 
-from numpy import random
-
-# required for development
-from scml.oneshot import QUANTITY, UNIT_PRICE, OneShotAWI, OneShotSyncAgent
-
 # from scml_agents import get_agents
 # from scml.oneshot import SCML2024OneShotWorld
 # required for typing
-from negmas import Contract, Outcome, SAOResponse, SAOState, ResponseType
-
+from negmas import Contract, Outcome, ResponseType, SAOResponse, SAOState
+from numpy import random
 from numpy.random import choice
-from collections import Counter
+
+# required for development
+from scml.oneshot import QUANTITY, UNIT_PRICE, OneShotAWI, OneShotSyncAgent
 
 __all__ = ["FairT4T"]
 # from scml_agents import get_agents
@@ -84,7 +82,6 @@ class FairT4T(OneShotSyncAgent):
         self.utility_opp_prev_offers = self.ufun.from_offers(list(offers.values()))
 
     def calculate_target_utility(self, offers):
-        s = self.awi.current_step
         # estimate target utility to be able to decide on the offer to generate if the offers' utility is closest to target utility
         deltaU = (
             self.ufun.from_offers(list(offers.values())) - self.utility_opp_prev_offers
@@ -143,7 +140,7 @@ class FairT4T(OneShotSyncAgent):
                 # If the partner hasn't made an offer, make a random offer
                 d[partner_id] = (quantity, s, p) if quantity > 0 else None
                 # print(f"Step {s} no offer yet from  for partner{partner_id} offer: quantity {quantity} ")
-            new_offer = d[partner_id]
+            d[partner_id]
             new_offer_filtered = {k: v for k, v in d.items() if v is not None}
             utility_new_offer[partner_id] = self.ufun.from_offers(new_offer_filtered)
 

@@ -6,25 +6,25 @@
 This code is free to use or update given that proper attribution is given to
 the authors and the ANAC 2024 SCML.
 """
+
 from __future__ import annotations
+
+import random
 
 # required for typing
 from typing import Any
 
+# required for typing
+from negmas import Contract, Outcome, ResponseType, SAOResponse, SAOState
+
 # required for development
 from scml.oneshot import *
-from scml.oneshot.common import is_system_agent
 
-# required for typing
-from negmas import Contract, Outcome, SAOResponse, SAOState, ResponseType
-
-import numpy
-import random
 
 def distribute(q: int, n: int) -> list[int]:
     """
     Distributes n values over m bins with at least one item per bin assuming q > n
-    
+
     INPUT:
     - q: 必要な総数量
     - n: 交渉相手の数
@@ -32,8 +32,10 @@ def distribute(q: int, n: int) -> list[int]:
     - 総和がqとなる0以上のn個の整数のランダムなリスト
     e.g. distribute(10,4) = [2,3,1,4]
     """
-    from numpy.random import choice
     from collections import Counter
+
+    from numpy.random import choice
+
     if q < n:
         lst = [0] * (n - q) + [1] * q
         random.shuffle(lst)
@@ -44,11 +46,14 @@ def distribute(q: int, n: int) -> list[int]:
     r = Counter(choice(n, q - n))
     return [r.get(_, 0) + 1 for _ in range(n)]
 
+
 def powerset(iterable):
     """冪集合"""
     from itertools import chain, combinations
+
     s = list(iterable)
-    return chain.from_iterable(combinations(s, r) for r in range(len(s)+1))
+    return chain.from_iterable(combinations(s, r) for r in range(len(s) + 1))
+
 
 class SyncRandomAgent(OneShotSyncAgent):
     """
@@ -115,7 +120,7 @@ class SyncRandomAgent(OneShotSyncAgent):
 
             # find the set of partners that gave me the best offer set
             # (i.e. total quantity nearest to my needs)
-            plist = list(powerset(partners)) # 交渉相手の冪集合
+            plist = list(powerset(partners))  # 交渉相手の冪集合
             best_diff, best_indx = float("inf"), -1
             for i, partner_ids in enumerate(plist):
                 others = partners.difference(partner_ids)
@@ -131,9 +136,16 @@ class SyncRandomAgent(OneShotSyncAgent):
             if best_diff <= self._threshold:
                 partner_ids = plist[best_indx]
                 others = list(partners.difference(partner_ids))
-                response.update({
-                    k: SAOResponse(ResponseType.ACCEPT_OFFER, offers[k]) for k in partner_ids
-                } | {k: SAOResponse(ResponseType.END_NEGOTIATION, None) for k in others})
+                response.update(
+                    {
+                        k: SAOResponse(ResponseType.ACCEPT_OFFER, offers[k])
+                        for k in partner_ids
+                    }
+                    | {
+                        k: SAOResponse(ResponseType.END_NEGOTIATION, None)
+                        for k in others
+                    }
+                )
                 continue
 
             # If I still do not have a good enough offer, distribute my current needs
@@ -163,7 +175,10 @@ class SyncRandomAgent(OneShotSyncAgent):
         if best_price:
             return s, pmax if seller else pmin
         return s, random.randint(pmin, pmax)
-#world, ascores, tscores = try_agent(SyncRandomAgent)
+
+
+# world, ascores, tscores = try_agent(SyncRandomAgent)
+
 
 class MyAgent(OneShotSyncAgent):
     """

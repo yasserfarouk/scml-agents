@@ -12,23 +12,20 @@ the authors and the ANAC 2024 SCML.
 
 from __future__ import annotations
 
-# required for typing
-
-# required for development
-from scml.oneshot import OneShotSyncAgent
-
-# required for typing
-from negmas import SAOResponse
 import random
+from itertools import chain, combinations
 
+# required for typing
+from negmas import ResponseType, SAOResponse
 from negmas.sao import SAOResponse
 from scml.common import distribute
+from scml.oneshot import *
+
+# required for typing
+# required for development
+from scml.oneshot import OneShotSyncAgent
 from scml.oneshot.agent import OneShotSyncAgent
 from scml.oneshot.common import QUANTITY, TIME, UNIT_PRICE
-
-from negmas import SAOResponse, ResponseType
-from scml.oneshot import *
-from itertools import chain, combinations
 
 __all__ = ["PeakPact"]
 
@@ -206,13 +203,13 @@ class PeakPact(OneShotSyncAgent):
         # re-factored from RandDistOneshotAgent
         seller = self.awi.is_first_level
         if seller:
-            needs, all_partners, issues = (
+            needs, all_partners, _issues = (
                 self.awi.needed_sales,
                 self.awi.my_consumers,
                 self.awi.current_output_issues,
             )
         else:
-            needs, all_partners, issues = (
+            needs, all_partners, _issues = (
                 self.awi.needed_supplies,
                 self.awi.my_suppliers,
                 self.awi.current_input_issues,
@@ -259,8 +256,6 @@ class PeakPact(OneShotSyncAgent):
 
         # we experimented time-senstive desicions but didn't benefit from it
         # t = min(_.relative_time for _ in states.values())
-
-        distribution = dict()
 
         # find suppliers and consumers still negotiating with me
         # same as RandDistOneshotAgent

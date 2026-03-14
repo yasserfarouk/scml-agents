@@ -21,46 +21,37 @@ class BossBusinessAnalytics:
     def update_stats(self):  # for reference
         # Nego stat history.
         # nego bid history.
-        opponent_respond_history = (
-            self.__parent.nego_stats.get_opponent_respond_history()
-        )
-        agent_respond_history = self.__parent.nego_stats.get_agent_respond_history()
+        (self.__parent.nego_stats.get_opponent_respond_history())
+        self.__parent.nego_stats.get_agent_respond_history()
 
         # AWI Dynamic Nego calls.
 
-        current_step = (
+        (
             self.__parent.awi_caller.get_current_step()
         )  # Returns day number (integer), e.g. 3rd day.
-        relative_time = (
+        (
             self.__parent.awi_caller.get_relative_time()
         )  # Normalized negotiation time between [0, 1].
-        my_balance = self.__parent.awi_caller.get_balance()  # bizim para
-        current_inventory = (
+        self.__parent.awi_caller.get_balance()  # bizim para
+        (
             self.__parent.awi_caller.get_current_inventory()
         )  # list -> [0, 0, 3, 5] index prod levellari gosteriyor
-        inventory_input_prod_quantity = (
-            self.__parent.awi_caller.get_inventory_input_prod_quantity()
-        )  # bizim
-        inventory_output_prod_quantity = (
-            self.__parent.awi_caller.get_inventory_output_prod_quantity()
-        )  # bizim
-        input_catalog_price = self.__parent.awi_caller.get_input_catalog_price()  # this
-        output_catalog_price = (
-            self.__parent.awi_caller.get_output_catalog_price()
-        )  # this
+        (self.__parent.awi_caller.get_inventory_input_prod_quantity())  # bizim
+        (self.__parent.awi_caller.get_inventory_output_prod_quantity())  # bizim
+        self.__parent.awi_caller.get_input_catalog_price()  # this
+        (self.__parent.awi_caller.get_output_catalog_price())  # this
 
         # Agent reports
 
         my_first_supplier_id = self.__parent.awi_caller.get_suppliers()[0]
-        all_reports = self.__parent.awi_caller.get_agent_all_reports(
+        self.__parent.awi_caller.get_agent_all_reports(
             agentID=my_first_supplier_id
         )  # Returns all history until current step.
-        latest_report = self.__parent.awi_caller.get_latest_agent_report(
+        self.__parent.awi_caller.get_latest_agent_report(
             agentID=my_first_supplier_id
         )  # Returns latest possible report of the agent.
 
     def pred_cash(self, agent_id, step_to_pred):
-
         current_step = self.__parent.awi_caller.get_current_step()
         all_reports = self.__parent.awi.reports_of_agent(agent_id)
 
@@ -100,7 +91,6 @@ class BossBusinessAnalytics:
         return pred_cash
 
     def pred_bankruptcy_day(self, agent_id):
-
         current_step = self.__parent.awi_caller.get_current_step()
         all_reports = self.__parent.awi.reports_of_agent(agent_id)
 

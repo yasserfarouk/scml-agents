@@ -1,6 +1,6 @@
 import math
 
-from negmas import ResponseType, Outcome, SAOState, SAOResponse
+from negmas import Outcome, ResponseType, SAOResponse, SAOState
 from scml.oneshot import QUANTITY, TIME, UNIT_PRICE, OneShotSyncAgent
 
 __all__ = ["SuzukaAgent"]
@@ -52,7 +52,6 @@ class SuzukaAgent(OneShotSyncAgent):
 
     def get_proposals(self, partners, needs):
         step = self.awi.current_step
-        level = self.level
         n_of_partners = len(partners)
 
         offer_price = self.best_price()

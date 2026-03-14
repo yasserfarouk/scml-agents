@@ -1,6 +1,5 @@
 import copy
 import warnings
-from datetime import datetime
 from typing import List
 
 from scml import *
@@ -13,7 +12,7 @@ from .model_empirical import ModelEmpirical
 from .negotiation_history import BilateralHistory, WorldInfo
 from .offer import Offer
 from .spaces import *
-from .strategy import Strategy, StrategyGoldfishParetoAspiration
+from .strategy import StrategyGoldfishParetoAspiration
 
 NOTHING_VAL = -99
 
@@ -97,7 +96,7 @@ def calc_outcome_cols(hist: BilateralHistory):
     outcome_cols = []
     try:
         outcome_offer = hist.outcome()
-    except Exception as e:
+    except Exception:
         warnings.warn("Couldn't find outcome offer")
         outcome_offer = Offer(0, 0)
     outcome_cols.append(outcome_offer.price)

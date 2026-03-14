@@ -3,11 +3,7 @@
 from typing import List, Tuple
 
 import numpy as np
-from scipy.stats import randint as sp_randint
-from scml.oneshot import QUANTITY, TIME, UNIT_PRICE
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.linear_model import LinearRegression
-from sklearn.model_selection import GridSearchCV, KFold
 
 from .other_agents.agent_team86 import AgentOneOneTwo
 

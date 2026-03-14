@@ -34,46 +34,27 @@ You can access the full list of these capabilities on the documentation.
 
 """
 
-import math
-
 # required for running the test tournament
 import time
-from pprint import pprint
 
 # required for typing
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Tuple
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import seaborn as sns
 from negmas import *
-from negmas import (
-    AgentMechanismInterface,
-    Breach,
-    Contract,
-    Issue,
-    LinearUtilityFunction,
-    MechanismState,
-    Negotiator,
-)
 from negmas.helpers import humanize_time
 
 # my need
 from scml.scml2020 import *
 from scml.scml2020 import (
-    Failure,
-    MovingRangeNegotiationManager,
-    PredictionBasedTradingStrategy,
     SCML2020Agent,
-    TradeDrivenProductionStrategy,
 )
 
 # required for development
 from scml.scml2020.agents import (
-    BuyCheapSellExpensiveAgent,
     DecentralizingAgent,
-    DoNothingAgent,
 )
 from scml.utils import anac2020_collusion, anac2020_std
 from tabulate import tabulate
@@ -207,9 +188,6 @@ def show_agent_scores(world):
     scores = {k: sum(v) / len(v) for k, v in scores.items()}
     plt.bar(list(scores.keys()), list(scores.values()), width=0.2)
     plt.show()
-
-
-from scml.scml2020 import is_system_agent
 
 
 def analyze_unit_price(world, agent_type):

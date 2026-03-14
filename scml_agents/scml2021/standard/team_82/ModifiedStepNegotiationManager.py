@@ -59,7 +59,6 @@ class ModifiedStepNegotiationManager(ModifiedERPStrategy, NegotiationManager):
         tvalues: Tuple[int, int],
         partners: List[str],
     ) -> None:
-
         execution_fraction = np.array(
             [
                 self._execution_fractions[partner]
@@ -96,7 +95,6 @@ class ModifiedStepNegotiationManager(ModifiedERPStrategy, NegotiationManager):
         annotation: Dict[str, Any],
         mechanism: AgentMechanismInterface,
     ) -> Optional[Negotiator]:
-
         # find negotiation parameters
         is_seller = annotation["seller"] == self.id
         t_min, t_max = issues[TIME].min_value, issues[TIME].max_value + 1

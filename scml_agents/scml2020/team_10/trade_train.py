@@ -127,7 +127,7 @@ for i in tqdm(range(TRADE_TRAIN_DATA)):
             n_steps=40,
             n_processes=1,  # TODO: 2
         ),
-        construct_graphs=False
+        construct_graphs=False,
     )
     SCML2020World.cancelled_contracts = cancelled_contracts
     world.run()

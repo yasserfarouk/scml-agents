@@ -1,14 +1,12 @@
 import itertools as it
 import json
 import pathlib
-import pprint
 import time
-from typing import Dict, List, Optional, Set, Tuple
+from typing import Dict
 
 import numpy as np
 import pulp
 from prettytable import PrettyTable
-from scipy.stats import binom, geom
 
 
 class NVMPlan:
@@ -117,7 +115,6 @@ class NVMLib2:
 
         # TODO: fall back plan with self.current_time + 1, 2, etc
         if self.check_if_data_exists() is True:
-
             # Get the data for quantities
             path = (
                 pathlib.Path(__file__).parent
@@ -312,7 +309,7 @@ class NVMLib2:
         return Q_inn, Q_out, p_inn, p_out
 
     def compute_minima(self, T: int, q_max: int, Q_inn: Dict[str, Dict], Q_out):
-        t0 = time.time()
+        time.time()
         ##print("TEST #print Q_INN[0]: ")
         ##print(f"Q_INN[0]: {Q_inn[str(0)]}")
         inn = {
@@ -560,12 +557,12 @@ class NVMLib2:
         x.add_row(
             [
                 "total profit",
-                f"{sum([out[t][sell_plan[t]] * p_out[str(t)] - inn[t][buy_plan[t]] * p_inn[str(t)] for t in range(self.current_time, self.current_time + T)]) :.4f}",
+                f"{sum([out[t][sell_plan[t]] * p_out[str(t)] - inn[t][buy_plan[t]] * p_inn[str(t)] for t in range(self.current_time, self.current_time + T)]):.4f}",
             ]
         )
-        x.add_row(["build time", f"{time_to_generate_ILP : .4f} sec"])
-        x.add_row(["solve time", f"{solve_time : .4f} sec"])
-        x.add_row(["total time", f"{total_time : .4f} sec"])
+        x.add_row(["build time", f"{time_to_generate_ILP: .4f} sec"])
+        x.add_row(["solve time", f"{solve_time: .4f} sec"])
+        x.add_row(["total time", f"{total_time: .4f} sec"])
         x.add_row(["optimistic", f"{optimistic}"])
         # print(x)
 
@@ -574,9 +571,9 @@ class NVMLib2:
         sell_list = []
         produce_list = []
 
-        assert (
-            self.current_time + self.mpnvp_number_of_periods <= self.game_length
-        ), "PLAN EXCEEDS GAME LENGTH, THIS SHOULD NOT BE HAPPENING"
+        assert self.current_time + self.mpnvp_number_of_periods <= self.game_length, (
+            "PLAN EXCEEDS GAME LENGTH, THIS SHOULD NOT BE HAPPENING"
+        )
 
         assert len(self.buy_plan) == len(self.sell_plan)
         for i in range(len(self.buy_plan)):

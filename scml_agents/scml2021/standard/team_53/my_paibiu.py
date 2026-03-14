@@ -1,22 +1,16 @@
 from collections import defaultdict
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
 from negmas import Contract, LinearUtilityFunction, SAOMetaNegotiatorController
-from scml.scml2020 import QUANTITY, TIME, UNIT_PRICE, SCML2020Agent, SCML2021World
-from scml.scml2020.agents import (
-    DecentralizingAgent,
-    MarketAwareDecentralizingAgent,
-    RandomAgent,
-)
+from scml.scml2020 import TIME, SCML2020Agent
 
 # from steady_mgr import SteadyMgr
 from scml.scml2020.common import is_system_agent
 from scml.scml2020.components.prediction import MarketAwareTradePredictionStrategy
 from scml.scml2020.components.production import (
     DemandDrivenProductionStrategy,
-    ProductionStrategy,
 )
 from scml.scml2020.components.trading import PredictionBasedTradingStrategy
 

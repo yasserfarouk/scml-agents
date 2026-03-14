@@ -1,7 +1,7 @@
 from itertools import chain, combinations
-import numpy as np
 
 from scml.std import StdAWI
+
 
 class AgentUtils:
     @staticmethod
@@ -12,7 +12,7 @@ class AgentUtils:
         """
         s = list(iterable)
         return chain.from_iterable(combinations(s, r) for r in range(len(s) + 1))
-    
+
     @staticmethod
     def weighted_average(values: list, weights: list = None) -> float:
         """
@@ -23,12 +23,12 @@ class AgentUtils:
             return 0.0
         if weights is None:
             n = len(values)
-            weights = [0.9 ** i for i in range(n)]
+            weights = [0.9**i for i in range(n)]
         total_weight = sum(weights)
         if total_weight == 0:
             return 0.0
         return sum(v * w for v, w in zip(values, weights)) / total_weight
-    
+
     @staticmethod
     def needs(awi: StdAWI, partner, time, productivity):
         """
@@ -45,11 +45,11 @@ class AgentUtils:
             inventory = awi.current_inventory_output
         else:
             return 0
-        
+
         # 中間エージェントの場合は生産能力を反映
         if awi.is_middle_level:
             base_needs = max(base_needs, int(awi.n_lines * productivity))
-        
+
         # 在庫の差し引いた実質的なニーズを計算
         remaining_need = max(base_needs - inventory, 0)
 
@@ -57,11 +57,11 @@ class AgentUtils:
         remaining_steps = max(awi.n_steps - time, 1)
 
         return remaining_need // remaining_steps
-    
+
     @staticmethod
     def is_seller(awi: StdAWI, partner_id: str) -> bool:
         return partner_id in awi.my_suppliers
-    
+
     @staticmethod
     def is_buyer(awi: StdAWI, partner_id: str) -> bool:
         return partner_id in awi.my_consumers

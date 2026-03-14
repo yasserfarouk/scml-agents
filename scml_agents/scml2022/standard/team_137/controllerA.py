@@ -1,42 +1,11 @@
-import random
-from collections import defaultdict
-from typing import Any
-from typing import Callable
 from typing import Dict
-from typing import List
-from typing import Optional
-from typing import Tuple
-from typing import Type
-from typing import Union
 
-import numpy as np
-from negmas import AgentWorldInterface
-from negmas import ControlledNegotiator
-from negmas import LinearUtilityFunction
-from negmas import MechanismState
-from negmas import Outcome
-from negmas import PolyAspiration
-from negmas import ResponseType
-from negmas import UtilityFunction
-from negmas import make_issue
-from negmas import make_os
-from negmas import outcome_is_valid
-from negmas.common import NegotiatorMechanismInterface
-from negmas.events import Notification
-from negmas.events import Notifier
-from negmas.helpers import instantiate
-from negmas.sao import SAOController
-from negmas.sao import SAONegotiator
-from negmas.sao import SAOResponse
-from negmas.sao import SAOState
-from negmas.sao import SAOSyncController
-from negmas.sao.negotiators.controlled import ControlledSAONegotiator
-
-from scml.scml2020.common import QUANTITY
-from scml.scml2020.common import TIME
-from scml.scml2020.common import UNIT_PRICE
+from negmas import MechanismState, Outcome, ResponseType, outcome_is_valid
+from negmas.sao import SAOResponse, SAOState, SAOSyncController
+from scml.scml2020.common import QUANTITY, TIME, UNIT_PRICE
 
 from .myinfo import myinfo
+
 
 # our controller
 class SyncControllerA(SAOSyncController):
@@ -87,9 +56,7 @@ class SyncControllerA(SAOSyncController):
                 temp = i
                 break
 
-        temp_last = (
-            info.last_day if (self.parent.awi.is_last_level == False) else temp - 1
-        )
+        temp_last = info.last_day if (not self.parent.awi.is_last_level) else temp - 1
 
         # ラインが空いている
         t_q = offer[QUANTITY]
@@ -109,7 +76,7 @@ class SyncControllerA(SAOSyncController):
         if info.p1[1] < offer[UNIT_PRICE]:
             return False  # 高いのでダメ
 
-        if self._check_timequantity(offer) == False:
+        if not self._check_timequantity(offer):
             return False  # 在庫ダメ
 
         return True
@@ -120,7 +87,7 @@ class SyncControllerA(SAOSyncController):
         if info.p1[2] < offer[UNIT_PRICE]:
             return False  # 高いのでダメ
 
-        if self._check_timequantity(offer) == False:
+        if not self._check_timequantity(offer):
             return False  # 在庫ダメ
 
         return True
@@ -140,7 +107,7 @@ class SyncControllerA(SAOSyncController):
         """
 
         # find the best offer
-        negotiator_ids = list(offers.keys())
+        list(offers.keys())
         responses = {
             nid: SAOResponse(ResponseType.NO_RESPONSE, None) for nid in offers.keys()
         }
@@ -158,7 +125,7 @@ class SyncControllerA(SAOSyncController):
             else:
                 flag = self.check_makeB(offer)  # 妥協
 
-            if flag == True:
+            if flag:
                 ######ACC######
                 responses[nid] = SAOResponse(ResponseType.ACCEPT_OFFER, None)
             else:

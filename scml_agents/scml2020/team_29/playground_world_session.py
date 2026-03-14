@@ -93,19 +93,19 @@ input_product, output_product = (
 )
 # draw
 fig, (quantity, value) = plt.subplots(1, 2)
-quantity.plot(world.stats[in_key], label=f"Input Product")
-quantity.plot(world.stats[out_key], label=f"Output Product")
+quantity.plot(world.stats[in_key], label="Input Product")
+quantity.plot(world.stats[out_key], label="Output Product")
 quantity.set(xlabel="Simulation Step", ylabel="Winner's Total Storage (item)")
 quantity.legend()
 value.plot(
     np.array(world.stats[in_key])
     * np.array(world.stats[f"trading_price_{input_product}"]),
-    label=f"Input Product",
+    label="Input Product",
 )
 value.plot(
     np.array(world.stats[out_key])
     * np.array(world.stats[f"trading_price_{output_product}"]),
-    label=f"Output Product",
+    label="Output Product",
 )
 value.set(xlabel="Simulation Step", ylabel="Winner's Inventory Value ($)")
 value.legend()

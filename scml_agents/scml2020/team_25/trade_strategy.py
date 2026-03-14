@@ -1,15 +1,14 @@
 import math
 import pickle
-from typing import Iterable, List, Optional, Union
+from typing import Iterable, List, Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
-from negmas import Breach, Contract
+from negmas import Contract
 from scml.scml2020.common import ANY_LINE, is_system_agent
-from scml.scml2020.components import FixedTradePredictionStrategy, SignAllPossible
 from scml.scml2020.components.prediction import MeanERPStrategy, TradePredictionStrategy
+from scml.scml2020.components.production import DemandDrivenProductionStrategy
 from scml.scml2020.components.trading import TradingStrategy
-from sklearn import svm
 
 from .nego_strategy import *
 
@@ -54,11 +53,11 @@ class avg_data_collect:
         self.save_to_file()
 
     def save_to_file(self, filename="avg_data.pkl"):
-        if USE_DATA_COLLECTION == True:
+        if USE_DATA_COLLECTION:
             pickle.dump(self, open(filename, "wb"))
 
     def load_From_file(self, filename="avg_data.pkl"):
-        if USE_DATA_COLLECTION == False:
+        if not USE_DATA_COLLECTION:
             return False
         try:
             obj = pickle.load(open(filename, "rb"))
@@ -522,7 +521,7 @@ class NewPredictionBasedTradingStrategy(
 
     def _format(self, c: Contract):
         return (
-            f"{f'>' if c.annotation['seller'] == self.id else '<'}"
+            f"{'>' if c.annotation['seller'] == self.id else '<'}"
             f"{c.annotation['buyer'] if c.annotation['seller'] == self.id else c.annotation['seller']}: "
             f"{c.agreement['quantity']} of {c.annotation['product']} @ {c.agreement['unit_price']} on {c.agreement['time']}"
         )

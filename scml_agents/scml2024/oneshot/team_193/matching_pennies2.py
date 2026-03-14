@@ -9,22 +9,22 @@ the authors and the ANAC 2024 SCML.
 
 from __future__ import annotations
 
+from collections import Counter
+from itertools import chain, combinations
+
 # required for typing
 from typing import Any
+
+# required for typing
+from negmas import Contract, Outcome, SAOResponse, SAOState
+from negmas.gb.common import ResponseType
+from numpy import random
+from numpy.random import choice
 
 # required for development
 from scml import OneShotUFun
 from scml.oneshot import OneShotAWI, OneShotSyncAgent
-
-# required for typing
-from negmas import Contract, Outcome, SAOResponse, SAOState
-
 from scml.scml2020.common import QUANTITY, UNIT_PRICE
-from numpy import random
-from numpy.random import choice
-from collections import Counter
-from itertools import chain, combinations
-from negmas.gb.common import ResponseType
 
 __all__ = ["MatchingPennies"]
 
@@ -240,7 +240,7 @@ class MatchingPennies(OneShotSyncAgent):
             ),
         ]:
             # get a random price
-            price = issues[UNIT_PRICE].rand()
+            issues[UNIT_PRICE].rand()
 
             # find active partners
             partners = {_ for _ in all_partners if _ in offers.keys()}
@@ -414,7 +414,7 @@ class MatchingPennies(OneShotSyncAgent):
             )
             pass  # print(f"Today's best price is {self.best_price}")
             print(
-                f"Today's exorgenous contracts are at {self.p/self.q} for each of the {self.q} items"
+                f"Today's exorgenous contracts are at {self.p / self.q} for each of the {self.q} items"
             )
             pass  # print(f"Expected quantities: {self.expected_contract_quantity}")
 

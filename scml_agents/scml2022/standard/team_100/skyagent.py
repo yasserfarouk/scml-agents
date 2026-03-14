@@ -1,34 +1,30 @@
 # =========比較Agent==========
+# required for running the test tournament
+import time
+import warnings
+from typing import Tuple
+
+import numpy as np
+from negmas import LinearUtilityFunction
+
+# ============================
+# required for development
+from scml.scml2020 import SCML2020Agent
 from scml.scml2020.agents import (
     DecentralizingAgent,
     IndependentNegotiationsAgent,
     MarketAwareMovingRangeAgent,
     MarketAwareReactiveAgent,
 )
+from scml.utils import anac2021_collusion, anac2021_oneshot, anac2021_std
 
-# ============================
-
-# required for development
-from scml.scml2020 import SCML2020Agent
+from .sky_negotiation import SkyNegotiationsManager
+from .sky_production import SkyProductionStrategy
 
 # from sky_trading import SkyTradingStrategy
 # from sky_production import SkyProductionStrategy
 # from sky_negotiation import SkyNegotiationsManager
 from .sky_trading import SkyTradingStrategy
-from .sky_production import SkyProductionStrategy
-from .sky_negotiation import SkyNegotiationsManager
-
-import warnings
-
-# required for running the test tournament
-import time
-from tabulate import tabulate
-from scml.utils import anac2021_std, anac2021_collusion, anac2021_oneshot
-
-from negmas import LinearUtilityFunction
-from negmas.helpers import humanize_time
-from typing import Tuple
-import numpy as np
 
 warnings.simplefilter("ignore")
 
@@ -134,7 +130,7 @@ def run(
         IndependentNegotiationsAgent,
         DecentralizingAgent,
     ]
-    start = time.perf_counter()
+    time.perf_counter()
     if competition == "std":
         results = anac2021_std(
             competitors=competitors,

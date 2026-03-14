@@ -14,11 +14,11 @@ ON = True
 def print_log(names, values, on=ON):
     if on:
         if type(names) == str:
-            pass # print(f"{names}:{values}")
+            pass  # print(f"{names}:{values}")
         if type(names) == list:
             for name, value in dict(zip(names, values)).items():
-                pass # print(f"{name}:{value}", end=' ')
-            pass # print()
+                pass  # print(f"{name}:{value}", end=' ')
+            pass  # print()
 
 
 def param_normalization(params: list):
@@ -31,7 +31,7 @@ def t(step, n_steps):
 
 
 def shorten_name(name: str):
-    return name.split('-')[0]
+    return name.split("-")[0]
 
 
 def type_name(name: str):
@@ -42,15 +42,21 @@ def opponent_agreements(ami: SAONMI, is_selling: bool, success_contracts: list) 
     """指定された相手との合意（contract）を返す"""
     if is_selling:
         opponent_name = ami.annotation["buyer"]
-        success_agreements = [_ for _ in success_contracts if _.partners[0] == opponent_name]
+        success_agreements = [
+            _ for _ in success_contracts if _.partners[0] == opponent_name
+        ]
     else:
         opponent_name = ami.annotation["seller"]
-        success_agreements = [_ for _ in success_contracts if _.partners[1] == opponent_name]
+        success_agreements = [
+            _ for _ in success_contracts if _.partners[1] == opponent_name
+        ]
 
     return success_agreements
 
 
-def worst_opp_acc_price_(ami: SAONMI, is_selling: bool, success_contracts: list) -> float:
+def worst_opp_acc_price_(
+    ami: SAONMI, is_selling: bool, success_contracts: list
+) -> float:
     """
     〜旧版〜
     指定された相手との合意の中で，相手にとって最も良い価格を返す．
@@ -66,7 +72,9 @@ def worst_opp_acc_price_(ami: SAONMI, is_selling: bool, success_contracts: list)
     return price
 
 
-def worst_opp_acc_price(ami: SAONMI, is_selling: bool, success_contracts: list) -> float:
+def worst_opp_acc_price(
+    ami: SAONMI, is_selling: bool, success_contracts: list
+) -> float:
     """
     指定された相手との合意の中で，相手にとって最も良い価格を返す．
     合意がない場合は，0かinfを返す．
@@ -106,12 +114,20 @@ def opponent_rank(opponent_names: List[str], is_selling: bool, success_contract:
     rank = {}
     if is_selling:
         for name in opponent_names:
-            agreements = [_.agreement["unit_price"] for _ in success_contract if _.partners[0] == name]
+            agreements = [
+                _.agreement["unit_price"]
+                for _ in success_contract
+                if _.partners[0] == name
+            ]
             rank[name] = mean(agreements) if agreements else 0
         sorted(rank.items(), key=lambda x: x[1], reverse=True)
     else:
         for name in opponent_names:
-            agreements = [_.agreement["unit_price"] for _ in success_contract if _.partners[1] == name]
+            agreements = [
+                _.agreement["unit_price"]
+                for _ in success_contract
+                if _.partners[1] == name
+            ]
             rank[name] = mean(agreements) if agreements else float("inf")
         sorted(rank.items(), key=lambda x: x[1], reverse=False)
 
@@ -163,7 +179,7 @@ def price_normalization(is_selling: bool, price: float, up_range: dict):
     if price == np.nan:
         return np.nan
 
-    mx, mn = up_range['max_price'], up_range['min_price']
+    mx, mn = up_range["max_price"], up_range["min_price"]
     if is_selling:
         result = (price - mx) / (mn - mx)
     else:
@@ -174,7 +190,9 @@ def price_normalization(is_selling: bool, price: float, up_range: dict):
     return result
 
 
-def price_inverse_normalization(is_selling: bool, normalized_value: float, up_range: dict):
+def price_inverse_normalization(
+    is_selling: bool, normalized_value: float, up_range: dict
+):
     """
     与えられた正規化値を売り手か買い手かにしたがって，正規化の逆変換を行う
 
@@ -187,7 +205,7 @@ def price_inverse_normalization(is_selling: bool, normalized_value: float, up_ra
     if normalized_value == np.nan:
         return np.nan
 
-    mx, mn = up_range['max_price'], up_range['min_price']
+    mx, mn = up_range["max_price"], up_range["min_price"]
     if is_selling:
         result = mx - (mx - mn) * normalized_value
     else:
@@ -199,7 +217,9 @@ def price_inverse_normalization(is_selling: bool, normalized_value: float, up_ra
     return result
 
 
-def calculate_price_with_slack(is_selling: bool, price: float, slack: float, up_range: dict):
+def calculate_price_with_slack(
+    is_selling: bool, price: float, slack: float, up_range: dict
+):
     """
     与えられた価格 price をスラック変数 slack に基づいて計算する
     価格帯 up_range の最大値or最小値の差を用いる
@@ -211,7 +231,7 @@ def calculate_price_with_slack(is_selling: bool, price: float, slack: float, up_
     :return: 計算結果
     """
 
-    rng = up_range['max_price'] - up_range['min_price']
+    rng = up_range["max_price"] - up_range["min_price"]
     if is_selling:
         if up_range["max_price"] == price:
             result = up_range["max_price"]

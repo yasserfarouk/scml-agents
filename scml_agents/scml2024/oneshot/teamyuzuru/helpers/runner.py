@@ -1,20 +1,20 @@
 import time
 
-from negmas.helpers import humanize_time
-from rich import print
-from scml.oneshot.agents import RandomOneShotAgent, SyncRandomOneShotAgent, GreedySingleAgreementAgent, SingleAgreementAspirationAgent
-
+from scml.oneshot.agents import (
+    GreedySingleAgreementAgent,
+    RandomOneShotAgent,
+    SingleAgreementAspirationAgent,
+    SyncRandomOneShotAgent,
+)
 from scml.std.agents import SyncRandomStdAgent
-
 from scml.utils import anac2024_oneshot, anac2024_std
-from tabulate import tabulate
 
 
 def run(
     competitors=tuple(),
     competition="oneshot",
     reveal_names=True,
-    #実行ステップ数(default: 10)
+    # 実行ステップ数(default: 10)
     # warining: step数を2以下にするとエラーが発生して動かなくなる
     n_steps=50,
     n_configs=10,
@@ -41,15 +41,18 @@ def run(
 
     """
 
-
     if competition == "oneshot":
-        competitors = list(competitors) + [SyncRandomOneShotAgent,SingleAgreementAspirationAgent,GreedySingleAgreementAgent]
-        #簡易実行用
-        #competitors = list(competitors) + [RandomOneShotAgent, SyncRandomOneShotAgent]
+        competitors = list(competitors) + [
+            SyncRandomOneShotAgent,
+            SingleAgreementAspirationAgent,
+            GreedySingleAgreementAgent,
+        ]
+        # 簡易実行用
+        # competitors = list(competitors) + [RandomOneShotAgent, SyncRandomOneShotAgent]
     else:
         competitors = list(competitors) + [SyncRandomStdAgent, RandomOneShotAgent]
 
-    start = time.perf_counter()
+    time.perf_counter()
     if competition == "std":
         runner = anac2024_std
     else:
@@ -64,16 +67,14 @@ def run(
     # just make names shorter
     results.total_scores.agent_type = results.total_scores.agent_type.str.split(  # type: ignore
         "."
-    ).str[
-        -1
-    ]
+    ).str[-1]
     # display results
-    pass # print(tabulate(results.total_scores, headers="keys", tablefmt="psql"))  # type: ignore
-    pass # print(f"Finished in {humanize_time(time.perf_counter() - start)}")
-    pass # print("Winners:", results.winners)
+    pass  # print(tabulate(results.total_scores, headers="keys", tablefmt="psql"))  # type: ignore
+    pass  # print(f"Finished in {humanize_time(time.perf_counter() - start)}")
+    pass  # print("Winners:", results.winners)
     # winnersをreslut.txtに出力
     with open("result.txt", "a") as f:
-        f.write("Winners: " + str(results.winners)+"\n")
+        f.write("Winners: " + str(results.winners) + "\n")
 
 
 if __name__ == "__main__":

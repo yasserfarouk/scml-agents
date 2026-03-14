@@ -89,7 +89,7 @@ class Gentle(AdaptiveAgent):
 
     def on_negotiation_start(self, negotiator_id: str, state: MechanismState) -> None:
         is_selling = self._is_selling(self.get_nmi(negotiator_id))
-        ami = self.get_nmi(negotiator_id)
+        self.get_nmi(negotiator_id)
         if is_selling:
             self.nego_info["my_name"] = shorten_name(
                 self.get_nmi(negotiator_id).annotation["seller"]
@@ -204,7 +204,7 @@ class Gentle(AdaptiveAgent):
             for _ in success_agreements
             if _.mechanism_state["current_proposer"] == self.nego_info["my_name"]
         ]
-        offer_agreements = [
+        [
             _
             for _ in success_agreements
             if _.mechanism_state["current_proposer"] != self.nego_info["my_name"]
@@ -318,7 +318,7 @@ class Gentle(AdaptiveAgent):
 
     def _good_price_range(self, ami: SAONMI):
         """エージェントにとって良い価格帯を見つける"""
-        is_selling = self._is_selling(ami)
+        self._is_selling(ami)
         mx = ami.issues[UNIT_PRICE].max_value
         mn = ami.issues[UNIT_PRICE].min_value
 
@@ -429,7 +429,6 @@ class Gentle(AdaptiveAgent):
     def _self_factor(self, ami):
         """自身の交渉の進捗を評価"""
         prev_agreement = 0  # 前日合意できたか
-        agreement_ratio = 0  # 相手との交渉成功割合
         good_agreement = 0  # 良い値段で合意できたか
         w_prev = 4
         w_good = 2
@@ -481,7 +480,7 @@ class Gentle(AdaptiveAgent):
 
     def _opp_concession_rate_change(self, name: str):
         """相手の譲歩の変化率を計算"""
-        ami = self.get_nmi(name)
+        self.get_nmi(name)
         offers = [
             _
             for _ in self.opp_offer_list[shorten_name(name)]
@@ -606,7 +605,6 @@ class AdaptiveSyncAgent(OneShotSyncAgent, AdaptiveAgent):
 
     def counter_all(self, offers, states):
         """Respond to a set of offers given the negotiation state of each."""
-        SECURED_MAGNIFICATION = 1.2
 
         my_needs = self._needed()
         if my_needs <= 0:
@@ -630,7 +628,7 @@ class AdaptiveSyncAgent(OneShotSyncAgent, AdaptiveAgent):
             zip(offers.values(), is_selling, offers.keys()),
             key=lambda x: (-x[0][UNIT_PRICE]) if x[1] else x[0][UNIT_PRICE],
         )
-        secured, outputs, chosen = 0, [], dict()
+        secured, _outputs, _chosen = 0, [], dict()
         for i, k in enumerate(offers.keys()):
             offer, is_output, name = sorted_offers[i]
             response = AdaptiveAgent.respond(self, name, states[name], offer)
@@ -1212,8 +1210,7 @@ class LearningSyncAgent_(OneShotSyncAgent):
             ),
         )
         if self.awi.is_first_level:
-            q_in = self.awi.current_exogenous_input_quantity
-            q_out = sum(
+            sum(
                 [
                     v[-1][QUANTITY]
                     for k, v in self.success_list.items()
@@ -1222,26 +1219,25 @@ class LearningSyncAgent_(OneShotSyncAgent):
             )
             pass  # print("breach_level", self.ufun.breach_level(q_in, q_out))
         else:
-            q_in = sum(
+            sum(
                 [
                     v[-1][QUANTITY]
                     for k, v in self.success_list.items()
                     if v[-1][TIME] == self.awi.current_step
                 ]
             )
-            q_out = self.awi.current_exogenous_output_quantity
             pass  # print("breach_level", self.ufun.breach_level(q_in, q_out))
         pass  # print("total trade quantity", self.total_trade_quantity)
         pass  # print(f"trading prices:{self.awi.trading_prices}")
         # print("my offers", self.my_offer_list)
         if self.success_list.keys():
-            success_simulation_steps = set(
+            set(
                 itertools.chain.from_iterable(
                     [[_[TIME] for _ in lis] for lis in self.success_list.values()]
                 )
             )
             pass  # print(f"agreement　rate:{len(success_simulation_steps) / self.awi.n_steps}")
-            success_unit_prices = itertools.chain.from_iterable(
+            itertools.chain.from_iterable(
                 [[_[UNIT_PRICE] for _ in lis] for lis in self.success_list.values()]
             )
             pass  # print(f"average unit price:{mean(success_unit_prices)}")
@@ -1551,7 +1547,6 @@ class LearningSyncAgent(OneShotSyncAgent, LearningAgent):
 
     def counter_all(self, offers, states):
         """Respond to a set of offers given the negotiation state of each."""
-        SECURED_MAGNIFICATION = 1.2
 
         print_log("step", [_.step for _ in states.values()])
         print_log("offers", offers.keys())
@@ -1579,7 +1574,7 @@ class LearningSyncAgent(OneShotSyncAgent, LearningAgent):
             zip(offers.values(), is_selling, offers.keys()),
             key=lambda x: (-x[0][UNIT_PRICE]) if x[1] else x[0][UNIT_PRICE],
         )
-        secured, outputs, chosen = 0, [], dict()
+        secured, _outputs, _chosen = 0, [], dict()
         for i, k in enumerate(offers.keys()):
             offer, is_output, name = sorted_offers[i]
             response = LearningAgent.respond(self, name, states[name], offer)
@@ -1778,9 +1773,7 @@ class LearningSyncAgentT(LearningSyncAgent):
 
         # min_utilityを決定
         do_nothing_util = self.ufun.from_offers([], [])
-        tp_util = self.ufun.from_offers(
-            [(my_need, 0, self.awi.trading_prices[1])], [is_selling]
-        )
+        self.ufun.from_offers([(my_need, 0, self.awi.trading_prices[1])], [is_selling])
         mn = do_nothing_util
         min_utility = min(
             max_utility * (1 - self._range_slack),

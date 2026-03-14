@@ -18,7 +18,7 @@ def get_train_data(world):
     seller_train_data = []
     buyer_train_data = []
     for agent in world.agents.values():
-        if not "MyL" in agent.name:
+        if "MyL" not in agent.name:
             continue
 
         seller_data = [
@@ -67,7 +67,7 @@ for i in tqdm(range(UTILITY_TRAIN_DATA)):
             n_steps=40,
             n_processes=2,
         ),
-        construct_graphs=True
+        construct_graphs=True,
     )
     SCML2020World.cancelled_contracts = cancelled_contracts
     world.run()

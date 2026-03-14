@@ -1,14 +1,9 @@
-from collections import defaultdict
-
-import matplotlib.pyplot as plt
-import numpy as np
 from negmas import LinearUtilityFunction
 from scml import SupplyDrivenProductionStrategy
-from scml.scml2020 import SCML2020Agent, SCML2023World
+from scml.scml2020 import SCML2020Agent
 from scml.scml2020.components import IndependentNegotiationsManager
 from scml.scml2020.components.trading import (
     PredictionBasedTradingStrategy,
-    ReactiveTradingStrategy,
 )
 
 __all__ = ["AgentSDH"]

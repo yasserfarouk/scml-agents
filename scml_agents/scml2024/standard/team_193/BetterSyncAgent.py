@@ -6,23 +6,24 @@
 This code is free to use or update given that proper attribution is given to
 the authors and the ANAC 2024 SCML.
 """
+
 from __future__ import annotations
+
+from collections import Counter
+from itertools import chain, combinations
 
 # required for typing
 from typing import Any
 
-# required for development
-from scml.oneshot import OneShotAWI, OneShotSyncAgent
-
 # required for typing
 from negmas import Contract, Outcome, SAOResponse, SAOState
-
-from scml.scml2020.common import QUANTITY, TIME, UNIT_PRICE
+from negmas.gb.common import ResponseType
 from numpy import random
 from numpy.random import choice
-from collections import Counter
-from itertools import chain, combinations
-from negmas.gb.common import ResponseType
+
+# required for development
+from scml.oneshot import OneShotAWI, OneShotSyncAgent
+from scml.scml2020.common import QUANTITY, UNIT_PRICE
 
 
 def powerset(iterable):
@@ -125,9 +126,9 @@ class MyAgent(OneShotSyncAgent):
 
     def counter_all(self, offers, states):
         if self.verbose:
-            pass # print("A new round of countering begins:")
+            pass  # print("A new round of countering begins:")
             for state in states:
-                pass # print(f"State is in step{states[state].step}")
+                pass  # print(f"State is in step{states[state].step}")
 
         response = dict()
         # process for sales and supplies independently

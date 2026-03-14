@@ -1,9 +1,7 @@
-from collections import defaultdict
-from typing import Any, Callable, Dict, List, Tuple
+from typing import Any, Dict
 
 import numpy
 from negmas import (
-    AgentWorldInterface,
     NonlinearHyperRectangleUtilityFunction,
     SAONegotiator,
 )

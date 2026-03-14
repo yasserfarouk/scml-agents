@@ -4,9 +4,9 @@ from pathlib import Path
 import numpy as np
 from gymnasium import spaces
 from negmas.outcomes import Outcome
-from scml.oneshot.rl.observation import FlexibleObservationManager
 from scml.oneshot.awi import OneShotAWI
-from scml.oneshot.context import GeneralContext, SupplierContext, ConsumerContext
+from scml.oneshot.context import ConsumerContext, GeneralContext, SupplierContext
+from scml.oneshot.rl.observation import FlexibleObservationManager
 from stable_baselines3 import A2C
 from stable_baselines3.common.base_class import BaseAlgorithm
 

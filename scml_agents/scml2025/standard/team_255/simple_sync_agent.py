@@ -1,6 +1,7 @@
-from .simple_agent import SimpleAgent
+from negmas import ResponseType, SAOResponse
 from scml.std.agent import StdSyncAgent
-from negmas import SAOResponse, ResponseType
+
+from .simple_agent import SimpleAgent
 
 
 class SimpleSyncAgent(StdSyncAgent, SimpleAgent):

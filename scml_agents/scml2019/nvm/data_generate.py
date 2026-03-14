@@ -1,4 +1,3 @@
-import sys
 import time
 
 import pandas as pd
@@ -9,7 +8,7 @@ from . import pydata
 
 # Generate all uncertainty models
 if __name__ == "__main__":
-    print(f"Trying to generate quantity and price uncertainty models...")
+    print("Trying to generate quantity and price uncertainty models...")
     t0 = time.time()
     for num_intermediate_products in [3]:
         print(f"\t num_intermediate_products = {num_intermediate_products}")

@@ -6,23 +6,24 @@
 This code is free to use or update given that proper attribution is given to
 the authors and the ANAC 2024 SCML.
 """
+
 from __future__ import annotations
+
+from collections import Counter
+from itertools import chain, combinations
 
 # required for typing
 from typing import Any
 
-# required for development
-from scml.oneshot import OneShotAWI, OneShotSyncAgent
-
 # required for typing
 from negmas import Contract, Outcome, SAOResponse, SAOState
-
-from scml.scml2020.common import QUANTITY, TIME, UNIT_PRICE
+from negmas.gb.common import ResponseType
 from numpy import random
 from numpy.random import choice
-from collections import Counter
-from itertools import chain, combinations
-from negmas.gb.common import ResponseType
+
+# required for development
+from scml.oneshot import OneShotAWI, OneShotSyncAgent
+from scml.scml2020.common import QUANTITY, UNIT_PRICE
 
 
 def powerset(iterable):
@@ -152,7 +153,6 @@ class MyAgent(OneShotSyncAgent):
         return mn + (mx - mn) * (r**4.0)
 
     def best_subset(self, needs, offers, plist, quantity_cost_tradeoff=0.95):
-
         best_total_los = float("inf")
         best_quantity_diff, best_indx = float("inf"), -1
         # quantity_cost_tradeoff = 0.90  ### toggle this to adjust the tradeoff!
@@ -360,9 +360,9 @@ class MyAgent(OneShotSyncAgent):
             print(
                 f"Today I need {self.q} contracts, I managed to get {self.todays_contracts_num} contracts with the price of {uprice} each. Today I accumulated a profit of {self.ufun.from_contracts(self.contracts)}."
             )
-            pass # print(f"Today's best price is {self.best_price}")
+            pass  # print(f"Today's best price is {self.best_price}")
             print(
-                f"Today's exorgenous contracts are at {self.p/self.q} for each of the {self.q} items"
+                f"Today's exorgenous contracts are at {self.p / self.q} for each of the {self.q} items"
             )
 
     # ================================

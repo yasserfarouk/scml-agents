@@ -1,41 +1,20 @@
 #!/usr/bin/env python
 from __future__ import annotations
 
-import statistics
-
 # required for running tournaments and printing
-import time
 from collections import defaultdict
 
 # required for typing
-from typing import Any, Dict, List
-
-import numpy as np
 from negmas import (
-    AgentMechanismInterface,
-    Contract,
-    MechanismState,
     Outcome,
     ResponseType,
-    SAOResponse,
-    SAOState,
 )
-from negmas.helpers import humanize_time
-from negmas.preferences import LinearAdditiveUtilityFunction, LinearUtilityFunction
-from negmas.preferences.value_fun import AffineFun, IdentityFun
-from negmas.sao import SAOState
 
 # required for development
 from scml.oneshot import (
     OneShotAgent,
-    OneShotIndNegotiatorsAgent,
-    OneShotSingleAgreementAgent,
-    OneShotSyncAgent,
 )
-from scml.oneshot.agents import RandomOneShotAgent, SyncRandomOneShotAgent
 from scml.scml2020.common import QUANTITY, TIME, UNIT_PRICE
-from scml.utils import anac2022_collusion, anac2022_oneshot, anac2022_std
-from tabulate import tabulate
 
 __all__ = ["AgentSAS"]
 
@@ -97,7 +76,6 @@ class SimpleAgent(OneShotAgent):
 
 
 class BetterAgent(SimpleAgent):
-
     """A greedy agent based on OneShotAgent with more sane strategy"""
 
     def __init__(self, *args, concession_exponent=0.2, **kwargs):
@@ -350,9 +328,10 @@ class AgentSAS(LearningAgent):
         super().before_step()
         self._best_selling, self._best_buying = 0.0, float("inf")
         # creating dict of histories, one for buying and one for selling, dedicated to each negotiator
-        self.selling_history, self.buying_history = defaultdict(
-            self.History
-        ), defaultdict(self.History)
+        self.selling_history, self.buying_history = (
+            defaultdict(self.History),
+            defaultdict(self.History),
+        )
 
     def respond(self, negotiator_id, state):
         offer = state.current_offer

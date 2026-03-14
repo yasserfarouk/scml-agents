@@ -10,7 +10,6 @@ from scml_agents.scml2022.oneshot.team_134.agent119 import PatientAgent
 # from scml_agents.scml2022.oneshot.team102 import GentleS as Gentle
 # from scml_agents.scml2022.standard.team_67.polymorphic_agent import PolymorphicAgent
 # from scml_agents.scml2022.standard.team_82.perry import PerryTheAgent
-
 from .switches import (
     SCMLAGENTS_RUN2022,
 )

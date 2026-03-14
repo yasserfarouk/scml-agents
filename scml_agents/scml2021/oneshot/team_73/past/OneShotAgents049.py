@@ -200,7 +200,6 @@ class AdaptiveSyncAgent(OneShotSyncAgent, AdaptiveAgent, ABC):
 
     def counter_all(self, offers, states):
         """Respond to a set of offers given the negotiation state of each."""
-        SECURED_MAGNIFICATION = 1.2
 
         my_needs = self._needed()
         if my_needs <= 0:
@@ -224,7 +223,7 @@ class AdaptiveSyncAgent(OneShotSyncAgent, AdaptiveAgent, ABC):
             zip(offers.values(), is_selling, offers.keys()),
             key=lambda x: (-x[0][UNIT_PRICE]) if x[1] else x[0][UNIT_PRICE],
         )
-        secured, outputs, chosen = 0, [], dict()
+        secured, _outputs, _chosen = 0, [], dict()
         for i, k in enumerate(offers.keys()):
             offer, is_output, name = sorted_offers[i]
             response = AdaptiveAgent.respond(self, name, states[name], offer)
@@ -390,7 +389,10 @@ class AgentT049(AdaptiveAgent, ABC):
         self._opp_price_slack = opp_price_slack
         self._opp_acc_price_slack = opp_acc_price_slack
         self._range_slack = range_slack
-        self.new_price_selling, self.new_price_buying = float("inf"), 0.0  # 価格変化後の交渉価格
+        self.new_price_selling, self.new_price_buying = (
+            float("inf"),
+            0.0,
+        )  # 価格変化後の交渉価格
         self.new_price_slack = 0.05
         self.concession_threshold = 3  # 譲歩の変化率の閾値
         self.worst_opp_acc_price_slack = (
@@ -418,7 +420,7 @@ class AgentT049(AdaptiveAgent, ABC):
 
     def on_negotiation_start(self, negotiator_id: str, state: MechanismState) -> None:
         is_selling = self._is_selling(self.get_nmi(negotiator_id))
-        nmi = self.get_nmi(negotiator_id)
+        self.get_nmi(negotiator_id)
         if is_selling:
             self.nego_info["my_name"] = shorten_name(
                 self.get_nmi(negotiator_id).annotation["seller"]
@@ -478,7 +480,9 @@ class AgentT049(AdaptiveAgent, ABC):
         offer = list(offer)
         offer[QUANTITY] = min(self.awi.profile.n_lines, offer[QUANTITY])
 
-        self.record_information({shorten_name(negotiator_id): offer}, True)  # offerの保存
+        self.record_information(
+            {shorten_name(negotiator_id): offer}, True
+        )  # offerの保存
 
         # デバッグ用
         # if self.nego_info["negotiation_step"] == 19:
@@ -506,7 +510,9 @@ class AgentT049(AdaptiveAgent, ABC):
             return ResponseType.REJECT_OFFER
         # find the quantity I still need and end negotiation if I need nothing more
         self.nego_info["negotiation_step"] = state.step  # 交渉ステップを記録
-        self.record_information({shorten_name(negotiator_id): offer}, False)  # offerの保存
+        self.record_information(
+            {shorten_name(negotiator_id): offer}, False
+        )  # offerの保存
 
         # update my current best price to use for limiting concession in other
         # negotiations
@@ -545,7 +551,7 @@ class AgentT049(AdaptiveAgent, ABC):
         success_agreements = opponent_agreements(
             nmi, is_selling, self.success_contracts
         )
-        accept_agreements = [
+        [
             _
             for _ in success_agreements
             if _.mechanism_state["current_proposer"] == self.nego_info["my_name"]
@@ -649,7 +655,7 @@ class AgentT049(AdaptiveAgent, ABC):
 
     def good_price_range(self, nmi: SAONMI):
         """エージェントにとって良い価格帯を見つける"""
-        is_selling = self._is_selling(nmi)
+        self._is_selling(nmi)
         mx = nmi.issues[UNIT_PRICE].max_value
         mn = nmi.issues[UNIT_PRICE].min_value
 
@@ -685,7 +691,7 @@ class AgentT049(AdaptiveAgent, ABC):
         """Limits the price by the best price received"""
         mn = nmi.issues[UNIT_PRICE].min_value
         mx = nmi.issues[UNIT_PRICE].max_value
-        concession_degree = 1 - self.strong_degree(nmi)
+        1 - self.strong_degree(nmi)
         is_selling = self._is_selling(nmi)
 
         if self._is_selling(nmi):
@@ -744,7 +750,6 @@ class AgentT049(AdaptiveAgent, ABC):
     def self_factor(self, nmi):
         """自身の交渉の進捗を評価"""
         prev_agreement = 0  # 前日合意できたか
-        agreement_ratio = 0  # 相手との交渉成功割合
         good_agreement = 0  # 良い値段で合意できたか
         w_prev = 4
         w_good = 2
@@ -925,7 +930,7 @@ class AgentT049(AdaptiveAgent, ABC):
     def final_answer(self, name: str, response: ResponseType):
         # 最終ステップかつこれ以上相手のOfferがない場合は受け入れ
         nmi = self.get_nmi(name)
-        is_selling = self._is_selling(nmi)
+        self._is_selling(nmi)
         if (
             self.nego_info["negotiation_step"] >= nmi.n_steps - 1
             and len(self.failure_opp_list) == len(self.active_negotiators.keys()) - 1
@@ -1013,7 +1018,9 @@ class LearningSyncAgent_(OneShotSyncAgent, ABC):
         self._delta = delta
         self._e = concession_exponent
         self.e = util_exponent  # 閾値の決定に用いる
-        self.strong_degree = 1.0  # offerのprice rangeを決定する際に用いる（どれだけ強気かどうか）
+        self.strong_degree = (
+            1.0  # offerのprice rangeを決定する際に用いる（どれだけ強気かどうか）
+        )
         self.parameter_min_max = defaultdict(lambda: list())  # デバッグ用
         self.min_max_delta = 0.1  # strong_degreeの変化の度合い
         self.successful_times_thr = 3  # 連続交渉成功回数の閾値
@@ -1038,7 +1045,9 @@ class LearningSyncAgent_(OneShotSyncAgent, ABC):
         self.success_list = defaultdict(lambda: list())  # 交渉成功した際の取引データ
         self.success_contracts = []  # 交渉成功した契約のリスト
         self.total_trade_quantity = [0, 0]  # 総取引量（外的契約を含む）
-        self.my_offer_list = defaultdict(lambda: list())  # 相手ごとの自分のOfferのリスト
+        self.my_offer_list = defaultdict(
+            lambda: list()
+        )  # 相手ごとの自分のOfferのリスト
         self.opp_offer_list = defaultdict(lambda: list())  # 相手のOfferのリスト
         self.best_opp_util = -float("inf")  # その日の相手のOfferの効用値の最大値
         self.best_agr_util = -float("inf")  # 合意に達した契約の効用値の最大値
@@ -1676,7 +1685,7 @@ class LearningSyncAgent_(OneShotSyncAgent, ABC):
                 edgecolors="black",
             )
 
-        ax.set_title("agent" "s offers")
+        ax.set_title("agents offers")
         ax.set_xlabel("simulation step")
         ax.set_ylabel("unit price")
         ax.set_ylim(0, 40)
@@ -1888,7 +1897,6 @@ class LearningSyncAgent(OneShotSyncAgent, LearningAgent, ABC):
 
     def counter_all(self, offers, states):
         """Respond to a set of offers given the negotiation state of each."""
-        SECURED_MAGNIFICATION = 1.2
 
         my_needs = self._needed()
         if my_needs <= 0:
@@ -1912,7 +1920,7 @@ class LearningSyncAgent(OneShotSyncAgent, LearningAgent, ABC):
             zip(offers.values(), is_selling, offers.keys()),
             key=lambda x: (-x[0][UNIT_PRICE]) if x[1] else x[0][UNIT_PRICE],
         )
-        secured, outputs, chosen = 0, [], dict()
+        secured, _outputs, _chosen = 0, [], dict()
         for i, k in enumerate(offers.keys()):
             offer, is_output, name = sorted_offers[i]
             response = LearningAgent.respond(self, name, states[name], offer)

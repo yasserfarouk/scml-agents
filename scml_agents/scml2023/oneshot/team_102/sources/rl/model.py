@@ -6,12 +6,12 @@ from torch.utils.tensorboard import SummaryWriter
 
 sys.path.append(os.path.dirname(__file__))
 
+from typing import List
+
 import torch
 import torch.nn as nn
-from typing import List
-from torch.distributions import Categorical
-
 from PPO2 import PPO, device
+from torch.distributions import Categorical
 
 
 class OneshotActorCritic(nn.Module):

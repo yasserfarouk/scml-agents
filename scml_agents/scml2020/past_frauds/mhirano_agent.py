@@ -24,6 +24,7 @@ You can access the full list of these capabilities on the documentation.
   [here](https://scml.readthedocs.io/en/latest/api/scml.scml2020.AWI.html)
 
 """
+
 import argparse
 import json
 import logging
@@ -35,57 +36,42 @@ import time
 from collections import defaultdict
 
 # required for typing
-from typing import Any, Dict, List, Optional, Set, Tuple, Type, Union
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 
 import numpy as np
 from matplotlib import pylab as plt
 from negmas import (
     AgentMechanismInterface,
-    AgentWorldInterface,
     AspirationNegotiator,
     Breach,
     Contract,
-    ControlledNegotiator,
-    ControlledSAONegotiator,
-    Controller,
     Issue,
     LinearUtilityFunction,
     MechanismState,
     Negotiator,
     ResponseType,
-    SAOController,
-    SAONegotiator,
     SAOState,
     UtilityFunction,
 )
 from negmas.common import PreferencesChange, PreferencesChangeType
-from negmas.helpers import get_class, humanize_time
+from negmas.helpers import humanize_time
 from scipy.stats import poisson
 from scml.scml2020 import (
     AWI,
-    TIME,
     DemandDrivenProductionStrategy,
     FactoryState,
     Failure,
-    FinancialReport,
-    PredictionBasedTradingStrategy,
-    ReactiveTradingStrategy,
-    SCML2020Agent,
     SCML2020World,
-    TradingStrategy,
 )
 from scml.scml2020.agents import (
     BuyCheapSellExpensiveAgent,
     DecentralizingAgent,
-    DoNothingAgent,
     IndDecentralizingAgent,
     MovingRangeAgent,
 )
 from scml.utils import anac2020_collusion, anac2020_std
 from tabulate import tabulate
-from tqdm import tqdm
 
-from .Negotiator import ControllerUFun, IntegratedNegotiationManager, SyncController
 from .PrintingAgent import PrintingAgent, PrintingSAOController
 
 __all__ = ["MhiranoAgent"]
@@ -345,7 +331,7 @@ class MhiranoAgent(DemandDrivenProductionStrategy, PrintingAgent):
         is_seller: bool = contract.annotation["seller"] == self.id
         t: int = contract.agreement["time"]
         q: int = contract.agreement["quantity"]
-        up: int = contract.agreement["unit_price"]
+        contract.agreement["unit_price"]
         if is_seller:
             self.outputs_contracted[t] += q
         else:
@@ -363,7 +349,7 @@ class MhiranoAgent(DemandDrivenProductionStrategy, PrintingAgent):
                 is_seller: bool = contract.annotation["seller"] == self.id
                 t: int = contract.agreement["time"]
                 q: int = contract.agreement["quantity"]
-                up: int = contract.agreement["unit_price"]
+                contract.agreement["unit_price"]
                 if is_seller:
                     self.outputs_contracted[t] += q
                 else:
@@ -383,7 +369,7 @@ class MhiranoAgent(DemandDrivenProductionStrategy, PrintingAgent):
             is_sell: bool = contract.annotation["seller"] == self.id
             t: int = contract.agreement["time"]
             q: int = contract.agreement["quantity"]
-            up: int = contract.agreement["unit_price"]
+            contract.agreement["unit_price"]
             if is_sell:
                 self.outputs_signed[t] += q
             else:
@@ -592,16 +578,16 @@ class MhiranoController(PrintingSAOController):
                 if offer1[i] == offer2[i]:
                     continue
                 if offer1[i] > offer2[i]:
-                    if judge != None and judge != ">":
+                    if judge is not None and judge != ">":
                         return "none"
                     else:
                         judge = ">"
                 else:
-                    if judge != None and judge != "<":
+                    if judge is not None and judge != "<":
                         return "none"
                     else:
                         judge = "<"
-            if judge == None:
+            if judge is None:
                 judge = "="
             return judge
 
@@ -853,10 +839,10 @@ class MhiranoController(PrintingSAOController):
         if not is_seller:
             # 買いの場合は，売りを評価すればいいので，買いofferを最短の生産を考える
             for (t, up), ev_list in evaluation_dict.items():
-                products_available_time_at_q: List[
-                    int
-                ] = _get_production_end_time_of_buy(
-                    _q_max=q_max, _start_time=t, _line_usage_list=line_usage_list
+                products_available_time_at_q: List[int] = (
+                    _get_production_end_time_of_buy(
+                        _q_max=q_max, _start_time=t, _line_usage_list=line_usage_list
+                    )
                 )
                 possible_time: Set[int] = set(products_available_time_at_q)
                 for q_target, outcome_space in negotiating_opponents:
@@ -956,14 +942,14 @@ class MhiranoController(PrintingSAOController):
             t_up_list.append((t, up))
         # qが1-q_maxまでの評価値(t,up)の評価値を作成
         # {(time, price): [ev for q=1, q=2, ..., q=q_max]}
-        evaluation_dict: Dict[
-            Tuple[int, int], List[float]
-        ] = self._mk_evaluation_for_tup(
-            q_max=q_max,
-            is_seller=is_seller,
-            t_up_list=t_up_list,
-            input_diff_series=input_diff_series,
-            line_usage_list=line_usage_list,
+        evaluation_dict: Dict[Tuple[int, int], List[float]] = (
+            self._mk_evaluation_for_tup(
+                q_max=q_max,
+                is_seller=is_seller,
+                t_up_list=t_up_list,
+                input_diff_series=input_diff_series,
+                line_usage_list=line_usage_list,
+            )
         )
         results_list: List[float] = []
         for offer in offers:

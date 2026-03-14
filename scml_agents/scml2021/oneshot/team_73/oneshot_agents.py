@@ -209,7 +209,10 @@ class Gentle(AdaptiveAgent, ABC):
         self._opp_price_slack = opp_price_slack
         self._opp_acc_price_slack = opp_acc_price_slack
         self._range_slack = range_slack
-        self.new_price_selling, self.new_price_buying = float("inf"), 0.0  # 価格変化後の交渉価格
+        self.new_price_selling, self.new_price_buying = (
+            float("inf"),
+            0.0,
+        )  # 価格変化後の交渉価格
         self.new_price_slack = 0.05
         self.concession_threshold = 3  # 譲歩の変化率の閾値
         self.worst_opp_acc_price_slack = (
@@ -244,7 +247,7 @@ class Gentle(AdaptiveAgent, ABC):
 
     def on_negotiation_start(self, negotiator_id: str, state: MechanismState) -> None:
         is_selling = self._is_selling(self.get_nmi(negotiator_id))
-        nmi = self.get_nmi(negotiator_id)
+        self.get_nmi(negotiator_id)
         if is_selling:
             self.nego_info["my_name"] = shorten_name(
                 self.get_nmi(negotiator_id).annotation["seller"]
@@ -304,7 +307,9 @@ class Gentle(AdaptiveAgent, ABC):
         offer = list(offer)
         offer[QUANTITY] = min(self.awi.profile.n_lines, offer[QUANTITY])
 
-        self._record_information({shorten_name(negotiator_id): offer}, True)  # offerの保存
+        self._record_information(
+            {shorten_name(negotiator_id): offer}, True
+        )  # offerの保存
 
         # デバッグ用
         # if self.nego_info["negotiation_step"] == 19:
@@ -357,7 +362,7 @@ class Gentle(AdaptiveAgent, ABC):
             for _ in success_agreements
             if _.mechanism_state["current_proposer"] == self.nego_info["my_name"]
         ]
-        offer_agreements = [
+        [
             _
             for _ in success_agreements
             if _.mechanism_state["current_proposer"] != self.nego_info["my_name"]
@@ -471,7 +476,7 @@ class Gentle(AdaptiveAgent, ABC):
 
     def _good_price_range(self, nmi: SAONMI):
         """エージェントにとって良い価格帯を見つける"""
-        is_selling = self._is_selling(nmi)
+        self._is_selling(nmi)
         mx = nmi.issues[UNIT_PRICE].max_value
         mn = nmi.issues[UNIT_PRICE].min_value
 
@@ -582,7 +587,6 @@ class Gentle(AdaptiveAgent, ABC):
     def _self_factor(self, nmi):
         """自身の交渉の進捗を評価"""
         prev_agreement = 0  # 前日合意できたか
-        agreement_ratio = 0  # 相手との交渉成功割合
         good_agreement = 0  # 良い値段で合意できたか
         w_prev = 4
         w_good = 2
@@ -634,7 +638,7 @@ class Gentle(AdaptiveAgent, ABC):
 
     def _opp_concession_rate_change(self, name: str):
         """相手の譲歩の変化率を計算"""
-        nmi = self.get_nmi(name)
+        self.get_nmi(name)
         offers = [
             _
             for _ in self.opp_offer_list[shorten_name(name)]

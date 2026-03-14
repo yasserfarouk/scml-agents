@@ -1,15 +1,12 @@
 import copy
-import math
 from collections import defaultdict
 from typing import Any, Dict, List, Optional
 
 from negmas import Breach, Contract
 from negmas.common import AgentMechanismInterface, MechanismState
-from scml.scml2020.common import QUANTITY
 
 from .helper import (
     calculate_current_keep_amount,
-    calculate_total_keep_amount,
     format_schedule,
     get_contract_buyer_sellers,
     get_unscheduled_total_pseudo_quantity,
@@ -92,7 +89,7 @@ class BossTradingStrategy:
                     # Sign buyer contract.
                     signs[buyer_index] = self.id
             # Check signing for red buyers.
-            for (contract_id, offer) in delivery_sorted_sellers:
+            for contract_id, offer in delivery_sorted_sellers:
                 # Check if schedule is available or not.
                 is_available, _ = is_schedule_available(
                     formatted_temp_schedule,
@@ -173,7 +170,7 @@ class BossTradingStrategy:
                     # Sign buyer contract.
                     signs[buyer_index] = self.id
             # Check signing for red buyers.
-            for (contract_id, offer) in delivery_sorted_buyers:
+            for contract_id, offer in delivery_sorted_buyers:
                 # Check if schedule is available or not.
                 is_available, _ = is_schedule_available(
                     formatted_temp_schedule,
@@ -362,7 +359,6 @@ class BossTradingStrategy:
         """Called when a breach occur. In 2020, there will be no resolution
         (i.e. resoluion is None)"""
         # Get the breached id.
-        breached_contract_id = contract.id
         # # Check if we scheduled production etc. for this buyer.
         # if breached_contract_id in self.scheduled_buyer_contracts.keys():
         # 	# Check bankrupted agent's contracts.
@@ -567,9 +563,9 @@ class BossTradingStrategy:
                                     scheduled_quantity,
                                 ) in schedule.items():
                                     if scheduled_step >= self.current_step:
-                                        cancelled_schedule[
-                                            scheduled_step
-                                        ] += scheduled_quantity
+                                        cancelled_schedule[scheduled_step] += (
+                                            scheduled_quantity
+                                        )
                                         total_cancelled_q += scheduled_quantity
 
                                 if (
@@ -593,9 +589,9 @@ class BossTradingStrategy:
                                         current_pseudo_offer[1],
                                         current_pseudo_offer[2],
                                     )
-                                    self.pseudo_sellers[
-                                        seller_contract_id
-                                    ] = updated_pseudo_offer
+                                    self.pseudo_sellers[seller_contract_id] = (
+                                        updated_pseudo_offer
+                                    )
 
                                 self.scheduled_seller_contracts[seller_contract_id].pop(
                                     bankrupt_contract.id

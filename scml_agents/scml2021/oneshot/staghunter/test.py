@@ -3,35 +3,20 @@ import pickle
 
 # required for running tournaments and printing
 import time
-from functools import partial
 
 # required for typing
-from typing import Any, Collection, Dict, Iterable, List, Optional, Tuple, Union
-
 import numpy as np
 from negmas import (
-    AgentMechanismInterface,
-    Breach,
-    Contract,
-    Issue,
-    MechanismState,
-    Negotiator,
     ResponseType,
 )
-from negmas.helpers import humanize_time
-from negmas.outcomes import Issue
-from negmas.preferences import UtilityFunction
-from negmas.sao import AspirationNegotiator
-from scml.oneshot import OneShotAgent
 from scml.oneshot.agents import (
     GreedyOneShotAgent,
     GreedySingleAgreementAgent,
     GreedySyncAgent,
     RandomOneShotAgent,
-    SyncRandomOneShotAgent,
 )
 from scml.scml2020.common import QUANTITY, TIME, UNIT_PRICE
-from scml.utils import anac2021_collusion, anac2021_oneshot, anac2021_std
+from scml.utils import anac2021_oneshot
 from tabulate import tabulate
 
 
@@ -98,7 +83,7 @@ class GreedyTestAgent(GreedyOneShotAgent):
         offer[UNIT_PRICE] = contract.agreement["unit_price"]
         offer[TIME] = contract.agreement["time"]
 
-        up = contract.agreement["unit_price"]
+        contract.agreement["unit_price"]
         if contract.annotation["product"] == self.awi.my_output_product:
             partner = contract.annotation["buyer"]
         else:

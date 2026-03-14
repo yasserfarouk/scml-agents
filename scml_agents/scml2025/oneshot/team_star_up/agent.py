@@ -1,10 +1,10 @@
 import random
-from scml.oneshot.agents.rand import OneShotSyncAgent
-import numpy as np
-
 from itertools import chain, combinations
-from scml.oneshot import UNIT_PRICE, QUANTITY
-from negmas import SAOResponse, ResponseType
+
+import numpy as np
+from negmas import ResponseType, SAOResponse
+from scml.oneshot import QUANTITY, UNIT_PRICE
+from scml.oneshot.agents.rand import OneShotSyncAgent
 
 __all__ = ["HoriYamaAgent"]
 
@@ -40,8 +40,9 @@ def needs_parameter_sigmoid(needs, k=1.5, needs0=1, param_max=6.0, param_min=1.4
 def distribute(q: int, n: int) -> list[int]:
     """Distributes n values over m bins with at
     least one item per bin assuming q > n"""
-    from numpy.random import choice
     from collections import Counter
+
+    from numpy.random import choice
 
     q = q * needs_parameter_sigmoid(q)
     q = int(np.ceil(q))  # 切り上げ

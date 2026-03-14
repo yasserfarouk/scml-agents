@@ -1,11 +1,9 @@
 import itertools as it
-import pprint
 import time
 
 import numpy as np
 import pulp
 from prettytable import PrettyTable
-from scipy.stats import binom, geom
 
 
 # There might be a bug here when the probability distribution, dict_data, does not add to exactly one.
@@ -115,7 +113,7 @@ def construct_ILP():
         upBound=1,
         cat="Integer",
     )
-    print(f"it took {time.time() - t0 : .4f} to generate dec. vars")
+    print(f"it took {time.time() - t0: .4f} to generate dec. vars")
     # Generate the objective function - the total profit of the plan. Profit = revenue - cost
     # Here, revenue is the money received from sales of outputs, and cost is the money used to buy inputs.
     model += pulp.lpSum(
@@ -125,12 +123,12 @@ def construct_ILP():
             for t, k in it.product(range(0, T), range(0, q_max))
         ]
     )
-    print(f"it took {time.time() - t0 : .4f} to generate objective function")
+    print(f"it took {time.time() - t0: .4f} to generate objective function")
     # Genrate the constraints. Only one quantity can be planned for at each time step for buying or selling.
     for t in range(0, T):
         model += sum(out_vars[t, k] for k in range(0, q_max)) <= 1
         model += sum(inn_vars[t, k] for k in range(0, q_max)) <= 1
-    print(f"it took {time.time() - t0 : .4f} to generate constraints ")
+    print(f"it took {time.time() - t0: .4f} to generate constraints ")
     # Document here: optimistic == True means no bluffing, otherwise there is bluffing going on
     optimistic = True
     if optimistic:
@@ -158,7 +156,7 @@ def construct_ILP():
     # for k in range(current_inventory+1, q_max):
     #            model += out_vars[0, k] == 0
     time_to_generate_ILP = time.time() - t0
-    print(f"it took {time_to_generate_ILP : .4f} to generate the ILP")
+    print(f"it took {time_to_generate_ILP: .4f} to generate the ILP")
     return inn_vars, model, optimistic, out_vars, t0, time_to_generate_ILP
 
 
@@ -171,11 +169,11 @@ def get_solved_plan():
     model.solve()
     solve_time = time.time() - t0_solve
     print(
-        f"it took {solve_time : .4f} sec to solve, result = {pulp.LpStatus[model.status]}"
+        f"it took {solve_time: .4f} sec to solve, result = {pulp.LpStatus[model.status]}"
     )
     total_time = time.time() - t0
     print(
-        f"it took {total_time : .4f} sec in total, and has opt profit of {pulp.value(model.objective):.4f}"
+        f"it took {total_time: .4f} sec in total, and has opt profit of {pulp.value(model.objective):.4f}"
     )
     t02 = time.time()
     buy_plan = {
@@ -186,7 +184,7 @@ def get_solved_plan():
         t: sum(int(k * out_vars[t, k].varValue) for k in range(0, q_max))
         for t in range(0, T)
     }
-    print(f"it took {time.time() - t02 : .4f} sec to produce the plan")
+    print(f"it took {time.time() - t02: .4f} sec to produce the plan")
     return buy_plan, sell_plan, solve_time, total_time
 
 
@@ -223,12 +221,12 @@ def print_pretty_tables():
     x.add_row(
         [
             "total profit",
-            f"{sum([out[t][sell_plan[t]] * p_out[t] - inn[t][buy_plan[t]] * p_inn[t] for t in range(0, T)]) :.4f}",
+            f"{sum([out[t][sell_plan[t]] * p_out[t] - inn[t][buy_plan[t]] * p_inn[t] for t in range(0, T)]):.4f}",
         ]
     )
-    x.add_row(["build time", f"{time_to_generate_ILP : .4f} sec"])
-    x.add_row(["solve time", f"{solve_time : .4f} sec"])
-    x.add_row(["total time", f"{total_time : .4f} sec"])
+    x.add_row(["build time", f"{time_to_generate_ILP: .4f} sec"])
+    x.add_row(["solve time", f"{solve_time: .4f} sec"])
+    x.add_row(["total time", f"{total_time: .4f} sec"])
     x.add_row(["optimistic", f"{optimistic}"])
     print(x)
 

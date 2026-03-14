@@ -1,6 +1,7 @@
-from scml.std import StdAgent
 from negmas import ResponseType
 from scml.oneshot.common import *
+from scml.std import StdAgent
+
 
 class SimpleAgent(StdAgent):
     """A greedy agent based on StdAgent"""
@@ -105,7 +106,8 @@ class SimpleAgent(StdAgent):
             total_needs -= self.awi.total_supplies_between(t, self.awi.n_steps - 1)
         # subtract already signed contracts
         return int(total_needs)
-    
+
+
 if __name__ == "__main__":
     import sys
 

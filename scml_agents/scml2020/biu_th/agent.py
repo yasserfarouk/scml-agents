@@ -31,7 +31,6 @@ class THBiuAgent(
     SupplyDrivenProductionStrategy,
     SCML2020Agent,
 ):
-
     # =====================
     # Time-Driven Callbacks
     # =====================
@@ -111,7 +110,6 @@ class THBiuAgent(
         annotation: Dict[str, Any],
         mechanism: "AgentMechanismInterface",
     ) -> Optional["Negotiator"]:
-
         # Check if the agent is breached and if so don't make negotiation.
         breached_agent_name = (
             annotation["buyer"] if annotation["is_buy"] else annotation["seller"]

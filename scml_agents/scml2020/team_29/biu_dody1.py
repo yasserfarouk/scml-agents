@@ -2,31 +2,24 @@ import functools
 import math
 import pickle
 from abc import abstractmethod
-from collections import defaultdict
 from dataclasses import dataclass
 from pprint import pformat
 from statistics import mean
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-import matplotlib.pyplot as plt
 import numpy as np
 from negmas import (
     AgentMechanismInterface,
-    AspirationNegotiator,
     Breach,
     Contract,
     Issue,
     Negotiator,
     SAONegotiator,
-    UtilityFunction,
     num_outcomes,
 )
 from negmas.helpers import get_class
-from scml import SCML2020World
 from scml.scml2020 import (
     AWI,
-    DecentralizingAgent,
-    IndDecentralizingAgent,
     PredictionBasedTradingStrategy,
     SCML2020Agent,
 )
@@ -36,7 +29,7 @@ from scml.scml2020.components.production import (
     ProductionStrategy,
     SupplyDrivenProductionStrategy,
 )
-from scml.scml2020.services.controllers import StepController, SyncController
+from scml.scml2020.services.controllers import StepController
 
 from .dana_neg_algo import DanasController, DanasNegotiator
 
@@ -724,7 +717,6 @@ class DrorStepNegotiationManager(DrorMeanERPStrategy, DrorNegotiationManager):
         annotation: Dict[str, Any],
         mechanism: AgentMechanismInterface,
     ) -> Optional[Negotiator]:
-
         # find negotiation parameters
         is_seller = annotation["seller"] == self.id
         tmin, tmax = issues[TIME].min_value, issues[TIME].max_value + 1
@@ -771,7 +763,6 @@ class DrorStepNegotiationManager(DrorMeanERPStrategy, DrorNegotiationManager):
             return
         quantity = c.secured
         target = c.target
-        time_range = info.time_range
         if is_seller:
             controllers = self.sellers
         else:

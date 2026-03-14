@@ -54,7 +54,9 @@ class LearningSyncAgent(OneShotSyncAgent, ABC):
         # self.failure_list = defaultdict(lambda: list())  # 交渉失敗した際の取引データ
         self.success_contracts = []  # 交渉成功した契約のリスト
         self.total_trade_quantity = [0, 0]  # 総取引量（外的契約を含む）
-        self.my_offer_list = defaultdict(lambda: list())  # 相手ごとの自分のOfferのリスト
+        self.my_offer_list = defaultdict(
+            lambda: list()
+        )  # 相手ごとの自分のOfferのリスト
         self.opp_offer_list = defaultdict(lambda: list())  # 相手のOfferのリスト
 
         self.best_opp_util = -float("inf")  # その日の相手のOfferの効用値の最大値
@@ -62,7 +64,9 @@ class LearningSyncAgent(OneShotSyncAgent, ABC):
         self.opp_util_slack = opp_util_slack  # opp_utilのSlack変数
         self.agr_util_slack = agr_util_slack  # agr_utilのSlack変数
         self.e = util_exponent  # 閾値の決定に用いる
-        self.strong_degree = 1.0  # offerのprice rangeを決定する際に用いる（どれだけ強気かどうか）
+        self.strong_degree = (
+            1.0  # offerのprice rangeを決定する際に用いる（どれだけ強気かどうか）
+        )
         self.min_max_delta = 0.1  # strong_degreeの変化の度合い
 
         self.my_name = None  # 自分の名前（短縮版）
@@ -334,13 +338,13 @@ class LearningSyncAgent(OneShotSyncAgent, ABC):
         #       f"detect_std_utility:{self.detect_std_utility(my_needs, self.get_nmi(n))})")
         # print(f"total trade quantity:{self.total_trade_quantity}")
         if self.success_list.keys():
-            success_simulation_steps = set(
+            set(
                 itertools.chain.from_iterable(
                     [[_[TIME] for _ in lis] for lis in self.success_list.values()]
                 )
             )
             # print(f"agreement　rate:{len(success_simulation_steps) / self.awi.n_steps}")
-            success_unit_prices = itertools.chain.from_iterable(
+            itertools.chain.from_iterable(
                 [[_[UNIT_PRICE] for _ in lis] for lis in self.success_list.values()]
             )
             # print(f"average unit price:{mean(success_unit_prices)}")
@@ -722,7 +726,7 @@ class LearningSyncAgent(OneShotSyncAgent, ABC):
                 label="contract with " + k,
             )
 
-        ax.set_title("agent" "s offers")
+        ax.set_title("agents offers")
         ax.set_xlabel("simulation step")
         ax.set_ylabel("unit price")
         ax.set_ylim(0, 40)

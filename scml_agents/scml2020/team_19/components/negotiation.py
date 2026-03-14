@@ -1,33 +1,24 @@
 # required for typing
 import functools
 import math
-from abc import abstractmethod
 from dataclasses import dataclass
-from pprint import pformat, pprint
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
-import seaborn as sns
 from negmas import *
 from negmas import (
     AgentMechanismInterface,
     AspirationNegotiator,
-    Contract,
     Issue,
     Negotiator,
     SAONegotiator,
-    UtilityFunction,
 )
-from negmas.helpers import get_class, instantiate
+from negmas.helpers import get_class
 from scml.scml2020 import *
-from scml.scml2020 import AWI
 from scml.scml2020.common import TIME
 
 # my need
 from scml.scml2020.components.negotiation import *
-from scml.scml2020.components.prediction import MeanERPStrategy
 from scml.scml2020.services.controllers import StepController, SyncController
 
 from .prediction import MyERPredictor
@@ -255,7 +246,6 @@ class MyNegotiationManager(MyERPredictor, NegotiationManager):
         annotation: Dict[str, Any],
         mechanism: AgentMechanismInterface,
     ) -> Optional[Negotiator]:
-
         # find negotiation parameters
         is_seller = annotation["seller"] == self.id
         tmin, tmax = issues[TIME].min_value, issues[TIME].max_value + 1
@@ -302,7 +292,6 @@ class MyNegotiationManager(MyERPredictor, NegotiationManager):
             return
         quantity = c.secured
         target = c.target
-        time_range = info.time_range
         if is_seller:
             controllers = self.sellers
         else:

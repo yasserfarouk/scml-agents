@@ -1,7 +1,7 @@
 import random
 from typing import Optional
 
-from negmas import ResponseType, SAOSingleAgreementRandomController, SAOState
+from negmas import ResponseType, SAOState
 from negmas.common import MechanismState
 from negmas.sao import AspirationNegotiator
 from scml.scml2019.common import INVALID_UTILITY
@@ -90,7 +90,6 @@ class MyTestnegotiator(AspirationNegotiator):
                         max(0, (outcome[0] / max_utility)),
                         outcome[1],
                     )
-        a = 0
 
     def on_preferences_changed(self, changes=tuple()):
         super().on_preferences_changed(

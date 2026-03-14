@@ -112,8 +112,7 @@ class MatchingAgent(OneShotAgent):
         offer = state.current_offer
         if not offer:
             return ResponseType.REJECT_OFFER
-        step = state.step
-        ami = self.get_nmi(negotiator_id)
+        self.get_nmi(negotiator_id)
         try:
             if self.verbose:
                 pass  # print(self.responses)

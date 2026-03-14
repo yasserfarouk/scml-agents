@@ -9,28 +9,23 @@ the authors and the ANAC 2024 SCML.
 
 from __future__ import annotations
 
-from negmas import SAOResponse, ResponseType, Outcome, SAOState
-
-from scml.oneshot.world import SCML2024OneShotWorld as W
-from scml.oneshot import *
-
-
 import random
 
 # required for typing
-from typing import Any
+# required for typing
+from negmas import ResponseType, SAOResponse
+from scml.oneshot import *
 
 # required for development
-from scml.oneshot import OneShotAWI, OneShotSyncAgent
+from scml.oneshot import OneShotSyncAgent
 
-# required for typing
-from negmas import Contract, Outcome, SAOResponse, SAOState
 
 def distribute(q: int, n: int) -> list[int]:
     """Distributes n values over m bins with at
     least one item per bin assuming q > n"""
-    from numpy.random import choice
     from collections import Counter
+
+    from numpy.random import choice
 
     if q < n:
         lst = [0] * (n - q) + [1] * q
@@ -42,12 +37,14 @@ def distribute(q: int, n: int) -> list[int]:
     r = Counter(choice(n, q - n))
     return [r.get(_, 0) + 1 for _ in range(n)]
 
+
 from itertools import chain, combinations
 
 
 def powerset(iterable):
     s = list(iterable)
     return chain.from_iterable(combinations(s, r) for r in range(len(s) + 1))
+
 
 class BetterSyncAgent(OneShotSyncAgent):
     """An agent that distributes its needs over its partners randomly."""
@@ -57,8 +54,14 @@ class BetterSyncAgent(OneShotSyncAgent):
 
         dist = dict()
         for needs, all_partners in [
-            (self.awi.needed_supplies, self.awi.my_suppliers), # 自分がsecondレベルの時はこれだけ
-            (self.awi.needed_sales, self.awi.my_consumers), # 自分がfirstレベルの時にはここだけ
+            (
+                self.awi.needed_supplies,
+                self.awi.my_suppliers,
+            ),  # 自分がsecondレベルの時はこれだけ
+            (
+                self.awi.needed_sales,
+                self.awi.my_consumers,
+            ),  # 自分がfirstレベルの時にはここだけ
         ]:
             # find suppliers and consumers still negotiating with me
             partner_ids = [_ for _ in all_partners if _ in self.negotiators.keys()]
@@ -74,7 +77,6 @@ class BetterSyncAgent(OneShotSyncAgent):
         return dist
 
     def first_proposals(self):
-
         # just randomly distribute my needs over my partners (with best price for me).
         s, p = self._step_and_price(best_price=True)
         distribution = self.distribute_needs()
@@ -163,7 +165,7 @@ class BetterSyncAgent(OneShotSyncAgent):
         if best_price:
             return s, pmax if seller else pmin
         return s, random.randint(pmin, pmax)
-    
+
 
 if __name__ == "__main__":
     import sys
@@ -173,5 +175,3 @@ if __name__ == "__main__":
     run([BetterSyncAgent], sys.argv[1] if len(sys.argv) > 1 else "oneshot")
 
 #  不足違約金と，廃棄違約金のどちらが高いかを判断してどちらかを重視して数量を決める，ちょっと多くとるとかちょっと少なく取る
-
-

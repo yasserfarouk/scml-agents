@@ -1,11 +1,7 @@
 # required for typing
-from pprint import pprint
-from typing import Dict, List, Tuple
+from typing import List
 
-import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
-import seaborn as sns
 from negmas import *
 from negmas import Contract
 from scml.scml2020 import *
@@ -40,12 +36,12 @@ class MyProductor(ProductionStrategy):
         super().on_contracts_finalized(signed, cancelled, rejectors)
 
         current_step = self.awi.current_step
-        defcit = (
+        (
             self.output_price[current_step] - self.input_cost[current_step]
         ) / 2 < self.awi.profile.costs[
             0, self.awi.my_input_product
         ]  # 在庫の生産が，そのステップにおいて赤字になるか
-        passive = self.awi.n_steps * 0.8  # どのへんから生産を慎重になるか
+        self.awi.n_steps * 0.8  # どのへんから生産を慎重になるか
         latest = self.awi.n_steps - 2  # 最悪どこまで遅い生産を許容するか
         earliest_production = self.awi.current_step
         for contract in signed:

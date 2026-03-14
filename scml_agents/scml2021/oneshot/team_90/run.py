@@ -14,47 +14,19 @@ import os
 import pickle
 
 # required for running the test tournament
-import time
-
 # required for typing
-from typing import Any, Dict, List, Optional
-
 import numpy as np
 import pandas as pd
 from negmas import (
-    AgentMechanismInterface,
-    Breach,
-    Contract,
-    Issue,
-    MechanismState,
-    Negotiator,
     ResponseType,
     SAOResponse,
 )
-from negmas.helpers import humanize_time
 from scml.oneshot.agents import (
-    GreedyOneShotAgent,
-    GreedySingleAgreementAgent,
     GreedySyncAgent,
-    OneshotDoNothingAgent,
-    RandomOneShotAgent,
-    SingleAgreementAspirationAgent,
-    SingleAgreementRandomAgent,
-    SyncRandomOneShotAgent,
 )
-from scml.scml2020 import SCML2020Agent
 
 # required for development
-from scml.scml2020.agents import (
-    BuyCheapSellExpensiveAgent,
-    DecentralizingAgent,
-    DoNothingAgent,
-    MarketAwareBuyCheapSellExpensiveAgent,
-)
 from scml.scml2020.common import QUANTITY, UNIT_PRICE
-from scml.utils import anac2020_collusion, anac2020_std, anac2021_oneshot
-from scml.scml2020.world import Failure
-from tabulate import tabulate
 
 __all__ = [
     "PDPSyncAgent",
@@ -229,12 +201,8 @@ class PDPSyncAgent(GreedySyncAgent):
 
         input_sorted_offers = sorted(offers.values(), key=lambda x: x[UNIT_PRICE])
         output_sorted_offers = sorted(offers.values(), key=lambda x: -x[UNIT_PRICE])
-        check_input = knapsack_agent(
-            t_input, input_offers, my_input_needs, n_input, False
-        )
-        check_output = knapsack_agent(
-            t_output, output_offers, my_output_needs, n_output, True
-        )
+        knapsack_agent(t_input, input_offers, my_input_needs, n_input, False)
+        knapsack_agent(t_output, output_offers, my_output_needs, n_output, True)
         input_idxs = calc_items_idxs(
             t_input, input_sorted_offers, my_input_needs, n_input
         )

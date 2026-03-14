@@ -1,16 +1,13 @@
 import itertools
 from abc import ABC
 from collections import defaultdict
-from typing import Any, Optional, Union
+from typing import Optional, Union
 
 from negmas import (
-    Breach,
     Contract,
     LinearUtilityFunction,
     MechanismState,
-    Negotiator,
     NegotiatorMechanismInterface,
-    RenegotiationRequest,
     ResponseType,
     SAONegotiator,
     SAOResponse,
@@ -20,11 +17,9 @@ from negmas import (
 from negmas.outcomes import Outcome
 from scml import (
     AWI,
-    ExecutionRatePredictionStrategy,
     FixedERPStrategy,
     IndependentNegotiationsManager,
     PredictionBasedTradingStrategy,
-    ProductionStrategy,
     SCML2020Agent,
     SupplyDrivenProductionStrategy,
 )
@@ -145,7 +140,9 @@ class GentleS(LearningAgent, ABC):
             self.get_nmi(negotiator_id), state, offer[QUANTITY]
         )
 
-        self._record_information({shorten_name(negotiator_id): offer}, True)  # offerの保存
+        self._record_information(
+            {shorten_name(negotiator_id): offer}, True
+        )  # offerの保存
 
         # デバッグ用
         # if self.nego_info["negotiation_step"] == 19:
@@ -186,7 +183,7 @@ class GentleS(LearningAgent, ABC):
         # offer a price that is around th of your best possible price
 
         # パラメタの設定
-        name = ami.annotation["buyer"] if is_selling else ami.annotation["seller"]
+        ami.annotation["buyer"] if is_selling else ami.annotation["seller"]
         success_agreements = opponent_agreements(
             ami, is_selling, self.success_contracts
         )
@@ -307,7 +304,7 @@ class GentleS(LearningAgent, ABC):
         mn = ami.issues[UNIT_PRICE].min_value
         mx = ami.issues[UNIT_PRICE].max_value
         is_selling = self._is_selling(ami)
-        name = ami.annotation["buyer"] if is_selling else ami.annotation["seller"]
+        ami.annotation["buyer"] if is_selling else ami.annotation["seller"]
 
         if self._is_selling(ami):
             partner = ami.annotation["buyer"]
@@ -355,7 +352,7 @@ class GentleS(LearningAgent, ABC):
 
     def _opp_concession_rate_change(self, name: str):
         """相手の譲歩の変化率を計算"""
-        ami = self.get_nmi(name)
+        self.get_nmi(name)
         offers = [
             _
             for _ in self.opp_offer_list[shorten_name(name)]
@@ -436,7 +433,6 @@ class LearningSyncAgent(OneShotSyncAgent, GentleS, ABC):
 
     def counter_all(self, offers, states):
         """Respond to a set of offers given the negotiation state of each."""
-        SECURED_MAGNIFICATION = 1.2
 
         # print_log("step", [_.step for _ in states.values()])
         # print_log("offers", offers.keys())
@@ -467,7 +463,7 @@ class LearningSyncAgent(OneShotSyncAgent, GentleS, ABC):
             zip(offers.values(), is_selling, offers.keys()),
             key=lambda x: (-x[0][UNIT_PRICE]) if x[1] else x[0][UNIT_PRICE],
         )
-        secured, outputs, chosen = 0, [], dict()
+        secured, _outputs, _chosen = 0, [], dict()
         for i, k in enumerate(offers.keys()):
             offer, is_output, name = sorted_offers[i]
             response = GentleS.respond(self, name, states[name])
@@ -572,9 +568,7 @@ class LearningSyncAgent(OneShotSyncAgent, GentleS, ABC):
 
         # min_utilityを決定
         do_nothing_util = self.ufun.from_offers([], [])
-        tp_util = self.ufun.from_offers(
-            [(my_need, 0, self.awi.trading_prices[1])], [is_selling]
-        )
+        self.ufun.from_offers([(my_need, 0, self.awi.trading_prices[1])], [is_selling])
         mn = do_nothing_util
         min_utility = min(
             max_utility * (1 - self._range_slack),

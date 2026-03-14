@@ -1,36 +1,13 @@
-import functools
-from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Tuple, Union
-
 import numpy as np
 from negmas import (
-    AgentMechanismInterface,
     AspirationNegotiator,
-    Contract,
-    Issue,
-    Negotiator,
     ResponseType,
-    SAONegotiator,
-    ToughNegotiator,
 )
 from negmas.common import PreferencesChange, PreferencesChangeType
 from negmas.helpers import get_class
-from scipy.stats import linregress
-from scml.scml2020 import (
-    AWI,
-    Failure,
-    MovingRangeNegotiationManager,
-    SCML2020Agent,
-    SCML2020World,
-    SupplyDrivenProductionStrategy,
-    TradingStrategy,
-)
 from scml.scml2020.components.negotiation import (
-    IndependentNegotiationsManager,
-    NegotiationManager,
     StepNegotiationManager,
 )
-from scml.scml2020.services.controllers import StepController
 from sklearn.linear_model import LinearRegression
 
 
@@ -79,7 +56,7 @@ class MyNegotiationManager(StepNegotiationManager):
         *args,
         negotiator_type=ModifiedAspirationAgent,
         negotiator_params=None,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(*args, **kwargs)
 
@@ -150,7 +127,6 @@ class MyNegotiationManager(StepNegotiationManager):
             return
         quantity = c.secured
         target = c.target
-        time_range = info.time_range
         if is_seller:
             controllers = self.sellers
         else:
@@ -168,9 +144,6 @@ class MyNegotiationManager(StepNegotiationManager):
 
         self.inputs_needed[:-1] = self.expected_outputs[1:]
         self.outputs_needed[1:] = self.expected_inputs[:-1]
-
-        current_state = self.awi.current_step
-        total_state = self.awi.n_steps
 
     def register_negotiation_bids(self, aid, bid_tuple):
         agent_dir = (

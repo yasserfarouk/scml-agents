@@ -1,4 +1,3 @@
-import math
 import random
 from itertools import combinations
 from typing import *
@@ -6,22 +5,14 @@ from typing import *
 # from .negotiation_control_strategy import *
 # from .trading_strategy import *
 import numpy as np
-from negmas import AspirationNegotiator, LinearUtilityFunction, MappingUtilityFunction
+from negmas import AspirationNegotiator, MappingUtilityFunction
 from scml.scml2020 import (
     NO_COMMAND,
     QUANTITY,
     TIME,
     UNIT_PRICE,
-    DecentralizingAgent,
     SCML2020Agent,
 )
-from scml.scml2020.components.negotiation import IndependentNegotiationsManager
-from scml.scml2020.components.production import (
-    DemandDrivenProductionStrategy,
-    SupplyDrivenProductionStrategy,
-    TradeDrivenProductionStrategy,
-)
-from scml.scml2020.components.trading import PredictionBasedTradingStrategy
 
 __all__ = ["AgentVSC"]
 
@@ -33,7 +24,7 @@ MIN_INVENTORY = 5
 - 入荷品を一つ以上獲得するまでは自身が売り手となる交渉には参加しない
 - (入荷品の平均単価+生産コスト)が出荷品の市場価格を超える場合
     - 入荷品の市場価格 < 入荷品の平均単価：入荷のための交渉のprice_range=[1,(出荷品の市場価格-生産コスト)]
-    - 
+    -
 """
 
 
@@ -219,7 +210,9 @@ class AgentVSC(SCML2020Agent):
 
             random.shuffle(candidates)
 
-            signed_combination = candidates[0]  # 後でもうちょっとちゃんと選ぶように改良する
+            signed_combination = candidates[
+                0
+            ]  # 後でもうちょっとちゃんと選ぶように改良する
             # 署名する売りの契約の組み合わせの候補(candidates)から，相手の署名率*契約単価を最大化する契約の組み合わせを選択
             # val = sum([contract.agreement["unit_price"]*self.opp_sign_rates[1][contract.annotation['buyer']] for contract in signed_combination])
             max_up = max(
@@ -442,7 +435,9 @@ class AgentVSC(SCML2020Agent):
                 self.max_inventory -= 1
         else:
             if self.awi.current_step <= self.awi.n_steps - MAX_INVENTORY / 5:
-                self.max_inventory -= 5  # 在庫がmax_inventory個を超えたら買いの交渉には参加しない
+                self.max_inventory -= (
+                    5  # 在庫がmax_inventory個を超えたら買いの交渉には参加しない
+                )
 
         # Request Buying
 
@@ -665,7 +660,7 @@ class AgentVSC(SCML2020Agent):
                 or x[UNIT_PRICE] < self.p_min_for_selling
                 else (
                     x[UNIT_PRICE]
-                    if issues == None
+                    if issues is None
                     else (
                         x[UNIT_PRICE]
                         if issues[QUANTITY].max_value == issues[QUANTITY].min_value
@@ -696,7 +691,7 @@ class AgentVSC(SCML2020Agent):
                 or self.p_max_for_buying < x[UNIT_PRICE]
                 else (
                     self.p_max_for_buying - x[UNIT_PRICE]
-                    if issues == None
+                    if issues is None
                     else (
                         self.p_max_for_buying - x[UNIT_PRICE]
                         if issues[TIME].max_value == issues[TIME].min_value
@@ -742,9 +737,9 @@ class AgentVSC(SCML2020Agent):
                         if sum(self.step_input_quantities) > 0
                         else self.awi.catalog_prices[self.awi.my_input_product]
                     )
-                    self.my_friends[self.id][
-                        "step_input_quantities"
-                    ] = self.step_input_quantities
+                    self.my_friends[self.id]["step_input_quantities"] = (
+                        self.step_input_quantities
+                    )
                 elif contract.annotation["seller"] == self.id:
                     old_total_q = sum(self.step_output_quantities)
                     self.step_output_quantities[t] -= q
@@ -754,6 +749,6 @@ class AgentVSC(SCML2020Agent):
                         if sum(self.step_output_quantities) > 0
                         else self.awi.catalog_prices[self.awi.my_output_product]
                     )
-                    self.my_friends[self.id][
-                        "step_output_quantities"
-                    ] = self.step_output_quantities
+                    self.my_friends[self.id]["step_output_quantities"] = (
+                        self.step_output_quantities
+                    )

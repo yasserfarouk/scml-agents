@@ -672,9 +672,8 @@ class FromScratchAgent(SCML2020Agent):
         cancelled: List["Contract"],
         rejectors: List[List[str]],
     ) -> None:
-        awi: AWI = self.awi
         for contract in signed:
-            t, p, q = (
+            _t, p, q = (
                 contract.agreement["time"],
                 contract.agreement["unit_price"],
                 contract.agreement["quantity"],
@@ -712,7 +711,7 @@ class ProactiveFromScratch(FromScratchAgent):
         super().on_contracts_finalized(signed, cancelled, rejectors)
         awi: AWI = self.awi
         for contract in signed:
-            t, p, q = (
+            t, _p, q = (
                 contract.agreement["time"],
                 contract.agreement["unit_price"],
                 contract.agreement["quantity"],

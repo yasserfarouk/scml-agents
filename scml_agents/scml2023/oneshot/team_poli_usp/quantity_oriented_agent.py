@@ -60,7 +60,7 @@ class QuantityOrientedAgent(OneShotAgent):
         offer = state.current_offer
         if not offer:
             return ResponseType.REJECT_OFFER
-        ami = self.get_nmi(negotiator_id)
+        self.get_nmi(negotiator_id)
         step = state.step
         my_needs = self._needed(negotiator_id)
         if my_needs <= 0:
@@ -85,7 +85,7 @@ class QuantityOrientedAgent(OneShotAgent):
         ami = self.get_nmi(negotiator_id)
         if not ami:
             return None
-        quantity_issue = ami.issues[QUANTITY]
+        ami.issues[QUANTITY]
         unit_price_issue = ami.issues[UNIT_PRICE]
         offer = [-1] * 3
         if my_needs <= 5:
@@ -107,7 +107,7 @@ class QuantityOrientedAgent(OneShotAgent):
         ami = self.get_nmi(negotiator_id)
         if not ami:
             return None
-        quantity_issue = ami.issues[QUANTITY]
+        ami.issues[QUANTITY]
         unit_price_issue = ami.issues[UNIT_PRICE]
         offer = [-1] * 3
         if step <= 3:
@@ -120,11 +120,11 @@ class QuantityOrientedAgent(OneShotAgent):
 
         offer[TIME] = self.awi.current_step
         if self._is_selling(ami):
-            offer[
-                UNIT_PRICE
-            ] = unit_price_issue.min_value  # Offers the best value FOR THE BUYER!!!
+            offer[UNIT_PRICE] = (
+                unit_price_issue.min_value
+            )  # Offers the best value FOR THE BUYER!!!
         else:
-            offer[
-                UNIT_PRICE
-            ] = unit_price_issue.max_value  # Offers the best value FOR THE SELLER!!!
+            offer[UNIT_PRICE] = (
+                unit_price_issue.max_value
+            )  # Offers the best value FOR THE SELLER!!!
         return tuple(offer)

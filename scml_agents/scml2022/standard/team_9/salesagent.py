@@ -33,7 +33,7 @@ To test this template do the following:
 On Linux/Mac:
     >> source .venv/bin/activate
 On Windows:
-    >> \.venv\Scripts\activate.bat
+    >> \\.venv\\Scripts\activate.bat
 
 3. Update pip just in case (recommended)
 
@@ -56,33 +56,28 @@ You should see a short tournament running and results reported.
 
 from __future__ import annotations
 
-# required for typing
-from typing import Any, Dict, List, Optional
-
 # required for development
 # required for running the test tournament
 import time
-from negmas.helpers import humanize_time
+
+# required for typing
+from typing import List, Optional
+
 from negmas import Contract
-import numpy as np
-from abc import abstractmethod
 from scml import ANY_LINE, is_system_agent
-from scml.scml2020 import QUANTITY, TIME, UNIT_PRICE, Failure, SCML2020Agent
+from scml.scml2020 import SCML2020Agent
 from scml.scml2020.agents import (
     DecentralizingAgent,
     MarketAwareIndependentNegotiationsAgent,
 )
 from scml.scml2020.components.negotiation import (
     StepNegotiationManager,
-    NegotiationManager,
 )
 from scml.scml2020.components.production import (
     SupplyDrivenProductionStrategy,
-    ProductionStrategy,
 )
 from scml.scml2020.components.trading import PredictionBasedTradingStrategy
-from scml.utils import anac2022_collusion, anac2022_std, anac2022_oneshot
-from tabulate import tabulate
+from scml.utils import anac2022_collusion, anac2022_oneshot, anac2022_std
 
 __all__ = [
     "SalesAgent",
@@ -142,9 +137,7 @@ class MyTradingStrategy(PredictionBasedTradingStrategy):
                 (is_seller and u < catalog_sell and t <= self.awi.n_steps * 0.5)
                 or (  # change 0.5->1
                     # The second half lowers the allowable price.
-                    is_seller
-                    and u < 0.5 * catalog_sell
-                    and t > self.awi.n_steps * 0.5
+                    is_seller and u < 0.5 * catalog_sell and t > self.awi.n_steps * 0.5
                 )
                 or (not is_seller and u > catalog_buy)  # change 1.5->1
             ):
@@ -245,7 +238,7 @@ def run(
         DecentralizingAgent,
         MarketAwareIndependentNegotiationsAgent,
     ]
-    start = time.perf_counter()
+    time.perf_counter()
     if competition == "std":
         results = anac2022_std(
             competitors=competitors,

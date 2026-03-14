@@ -7,32 +7,31 @@ LitaAgentCIR — 库存敏感型统一策略（SDK 对接版）
 =================================================
 """
 
+import math
+import os
+import random
 from copy import deepcopy
-from typing import Dict, List, Tuple, Optional  # Added Optional
-
-from .inventory_manager_cir import (
-    InventoryManagerCIR,
-    IMContract,
-    IMContractType,
-    MaterialType,
-)
 
 # ------------------ 基础依赖 ------------------
 from itertools import combinations as iter_combinations  # Added for combinations
-import random
-import os
-import math
+from typing import Dict, List, Optional, Tuple  # Added Optional
 from uuid import uuid4
 
-
+from negmas import Contract, Outcome, ResponseType, SAOResponse, SAOState
 from scml.std import (
-    StdSyncAgent,
-    StdAWI,
-    TIME,
     QUANTITY,
+    TIME,
     UNIT_PRICE,
+    StdAWI,
+    StdSyncAgent,
 )
-from negmas import SAOState, SAOResponse, Outcome, Contract, ResponseType
+
+from .inventory_manager_cir import (
+    IMContract,
+    IMContractType,
+    InventoryManagerCIR,
+    MaterialType,
+)
 
 # 内部工具 & manager
 
@@ -700,7 +699,7 @@ class LitaAgentCIR(StdSyncAgent):
                     )
                 else:
                     offer_details_str_list.append(f"NID({nid}):NullOutcome")
-            offers_str = (
+            (
                 ", ".join(offer_details_str_list)
                 if offer_details_str_list
                 else "No offers in combo"
@@ -902,7 +901,7 @@ class LitaAgentCIR(StdSyncAgent):
                     ):
                         best_combination_items = current_combination_list_of_tuples
         if os.path.exists("env.test") and best_combination_items:
-            best_combo_nids_str = [item[0] for item in best_combination_items]
+            [item[0] for item in best_combination_items]
             pass  # print(f"Debug ({self.id} @ {awi.current_step}): ExhaustiveSearch Best Combo (by NormScore): NIDs: {best_combo_nids_str}, "\
         # f"NormScore: {highest_norm_score:.3f}")
         elif os.path.exists("env.test"):
@@ -956,7 +955,7 @@ class LitaAgentCIR(StdSyncAgent):
                     ):
                         best_combination_items = current_combination_list_of_tuples
         if os.path.exists("env.test") and best_combination_items:
-            best_combo_nids_str = [item[0] for item in best_combination_items]
+            [item[0] for item in best_combination_items]
             pass  # print(f"Debug ({self.id} @ {awi.current_step}): K-Max Best Combo (by NormScore): NIDs: {best_combo_nids_str}, "\
         # f"NormScore: {highest_norm_score:.3f}")
         elif os.path.exists("env.test"):
@@ -1101,7 +1100,7 @@ class LitaAgentCIR(StdSyncAgent):
 
         if final_best_combo_dict:
             if os.path.exists("env.test"):
-                best_combo_nids_str = list(final_best_combo_dict.keys())
+                list(final_best_combo_dict.keys())
                 pass  # print(f"Debug ({self.id} @ {awi.current_step}): BeamSearch Best Combo (by NormScore): NIDs: {best_combo_nids_str}, "\
                 # f"NormScore: {final_best_norm_score:.3f}")
             return list(final_best_combo_dict.items()), final_best_norm_score
@@ -1148,10 +1147,9 @@ class LitaAgentCIR(StdSyncAgent):
         best_norm_score = current_norm_score
 
         temp = self.sa_initial_temp
-        iterations_done = 0
 
         for i in range(self.sa_iterations):
-            iterations_done = i + 1
+            i + 1
             if temp < 1e-3:
                 break
 
@@ -1265,7 +1263,7 @@ class LitaAgentCIR(StdSyncAgent):
 
         if os.path.exists("env.test"):
             if best_solution_dict:
-                best_combo_nids_str = list(best_solution_dict.keys())
+                list(best_solution_dict.keys())
                 pass  # print(f"Debug ({self.id} @ {self.awi.current_step}): SA Best Combo (by NormScore): NIDs: {best_combo_nids_str}, "\
             # f"NormScore: {best_norm_score:.3f} (Iterations: {iterations_done})")
             else:
@@ -1331,7 +1329,7 @@ class LitaAgentCIR(StdSyncAgent):
                 )
             )
             if os.path.exists("env.test"):
-                best_combo_nids_str = [item[0] for item in best_combination_items]
+                [item[0] for item in best_combination_items]
                 pass  # print(f"Debug ({self.id} @ {awi.current_step}): Final Best Combo (Strategy: {self.combo_evaluation_strategy}): "\
                 # f"NIDs: {best_combo_nids_str}, NormScore: {best_norm_score:.3f}, Calculated NormProfit: {norm_profit_of_best:.3f}")
             return best_combination_items, best_norm_score, norm_profit_of_best
@@ -1479,15 +1477,9 @@ class LitaAgentCIR(StdSyncAgent):
 
         # Heuristic parameters
         # 启发式参数
-        epsilon_qty_change = 0.10
-        price_concession_inventory_time_change = 0.01  # Smaller concession specifically for time change if it improves score / 如果能提高分数，为时间变化提供较小的让步
-        price_concession_inventory_qty_change = 0.02
-        price_target_profit_opt = 0.05
 
         # --- Store initial proposed quantity and price before time evaluation ---
         # --- 在时间评估前存储初始提议的数量和价格 ---
-        temp_q_for_time_eval = orig_q
-        temp_p_for_time_eval = orig_p
 
         if optimize_for_inventory:
             # Quantity adjustment logic (applied before time evaluation for simplicity in this version)
@@ -1647,7 +1639,6 @@ class LitaAgentCIR(StdSyncAgent):
         for nid in offers.keys():
             responses[nid] = SAOResponse(ResponseType.REJECT_OFFER, None)
         current_day = self.awi.current_step
-        total_steps = self.awi.n_steps
         time_decay_factor = self.threshold_time_decay_factor**current_day
         dynamic_p_threshold = self.p_threshold * time_decay_factor
         dynamic_q_threshold = self.q_threshold * time_decay_factor
@@ -1658,7 +1649,7 @@ class LitaAgentCIR(StdSyncAgent):
         )
 
         if os.path.exists("env.test"):
-            nids_in_best_str = (
+            (
                 [item[0] for item in best_combination_items]
                 if best_combination_items
                 else "None"
@@ -1934,7 +1925,7 @@ class LitaAgentCIR(StdSyncAgent):
         current_day = self.awi.current_step
         horizon_days = min(10, self.awi.n_steps - current_day)
         header = "|   日期    |  原料真库存  |  原料预计库存   | 计划生产  |  剩余产能  |  产品真库存  |  产品预计库存  |  已签署销售量  |  实际产品交付  |"
-        separator = "|" + "-" * (len(header) + 24) + "|"
+        "|" + "-" * (len(header) + 24) + "|"
 
         pass  # print("\n📊 每日状态报告")
         pass  # print(separator)
@@ -1951,17 +1942,17 @@ class LitaAgentCIR(StdSyncAgent):
                 forecast_day, MaterialType.PRODUCT
             )
 
-            raw_current_stock = raw_summary.get("current_stock", 0)
-            raw_estimated = raw_summary.get("estimated_available", 0)
+            raw_summary.get("current_stock", 0)
+            raw_summary.get("estimated_available", 0)
 
-            product_current_stock = product_summary.get("current_stock", 0)
-            product_estimated = product_summary.get("estimated_available", 0)
+            product_summary.get("current_stock", 0)
+            product_summary.get("estimated_available", 0)
 
             # 计划生产量 - CustomIM stores production_plan as Dict[day, qty]
-            planned_production = self.im.production_plan.get(forecast_day, 0)
+            self.im.production_plan.get(forecast_day, 0)
 
             # 剩余产能
-            remaining_capacity = self.im.get_available_production_capacity(forecast_day)
+            self.im.get_available_production_capacity(forecast_day)
 
             # 已签署的销售合同数量 - CustomIM stores these in self.pending_demand_contracts
             signed_sales = 0
@@ -1973,18 +1964,13 @@ class LitaAgentCIR(StdSyncAgent):
             # Delivered products might not be directly in result dict from CustomIM.
             # This was from the old IM. Let's assume 0 for now or get from CustomIM if it provides this.
             # For simplicity, let's show 0 if not available in result.
-            delivered_today = (
+            (
                 result.get("delivered_products", 0)
                 if isinstance(result, dict) and day_offset == 0
                 else 0
             )
 
             # 格式化并输出
-            day_str = (
-                f"{forecast_day} (T+{day_offset})"
-                if day_offset == 0
-                else f"{forecast_day} (T+{day_offset})"
-            )
             pass  # print(f"| {day_str:^6} | {raw_current_stock:^10} | {raw_estimated:^12} | {planned_production:^8} | {remaining_capacity:^8} | {product_current_stock:^10} | {product_estimated:^12} | {signed_sales:^12} | {delivered_today:^12} |")
 
         pass  # print(separator)

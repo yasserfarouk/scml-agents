@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from .team_may import *
 from .bossagent import *
+from .team_may import *
 
 __all__ = team_may.__all__ + bossagent.__all__

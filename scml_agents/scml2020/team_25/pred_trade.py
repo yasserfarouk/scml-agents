@@ -1,10 +1,8 @@
-from pprint import pformat
 from typing import List, Optional
 
-import numpy as np
 from negmas import Contract
 from scml.scml2020.common import ANY_LINE, is_system_agent
-from scml.scml2020.components import FixedTradePredictionStrategy, SignAllPossible
+from scml.scml2020.components import FixedTradePredictionStrategy
 from scml.scml2020.components.prediction import MeanERPStrategy
 from scml.scml2020.components.trading import TradingStrategy
 
@@ -52,7 +50,7 @@ class ConsumeDrivenPredictionBasedTradingStrategy(
             if contract.annotation["caller"] == self.id:
                 continue
             is_seller = contract.annotation["seller"] == self.id
-            q, u, t = (
+            q, _u, t = (
                 contract.agreement["quantity"],
                 contract.agreement["unit_price"],
                 contract.agreement["time"],
@@ -102,7 +100,7 @@ class ConsumeDrivenPredictionBasedTradingStrategy(
         s = self.awi.current_step
         for contract, indx in contracts:
             is_seller = contract.annotation["seller"] == self.id
-            q, u, t = (
+            q, _u, t = (
                 contract.agreement["quantity"],
                 contract.agreement["unit_price"],
                 contract.agreement["time"],
@@ -139,7 +137,7 @@ class ConsumeDrivenPredictionBasedTradingStrategy(
 
     def _format(self, c: Contract):
         return (
-            f"{f'>' if c.annotation['seller'] == self.id else '<'}"
+            f"{'>' if c.annotation['seller'] == self.id else '<'}"
             f"{c.annotation['buyer'] if c.annotation['seller'] == self.id else c.annotation['seller']}: "
             f"{c.agreement['quantity']} of {c.annotation['product']} @ {c.agreement['unit_price']} on {c.agreement['time']}"
         )

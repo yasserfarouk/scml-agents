@@ -5,19 +5,23 @@ import argparse
 import importlib
 import os
 import sys
-from scml.std import *
+
+# FutureWarningを無視する設定
+import warnings
+
 from scml.runner import WorldRunner
+from scml.std import *
 
 # tqdmによる進捗バー表示のためのインポート
 from tqdm import tqdm
 
-# FutureWarningを無視する設定
-import warnings
-warnings.simplefilter(action='ignore', category=FutureWarning)
+warnings.simplefilter(action="ignore", category=FutureWarning)
 
 # コマンドライン引数の設定（エージェントクラス名を受け取る）
 parser = argparse.ArgumentParser(description="Run SCML simulation with specified agent")
-parser.add_argument("agent_class", type=str, help="Agent class name in myagent module (e.g., SotaAgent)")
+parser.add_argument(
+    "agent_class", type=str, help="Agent class name in myagent module (e.g., SotaAgent)"
+)
 args = parser.parse_args()
 
 # 上位ディレクトリをパスに追加してmyagentパッケージをインポート可能にする
@@ -25,7 +29,9 @@ sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 # myagent配下のすべてのモジュールからエージェントクラスを検索する準備
 import pkgutil
+
 import master_sota_agent
+
 
 # 指定された名前のエージェントクラスをmyagent内のどこかから探して取得する関数
 def find_agent_class(agent_class_name):
@@ -33,7 +39,10 @@ def find_agent_class(agent_class_name):
         module = importlib.import_module(f"master_sota_agent.{module_name}")
         if hasattr(module, agent_class_name):
             return getattr(module, agent_class_name)
-    raise ImportError(f"Agent class '{agent_class_name}' not found in any myagent module.")
+    raise ImportError(
+        f"Agent class '{agent_class_name}' not found in any myagent module."
+    )
+
 
 AgentClass = find_agent_class(args.agent_class)
 
@@ -69,4 +78,4 @@ plots_fig.savefig(os.path.join(output_dir, "plots_fig.png"))
 stats_fig.savefig(os.path.join(output_dir, "stats_fig.png"))
 
 # シミュレーション結果のスコアを出力
-pass # print(single_agent_runner.score_summary())
+pass  # print(single_agent_runner.score_summary())

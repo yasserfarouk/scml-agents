@@ -58,16 +58,11 @@ You should see a short tournament running and results reported.
 import time
 
 # required for typing
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
-import numpy as np
 from negmas import (
     AgentMechanismInterface,
-    Breach,
-    Contract,
-    Issue,
     MechanismState,
-    Negotiator,
     ResponseType,
 )
 from negmas.helpers import humanize_time
@@ -185,16 +180,15 @@ class Agent74(OneShotAgent):
         if not nmi:
             return None
 
-        inStock = self._MySecuredBuys - self._MySecuredSells
+        self._MySecuredBuys - self._MySecuredSells
         isQuantityOK = False
         isPriceOK = False
         quantityToOffer = 0
         isSelling = self._is_selling(nmi)
-        role = ""
         if isSelling:
-            role = "Selling"
+            pass
         else:
-            role = "Buying"
+            pass
 
         # self._outFile.write(f"\nOffer received!!! - {role}. cur step={state.step}, max steps={nmi.n_steps}, Neg ID={negotiator_id}\n")
         # self._outFile.write(f"Offer quantity={offer[QUANTITY]}, Offer price={offer[UNIT_PRICE]}, Offer time={offer[TIME]}\n")
@@ -372,7 +366,6 @@ class Agent74(OneShotAgent):
         self._maxAllowedInStock = 2
         self._e = 0.4
         # self._InStockQuantityByPrice = {}
-        myBalance = self.awi.current_balance
 
         # self._outFile.write(f"Total Products={self.awi.n_products}, Total Competitors={self.awi.n_competitors}\n")
         # self._outFile.write(f"My production cost={self._MyProductionCost}, number of lines={self.awi.n_lines}\n")
@@ -401,10 +394,6 @@ class Agent74(OneShotAgent):
             False, 1.0
         )
         # self._InStockQuantityByPrice.clear()
-
-        input_product = self.awi.my_input_product
-        output_product = self.awi.my_output_product
-        myBalance = self.awi.current_balance
 
         # self._outFile.write(f"\nStep {self.awi.current_step}: My storage cost={self._MyStorageCost}, My delivery penalty={self._MyDeliveryPenalty}\n")
         # self._outFile.write(f"Input product={input_product}, Output product={output_product},Is First={self.awi.is_first_level}, Is Middle={self.awi.is_middle_level}, Is Last={self.awi.is_last_level}, Ex input={self.awi.current_exogenous_input_quantity}, ex output={self.awi.current_exogenous_output_quantity}, ex input price={self.awi.current_exogenous_input_price}, ex output price={self.awi.current_exogenous_output_price}\n")
@@ -444,11 +433,10 @@ class Agent74(OneShotAgent):
             )  # Calculate new average
             # self.removeItemsFromStock(quantity, unit_price)
 
-        role = ""
         if contract.annotation["product"] == self.awi.my_input_product:
-            role = "Buying"
+            pass
         else:
-            role = "Selling"
+            pass
 
         # self._outFile.write(f"\nNegotiation success!!! - {role}\n")
         # self._outFile.write(f"Input product={self.awi.my_input_product}, Output product={self.awi.my_output_product}\n")
@@ -477,8 +465,6 @@ class Agent74(OneShotAgent):
         inStock = self._MySecuredBuys - self._MySecuredSells
 
         if self.awi.is_middle_level:  # My agent is Mid level (It both buys and sells)
-            summary = self.awi.exogenous_contract_summary
-
             # The amount I want to buy or sell is the minimum amount of total buys/sells for the current step
             # n = min(summary[0][0], summary[-1][0])
             # return n - self._MySecuredBuys, n - self._MySecuredSells

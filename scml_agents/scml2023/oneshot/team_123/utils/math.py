@@ -1,6 +1,6 @@
-from typing import TypeVar, Iterable
-from itertools import combinations, chain
 import random
+from itertools import chain, combinations
+from typing import Iterable, TypeVar
 
 T = TypeVar("T")
 

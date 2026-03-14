@@ -3,25 +3,21 @@ from typing import Any, Dict, List, Optional
 import numpy as np
 from negmas import (
     AgentMechanismInterface,
-    Breach,
     Contract,
     Issue,
     LinearUtilityFunction,
-    MechanismState,
     Negotiator,
     ResponseType,
 )
-from negmas.sao import RandomNegotiator, SAONegotiator
+from negmas.sao import RandomNegotiator
 
 # required for development
 from scml import SupplyDrivenProductionStrategy
 
 # from negmas.helpers import humanize_time
-from scml.scml2020 import Failure, SCML2020Agent
-from scml.scml2020.agents import DecentralizingAgent
+from scml.scml2020 import SCML2020Agent
 from scml.scml2020.common import QUANTITY, TIME, UNIT_PRICE
 from scml.scml2020.components import IndependentNegotiationsManager
-from scml.utils import anac2020_collusion, anac2020_std
 
 # from tabulate import tabulate
 
@@ -263,7 +259,6 @@ class MMM(StdAgent):
         annotation: Dict[str, Any],
         mechanism: AgentMechanismInterface,
     ) -> Optional[Negotiator]:
-
         qmax, qmin = issues[QUANTITY].max_value, issues[QUANTITY].min_value
         tmax, tmin = issues[TIME].max_value, issues[TIME].min_value
         umax, umin = issues[UNIT_PRICE].max_value, issues[UNIT_PRICE].min_value

@@ -1,37 +1,18 @@
 # required for running tournaments and printing
-import math
-import random
 
 # required for running tournaments and printing
-import time
 from collections import defaultdict
-from pprint import pprint
 
 # required for typing
 # required for typing
-from typing import Any, Dict, List, Optional
-
-import numpy as np
-from matplotlib import pyplot as plt
 from negmas import (
-    AgentMechanismInterface,
-    Breach,
-    Contract,
-    Issue,
-    MechanismState,
-    Negotiator,
     ResponseType,
 )
-from negmas.helpers import humanize_time
 
 # required for development
 # from pandas._libs.internals import defaultdict
 from scml.oneshot import *
 from scml.oneshot import OneShotAgent
-from scml.oneshot.agents import RandomOneShotAgent, SyncRandomOneShotAgent
-from scml.scml2020 import is_system_agent
-from scml.utils import anac2021_collusion, anac2021_oneshot, anac2021_std
-from tabulate import tabulate
 
 __all__ = [
     "SimpleAgent",
@@ -206,7 +187,7 @@ class LearningAgent(AdaptiveAgent):
         opp_price_slack=0.0,
         opp_acc_price_slack=0.2,
         range_slack=0.03,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self._acc_price_slack = acc_price_slack

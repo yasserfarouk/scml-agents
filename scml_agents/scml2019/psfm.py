@@ -1,13 +1,7 @@
 from typing import (
     Any,
-    Callable,
     Collection,
-    Dict,
-    Iterable,
-    List,
     Optional,
-    Type,
-    Union,
 )
 
 import negmas
@@ -104,7 +98,7 @@ class PenaltySabotageFactoryManager(DoNothingFactoryManager):
 
     def on_new_cfp(self, cfp: CFP) -> None:
         """Called when a new CFP for a product for which the agent registered interest is published"""
-        if cfp.penalty != None and cfp.penalty >= 100:
+        if cfp.penalty is not None and cfp.penalty >= 100:
             return None
 
     def respond_to_negotiation_request(

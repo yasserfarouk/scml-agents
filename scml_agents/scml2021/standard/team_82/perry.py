@@ -1,5 +1,3 @@
-import pickle
-
 from scml import SCML2020Agent
 from scml.scml2020.agents.decentralizing import _NegotiationCallbacks
 

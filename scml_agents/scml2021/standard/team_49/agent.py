@@ -32,7 +32,6 @@ class E3BIUagent(
     SupplyDrivenProductionStrategy,
     SCML2020Agent,
 ):
-
     # =====================
     # Time-Driven Callbacks
     # =====================
@@ -112,7 +111,6 @@ class E3BIUagent(
         annotation: Dict[str, Any],
         mechanism: "AgentMechanismInterface",
     ) -> Optional["Negotiator"]:
-
         # Don't make a negotiation in case the agent has breached
         breached_agent_name = (
             annotation["buyer"] if annotation["is_buy"] else annotation["seller"]

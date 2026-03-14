@@ -1,44 +1,30 @@
 # required for running the test tournament
 import copy
-import functools
-import math
 import time
-from dataclasses import dataclass
 
 # required for typing
 from pprint import pprint
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional
 
 import matplotlib.pyplot as plt  # for graphs
 import numpy as np
 from negmas import (
     AgentMechanismInterface,
-    AspirationNegotiator,
     Breach,
     Contract,
     Issue,
     MechanismState,
     Negotiator,
-    SAONegotiator,
 )
-from negmas.helpers import get_class, humanize_time
-from scml.scml2020 import AWI, Failure, SCML2020Agent, SCML2020World
+from scml.scml2020 import Failure, SCML2020Agent, SCML2020World
 from scml.scml2020.agents import (
-    BuyCheapSellExpensiveAgent,
     DecentralizingAgent,
     IndDecentralizingAgent,
-    MovingRangeAgent,
-    RandomAgent,
 )
-from scml.scml2020.common import TIME
-from scml.scml2020.services.controllers import StepController, SyncController
 from scml.utils import anac2020_collusion, anac2020_std
-from tabulate import tabulate
 
 # from myothernegotiationmanager import NewStepNegotiationManager
-from .myindependentnegotiatonmanager import MyIndependentNegotiationManager
 from .mynegotiationmanager import MyNegotiationManager
-from .nvm_lib.nvm_lib import NVMLib
 from .utils import *
 
 __all__ = ["MontyHall"]
@@ -128,9 +114,7 @@ class MontyHall(SCML2020Agent):
         )  # Do not have more than this amount
 
         # self.plan.true_input = self.data.n_steps * [0]  # At step t, agent will have this many inputs for sure
-        self.plan.expected_input = (
-            []
-        )  # At step t, agent expects to receive this many inputs
+        self.plan.expected_input = []  # At step t, agent expects to receive this many inputs
         for i in range(self.data.last_day + 1):
             self.plan.expected_input.append(
                 BuyPlan(
@@ -148,7 +132,7 @@ class MontyHall(SCML2020Agent):
 
         input_catalog_price = self.data.catalog_price_list[self.data.input_product]
         output_catalog_price = self.data.catalog_price_list[self.data.output_product]
-        profit = output_catalog_price - (
+        output_catalog_price - (
             input_catalog_price + self.data.production_cost
         )  # Default profit
 
@@ -319,7 +303,7 @@ class MontyHall(SCML2020Agent):
         # print("RIP")
         quantity = contract.agreement["quantity"]
         unit_price = contract.agreement["unit_price"]
-        time = contract.agreement["time"]
+        contract.agreement["time"]
         if not contract.annotation["is_buy"]:  # is sell
             self.plan.available_money += quantity * unit_price
         #            self.plan.available_output -= quantity #we do this in the contracts finalized so we don't oversell
@@ -342,7 +326,7 @@ class MontyHall(SCML2020Agent):
         breach_level = breaches[0].level
         quantity = contract.agreement["quantity"]
         unit_price = contract.agreement["unit_price"]
-        time = contract.agreement["time"]
+        contract.agreement["time"]
 
         if contract.annotation[
             "is_buy"
@@ -492,7 +476,6 @@ class MontyHall(SCML2020Agent):
     # Contract Control and Feedback Helpers
 
     def _sign_sell_contracts(self, sell_contracts, available_output):
-
         assert available_output is not None, "AVAILABLE OUTPUT IS NONE ??"
 
         # returns sell contract indexes which are to be signed
@@ -511,12 +494,11 @@ class MontyHall(SCML2020Agent):
         return signed_contracts
 
     def _solve_knapsack(self, sell_contracts, dp, index, available_output):
-
         # assertion checks
         assert index >= 0, f"knapsack index negative: {index}"
-        assert (
-            available_output >= 0
-        ), f"knapsack available_output negative: {available_output}"
+        assert available_output >= 0, (
+            f"knapsack available_output negative: {available_output}"
+        )
         # "graceful" failure
         if index < 0:
             index = 0
@@ -536,7 +518,7 @@ class MontyHall(SCML2020Agent):
         quantity = sell_contracts[index][0].agreement["quantity"]
         unit_price = sell_contracts[index][0].agreement["unit_price"]
         value = unit_price * quantity  # how much is the contract worth
-        time = sell_contracts[index][0].agreement["time"]
+        sell_contracts[index][0].agreement["time"]
 
         # base case
         if index <= 0 or available_output == 0:
@@ -672,6 +654,7 @@ competitors = [
     #        RandomAgent,
 ]
 
+
 #
 def run(n_steps=52):
     """
@@ -690,7 +673,7 @@ def run(n_steps=52):
 
     """
 
-    start = time.perf_counter()
+    time.perf_counter()
     world = SCML2020World(
         **SCML2020World.generate(
             agent_types=competitors, n_steps=n_steps, n_processes=3
@@ -732,9 +715,9 @@ def run_tournament(
 
     """
 
-    start = time.perf_counter()
+    time.perf_counter()
     if competition == "std":
-        results = anac2020_std(
+        anac2020_std(
             competitors=competitors,
             verbose=True,
             n_steps=n_steps,
@@ -743,7 +726,7 @@ def run_tournament(
             n_processes=3,
         )
     elif competition == "collusion":
-        results = anac2020_collusion(
+        anac2020_collusion(
             competitors=competitors,
             verbose=True,
             n_steps=n_steps,
@@ -782,12 +765,12 @@ def run_single_session():
         "erred",
     ]
     signed[fields].sort_values(["quantity", "unit_price"], ascending=False).head(10)
-    df1 = (
+    (
         signed.loc[signed.executed, fields]
         .sort_values(["quantity", "unit_price"], ascending=False)
         .head(10)
     )
-    df2 = (
+    (
         signed.loc[signed.breached, fields[:-4] + ["breaches"]]
         .sort_values(["quantity", "unit_price"], ascending=False)
         .head(10)

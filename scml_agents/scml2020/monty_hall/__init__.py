@@ -5,6 +5,7 @@ Created on Mon May 18 14:09:59 2020
 
 @author: jtsatsaros
 """
+
 from .myagent import *
 
 MAIN_AGENT = MontyHall

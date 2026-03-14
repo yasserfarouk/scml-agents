@@ -1,18 +1,20 @@
-from .base_agent import BaseAgent
+import random
+from typing import Dict, List
+
 from negmas import (
     MechanismState,
     Outcome,
     ResponseType,
 )
-from typing import Dict, List
+from scml import QUANTITY, UNIT_PRICE
+
+from .base_agent import BaseAgent
 from .utils import (
-    td_concession_rate,
-    get_proposal,
     get_price,
+    get_proposal,
     simple_round,
+    td_concession_rate,
 )
-from scml import UNIT_PRICE, QUANTITY
-import random
 
 __all__ = ["Neko"]
 

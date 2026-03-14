@@ -3,7 +3,6 @@ from typing import List, Optional
 from negmas import Contract
 from scml import ANY_LINE, TradePredictionStrategy, TradingStrategy, is_system_agent
 
-from .MLBasedTradePredictionStrategy import MLBasedTradePredictionStrategy
 from .ModifiedERPStrategy import ModifiedERPStrategy
 
 
@@ -26,14 +25,13 @@ class MachineLearningBasedTradingStrategy(
         cancelled: List[Contract],
         rejectors: List[List[str]],
     ) -> None:
-
         super().on_contracts_finalized(signed, cancelled, rejectors)
         consumed = 0
         for contract in signed:
             if contract.annotation["caller"] == self.id:
                 continue
             is_seller = contract.annotation["seller"] == self.id
-            q, u, t = (
+            q, _u, t = (
                 contract.agreement["quantity"],
                 contract.agreement["unit_price"],
                 contract.agreement["time"],
@@ -150,7 +148,7 @@ class MachineLearningBasedTradingStrategy(
 
     def _format(self, c: Contract):
         return (
-            f"{f'>' if c.annotation['seller'] == self.id else '<'}"
+            f"{'>' if c.annotation['seller'] == self.id else '<'}"
             f"{c.annotation['buyer'] if c.annotation['seller'] == self.id else c.annotation['seller']}: "
             f"{c.agreement['quantity']} of {c.annotation['product']} @ {c.agreement['unit_price']} on {c.agreement['time']}"
         )

@@ -1,6 +1,7 @@
 """
 This file contains the template agents from http://www.yasserm.com/scml/scml2020docs/tutorials/02.develop_agent_scml2020_oneshot.html
 """
+
 from collections import defaultdict
 from pprint import pprint
 from random import random

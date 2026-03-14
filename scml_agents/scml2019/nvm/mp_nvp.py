@@ -88,7 +88,7 @@ def solve_mpnvm(
             optimal_sol = row
             if verbose:
                 print(
-                    f"it took "
+                    "it took "
                     + format(time.time() - t0, ".4f")
                     + f" seconds to find a better solution: {pandas_tuple_to_list_of_tuple(optimal_sol, T)}, "
                     f"revenue = " + format(optimal_sol_revenue, ".4f")

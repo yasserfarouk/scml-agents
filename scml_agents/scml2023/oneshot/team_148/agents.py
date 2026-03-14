@@ -1,5 +1,3 @@
-from pprint import pprint
-
 from negmas import ResponseType, SAOResponse
 from scml.oneshot import *
 from scml.scml2020 import QUANTITY, TIME, UNIT_PRICE

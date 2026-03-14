@@ -1,6 +1,3 @@
-from pprint import pprint
-
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from scml.scml2020 import *

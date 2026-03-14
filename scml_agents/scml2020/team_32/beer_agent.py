@@ -2,38 +2,24 @@
 **Submitted to ANAC 2020 SCML**
 Authors* Benjamin Wexler <benwex93@gmail.com> Elad <eladna812@gmail.com>
 """
+
 # required for running the test tournament
 import time
 
 # required for typing
-from typing import Any, Dict, List, Optional, Tuple
-
-import matplotlib.pyplot as plt
 import numpy as np
 from negmas import (
-    AgentMechanismInterface,
-    Breach,
-    Contract,
-    Issue,
     LinearUtilityFunction,
-    MechanismState,
-    Negotiator,
 )
 from negmas.helpers import humanize_time
-from scml.scml2020 import IndependentNegotiationsManager, SCML2020World
+from scml.scml2020 import IndependentNegotiationsManager
 from scml.scml2020.agents import (
     BuyCheapSellExpensiveAgent,
     DecentralizingAgent,
-    DoNothingAgent,
-    IndDecentralizingAgent,
-    RandomAgent,
 )
-from scml.scml2020.components import TradePredictionStrategy
 from scml.scml2020.components.production import (
     DemandDrivenProductionStrategy,
-    SupplyDrivenProductionStrategy,
 )
-from scml.scml2020.components.trading import PredictionBasedTradingStrategy
 from scml.utils import anac2020_collusion, anac2020_std
 from tabulate import tabulate
 
@@ -42,7 +28,6 @@ __all__ = ["BeerAgent"]
 
 class OurNegotiationsManager(IndependentNegotiationsManager):
     def acceptable_unit_price(self, step: int, sell: bool) -> int:
-
         # Original Decentralizing Agent
 
         # production_cost = np.max(self.awi.profile.costs[:, self.awi.my_input_product])

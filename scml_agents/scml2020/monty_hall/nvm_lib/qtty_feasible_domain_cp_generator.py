@@ -1,4 +1,3 @@
-import multiprocessing
 import os
 import time
 
@@ -27,7 +26,7 @@ def generate_domain(
     t0_saving_data = time.time()
     generate_and_save_sol_df(number_of_periods, quantities_domain_size, sols)
     print(
-        f"done saving compressed dataframe. took "
+        "done saving compressed dataframe. took "
         + format(time.time() - t0_saving_data, ".6f")
         + " seconds"
     )

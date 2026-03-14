@@ -59,37 +59,25 @@ from collections import defaultdict
 from copy import deepcopy
 
 # required for running the test tournament
-from typing import Any, Dict, List, Optional
+from typing import Optional
 
 import numpy as np
 from negmas import (
-    AgentMechanismInterface,
-    Breach,
-    Contract,
-    Issue,
     MechanismState,
-    Negotiator,
     Outcome,
     ResponseType,
-    SAOResponse,
 )
 from negmas.helpers import humanize_time
 from negmas.sao import SAONMI, SAONegotiator, SAOState
 
 # required for development
 from scml.scml2020 import (
-    DemandDrivenProductionStrategy,
-    FixedTradePredictionStrategy,
-    MeanERPStrategy,
-    MovingRangeNegotiationManager,
     PredictionBasedTradingStrategy,
     SCML2020Agent,
     SupplyDrivenProductionStrategy,
-    TradeDrivenProductionStrategy,
-    TradingStrategy,
 )
 from scml.scml2020.agents import BuyCheapSellExpensiveAgent, DecentralizingAgent
-from scml.scml2020.common import ANY_LINE, QUANTITY, TIME, UNIT_PRICE, is_system_agent
+from scml.scml2020.common import QUANTITY, TIME, UNIT_PRICE
 from scml.utils import anac2021_collusion, anac2021_oneshot, anac2021_std
 from tabulate import tabulate
 

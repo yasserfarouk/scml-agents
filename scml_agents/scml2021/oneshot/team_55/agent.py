@@ -17,18 +17,16 @@ You can access the full list of these capabilities on the documentation.
 """
 
 # required for running the test tournament
-import collections
-import logging
 import time
 
 # required for typing
 from collections import defaultdict
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 import numpy as np
 from negmas import AgentMechanismInterface, MechanismState, ResponseType
 from negmas.helpers import humanize_time
-from scml import QUANTITY, TIME, UNIT_PRICE, RandomOneShotAgent
+from scml import QUANTITY, TIME, UNIT_PRICE
 from scml.oneshot import OneShotAgent
 from scml.utils import anac2021_collusion, anac2021_oneshot, anac2021_std
 from sklearn.linear_model import LinearRegression
@@ -419,6 +417,6 @@ def run(
 
 
 if __name__ == "__main__":
-    import sys
+    pass
 
 #    run(sys.argv[1] if len(sys.argv) > 1 else "oneshot")

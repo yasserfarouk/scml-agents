@@ -8,17 +8,13 @@ the authors and the ANAC 2024 SCML.
 
 from __future__ import annotations
 
-import numpy as np
-
-from negmas import ResponseType, Outcome
-from scml.oneshot.world import SCML2024OneShotWorld as W
-from scml.oneshot import *
-
 import random
+
+from negmas import Outcome, ResponseType
+from scml.oneshot import *
 
 
 class QAgent(OneShotAgent):
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.q_table = {}

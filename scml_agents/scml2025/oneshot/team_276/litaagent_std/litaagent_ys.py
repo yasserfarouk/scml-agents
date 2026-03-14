@@ -79,34 +79,34 @@ Usage Instructions
 
 from __future__ import annotations
 
+import math
+import os
+import random
+from collections import Counter, defaultdict  # Added defaultdict / 添加了 defaultdict
+from dataclasses import dataclass
+
 # ------------------ 基础依赖 ------------------
 # Basic Dependencies
 # ------------------
-from typing import Any, Dict, List, Tuple, Iterable
-from dataclasses import dataclass
-import random
-import os
-import math
-from collections import Counter, defaultdict  # Added defaultdict / 添加了 defaultdict
+from typing import Any, Dict, Iterable, List, Tuple
 from uuid import uuid4
 
+from negmas import Contract, Outcome, ResponseType, SAOResponse, SAOState
 from numpy.random import choice as np_choice  # type: ignore
-
 from scml.std import (
-    StdSyncAgent,
-    StdAWI,
-    TIME,
     QUANTITY,
+    TIME,
     UNIT_PRICE,
+    StdAWI,
+    StdSyncAgent,
 )
-from negmas import SAOState, SAOResponse, Outcome, Contract, ResponseType
 
 # 内部工具 & manager
 # Internal Tools & Manager
 from .inventory_manager_ns import (
-    InventoryManager,
     IMContract,
     IMContractType,
+    InventoryManager,
     MaterialType,
 )
 
@@ -404,7 +404,7 @@ class LitaAgentYS(StdSyncAgent):
         )  # InventoryManager not initialized!
         # 让 IM 完成收货 / 生产 / 交付 / 规划
         # Let IM complete receiving / production / delivery / planning
-        result = self.im.process_day_operations()
+        self.im.process_day_operations()
         self.im.update_day()  # This increments self.im.current_day / 这会增加 self.im.current_day
         # —— 更新市场均价估计 ——
         # Update market average price estimates
@@ -462,8 +462,6 @@ class LitaAgentYS(StdSyncAgent):
                     d_iter
                 )  # This is net need / 这是净需求
 
-        market_avg_raw_price = self._market_material_price_avg
-
         if (
             current_day > total_days * self.h.stock_late_game_ratio
         ):  # Late game / 游戏后期
@@ -519,7 +517,6 @@ class LitaAgentYS(StdSyncAgent):
         if (
             abs(self.bargain_threshold - final_new_cheap_discount) > 1e-3
         ):  # If changed significantly / 如果变化显著
-            old_discount = self.bargain_threshold
             self.update_profit_strategy(bargain_threshold=final_new_cheap_discount)
 
     def get_avg_raw_cost_fallback(
@@ -660,25 +657,39 @@ class LitaAgentYS(StdSyncAgent):
     def _best_price(self, pid: str) -> float:
         """Gets the best possible price from NMI for a partner (min for buying, max for selling)."""
         """从NMI获取伙伴的最佳可能价格（采购取最小，销售取最大）。"""
-        issue = self.get_nmi(pid).issues[UNIT_PRICE]
+        nmi = self.get_nmi(pid)
+        if nmi is None:
+            # Fallback to trade prices if NMI not available
+            return (
+                self.awi.current_input_issues[UNIT_PRICE].min_value
+                if self._is_supplier(pid)
+                else self.awi.current_output_issues[UNIT_PRICE].max_value
+            )
+        issue = nmi.issues[UNIT_PRICE]
         return issue.min_value if self._is_supplier(pid) else issue.max_value
 
     def _is_price_too_high(self, pid: str, price: float) -> bool:
         """Checks if a price is outside the NMI acceptable range (too high for buying, too low for selling)."""
         """检查价格是否超出NMI可接受范围（采购价过高，销售价过低）。"""
-        issue = self.get_nmi(pid).issues[UNIT_PRICE]
+        nmi = self.get_nmi(pid)
+        if nmi is None:
+            return False  # Cannot determine, assume price is acceptable
+        issue = nmi.issues[UNIT_PRICE]
         if self._is_supplier(pid):  # Buying from supplier / 从供应商处采购
             return (
                 price > issue.max_value
             )  # Price is too high if it's above NMI max / 如果价格高于NMI最大值，则价格过高
         return (
             price < issue.min_value
-        )  # Selling to consumer, price is "too high" (bad for us) if below NMI min / 销售给消费者，如果价格低于NMI最小值，则价格“过高”（对我们不利）
+        )  # Selling to consumer, price is "too high" (bad for us) if below NMI min / 销售给消费者，如果价格低于NMI最小值，则价格"过高"（对我们不利）
 
     def _clamp_price(self, pid: str, price: float) -> float:
         """Clamps a price within the NMI min/max values for a partner."""
         """将价格限制在伙伴的NMI最小/最大值范围内。"""
-        issue = self.get_nmi(pid).issues[UNIT_PRICE]
+        nmi = self.get_nmi(pid)
+        if nmi is None:
+            return price  # Cannot clamp, return original price
+        issue = nmi.issues[UNIT_PRICE]
         return max(issue.min_value, min(issue.max_value, price))
 
     def _get_aspirational_target_price(
@@ -979,119 +990,130 @@ class LitaAgentYS(StdSyncAgent):
                 reason_log.append(
                     f"Near walkaway ({abs_min_price_for_current_qty_time:.2f}), opp_price ({price:.2f}) lower. Exploring Pareto."
                 )
-                qty_issue = self.get_nmi(pid).issues[QUANTITY]
-                max_possible_qty_issue = (
-                    qty_issue.max_value
-                    if isinstance(qty_issue.max_value, int)
-                    else proposed_outcome_qty * 2
-                )  # NMI max quantity or double / NMI最大数量或两倍
+                nmi = self.get_nmi(pid)
+                if nmi is None:
+                    # Cannot explore Pareto without NMI
+                    pass
+                else:
+                    qty_issue = nmi.issues[QUANTITY]
+                    max_possible_qty_issue = (
+                        qty_issue.max_value
+                        if isinstance(qty_issue.max_value, int)
+                        else proposed_outcome_qty * 2
+                    )  # NMI max quantity or double / NMI最大数量或两倍
 
-                # Try increasing quantity for a price reduction
-                # 尝试增加数量以换取价格降低
-                increased_qty = int(
-                    proposed_outcome_qty * self.h.pareto_qty_increase_ratio
-                )  # Increase by ratio
-                increased_qty = min(
-                    increased_qty, max_possible_qty_issue
-                )  # Clamp to NMI max / 限制在NMI最大值
-                additional_qty = increased_qty - proposed_outcome_qty
+                    # Try increasing quantity for a price reduction
+                    # 尝试增加数量以换取价格降低
+                    increased_qty = int(
+                        proposed_outcome_qty * self.h.pareto_qty_increase_ratio
+                    )  # Increase by ratio
+                    increased_qty = min(
+                        increased_qty, max_possible_qty_issue
+                    )  # Clamp to NMI max / 限制在NMI最大值
+                    additional_qty = increased_qty - proposed_outcome_qty
 
-                if additional_qty > 0 and not self._is_production_capacity_tight(
-                    proposed_outcome_time, additional_qty
-                ):  # If can produce more / 如果可以生产更多
-                    price_reduction_for_qty_increase = (
-                        self.h.pareto_qty_price_cut
-                    )  # Price cut when increasing qty
-                    new_price_for_larger_qty = current_calculated_price * (
-                        1 - price_reduction_for_qty_increase
-                    )
-                    if (
-                        new_price_for_larger_qty >= abs_min_price_for_current_qty_time
-                    ):  # Still profitable / 仍然盈利
-                        proposed_outcome_price = new_price_for_larger_qty
-                        proposed_outcome_qty = increased_qty
-                        reason_log.append(
-                            f"ParetoTry: Qty+ ({proposed_outcome_qty}) for Price- ({proposed_outcome_price:.2f})"
-                        )
-                elif (
-                    additional_qty > 0
-                ):  # Cannot increase quantity due to capacity / 由于产能无法增加数量
-                    reason_log.append(
-                        f"ParetoQtyIncSkip: Capacity tight for additional {additional_qty} on day {proposed_outcome_time}"
-                    )
-
-                # If quantity increase didn't work, try delaying delivery for a price reduction
-                # 如果增加数量无效，尝试延迟交货以换取价格降低
-                if not (
-                    proposed_outcome_qty > qty
-                    and proposed_outcome_price < current_calculated_price
-                ):  # If no Pareto improvement via quantity / 如果通过数量没有帕累托改进
-                    delayed_time = (
-                        proposed_outcome_time + self.h.pareto_delay_days
-                    )  # Delay by configured days
-                    time_issue = self.get_nmi(pid).issues[TIME]
-                    max_time_issue = (
-                        time_issue.max_value
-                        if isinstance(time_issue.max_value, int)
-                        else self.awi.n_steps - 1
-                    )  # NMI max time / NMI最大时间
-                    if delayed_time < min(
-                        self.awi.n_steps, max_time_issue + 1
-                    ):  # If delay is valid / 如果延迟有效
-                        price_reduction_for_delay = (
-                            self.h.pareto_delay_price_cut
-                        )  # Price cut when delaying
-                        new_price_for_delayed_delivery = current_calculated_price * (
-                            1 - price_reduction_for_delay
+                    if additional_qty > 0 and not self._is_production_capacity_tight(
+                        proposed_outcome_time, additional_qty
+                    ):  # If can produce more / 如果可以生产更多
+                        price_reduction_for_qty_increase = (
+                            self.h.pareto_qty_price_cut
+                        )  # Price cut when increasing qty
+                        new_price_for_larger_qty = current_calculated_price * (
+                            1 - price_reduction_for_qty_increase
                         )
                         if (
-                            new_price_for_delayed_delivery
+                            new_price_for_larger_qty
                             >= abs_min_price_for_current_qty_time
                         ):  # Still profitable / 仍然盈利
-                            proposed_outcome_price = new_price_for_delayed_delivery
-                            proposed_outcome_time = delayed_time
+                            proposed_outcome_price = new_price_for_larger_qty
+                            proposed_outcome_qty = increased_qty
                             reason_log.append(
-                                f"ParetoTry: Time+ ({proposed_outcome_time}) for Price- ({proposed_outcome_price:.2f})"
+                                f"ParetoTry: Qty+ ({proposed_outcome_qty}) for Price- ({proposed_outcome_price:.2f})"
                             )
+                    elif (
+                        additional_qty > 0
+                    ):  # Cannot increase quantity due to capacity / 由于产能无法增加数量
+                        reason_log.append(
+                            f"ParetoQtyIncSkip: Capacity tight for additional {additional_qty} on day {proposed_outcome_time}"
+                        )
+
+                    # If quantity increase didn't work, try delaying delivery for a price reduction
+                    # 如果增加数量无效，尝试延迟交货以换取价格降低
+                    if not (
+                        proposed_outcome_qty > qty
+                        and proposed_outcome_price < current_calculated_price
+                    ):  # If no Pareto improvement via quantity / 如果通过数量没有帕累托改进
+                        delayed_time = (
+                            proposed_outcome_time + self.h.pareto_delay_days
+                        )  # Delay by configured days
+                        time_issue = nmi.issues[TIME]
+                        max_time_issue = (
+                            time_issue.max_value
+                            if isinstance(time_issue.max_value, int)
+                            else self.awi.n_steps - 1
+                        )  # NMI max time / NMI最大时间
+                        if delayed_time < min(
+                            self.awi.n_steps, max_time_issue + 1
+                        ):  # If delay is valid / 如果延迟有效
+                            price_reduction_for_delay = (
+                                self.h.pareto_delay_price_cut
+                            )  # Price cut when delaying
+                            new_price_for_delayed_delivery = (
+                                current_calculated_price
+                                * (1 - price_reduction_for_delay)
+                            )
+                            if (
+                                new_price_for_delayed_delivery
+                                >= abs_min_price_for_current_qty_time
+                            ):  # Still profitable / 仍然盈利
+                                proposed_outcome_price = new_price_for_delayed_delivery
+                                proposed_outcome_time = delayed_time
+                                reason_log.append(
+                                    f"ParetoTry: Time+ ({proposed_outcome_time}) for Price- ({proposed_outcome_price:.2f})"
+                                )
 
         elif (
             self._is_supplier(pid) and self.awi.current_shortfall_penalty > 1.0
         ):  # Buying and shortfall penalty is significant / 采购且短缺罚金显著
             # Try to secure more quantity if penalty is high
             # 如果罚金高，尝试获取更多数量
-            qty_issue = self.get_nmi(pid).issues[QUANTITY]
-            new_qty = int(proposed_outcome_qty * 1.1)  # Increase by 10% / 增加10%
-            proposed_outcome_qty = min(
-                new_qty,
-                qty_issue.max_value
-                if isinstance(qty_issue.max_value, int)
-                else new_qty,
-            )  # Clamp to NMI max / 限制在NMI最大值
-            if proposed_outcome_qty > qty:  # If quantity increased / 如果数量增加
-                reason_log.append(f"ProcurePenaltyQtyInc: {proposed_outcome_qty}")
+            nmi = self.get_nmi(pid)
+            if nmi is not None:
+                qty_issue = nmi.issues[QUANTITY]
+                new_qty = int(proposed_outcome_qty * 1.1)  # Increase by 10% / 增加10%
+                proposed_outcome_qty = min(
+                    new_qty,
+                    qty_issue.max_value
+                    if isinstance(qty_issue.max_value, int)
+                    else new_qty,
+                )  # Clamp to NMI max / 限制在NMI最大值
+                if proposed_outcome_qty > qty:  # If quantity increased / 如果数量增加
+                    reason_log.append(f"ProcurePenaltyQtyInc: {proposed_outcome_qty}")
 
         # Final clamping of quantity and time to NMI bounds
         # 最终将数量和时间限制在NMI范围内
-        final_qty_issue = self.get_nmi(pid).issues[QUANTITY]
-        proposed_outcome_qty = max(
-            final_qty_issue.min_value,
-            min(
-                proposed_outcome_qty,
-                final_qty_issue.max_value
-                if isinstance(final_qty_issue.max_value, int)
-                else proposed_outcome_qty,
-            ),
-        )
-        final_time_issue = self.get_nmi(pid).issues[TIME]
-        proposed_outcome_time = max(
-            final_time_issue.min_value,
-            min(
-                proposed_outcome_time,
-                final_time_issue.max_value
-                if isinstance(final_time_issue.max_value, int)
-                else proposed_outcome_time,
-            ),
-        )
+        final_nmi = self.get_nmi(pid)
+        if final_nmi is not None:
+            final_qty_issue = final_nmi.issues[QUANTITY]
+            proposed_outcome_qty = max(
+                final_qty_issue.min_value,
+                min(
+                    proposed_outcome_qty,
+                    final_qty_issue.max_value
+                    if isinstance(final_qty_issue.max_value, int)
+                    else proposed_outcome_qty,
+                ),
+            )
+            final_time_issue = final_nmi.issues[TIME]
+            proposed_outcome_time = max(
+                final_time_issue.min_value,
+                min(
+                    proposed_outcome_time,
+                    final_time_issue.max_value
+                    if isinstance(final_time_issue.max_value, int)
+                    else proposed_outcome_time,
+                ),
+            )
         proposed_outcome_time = max(
             proposed_outcome_time, self.awi.current_step
         )  # Ensure delivery is not in past / 确保交货不在过去
@@ -1318,12 +1340,15 @@ class LitaAgentYS(StdSyncAgent):
         for pid, qty in distribution.items():
             if qty <= 0:
                 continue  # No need for this partner / 此伙伴无需求
-            time_issue = self.get_nmi(pid).issues[TIME]
+            nmi = self.get_nmi(pid)
+            if nmi is None:
+                continue  # Skip if no active negotiation
+            time_issue = nmi.issues[TIME]
             # Propose delivery time within NMI, not before today
             # 在NMI范围内提议交货时间，不早于今天
             delivery_time = max(today, time_issue.min_value)
             delivery_time = min(delivery_time, time_issue.max_value)
-            qty_issue = self.get_nmi(pid).issues[QUANTITY]
+            qty_issue = nmi.issues[QUANTITY]
             # Propose quantity within NMI bounds
             # 在NMI范围内提议数量
             final_qty = min(qty, qty_issue.max_value)
@@ -1553,7 +1578,7 @@ class LitaAgentYS(StdSyncAgent):
         )
 
         planned_demand = sum(v for k, v in udpp.items() if k > self.awi.current_step)
-        planned_limit = (
+        (
             planned_demand
             * (1 + self.h.planned_overprocurement_factor)
             * procurement_aggressiveness_factor
@@ -1719,7 +1744,6 @@ class LitaAgentYS(StdSyncAgent):
             # 1. 优先使用代理自己观察到的市场产品均价
             if self._market_product_price_avg > 0:
                 est_sell_price = self._market_product_price_avg
-                reason = "agent_observed_avg"
 
             # 2. 回退到 AWI 提供的市场交易价格
             if (
@@ -1732,7 +1756,6 @@ class LitaAgentYS(StdSyncAgent):
                 awi_trading_price = self.awi.trading_prices[output_product_idx]
                 if awi_trading_price > 0:
                     est_sell_price = awi_trading_price
-                    reason = "awi_trading_prices"
 
             # 3. 回退到 AWI 提供的目录价格
             if (
@@ -1745,13 +1768,11 @@ class LitaAgentYS(StdSyncAgent):
                 awi_catalog_price = self.awi.catalog_prices[output_product_idx]
                 if awi_catalog_price > 0:
                     est_sell_price = awi_catalog_price
-                    reason = "awi_catalog_prices"
 
             # 4. 最后回退到基于原材料成本的简单启发式
             if est_sell_price <= 0:
                 # 'price' 是当前原材料供应报价的单价
                 est_sell_price = price * 2.0
-                reason = "heuristic_raw_x2"
 
             # 不考虑存储成本时的最大接受价格 Max accept price without considering stor cost
             min_profit_for_product = est_sell_price * self.min_profit_ratio
@@ -1852,7 +1873,6 @@ class LitaAgentYS(StdSyncAgent):
             # 1. 优先使用代理自己观察到的市场产品均价
             if self._market_product_price_avg > 0:
                 est_sell_price = self._market_product_price_avg
-                reason = "agent_observed_avg"
 
             # 2. 回退到 AWI 提供的市场交易价格
             if (
@@ -1865,7 +1885,6 @@ class LitaAgentYS(StdSyncAgent):
                 awi_trading_price = self.awi.trading_prices[output_product_idx]
                 if awi_trading_price > 0:
                     est_sell_price = awi_trading_price
-                    reason = "awi_trading_prices"
 
             # 3. 回退到 AWI 提供的目录价格
             if (
@@ -1878,13 +1897,11 @@ class LitaAgentYS(StdSyncAgent):
                 awi_catalog_price = self.awi.catalog_prices[output_product_idx]
                 if awi_catalog_price > 0:
                     est_sell_price = awi_catalog_price
-                    reason = "awi_catalog_prices"
 
             # 4. 最后回退到基于原材料成本的简单启发式
             if est_sell_price <= 0:
                 # 'price' 是当前原材料供应报价的单价
                 est_sell_price = price * 2.0
-                reason = "heuristic_raw_x2"
 
             # 不考虑存储成本时的最大接受价格 Max accept price without considering stor cost
             min_profit_for_product = est_sell_price * self.min_profit_ratio
@@ -1912,10 +1929,7 @@ class LitaAgentYS(StdSyncAgent):
             # Price OK, qty excess
             # 逻辑：提前交货日期以尽可能找到满足的需求，如果找不到足够的需求，则减少交货数量
             # 由于提前交货日期会导致库存成本提升，因此必须同时执行价格调整
-            if (
-                offer[QUANTITY] > max_qty_acceptable_on_the_day
-                and price_is_acceptable == True
-            ):
+            if offer[QUANTITY] > max_qty_acceptable_on_the_day and price_is_acceptable:
                 # 算出最大的接受可能量
                 max_qty_acceptable_from_now_on = cumulative_planned_need
                 # 如果今天往后的所有需求都不足够，直接将日子设置为今天，数量为总需求
@@ -2509,7 +2523,6 @@ class LitaAgentYS(StdSyncAgent):
             # 1. 优先使用代理自己观察到的市场产品均价
             if self._market_product_price_avg > 0:
                 est_sell_price = self._market_product_price_avg
-                reason = "agent_observed_avg"
 
             # 2. 回退到 AWI 提供的市场交易价格
             if (
@@ -2522,7 +2535,6 @@ class LitaAgentYS(StdSyncAgent):
                 awi_trading_price = self.awi.trading_prices[output_product_idx]
                 if awi_trading_price > 0:
                     est_sell_price = awi_trading_price
-                    reason = "awi_trading_prices"
 
             # 3. 回退到 AWI 提供的目录价格
             if (
@@ -2535,13 +2547,11 @@ class LitaAgentYS(StdSyncAgent):
                 awi_catalog_price = self.awi.catalog_prices[output_product_idx]
                 if awi_catalog_price > 0:
                     est_sell_price = awi_catalog_price
-                    reason = "awi_catalog_prices"
 
             # 4. 最后回退到基于原材料成本的简单启发式
             if est_sell_price <= 0:
                 # 'price' 是当前原材料供应报价的单价
                 est_sell_price = price * 2.0
-                reason = "heuristic_raw_x2"
 
             min_profit_for_product = est_sell_price * self.min_profit_ratio
             max_affordable_raw_price_jit = (
@@ -2613,9 +2623,6 @@ class LitaAgentYS(StdSyncAgent):
                 qty, remaining_headroom_for_t
             )  # Quantity to accept from this offer / 从此报价中接受的数量
             accept_qty_int = int(round(accept_qty))
-
-            log_prefix = f"🏭 Day {self.awi.current_step} ({self.id}) PlannedSupply Offer from {pid} (Q:{qty_original} P:{price:.2f} T:{t}): InvHealth={inventory_health}, AggroFactor={procurement_aggressiveness_factor:.2f} "
-            log_details = f"EffPrice={effective_price:.2f} (StoreCost={estimated_storage_cost_per_unit:.2f}), JITLimit={max_affordable_raw_price_jit:.2f}. Headroom={remaining_headroom_for_t:.1f}, AcceptableQty={accept_qty_int}."
 
             if (
                 accept_qty_int > 0 and price_is_acceptable
@@ -2782,9 +2789,6 @@ class LitaAgentYS(StdSyncAgent):
             accept_qty = min(qty, remaining_headroom_for_t)
             accept_qty_int = int(round(accept_qty))
 
-            log_prefix = f"🏭 Day {self.awi.current_step} ({self.id}) OptionalSupply Offer from {pid} (Q:{qty_original} P:{price:.2f} T:{t}): InvHealth={inventory_health}, AllowanceFactor={optional_procurement_allowance_factor:.2f} "
-            log_details = f"PriceIsCheap={price_is_cheap} (Threshold={cheap_threshold:.2f}). Headroom={remaining_headroom_for_t:.1f}, AcceptableQty={accept_qty_int}."
-
             if (
                 accept_qty_int > 0 and price_is_cheap
             ):  # If can accept some and price is cheap / 如果可以接受一些且价格便宜
@@ -2871,10 +2875,11 @@ class LitaAgentYS(StdSyncAgent):
                 available_qty_for_offer = int(max_producible_for_offer_on_day_t)
                 # Check if we can counter with a valid NMI quantity
                 # 检查是否可以用有效的NMI数量还价
+                nmi = self.get_nmi(pid)
+                nmi_min_qty = nmi.issues[QUANTITY].min_value if nmi else 1
                 if (
                     available_qty_for_offer > 0
-                    and available_qty_for_offer
-                    >= self.get_nmi(pid).issues[QUANTITY].min_value
+                    and available_qty_for_offer >= nmi_min_qty
                 ):
                     # Try to counter with the maximum possible producible quantity
                     # 尝试以最大可生产数量还价
@@ -3245,7 +3250,6 @@ class LitaAgentYS(StdSyncAgent):
         if (
             abs(self.min_profit_ratio - final_new_min_profit_ratio) > 1e-4
         ):  # Threshold for change / 变化阈值
-            old_margin = self.min_profit_ratio
             self.update_profit_strategy(min_profit_ratio=final_new_min_profit_ratio)
 
     def update_profit_strategy(

@@ -1,19 +1,18 @@
 from __future__ import annotations
-from negmas.sao import SAONMI
-import threading
-from scml.oneshot import QUANTITY, TIME, UNIT_PRICE
 
 # required for typing
 import random
+import threading
+
+# required for typing
+from negmas import Contract, ResponseType, SAOState
+from negmas.sao import SAONMI
+from scml.oneshot import QUANTITY, TIME, UNIT_PRICE
+from scml.scml2020.components import *
 
 # from scipy.stats import linregress
 # required for development
 from scml.std import StdAgent
-from scml.scml2020.components import *
-
-# required for typing
-from negmas import Contract, SAOState
-from negmas import ResponseType
 
 __all__ = ["S5s"]
 

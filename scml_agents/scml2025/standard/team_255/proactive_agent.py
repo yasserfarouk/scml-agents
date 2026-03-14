@@ -47,7 +47,7 @@ class ProactiveAgent(SimpleSyncAgent):
 
     def first_proposals(self):
         # just randomly distribute my needs over my partners (with best price for me).
-        partners = self.negotiators.keys()
+        self.negotiators.keys()
         s = self.awi.current_step
         distribution = self.distribute_todays_needs()
         return {

@@ -197,10 +197,13 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
         """
 
         for partner in self.partners:
-            if partner in [
-                "SELLER",
-                "BUYER",
-            ]:  # no negotiation with global players, so, trade_stats is not needed for them
+            if (
+                partner
+                in [
+                    "SELLER",
+                    "BUYER",
+                ]
+            ):  # no negotiation with global players, so, trade_stats is not needed for them
                 continue
 
             n_negotiations, n_agree, n_signs = 0, 0, 0
@@ -272,7 +275,7 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
         state["breach_score"] = breach_score
         state["cash"] = cash
         state["wealth"] = state["wealth"] = (
-            balance_trend / y.mean() if balance_trend != None else "unknown"
+            balance_trend / y.mean() if balance_trend is not None else "unknown"
         )
 
         return state
@@ -288,7 +291,7 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
 
         signed_future_inputs = self.past_contracts[
             (self.past_contracts.t >= self.awi.current_step)
-            & (self.past_contracts.is_sell == False)
+            & (not self.past_contracts.is_sell)
         ]["q"].sum()
         signed_future_outputs = self.past_contracts[
             (self.past_contracts.t >= self.awi.current_step)
@@ -469,9 +472,9 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
 
         # do not allow the negotiatiors allocated 0 quantity to engage in negotiators
         if negotiator.q_bounds[1] > 0:
-            negotiator.params["alpha"] = (
-                -1
-            )  # counter agenda might not be suitable for us, therefore all desirable bids are allowed to propose
+            negotiator.params[
+                "alpha"
+            ] = -1  # counter agenda might not be suitable for us, therefore all desirable bids are allowed to propose
             negotiator.valid_q_bounds = [qvalues.min_value, qvalues.max_value]
             negotiator.valid_t_bounds = [tvalues.min_value, tvalues.max_value]
             negotiator.valid_p_bounds = [pvalues.min_value, pvalues.max_value]
@@ -513,7 +516,7 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
         ].q.sum()
         signed_future_inputs = self.past_contracts[
             (self.past_contracts.t >= self.awi.current_step)
-            & (self.past_contracts.is_sell == False)
+            & (not self.past_contracts.is_sell)
         ].q.sum()
 
         n_steps_to_produce = (
@@ -561,9 +564,8 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
         """
         Calculates own trading price as sqrt(weighted historical price * weighted last price) based on contracts.
         """
-        if (
-            partner == None
-            or partner not in self.past_contracts.index.get_level_values(0)
+        if partner is None or partner not in self.past_contracts.index.get_level_values(
+            0
         ):
             pcs = self.past_contracts
         else:
@@ -705,7 +707,7 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
             )  # using max() to avoid any bug
 
         signed_buying_inputs = (
-            self.past_contracts[self.past_contracts.is_sell == False].q.sum()
+            self.past_contracts[not self.past_contracts.is_sell].q.sum()
             if self.past_contracts.shape[0] > 0
             else 0
         )
@@ -828,7 +830,7 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
 
         buying_contracts = self.past_contracts[
             (self.past_contracts.t >= self.awi.current_step)
-            & (self.past_contracts.is_sell == False)
+            & (not self.past_contracts.is_sell)
         ]
         signed_future_inputs = buying_contracts["q"].sum()
 
@@ -881,9 +883,7 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
         )
 
         total_sell = self.past_contracts.loc[self.past_contracts.is_sell, "q"].sum()
-        total_buy = self.past_contracts.loc[
-            self.past_contracts.is_sell == False, "q"
-        ].sum()
+        total_buy = self.past_contracts.loc[not self.past_contracts.is_sell, "q"].sum()
         flow_ratio = total_sell / total_buy if total_buy else 0
 
         if (

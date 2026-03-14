@@ -83,9 +83,9 @@ class AS0(StdSyncAgent):
         # パフォーマンス追跡と戦略調整
         current_balance = getattr(self.awi, "current_balance", 0)
         if len(self.last_profits) > 0:
-            profit_change = current_balance - sum(self.last_profits)
+            current_balance - sum(self.last_profits)
         else:
-            profit_change = 0
+            pass
 
         self.last_profits.append(current_balance)
         if len(self.last_profits) > 5:
@@ -149,7 +149,7 @@ class AS0(StdSyncAgent):
 
     def first_proposals(self):
         """初回提案"""
-        partners = self.negotiators.keys()
+        self.negotiators.keys()
         s = self.awi.current_step
         distribution = self.distribute_todays_needs()
 

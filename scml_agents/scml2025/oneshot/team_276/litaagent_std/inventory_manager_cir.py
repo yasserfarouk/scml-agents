@@ -1,8 +1,8 @@
 import os
-from enum import Enum, auto
-from dataclasses import dataclass
-from typing import List, Dict, Optional, TYPE_CHECKING
 import uuid  # For contract IDs
+from dataclasses import dataclass
+from enum import Enum, auto
+from typing import TYPE_CHECKING, Dict, List, Optional
 
 if TYPE_CHECKING:
     # This is to avoid circular dependencies if CustomInventoryManager methods type hint themselves
@@ -156,7 +156,6 @@ class InventoryManagerCIR:
         estimated_available_qty = current_stock_qty
 
         # For estimated cost, start with the cost of current stock
-        estimated_total_cost = total_cost_of_current_stock
         # Keep track of quantities added for weighted average of future items
         future_qty_added_for_estimation = 0
         cost_of_future_qty_added = 0.0
@@ -246,7 +245,7 @@ class InventoryManagerCIR:
         for i, contract in enumerate(self.pending_supply_contracts):
             if contract.delivery_time == day_being_processed:
                 if contract.material_type != MaterialType.RAW:
-                    if os.path.exists("env.test") and self.is_deepcopy == False:
+                    if os.path.exists("env.test") and not self.is_deepcopy:
                         pass  # print(f"Warning (_receive_materials): Supply contract {contract.contract_id} for day {day_being_processed} has incorrect material type {contract.material_type}. Skipping.")
                     continue
 
@@ -262,7 +261,7 @@ class InventoryManagerCIR:
                 self.raw_material_batches.append(new_batch)
                 self.total_raw_material_acquired += contract.quantity
                 processed_contracts_indices.append(i)
-                if os.path.exists("env.test") and self.is_deepcopy == False:
+                if os.path.exists("env.test") and not self.is_deepcopy:
                     pass  # print(f"Info (_receive_materials): Received {contract.quantity} of RAW material from {contract.partner_id} on day {day_being_processed}.")
 
         # Remove processed contracts (iterate in reverse to avoid index issues)
@@ -291,7 +290,7 @@ class InventoryManagerCIR:
         )
 
         if actual_produced_qty < planned_qty_to_produce:
-            if os.path.exists("env.test") and self.is_deepcopy == False:
+            if os.path.exists("env.test") and not self.is_deepcopy:
                 pass  # print(f"Warning (_execute_production): Production shortfall on day {day_being_processed}. Planned: {planned_qty_to_produce}, Actual: {actual_produced_qty}. Available Raw: {available_raw_material}, Daily Capacity: {self.daily_production_capacity}")
             # Store shortfall if needed: self.production_shortfalls[(day_being_processed, "reason")] = planned_qty_to_produce - actual_produced_qty
 
@@ -338,7 +337,7 @@ class InventoryManagerCIR:
         )
         self.product_batches.append(product_batch)
         self.total_products_produced += actual_produced_qty
-        if os.path.exists("env.test") and self.is_deepcopy == False:
+        if os.path.exists("env.test") and not self.is_deepcopy:
             pass  # print(f"Info (_execute_production): Produced {actual_produced_qty} of PRODUCT on day {day_being_processed}.")
 
         # Sort product batches by arrival time for strict FIFO if not already guaranteed
@@ -353,7 +352,7 @@ class InventoryManagerCIR:
         for i, contract in enumerate(self.pending_demand_contracts):
             if contract.delivery_time == day_being_processed:
                 if contract.material_type != MaterialType.PRODUCT:
-                    if os.path.exists("env.test") and self.is_deepcopy == False:
+                    if os.path.exists("env.test") and not self.is_deepcopy:
                         pass  # print(f"Warning (_deliver_products): Demand contract {contract.contract_id} for day {day_being_processed} has incorrect material type {contract.material_type}. Skipping.")
                     continue
 
@@ -365,7 +364,7 @@ class InventoryManagerCIR:
                 actual_delivered_qty = min(qty_to_deliver, available_product_stock)
 
                 if actual_delivered_qty < qty_to_deliver:
-                    if os.path.exists("env.test") and self.is_deepcopy == False:
+                    if os.path.exists("env.test") and not self.is_deepcopy:
                         pass  # print(f"Warning (_deliver_products): Delivery shortfall for contract {contract.contract_id} on day {day_being_processed}. Needed: {qty_to_deliver}, Delivered: {actual_delivered_qty}. Available Stock: {available_product_stock}")
                     # Store shortfall: self.delivery_shortfalls[(day_being_processed, contract.contract_id)] = qty_to_deliver - actual_delivered_qty
 
@@ -396,7 +395,7 @@ class InventoryManagerCIR:
 
                 self.total_products_sold += actual_delivered_qty
                 processed_contracts_indices.append(i)
-                if os.path.exists("env.test") and self.is_deepcopy == False:
+                if os.path.exists("env.test") and not self.is_deepcopy:
                     pass  # print(f"Info (_deliver_products): Delivered {actual_delivered_qty} of PRODUCT for contract {contract.contract_id} on day {day_being_processed}.")
 
         for i in sorted(processed_contracts_indices, reverse=True):
@@ -404,11 +403,11 @@ class InventoryManagerCIR:
 
     def process_day_end_operations(self, day_being_processed: int):
         if day_being_processed != self.current_day:
-            if os.path.exists("env.test") and self.is_deepcopy == False:
+            if os.path.exists("env.test") and not self.is_deepcopy:
                 pass  # print(f"Warning (process_day_end_operations): Attempting to process day {day_being_processed} but current_day is {self.current_day}. This might indicate a simulation flow error.")
             # Optionally, align current_day or raise error: self.current_day = day_being_processed
 
-        if os.path.exists("env.test") and self.is_deepcopy == False:
+        if os.path.exists("env.test") and not self.is_deepcopy:
             pass  # print(f"\n--- Processing Day End Operations for Day {day_being_processed} ---")
 
         # 1. Receive materials scheduled for today
@@ -427,7 +426,7 @@ class InventoryManagerCIR:
         # This should ideally use the new self.current_day as its starting point for planning
         self.plan_production(up_to_day=self.max_simulation_day)
 
-        if os.path.exists("env.test") and self.is_deepcopy == False:
+        if os.path.exists("env.test") and not self.is_deepcopy:
             pass  # print(f"--- Day {day_being_processed} processed. CIM is now at the start of Day {self.current_day} ---")
         # Return a summary or status if needed
         return {
@@ -649,16 +648,13 @@ class InventoryManagerCIR:
                 reason_details_str = "; ".join(
                     list(set(bottleneck_details_for_this_demand))
                 )  # Use set to show unique bottleneck messages
-                reason_str = ""
                 if reason_details_str:
-                    reason_str = (
-                        f"Primary bottlenecks encountered: [{reason_details_str}]"
-                    )
+                    pass
                 else:
                     # This case should be rare if the demand was positive and planning was attempted.
                     # It might indicate no valid production days or an unexpected state.
-                    reason_str = "Unable to schedule due to JIT window constraints (e.g., no available capacity or raw materials on any considered day)."
-                if os.path.exists("env.test") and self.is_deepcopy == False:
+                    pass
+                if os.path.exists("env.test") and not self.is_deepcopy:
                     pass  # print(f"Warning (plan_production): Could not fully plan for demand of {demands_by_day[demand_delivery_day]} units "
                     # f"due on day {demand_delivery_day}. "
                     # f"Reason: {reason_str}. "
@@ -674,7 +670,7 @@ class InventoryManagerCIR:
 
 # Example usage (optional, for testing during development)
 if __name__ == "__main__":
-    if os.path.exists("env.test") and self.is_deepcopy == False:
+    if os.path.exists("env.test") and not self.is_deepcopy:
         pass  # print("--- Starting CustomInventoryManager Part 2 Test ---")
 
     # Initialize CustomInventoryManager
@@ -686,15 +682,15 @@ if __name__ == "__main__":
         max_simulation_day=10,
         current_day=0,
     )
-    if os.path.exists("env.test") and self.is_deepcopy == False:
+    if os.path.exists("env.test") and not self.is_deepcopy:
         pass  # print(f"Initialized CIM at day {cim.current_day}. Daily prod capacity: {cim.daily_production_capacity}")
 
     # --- Test plan_production ---
-    if os.path.exists("env.test") and self.is_deepcopy == False:
+    if os.path.exists("env.test") and not self.is_deepcopy:
         pass  # print("\n--- Testing Production Planning (JIT) ---")
     # No demands initially, plan should be empty
     cim.plan_production()  # Call explicitly for controlled test
-    if os.path.exists("env.test") and self.is_deepcopy == False:
+    if os.path.exists("env.test") and not self.is_deepcopy:
         pass  # print(f"Initial production plan (no demands): {cim.production_plan}")
 
     # Add demands. add_transaction calls plan_production() internally.
@@ -711,7 +707,7 @@ if __name__ == "__main__":
         IMContract("C4", IMContractType.DEMAND, 40, 13, 3, MaterialType.PRODUCT)
     )
 
-    if os.path.exists("env.test") and self.is_deepcopy == False:
+    if os.path.exists("env.test") and not self.is_deepcopy:
         pass  # print(f"Production plan after adding demands: {dict(sorted(cim.production_plan.items()))}")
     # Expected JIT (Demands: D1:25, D2:35, D3:40. Capacity:30):
     # Plan for D3=40: Plan[3]=30, Plan[2]=10 (spillover)
@@ -720,7 +716,7 @@ if __name__ == "__main__":
     # Expected: {0: 10.0, 1: 30.0, 2: 30.0, 3: 30.0}
 
     # --- Test Shortage Calculations ---
-    if os.path.exists("env.test") and self.is_deepcopy == False:
+    if os.path.exists("env.test") and not self.is_deepcopy:
         pass  # print("\n--- Testing Shortage Calculations ---")
     # Setup: current day = 0. Production plan is as above.
     # Add raw material supplies. These will also call plan_production, but it should be idempotent for demands.
@@ -733,14 +729,14 @@ if __name__ == "__main__":
         0
     )  # current_day becomes 1. S1_new (15) received. 10 produced. Raw left: 5.
 
-    if os.path.exists("env.test") and self.is_deepcopy == False:
+    if os.path.exists("env.test") and not self.is_deepcopy:
         pass  # print(f"CIM at start of Day {cim.current_day}")
         pass  # print(f"Raw material batches: {[(b.remaining_quantity, b.arrival_or_production_time) for b in cim.raw_material_batches]}") # Expected: [(5, 0)]
         pass  # print(f"Pending supply: {[(s.quantity, s.delivery_time, s.partner_id) for s in cim.pending_supply_contracts]}") # Expected: S2 not added yet
     cim.add_transaction(
         IMContract("S2", IMContractType.SUPPLY, 5, 5.5, 1, MaterialType.RAW)
     )  # 5 on Day 1. Plan re-calculated.
-    if os.path.exists("env.test") and self.is_deepcopy == False:
+    if os.path.exists("env.test") and not self.is_deepcopy:
         pass  # print(f"Production plan after S2: {dict(sorted(cim.production_plan.items()))}") # Should be same: {0:10, 1:30, 2:30, 3:30}
         pass  # print(f"Pending supply after S2: {[(s.quantity, s.delivery_time, s.partner_id) for s in cim.pending_supply_contracts]}")
 
@@ -749,7 +745,7 @@ if __name__ == "__main__":
     # Available raw by start of Day 1 (strictly before day 1): Batch (5 from day 0). S2 arrives *on* Day 1, not counted for "already arrived".
     # Shortfall for Day 1 = max(0, 30 - 5) = 25.
     insufficient_day1 = cim.get_today_insufficient_raw(1)
-    if os.path.exists("env.test") and self.is_deepcopy == False:
+    if os.path.exists("env.test") and not self.is_deepcopy:
         pass  # print(f"Insufficient raw for Day 1 (production P[1]=30, stock before D1 was 5): {insufficient_day1}") # Expected: 25
 
     # Test get_total_insufficient_raw for Day 1, horizon 3 (Days 1, 2, 3)
@@ -768,14 +764,14 @@ if __name__ == "__main__":
     #   Production needed on Day 3: Plan[3] = 30.
     #   Shortfall D3: 30 - 0 = 30. Total Shortfall = 50 + 30 = 80. Simulated stock = 0.
     total_insufficient_d1_h3 = cim.get_total_insufficient_raw(target_day=1, horizon=3)
-    if os.path.exists("env.test") and self.is_deepcopy == False:
+    if os.path.exists("env.test") and not self.is_deepcopy:
         pass  # print(f"Total insufficient raw from Day 1 (horizon 3): {total_insufficient_d1_h3}") # Expected: 80
 
     # Test with more supply
     cim.add_transaction(
         IMContract("S3", IMContractType.SUPPLY, 100, 6, 2, MaterialType.RAW)
     )  # 100 on Day 2
-    if os.path.exists("env.test") and self.is_deepcopy == False:
+    if os.path.exists("env.test") and not self.is_deepcopy:
         pass  # print(f"Production plan after S3: {dict(sorted(cim.production_plan.items()))}") # Should still be {0:10,1:30,2:30,3:30}
 
     # Recalculate total_insufficient_raw for Day 1, horizon 3 (Days 1, 2, 3) with S3
@@ -796,8 +792,8 @@ if __name__ == "__main__":
     total_insufficient_d1_h3_with_S3 = cim.get_total_insufficient_raw(
         target_day=1, horizon=3
     )
-    if os.path.exists("env.test") and self.is_deepcopy == False:
+    if os.path.exists("env.test") and not self.is_deepcopy:
         pass  # print(f"Total insufficient raw from Day 1 (horizon 3) with S3 added: {total_insufficient_d1_h3_with_S3}") # Expected: 20
 
-    if os.path.exists("env.test") and self.is_deepcopy == False:
+    if os.path.exists("env.test") and not self.is_deepcopy:
         pass  # print("\n--- CustomInventoryManager Part 3 Test Complete ---")

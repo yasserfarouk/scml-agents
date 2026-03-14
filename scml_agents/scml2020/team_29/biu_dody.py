@@ -8,9 +8,7 @@ from pprint import pformat
 from statistics import mean
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-import matplotlib.pyplot as plt
 import numpy as np
-from dana_neg_algo import DanasController, DanasNegotiator
 from negmas import (
     AgentMechanismInterface,
     AspirationNegotiator,
@@ -19,16 +17,12 @@ from negmas import (
     Issue,
     Negotiator,
     SAONegotiator,
-    UtilityFunction,
     num_outcomes,
 )
 from negmas.helpers import get_class
-from scml import SCML2020World
 from scml.scml2020 import (
     AWI,
     NO_COMMAND,
-    DecentralizingAgent,
-    IndDecentralizingAgent,
     PredictionBasedTradingStrategy,
     SCML2020Agent,
 )
@@ -38,7 +32,7 @@ from scml.scml2020.components.production import (
     ProductionStrategy,
     SupplyDrivenProductionStrategy,
 )
-from scml.scml2020.services.controllers import StepController, SyncController
+from scml.scml2020.services.controllers import StepController
 
 
 class OmerProductionStrategyAgent(ProductionStrategy):
@@ -729,7 +723,6 @@ class DrorStepNegotiationManager(DrorMeanERPStrategy, DrorNegotiationManager):
         annotation: Dict[str, Any],
         mechanism: AgentMechanismInterface,
     ) -> Optional[Negotiator]:
-
         # find negotiation parameters
         is_seller = annotation["seller"] == self.id
         tmin, tmax = issues[TIME].min_value, issues[TIME].max_value + 1
@@ -776,7 +769,6 @@ class DrorStepNegotiationManager(DrorMeanERPStrategy, DrorNegotiationManager):
             return
         quantity = c.secured
         target = c.target
-        time_range = info.time_range
         if is_seller:
             controllers = self.sellers
         else:

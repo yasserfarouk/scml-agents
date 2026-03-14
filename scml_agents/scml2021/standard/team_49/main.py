@@ -5,10 +5,7 @@ from negmas.helpers import humanize_time
 from scml import (
     BuyCheapSellExpensiveAgent,
     DecentralizingAgent,
-    DoNothingAgent,
     IndDecentralizingAgent,
-    IndependentNegotiationsAgent,
-    RandomAgent,
 )
 from scml.utils import anac2020_collusion, anac2020_std
 from tabulate import tabulate

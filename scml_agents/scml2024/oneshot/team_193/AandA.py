@@ -9,21 +9,21 @@ the authors and the ANAC 2024 SCML.
 
 from __future__ import annotations
 
+from collections import Counter
+from itertools import chain, combinations
+
 # required for typing
 from typing import Any
 
-# required for development
-from scml.oneshot import OneShotAWI, OneShotSyncAgent
-
 # required for typing
 from negmas import Contract, Outcome, SAOResponse, SAOState
-
-from scml.scml2020.common import QUANTITY, UNIT_PRICE
+from negmas.gb.common import ResponseType
 from numpy import random
 from numpy.random import choice
-from collections import Counter
-from itertools import chain, combinations
-from negmas.gb.common import ResponseType
+
+# required for development
+from scml.oneshot import OneShotAWI, OneShotSyncAgent
+from scml.scml2020.common import QUANTITY, UNIT_PRICE
 
 
 def powerset(iterable):
@@ -160,7 +160,7 @@ class AandA(OneShotSyncAgent):
         # quantity_cost_tradeoff = 0.90  ### toggle this to adjust the tradeoff!
         for i, partner_ids in enumerate(plist):
             # Calculate quantity
-            others = partners.difference(partner_ids)
+            partners.difference(partner_ids)
             offered_quantity = sum(offers[p][QUANTITY] for p in partner_ids)
             diff = abs(offered_quantity - needs)
 
@@ -216,7 +216,7 @@ class AandA(OneShotSyncAgent):
             ),
         ]:
             # get a random price
-            price = issues[UNIT_PRICE].rand()
+            issues[UNIT_PRICE].rand()
             # find active partners
             partners = {_ for _ in all_partners if _ in offers.keys()}
 

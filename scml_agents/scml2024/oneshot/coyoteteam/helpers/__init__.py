@@ -1,13 +1,13 @@
 import math
+import warnings
 from typing import Iterable
 
-import requests
-from negmas import SAOResponse, ResponseType, Outcome, SAOState
-from scml.std import *
-from scml.runner import WorldRunner
 import pandas as pd
+import requests
+from negmas import Outcome, ResponseType, SAOResponse, SAOState
 from rich.jupyter import print
-import warnings
+from scml.runner import WorldRunner
+from scml.std import *
 
 from scml_agents.scml2020.monty_hall.nvm_lib2.ilpnvm import current_inventory
 
@@ -17,15 +17,15 @@ from matplotlib import pylab as plt
 from matplotlib.ticker import StrMethodFormatter
 
 float_formatter = StrMethodFormatter("{x:0.03f}")
-from IPython.core.display import display, HTML
 import random
+
+from IPython.core.display import HTML, display
 
 random.seed(10)
 import numpy as np
 from scml import AWI
-np.random.seed(10)
-from rich.jupyter import print
 
+np.random.seed(10)
 
 
 class SimpleAgent(StdAgent):
@@ -72,7 +72,7 @@ class SimpleAgent(StdAgent):
             r *= self.future_concession
         # concede linearly
         if self.is_consumer(partner):
-            return offer[UNIT_PRICE] >= minp + (1 - r) * (maxp - minp) 
+            return offer[UNIT_PRICE] >= minp + (1 - r) * (maxp - minp)
         return -offer[UNIT_PRICE] >= -minp + (1 - r) * (minp - maxp)
 
     def good_offer(self, partner, state):
@@ -132,6 +132,7 @@ class SimpleAgent(StdAgent):
         # subtract already signed contracts
         return int(total_needs)
 
+
 class CoyoteAgent(SimpleAgent):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -148,6 +149,3 @@ class CoyoteAgent(SimpleAgent):
             and self.is_good_price(negotiator_id, offer, state)
             else ResponseType.REJECT_OFFER
         )
-
-
-

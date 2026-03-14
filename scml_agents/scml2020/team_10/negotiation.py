@@ -23,12 +23,11 @@ from negmas import (
 )
 from negmas.common import MechanismState
 from negmas.helpers import get_class, instantiate
-from negmas.outcomes import Outcome, enumerate_issues
+from negmas.outcomes import Outcome
 from negmas.preferences import UtilityFunction
 from negmas.sao import SAONegotiator, SAOResponse
 from scml.scml2020 import QUANTITY, TIME, UNIT_PRICE
 from scml.scml2020.components.negotiation import (
-    AspirationNegotiator,
     NegotiationManager,
 )
 from utility import MyRLUtilityFunction, MyUtilityFunction
@@ -234,7 +233,6 @@ class MyFixedUtilityNegotiator(SAONegotiator):
                 start, end = price_range
 
                 while start < end:
-
                     price = (start + end) // 2
                     offer[UNIT_PRICE] = price
 
@@ -498,7 +496,6 @@ class MyUtilityNegotiator(SAONegotiator):
 
                 start, end = price_range
                 while start < end:
-
                     price = (start + end) // 2
 
                     current_proposal[OFFER_COST] = price
@@ -1069,7 +1066,7 @@ class MyNegotiationManager:
         # if agent is bankrupt - refuse negotiation
         caller = annotation["caller"]
         reports = self.awi.reports_of_agent(caller)
-        if not reports is None:
+        if reports is not None:
             for step, report in reports.items():
                 if report.is_bankrupt:
                     return None

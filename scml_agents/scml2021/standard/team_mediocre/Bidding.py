@@ -403,7 +403,7 @@ class BuyBidding:
     def evaluate(self, opponent_bid, nego_relative_time, opponent_behaviour_params):
         q, t, p = opponent_bid
         o_delivery_time = np.ceil(np.mean(opponent_behaviour_params["t_bounds"]))
-        o_delivery_delay = o_delivery_time - self.current_step
+        o_delivery_time - self.current_step
 
         preferred_delivery_time = (
             o_delivery_time
@@ -466,7 +466,7 @@ class BuyBidding:
             if nego_relative_time < 0.75
             else self.concess_rates[int(len(self.concess_rates) * nego_relative_time)]
         )
-        restricted_q = (
+        (
             self.q_bounds
             if nego_relative_time <= 0.25
             else opponent_behaviour_params["q_bounds"]

@@ -15,15 +15,16 @@ as well as to all the participants who competed alongside me. Thank you.
 """
 
 from __future__ import annotations
-from negmas import SAOResponse, ResponseType, SAOState
+
+import random
+from itertools import chain, combinations
+from typing import Any
+
+from negmas import Contract, ResponseType, SAOResponse, SAOState
 from negmas.sao import SAONMI
 from scml.oneshot import *
-from scml.oneshot.ufun import *
-import random
-from typing import Any
 from scml.oneshot import OneShotSyncAgent
-from negmas import Contract
-from itertools import chain, combinations
+from scml.oneshot.ufun import *
 
 __all__ = ["DistRedistAgent"]
 
@@ -31,8 +32,9 @@ __all__ = ["DistRedistAgent"]
 def distribute(q: int, n: int) -> list[int]:
     """Distributes n values over m bins with at
     least one item per bin assuming q > n"""
-    from numpy.random import choice
     from collections import Counter
+
+    from numpy.random import choice
 
     if n == 0:
         return []
@@ -364,7 +366,7 @@ class DistRedistAgent(OneShotSyncAgent):
         self.round = 0
 
         if self.awi.current_step == 0:
-            if self.awi.is_first_level == True:
+            if self.awi.is_first_level:
                 all_partners = self.awi.my_consumers
             else:
                 all_partners = self.awi.my_suppliers
@@ -375,7 +377,7 @@ class DistRedistAgent(OneShotSyncAgent):
         return super().before_step()
 
     def on_negotiation_success(self, contract: Contract, mechanism: SAONMI) -> None:
-        if self.awi.is_first_level == True:
+        if self.awi.is_first_level:
             partner = contract.annotation["buyer"]
         else:
             partner = contract.annotation["seller"]
@@ -391,7 +393,7 @@ class DistRedistAgent(OneShotSyncAgent):
         mechanism: SAONMI,
         state: SAOState,
     ) -> None:
-        if self.awi.is_first_level == True:
+        if self.awi.is_first_level:
             partner = annotation["buyer"]
         else:
             partner = annotation["seller"]

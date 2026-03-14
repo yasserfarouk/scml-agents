@@ -4,7 +4,6 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 import numpy as np
 from negmas import (
     AgentMechanismInterface,
-    AspirationNegotiator,
     Breach,
     Contract,
     Issue,
@@ -12,7 +11,7 @@ from negmas import (
     Negotiator,
     SAOController,
 )
-from scml.scml2020 import AWI, FactoryState, Failure, SCML2020Agent
+from scml.scml2020 import AWI, Failure, SCML2020Agent
 
 __all__ = ["PrintingAgent", "PrintingSAOController"]
 
@@ -121,9 +120,7 @@ class PrintingAgent(SCML2020Agent):
         self.print(f"line usage: {line_usage_list}")
         if self.awi.current_step >= 1:
             self.print("Financial Report:")
-            fr_list = awi.reports_at_step(
-                self.awi.current_step - 1
-            )  # type: Dict[str, FinancialReport]
+            fr_list = awi.reports_at_step(self.awi.current_step - 1)  # type: Dict[str, FinancialReport]
             if fr_list is not None:
                 for key, x in fr_list.items():
                     self.print(

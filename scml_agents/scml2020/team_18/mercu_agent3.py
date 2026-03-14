@@ -35,16 +35,13 @@ You can access the full list of these capabilities on the documentation.
 
 """
 
-import csv
 import functools
-import math
 import random
 
 # required for running the test tournament
 import time
-from abc import abstractmethod
 from collections import defaultdict
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from pprint import pformat
 from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Type, Union
 
@@ -53,9 +50,7 @@ from negmas import (
     AgentMechanismInterface,
     AgentWorldInterface,
     AspirationNegotiator,
-    Breach,
     Contract,
-    ControlledNegotiator,
     Issue,
     LinearUtilityFunction,
     MechanismState,
@@ -70,27 +65,17 @@ from negmas import (
 from negmas.events import Notification, Notifier
 from negmas.helpers import get_class, humanize_time, instantiate
 from negmas.sao import SAOController
-from scml.scml2020 import Failure, SCML2020Agent
+from scml.scml2020 import SCML2020Agent
 from scml.scml2020.agents import (
     BuyCheapSellExpensiveAgent,
     DecentralizingAgent,
-    DoNothingAgent,
-    IndDecentralizingAgent,
-    MovingRangeAgent,
-    ReactiveAgent,
 )
 from scml.scml2020.common import ANY_LINE, NO_COMMAND, QUANTITY, TIME, is_system_agent
 from scml.scml2020.components.negotiation import (
     NegotiationManager,
-    StepNegotiationManager,
-)
-from scml.scml2020.components.prediction import (
-    ExecutionRatePredictionStrategy,
-    MeanERPStrategy,
 )
 from scml.scml2020.components.production import ProductionStrategy
 from scml.scml2020.components.trading import TradingStrategy
-from scml.scml2020.services.controllers import StepController, SyncController
 from scml.utils import anac2020_collusion, anac2020_std
 from tabulate import tabulate
 
@@ -312,7 +297,7 @@ class MyController(SAOController, Notifier):
                 self.completed[neg.id] = False
                 self.awi.loginfo(
                     f"{str(self)} negotiating with {partner} on u={self.urange}"
-                    f", q=(1,{self.target-self.secured}), u=({tmin}, {tmax})"
+                    f", q=(1,{self.target - self.secured}), u=({tmin}, {tmax})"
                 )
                 self.awi.request_negotiation(
                     not self.is_seller,
@@ -478,7 +463,6 @@ class MyNegotiationManager(NegotiationManager):
             return
         quantity = c.secured
         target = c.target
-        time_range = info.time_range
         if is_seller:
             controllers = self.seller
         else:
@@ -804,21 +788,20 @@ class MyTradingStrategy(MyTradePredictionStrategy, TradingStrategy):
         super().on_contracts_finalized(signed, cancelled, rejectors)
         total_input_price, total_output_price = 0, 0
         seller_num, buyer_num = 0, 0
-        current_step = self.awi.current_step
         for contract in signed:
             q, u, t = (
                 contract.agreement["quantity"],
                 contract.agreement["unit_price"],
                 contract.agreement["time"],
             )
-            product = contract.annotation["product"]
-            produce_cost = self.awi.profile.costs[0][self.awi.my_input_product]
+            contract.annotation["product"]
+            self.awi.profile.costs[0][self.awi.my_input_product]
             your_agent = contract.annotation["seller"]
             if your_agent == self.id:
                 your_agent = contract.annotation["buyer"]
 
-            my_report = self.awi.reports_of_agent(self.id)
-            your_report = self.awi.reports_of_agent(your_agent)
+            self.awi.reports_of_agent(self.id)
+            self.awi.reports_of_agent(your_agent)
             """
             if my_report is None or your_report is None:
                 pass
@@ -947,7 +930,7 @@ class MyTradingStrategy(MyTradePredictionStrategy, TradingStrategy):
 
     def _format(self, c: Contract):
         return (
-            f"{f'>' if c.annotation['seller'] == self.id else '<'}"
+            f"{'>' if c.annotation['seller'] == self.id else '<'}"
             f"{c.annotation['buyer'] if c.annotation['seller'] == self.id else c.annotation['seller']}: "
             f"{c.agreement['quantity']} of {c.annotation['product']} @ {c.agreement['unit_price']} on {c.agreement['time']}"
         )

@@ -54,7 +54,6 @@ On Windows:
 You should see a short tournament running and results reported.
 """
 
-
 # required for development
 # required for running the test tournament
 import time
@@ -63,10 +62,8 @@ import time
 from typing import Any, Dict, List, Optional
 
 import numpy as np
-import pandas as pd
 from negmas import (
     AgentMechanismInterface,
-    Breach,
     Contract,
     Issue,
     LinearUtilityFunction,
@@ -82,19 +79,13 @@ from negmas import (
 from negmas.helpers import humanize_time
 from negmas.sao import SAOResponse
 from scml import ANY_LINE, is_system_agent
-from scml.scml2020 import QUANTITY, TIME, UNIT_PRICE, Failure, SCML2020Agent
+from scml.scml2020 import QUANTITY, TIME, UNIT_PRICE, SCML2020Agent
 from scml.scml2020.agents import (
-    BuyCheapSellExpensiveAgent,
     DecentralizingAgent,
-    DoNothingAgent,
     MarketAwareIndependentNegotiationsAgent,
-    MovingRangeAgent,
-    RandomAgent,
 )
-from scml.scml2020.components.negotiation import IndependentNegotiationsManager
 from scml.scml2020.components.production import (
     DemandDrivenProductionStrategy,
-    ProductionStrategy,
 )
 from scml.scml2020.components.trading import PredictionBasedTradingStrategy
 from scml.utils import anac2021_collusion, anac2021_oneshot, anac2021_std
@@ -418,7 +409,6 @@ class MyTradingStrategy(PredictionBasedTradingStrategy):
         sold, bought = 0, 0
         s = self.awi.current_step
         b = self.awi.current_balance
-        i = self.awi.current_inventory
 
         for contract, indx in contracts:
             is_seller = contract.annotation["seller"] == self.id
@@ -503,7 +493,6 @@ def run(
     n_steps=20,
     n_configs=2,
 ):
-
     """
     **Not needed for submission.** You can use this function to test your agent.
 

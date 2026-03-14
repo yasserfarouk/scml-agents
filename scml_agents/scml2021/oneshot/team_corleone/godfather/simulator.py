@@ -1,9 +1,7 @@
 import numpy as np
-from scml.scml2020.common import QUANTITY, TIME, UNIT_PRICE
 
 from .bilat_ufun import BilatUFun
 from .negotiation_history import BilateralHistory
-from .offer import Offer
 from .spaces import *
 from .strategy import Strategy
 

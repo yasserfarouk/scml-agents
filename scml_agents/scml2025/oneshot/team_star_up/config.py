@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+
 @dataclass
 class AgentConfig_Balanced:
     # ==============================
@@ -22,18 +23,19 @@ class AgentConfig_Balanced:
     INIT_SALE_PRICE_RATIO: float = 0.8
 
     # 交渉相手エージェントのスコアを算出する関数に使うパラメータ(売り手、買い手によって変わってくる)
-    # score = PRICE_SCORE * (price_mean - price_min) + ROUNED_SCORE * (20 - round_mean) 
+    # score = PRICE_SCORE * (price_mean - price_min) + ROUNED_SCORE * (20 - round_mean)
     #                                   + ACCEPT_SCORE * (abs(accepted_offer_quantity -first_offer_quantity))
     PRICE_SCORE: float = 1
     ROUND_SCORE: float = 0.1
     ACCEPT_SCORE: float = 0.5
-    # 
+    #
 
     # ==============================
 
+
 @dataclass
 class AgentConfig_Strong:
-    #競合が少ない時
+    # 競合が少ない時
 
     # ==============================
     # PARAMETERS
@@ -54,9 +56,10 @@ class AgentConfig_Strong:
     ACCEPT_SCORE: float = 0.5
     # ==============================
 
+
 @dataclass
 class AgentConfig_Weak:
-    #競合が多い時
+    # 競合が多い時
     # ==============================
     # PARAMETERS
     # pは必要量にかけるパラメータ

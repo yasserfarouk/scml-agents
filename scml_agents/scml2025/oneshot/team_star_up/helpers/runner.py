@@ -1,19 +1,17 @@
 import time
 
-from negmas.helpers import humanize_time
-from rich import print
-from scml.oneshot.agents import RandomOneShotAgent, SyncRandomOneShotAgent, GreedySyncAgent, EqualDistOneShotAgent
-from scml.std.agents import SyncRandomStdAgent
+from scml.oneshot.agents import (
+    EqualDistOneShotAgent,
+    GreedySyncAgent,
+    RandomOneShotAgent,
+    SyncRandomOneShotAgent,
+)
 from scml.utils import anac2024_oneshot, anac2024_std
-from tabulate import tabulate
-from ..myagent import HoriYamaAgent
-from ..BestSyncAgent import BestSyncAgent
-from ..horinouchi2 import Horinouchi2Agent
-from ..team_miyajima_oneshot.cautious import CautiousOneShotAgent
+
 from ..BestSyncAgent1_4_market_sigmoid import BestSyncAgent1_4MarketSigmoid
-from ..BestSyncAgentDP_market_sigmoid import BestSyncAgentDPMarketSigmoid
-from ..BestSyncAgentDP_market import BestSyncAgentDPMarket
 from ..BestSyncAgent1_4_market_sigmoid_price import BestSyncAgent1_4MarketSigmoidPrice
+from ..myagent import HoriYamaAgent
+from ..team_miyajima_oneshot.cautious import CautiousOneShotAgent
 
 
 def run(
@@ -47,14 +45,20 @@ def run(
 
     if competition == "oneshot":
         competitors = list(competitors) + [
-            RandomOneShotAgent, 
-            SyncRandomOneShotAgent, 
-            GreedySyncAgent, 
-            EqualDistOneShotAgent,]
+            RandomOneShotAgent,
+            SyncRandomOneShotAgent,
+            GreedySyncAgent,
+            EqualDistOneShotAgent,
+        ]
     else:
-        competitors = list(competitors) + [CautiousOneShotAgent, BestSyncAgent1_4MarketSigmoidPrice, BestSyncAgent1_4MarketSigmoid, HoriYamaAgent]
+        competitors = list(competitors) + [
+            CautiousOneShotAgent,
+            BestSyncAgent1_4MarketSigmoidPrice,
+            BestSyncAgent1_4MarketSigmoid,
+            HoriYamaAgent,
+        ]
 
-    start = time.perf_counter()
+    time.perf_counter()
     if competition == "std":
         runner = anac2024_std
     else:
@@ -68,12 +72,10 @@ def run(
     # just make names shorter
     results.total_scores.agent_type = results.total_scores.agent_type.str.split(  # type: ignore
         "."
-    ).str[
-        -1
-    ]
+    ).str[-1]
     # display results
-    pass # print(tabulate(results.total_scores, headers="keys", tablefmt="psql"))  # type: ignore
-    pass # print(f"Finished in {humanize_time(time.perf_counter() - start)}")
+    pass  # print(tabulate(results.total_scores, headers="keys", tablefmt="psql"))  # type: ignore
+    pass  # print(f"Finished in {humanize_time(time.perf_counter() - start)}")
 
 
 if __name__ == "__main__":

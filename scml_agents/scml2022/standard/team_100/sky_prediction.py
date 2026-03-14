@@ -1,7 +1,5 @@
 from abc import abstractmethod
-from typing import Iterable
-from typing import List
-from typing import Union
+from typing import Iterable, List, Union
 
 import numpy as np
 from negmas import Contract
@@ -53,7 +51,7 @@ class TradePredictionStrategy:
         predicted_outputs: Union[int, np.ndarray] = None,
         predicted_inputs: Union[int, np.ndarray] = None,
         add_trade=False,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.expected_outputs = predicted_outputs
@@ -80,7 +78,6 @@ class TradePredictionStrategy:
         """Will be called at the end of every step to update the prediction"""
 
     def init(self):
-
         self.input_cost = (
             self.awi.catalog_prices[self.awi.my_input_product]
         ) * np.ones(self.awi.n_steps, dtype=int)

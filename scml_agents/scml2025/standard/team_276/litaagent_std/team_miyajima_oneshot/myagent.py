@@ -6,26 +6,23 @@
 This code is free to use or update given that proper attribution is given to
 the authors and the ANAC 2024 SCML.
 """
+
 from __future__ import annotations
 
+import random
+
 # required for typing
-from typing import Any
+# required for typing
+from negmas import Contract, ResponseType, SAOResponse
 
 # required for development
 from scml.oneshot import *
 from scml.std import *
-from scml.oneshot.common import is_system_agent
-
-# required for typing
-from negmas import Contract, Outcome, SAOResponse, SAOState, ResponseType
-
-import numpy
-import random
 
 # def distribute(q: int, n: int) -> list[int]:
 #     """
 #     Distributes n values over m bins with at least one item per bin assuming q > n
-    
+
 #     INPUT:
 #     - q: 必要な総数量
 #     - n: 交渉相手の数
@@ -149,10 +146,10 @@ import random
 #                 )
 #                 if u > u_max:
 #                     u_max, best_indx = u, i
-            
+
 #             neg_step_normalized = max([states[p].step/self.get_nmi(p).n_steps for p in (plist[best_indx] if len(plist)>0 else all_partners)])
-            
-            
+
+
 #             threshold = self._threshold_max - (self._threshold_max - self._threshold_min) * neg_step_normalized
 
 #             # If the best combination of offers is good enough, accept them and end all
@@ -322,6 +319,7 @@ import random
 #             return s, pmax if seller else pmin
 #         return s, random.randint(pmin, pmax)
 
+
 def distribute(
     q: int,
     n: int,
@@ -330,7 +328,7 @@ def distribute(
     equal=False,
     concentrated=False,
     allow_zero=False,
-    concentrated_idx: list[int] = []
+    concentrated_idx: list[int] = [],
 ) -> list[int]:
     """Distributes q values over n bins.
 
@@ -365,12 +363,12 @@ def distribute(
             q += lst[i]
             lst[i] = min(mx, q)
             q -= lst[i]
-        concentrated_lst = sorted(lst,reverse=True)[:len(concentrated_idx)]
+        concentrated_lst = sorted(lst, reverse=True)[: len(concentrated_idx)]
         for x in concentrated_lst:
             lst.remove(x)
         random.shuffle(lst)
-        for i,x in zip(concentrated_idx,concentrated_lst):
-            lst.insert(i,x)
+        for i, x in zip(concentrated_idx, concentrated_lst):
+            lst.insert(i, x)
         # print(lst,concentrated_idx)
         return lst
 
@@ -389,11 +387,14 @@ def distribute(
     r = Counter(choice(n, q))
     return [r.get(_, 0) + per for _ in range(n)]
 
+
 def powerset(iterable):
     """冪集合"""
     from itertools import chain, combinations
+
     s = list(iterable)
-    return chain.from_iterable(combinations(s, r) for r in range(len(s)+1))
+    return chain.from_iterable(combinations(s, r) for r in range(len(s) + 1))
+
 
 class SyncRandomOneShotAgent(OneShotSyncAgent):
     """
@@ -527,7 +528,9 @@ class SyncRandomOneShotAgent(OneShotSyncAgent):
 
             # If the best combination of offers is good enough, accept them and end all
             # other negotiations
-            th = self._allowed_mismatch(min(state.relative_time for state in states.values()))
+            th = self._allowed_mismatch(
+                min(state.relative_time for state in states.values())
+            )
             if best_diff <= th:
                 partner_ids = plist[best_indx]
                 others = list(partners.difference(partner_ids).union(future_partners))
@@ -576,6 +579,7 @@ class SyncRandomOneShotAgent(OneShotSyncAgent):
             return s, pmax if seller else pmin
         return s, random.randint(pmin, pmax)
 
+
 class EnhancedSyncRandomOneShotAgentLegacy(OneShotSyncAgent):
     """
     An agent that distributes its needs over its partners randomly.
@@ -605,7 +609,7 @@ class EnhancedSyncRandomOneShotAgentLegacy(OneShotSyncAgent):
         overordering_min: float = 0.0,
         overordering_exp: float = 0.4,
         mismatch_exp: float = 4.0,
-        #mismatch_max: float = 0.3,
+        # mismatch_max: float = 0.3,
         overmismatch_max_selling: float = 0,
         overmismatch_max_buying: float = 0.2,
         undermismatch_min_selling: float = -0.4,
@@ -618,7 +622,7 @@ class EnhancedSyncRandomOneShotAgentLegacy(OneShotSyncAgent):
         self.overordering_min = overordering_min
         self.overordering_exp = overordering_exp
         self.mismatch_exp = mismatch_exp
-        #self.mismatch_max = mismatch_max
+        # self.mismatch_max = mismatch_max
         self.overmismatch_max_selling = overmismatch_max_selling
         self.overmismatch_max_buying = overmismatch_max_buying
         self.undermismatch_min_selling = undermismatch_min_selling
@@ -626,13 +630,25 @@ class EnhancedSyncRandomOneShotAgentLegacy(OneShotSyncAgent):
         super().__init__(*args, **kwargs)
 
     def init(self):
-        #if 0 < self.mismatch_max < 1:
-            #self.mismatch_max *= self.awi.n_lines
-        self.overordering_max = self.overordering_max_selling if self.awi.my_suppliers==["SELLER"] else self.overordering_max_buying
-        self.overmismatch_max = self.awi.n_lines * (self.overmismatch_max_selling if self.awi.my_suppliers==["SELLER"] else self.overmismatch_max_buying)
-        self.undermismatch_min = self.awi.n_lines * (self.undermismatch_min_selling if self.awi.my_suppliers==["SELLER"] else self.undermismatch_min_buying)
-        #print("allow_zero_quantity:",self.awi.allow_zero_quantity)
-        #print("storage_cost:",self.awi.current_storage_cost,"disposal_cost:",self.awi.current_disposal_cost,"shortfall_penalty",self.awi.current_shortfall_penalty)
+        # if 0 < self.mismatch_max < 1:
+        # self.mismatch_max *= self.awi.n_lines
+        self.overordering_max = (
+            self.overordering_max_selling
+            if self.awi.my_suppliers == ["SELLER"]
+            else self.overordering_max_buying
+        )
+        self.overmismatch_max = self.awi.n_lines * (
+            self.overmismatch_max_selling
+            if self.awi.my_suppliers == ["SELLER"]
+            else self.overmismatch_max_buying
+        )
+        self.undermismatch_min = self.awi.n_lines * (
+            self.undermismatch_min_selling
+            if self.awi.my_suppliers == ["SELLER"]
+            else self.undermismatch_min_buying
+        )
+        # print("allow_zero_quantity:",self.awi.allow_zero_quantity)
+        # print("storage_cost:",self.awi.current_storage_cost,"disposal_cost:",self.awi.current_disposal_cost,"shortfall_penalty",self.awi.current_shortfall_penalty)
         return super().init()
 
     def distribute_needs(self, t: float) -> dict[str, int]:
@@ -711,40 +727,63 @@ class EnhancedSyncRandomOneShotAgentLegacy(OneShotSyncAgent):
             plus_best_diff, plus_best_indx = float("inf"), -1
             minus_best_diff, minus_best_indx = -float("inf"), -1
             best_diff, best_indx = float("inf"), -1
-            
+
             for i, partner_ids in enumerate(plist):
                 offered = sum(offers[p][QUANTITY] for p in partner_ids)
                 diff = offered - needs
-                if diff>=0: # 必要以上の量のとき
+                if diff >= 0:  # 必要以上の量のとき
                     if diff < plus_best_diff:
                         plus_best_diff, plus_best_indx = diff, i
                     elif diff == plus_best_diff:
-                        if is_selling: # 売り手の場合は高かったら更新
-                            if sum(offers[p][UNIT_PRICE] for p in partner_ids) > sum(offers[p][UNIT_PRICE] for p in plist[plus_best_indx]):
+                        if is_selling:  # 売り手の場合は高かったら更新
+                            if sum(offers[p][UNIT_PRICE] for p in partner_ids) > sum(
+                                offers[p][UNIT_PRICE] for p in plist[plus_best_indx]
+                            ):
                                 plus_best_diff, plus_best_indx = diff, i
-                        else: # 買い手の場合は安かったら更新
-                            if sum(offers[p][UNIT_PRICE] for p in partner_ids) < sum(offers[p][UNIT_PRICE] for p in plist[plus_best_indx]):
+                        else:  # 買い手の場合は安かったら更新
+                            if sum(offers[p][UNIT_PRICE] for p in partner_ids) < sum(
+                                offers[p][UNIT_PRICE] for p in plist[plus_best_indx]
+                            ):
                                 plus_best_diff, plus_best_indx = diff, i
-                if diff<=0: #必要量に満たないとき
+                if diff <= 0:  # 必要量に満たないとき
                     if diff > minus_best_diff:
                         minus_best_diff, minus_best_indx = diff, i
                     elif diff == minus_best_diff:
-                        if diff < 0 and len(partner_ids) < len(plist[minus_best_indx]): # アクセプトする不足分をCounterOfferできる相手の数が多かったら更新
+                        if (
+                            diff < 0 and len(partner_ids) < len(plist[minus_best_indx])
+                        ):  # アクセプトする不足分をCounterOfferできる相手の数が多かったら更新
                             minus_best_diff, minus_best_indx = diff, i
-                        elif diff == 0 or len(partner_ids) == len(plist[minus_best_indx]):
-                            if is_selling: # 売り手の場合は高かったら更新
-                                if sum(offers[p][UNIT_PRICE] for p in partner_ids) > sum(offers[p][UNIT_PRICE] for p in plist[minus_best_indx]):
+                        elif diff == 0 or len(partner_ids) == len(
+                            plist[minus_best_indx]
+                        ):
+                            if is_selling:  # 売り手の場合は高かったら更新
+                                if sum(
+                                    offers[p][UNIT_PRICE] for p in partner_ids
+                                ) > sum(
+                                    offers[p][UNIT_PRICE]
+                                    for p in plist[minus_best_indx]
+                                ):
                                     minus_best_diff, minus_best_indx = diff, i
-                            else: # 買い手の場合は安かったら更新
-                                if sum(offers[p][UNIT_PRICE] for p in partner_ids) < sum(offers[p][UNIT_PRICE] for p in plist[minus_best_indx]):
-                                    minus_best_diff, minus_best_indx = diff, i      
+                            else:  # 買い手の場合は安かったら更新
+                                if sum(
+                                    offers[p][UNIT_PRICE] for p in partner_ids
+                                ) < sum(
+                                    offers[p][UNIT_PRICE]
+                                    for p in plist[minus_best_indx]
+                                ):
+                                    minus_best_diff, minus_best_indx = diff, i
 
             unneeded_response = (
-                SAOResponse(ResponseType.END_NEGOTIATION, None) if not self.awi.allow_zero_quantity
-                else SAOResponse(ResponseType.REJECT_OFFER, (0, self.awi.current_step, 0))
+                SAOResponse(ResponseType.END_NEGOTIATION, None)
+                if not self.awi.allow_zero_quantity
+                else SAOResponse(
+                    ResponseType.REJECT_OFFER, (0, self.awi.current_step, 0)
+                )
             )
 
-            th_min, th_max = self._allowed_mismatch(min(state.relative_time for state in states.values()))
+            th_min, th_max = self._allowed_mismatch(
+                min(state.relative_time for state in states.values())
+            )
             if th_min <= minus_best_diff or plus_best_diff <= th_max:
                 if th_min <= minus_best_diff and plus_best_diff <= th_max:
                     if -minus_best_diff == plus_best_diff:
@@ -760,46 +799,65 @@ class EnhancedSyncRandomOneShotAgentLegacy(OneShotSyncAgent):
                     best_diff, best_indx = plus_best_diff, plus_best_indx
                 else:
                     best_diff, best_indx = minus_best_diff, minus_best_indx
-                    
+
                 partner_ids = plist[best_indx]
                 others = list(partners.difference(partner_ids).union(future_partners))
                 response |= {
                     k: SAOResponse(ResponseType.ACCEPT_OFFER, offers[k])
                     for k in partner_ids
                 } | {k: unneeded_response for k in others}
-                
-                if best_diff < 0 and len(others) > 0: # 必要量に足りないとき、CounterOfferで補う
-                    s,p = self._step_and_price()
+
+                if (
+                    best_diff < 0 and len(others) > 0
+                ):  # 必要量に足りないとき、CounterOfferで補う
+                    s, p = self._step_and_price()
                     offer_quantities = dict(
                         zip(
                             others,
-                            distribute(-best_diff,len(others),equal=self.equal_distribution,allow_zero=self.awi.allow_zero_quantity)
+                            distribute(
+                                -best_diff,
+                                len(others),
+                                equal=self.equal_distribution,
+                                allow_zero=self.awi.allow_zero_quantity,
+                            ),
                         )
                     )
-                    response.update({
-                        k:(
-                            unneeded_response if q==0
-                            else SAOResponse(ResponseType.REJECT_OFFER, (q,s,p))
-                        ) for k,q in offer_quantities.items()
-                    })
+                    response.update(
+                        {
+                            k: (
+                                unneeded_response
+                                if q == 0
+                                else SAOResponse(ResponseType.REJECT_OFFER, (q, s, p))
+                            )
+                            for k, q in offer_quantities.items()
+                        }
+                    )
                 continue
 
             # If I still do not have a good enough offer, distribute my current needs
             # randomly over my partners.
             t = min(_.relative_time for _ in states.values())
             distribution = self.distribute_needs(t)
-            response.update({
-                k: (
-                    unneeded_response if q == 0
-                    else SAOResponse(ResponseType.REJECT_OFFER, (q, self.awi.current_step, price))
-                )for k, q in distribution.items()
-            })
+            response.update(
+                {
+                    k: (
+                        unneeded_response
+                        if q == 0
+                        else SAOResponse(
+                            ResponseType.REJECT_OFFER, (q, self.awi.current_step, price)
+                        )
+                    )
+                    for k, q in distribution.items()
+                }
+            )
         return response
 
     def _allowed_mismatch(self, r: float):
         # mn, mx = 0, self.mismatch_max
         # return mn + (mx - mn) * (r**self.mismatch_exp)
-        return self.undermismatch_min * ((1-r)**self.mismatch_exp), self.overmismatch_max * (r**self.mismatch_exp)
+        return self.undermismatch_min * (
+            (1 - r) ** self.mismatch_exp
+        ), self.overmismatch_max * (r**self.mismatch_exp)
 
     def _overordering_fraction(self, t: float):
         mn, mx = self.overordering_min, self.overordering_max
@@ -809,15 +867,19 @@ class EnhancedSyncRandomOneShotAgentLegacy(OneShotSyncAgent):
         """Returns current step and a random (or max) price"""
         s = self.awi.current_step
         seller = self.awi.is_first_level
-        issues = self.awi.current_output_issues if seller else self.awi.current_input_issues
+        issues = (
+            self.awi.current_output_issues if seller else self.awi.current_input_issues
+        )
         pmin = issues[UNIT_PRICE].min_value
         pmax = issues[UNIT_PRICE].max_value
         if best_price:
             return s, pmax if seller else pmin
         return s, random.randint(pmin, pmax)
 
+
 ########################################################################################################
 ########################################################################################################
+
 
 class EnhancedSyncRandomOneShotAgent(OneShotSyncAgent):
     """
@@ -867,7 +929,11 @@ class EnhancedSyncRandomOneShotAgent(OneShotSyncAgent):
         super().__init__(*args, **kwargs)
 
     def init(self):
-        self.overordering_max = self.overordering_max_selling if self.awi.my_suppliers==["SELLER"] else self.overordering_max_buying
+        self.overordering_max = (
+            self.overordering_max_selling
+            if self.awi.my_suppliers == ["SELLER"]
+            else self.overordering_max_buying
+        )
         # self.overmismatch_max = self.awi.n_lines * (self.overmismatch_max_selling if self.awi.my_suppliers==["SELLER"] else self.overmismatch_max_buying)
         # self.undermismatch_min = self.awi.n_lines * (self.undermismatch_min_selling if self.awi.my_suppliers==["SELLER"] else self.undermismatch_min_buying)
         self.overmismatch_max_selling *= self.awi.n_lines
@@ -876,22 +942,43 @@ class EnhancedSyncRandomOneShotAgent(OneShotSyncAgent):
         self.undermismatch_min_buying *= self.awi.n_lines
 
         # 各ラウンドでの相手一人あたりの(擬似的な)提案個数
-        self.rounds_ave_offered = [self.awi.n_lines/len(self.awi.my_consumers)] + [self.awi.n_lines/2/len(self.awi.my_consumers)]*9 + [1]*10  if self.awi.my_suppliers==["SELLER"]\
-            else [self.awi.n_lines/len(self.awi.my_suppliers)] + [self.awi.n_lines/2/len(self.awi.my_suppliers)]*9 + [1]*10  
-        
-        self.total_agreed_quantity = {k:0 for k in (self.awi.my_consumers if self.awi.my_suppliers==["SELLER"] else self.awi.my_suppliers)}
-        #print("allow_zero_quantity:",self.awi.allow_zero_quantity)
-        #print("storage_cost:",self.awi.current_storage_cost,"disposal_cost:",self.awi.current_disposal_cost,"shortfall_penalty",self.awi.current_shortfall_penalty)
+        self.rounds_ave_offered = (
+            [self.awi.n_lines / len(self.awi.my_consumers)]
+            + [self.awi.n_lines / 2 / len(self.awi.my_consumers)] * 9
+            + [1] * 10
+            if self.awi.my_suppliers == ["SELLER"]
+            else [self.awi.n_lines / len(self.awi.my_suppliers)]
+            + [self.awi.n_lines / 2 / len(self.awi.my_suppliers)] * 9
+            + [1] * 10
+        )
+
+        self.total_agreed_quantity = {
+            k: 0
+            for k in (
+                self.awi.my_consumers
+                if self.awi.my_suppliers == ["SELLER"]
+                else self.awi.my_suppliers
+            )
+        }
+        # print("allow_zero_quantity:",self.awi.allow_zero_quantity)
+        # print("storage_cost:",self.awi.current_storage_cost,"disposal_cost:",self.awi.current_disposal_cost,"shortfall_penalty",self.awi.current_shortfall_penalty)
         return super().init()
 
     def distribute_needs(
-        self, t: float, mx: int|None = None, equal: bool|None = None, allow_zero: bool|None = None,
-        concentrated: bool = False, concentrated_ids: list[str] = []
+        self,
+        t: float,
+        mx: int | None = None,
+        equal: bool | None = None,
+        allow_zero: bool | None = None,
+        concentrated: bool = False,
+        concentrated_ids: list[str] = [],
     ) -> dict[str, int]:
         """Distributes my needs randomly over all my partners"""
 
-        if equal is None: equal = self.equal_distribution
-        if allow_zero is None: allow_zero = self.awi.allow_zero_quantity
+        if equal is None:
+            equal = self.equal_distribution
+        if allow_zero is None:
+            allow_zero = self.awi.allow_zero_quantity
 
         dist = dict()
         for needs, all_partners in [
@@ -901,7 +988,7 @@ class EnhancedSyncRandomOneShotAgent(OneShotSyncAgent):
             # find suppliers and consumers still negotiating with me
             # partners = [_ for _ in all_partners if _ in self.negotiators.keys()]
             # n_partners = len(partners)
-            partners,n_partners = [],0
+            partners, n_partners = [], 0
             concentrated_idx = []
             for p in all_partners:
                 if p not in self.negotiators.keys():
@@ -924,11 +1011,11 @@ class EnhancedSyncRandomOneShotAgent(OneShotSyncAgent):
                         distribute(
                             int(needs * (1 + self._overordering_fraction(t))),
                             n_partners,
-                            mx = mx,
-                            equal = equal,
-                            concentrated = concentrated,
-                            allow_zero = allow_zero,
-                            concentrated_idx = concentrated_idx 
+                            mx=mx,
+                            equal=equal,
+                            concentrated=concentrated,
+                            allow_zero=allow_zero,
+                            concentrated_idx=concentrated_idx,
                         ),
                     )
                 )
@@ -939,17 +1026,35 @@ class EnhancedSyncRandomOneShotAgent(OneShotSyncAgent):
         super().on_negotiation_success(contract, mechanism)
         partner_id = [p for p in contract.partners if p != self.id][0]
         self.total_agreed_quantity[partner_id] += contract.agreement["quantity"]
-    
+
     def first_proposals(self):
         # just randomly distribute my needs over my partners (with best price for me).
         s, p = self._step_and_price(best_price=True)
-        my_negotiators = [p for p in (self.awi.my_consumers if self.awi.my_suppliers==["SELLER"] else self.awi.my_suppliers) if p in self.negotiators.keys()]
+        my_negotiators = [
+            p
+            for p in (
+                self.awi.my_consumers
+                if self.awi.my_suppliers == ["SELLER"]
+                else self.awi.my_suppliers
+            )
+            if p in self.negotiators.keys()
+        ]
         if self.awi.current_step > self.awi.n_steps * 0.5 and len(my_negotiators) > 0:
-            concentrated_ids = sorted(my_negotiators, key=lambda x:self.total_agreed_quantity[x], reverse=True)[:1]
-            distribution = self.distribute_needs(t=0,mx=self.awi.n_lines,allow_zero=False,concentrated=True,concentrated_ids=concentrated_ids)
+            concentrated_ids = sorted(
+                my_negotiators,
+                key=lambda x: self.total_agreed_quantity[x],
+                reverse=True,
+            )[:1]
+            distribution = self.distribute_needs(
+                t=0,
+                mx=self.awi.n_lines,
+                allow_zero=False,
+                concentrated=True,
+                concentrated_ids=concentrated_ids,
+            )
         else:
             distribution = self.distribute_needs(t=0)
-        
+
         d = {
             k: (q, s, p) if q > 0 or self.awi.allow_zero_quantity else None
             for k, q in distribution.items()
@@ -958,7 +1063,9 @@ class EnhancedSyncRandomOneShotAgent(OneShotSyncAgent):
 
     def counter_all(self, offers, states):
         response = dict()
-        future_partners = {k for k, v in offers.items() if v[TIME] != self.awi.current_step}
+        future_partners = {
+            k for k, v in offers.items() if v[TIME] != self.awi.current_step
+        }
         offers = {k: v for k, v in offers.items() if v[TIME] == self.awi.current_step}
         # process for sales and supplies independently
         for needs, all_partners, issues in [
@@ -984,22 +1091,35 @@ class EnhancedSyncRandomOneShotAgent(OneShotSyncAgent):
             # ラウンドごとの相手一人あたりの平均提案個数を擬似的に算出
             if len(partners) > 0:
                 neg_step = min(state.step for state in states.values())
-                self.rounds_ave_offered[neg_step] = 0.7*self.rounds_ave_offered[neg_step] + 0.3*sum([offers[p][QUANTITY] for p in partners])/len(partners)
-                
+                self.rounds_ave_offered[neg_step] = 0.7 * self.rounds_ave_offered[
+                    neg_step
+                ] + 0.3 * sum([offers[p][QUANTITY] for p in partners]) / len(partners)
+
                 # print("round",neg_step,self.rounds_ave_offered,sum([offers[p][QUANTITY] for p in partners]))
 
             unneeded_response = (
-                SAOResponse(ResponseType.END_NEGOTIATION, None) if not self.awi.allow_zero_quantity
-                else SAOResponse(ResponseType.REJECT_OFFER, (0, self.awi.current_step, 0))
+                SAOResponse(ResponseType.END_NEGOTIATION, None)
+                if not self.awi.allow_zero_quantity
+                else SAOResponse(
+                    ResponseType.REJECT_OFFER, (0, self.awi.current_step, 0)
+                )
             )
-            
+
             # find the set of partners that gave me the best offer set
             # (i.e. total quantity nearest to my needs)
             plist = list(powerset(partners))[::-1]
-            plus_best_diff, plus_best_expected_diff, plus_best_indx = float("inf"), float("inf"), -1
-            minus_best_diff, minus_best_expected_diff, minus_best_indx = -float("inf"), -float("inf"), -1
+            plus_best_diff, _plus_best_expected_diff, plus_best_indx = (
+                float("inf"),
+                float("inf"),
+                -1,
+            )
+            minus_best_diff, _minus_best_expected_diff, minus_best_indx = (
+                -float("inf"),
+                -float("inf"),
+                -1,
+            )
             best_diff, best_indx = float("inf"), -1
-            
+
             # for i, partner_ids in enumerate(plist):
             #     offered = sum(offers[p][QUANTITY] for p in partner_ids)
             #     neg_step = min(state.step for state in states.values())
@@ -1053,34 +1173,50 @@ class EnhancedSyncRandomOneShotAgent(OneShotSyncAgent):
             #         elif expected_diff > minus_best_diff:
             #             minus_best_diff,minus_best_expected_diff,minus_best_indx = diff,expected_diff,i
 
-                
-            
             for i, partner_ids in enumerate(plist):
                 offered = sum(offers[p][QUANTITY] for p in partner_ids)
                 diff = offered - needs
-                if diff>=0: # 必要以上の量のとき
+                if diff >= 0:  # 必要以上の量のとき
                     if diff < plus_best_diff:
                         plus_best_diff, plus_best_indx = diff, i
                     elif diff == plus_best_diff:
-                        if is_selling: # 売り手の場合は高かったら更新
-                            if sum(offers[p][UNIT_PRICE] for p in partner_ids) > sum(offers[p][UNIT_PRICE] for p in plist[plus_best_indx]):
+                        if is_selling:  # 売り手の場合は高かったら更新
+                            if sum(offers[p][UNIT_PRICE] for p in partner_ids) > sum(
+                                offers[p][UNIT_PRICE] for p in plist[plus_best_indx]
+                            ):
                                 plus_best_diff, plus_best_indx = diff, i
-                        else: # 買い手の場合は安かったら更新
-                            if sum(offers[p][UNIT_PRICE] for p in partner_ids) < sum(offers[p][UNIT_PRICE] for p in plist[plus_best_indx]):
+                        else:  # 買い手の場合は安かったら更新
+                            if sum(offers[p][UNIT_PRICE] for p in partner_ids) < sum(
+                                offers[p][UNIT_PRICE] for p in plist[plus_best_indx]
+                            ):
                                 plus_best_diff, plus_best_indx = diff, i
-                if diff<=0: #必要量に満たないとき
+                if diff <= 0:  # 必要量に満たないとき
                     if diff > minus_best_diff:
                         minus_best_diff, minus_best_indx = diff, i
                     elif diff == minus_best_diff:
-                        if diff < 0 and len(partner_ids) < len(plist[minus_best_indx]): # アクセプトする不足分をCounterOfferできる相手の数が多かったら更新
+                        if (
+                            diff < 0 and len(partner_ids) < len(plist[minus_best_indx])
+                        ):  # アクセプトする不足分をCounterOfferできる相手の数が多かったら更新
                             minus_best_diff, minus_best_indx = diff, i
-                        elif diff == 0 or len(partner_ids) == len(plist[minus_best_indx]):
-                            if is_selling: # 売り手の場合は高かったら更新
-                                if sum(offers[p][UNIT_PRICE] for p in partner_ids) > sum(offers[p][UNIT_PRICE] for p in plist[minus_best_indx]):
+                        elif diff == 0 or len(partner_ids) == len(
+                            plist[minus_best_indx]
+                        ):
+                            if is_selling:  # 売り手の場合は高かったら更新
+                                if sum(
+                                    offers[p][UNIT_PRICE] for p in partner_ids
+                                ) > sum(
+                                    offers[p][UNIT_PRICE]
+                                    for p in plist[minus_best_indx]
+                                ):
                                     minus_best_diff, minus_best_indx = diff, i
-                            else: # 買い手の場合は安かったら更新
-                                if sum(offers[p][UNIT_PRICE] for p in partner_ids) < sum(offers[p][UNIT_PRICE] for p in plist[minus_best_indx]):
-                                    minus_best_diff, minus_best_indx = diff, i      
+                            else:  # 買い手の場合は安かったら更新
+                                if sum(
+                                    offers[p][UNIT_PRICE] for p in partner_ids
+                                ) < sum(
+                                    offers[p][UNIT_PRICE]
+                                    for p in plist[minus_best_indx]
+                                ):
+                                    minus_best_diff, minus_best_indx = diff, i
 
             # th_min_plus, th_max_plus = self._allowed_mismatch(
             #     min(state.relative_time for state in states.values()),
@@ -1105,21 +1241,23 @@ class EnhancedSyncRandomOneShotAgent(OneShotSyncAgent):
             #         best_diff, best_indx = plus_best_diff, plus_best_indx
             #     else:
             #         best_diff, best_indx = minus_best_diff, minus_best_indx
-            
+
             th_min_plus, th_max_plus = self._allowed_mismatch(
                 min(state.relative_time for state in states.values()),
                 len(partners.difference(plist[plus_best_indx]).union(future_partners)),
-                is_selling)
+                is_selling,
+            )
             th_min_minus, th_max_minus = self._allowed_mismatch(
                 min(state.relative_time for state in states.values()),
                 len(partners.difference(plist[minus_best_indx]).union(future_partners)),
-                is_selling)
+                is_selling,
+            )
             if th_min_minus <= minus_best_diff or plus_best_diff <= th_max_plus:
                 if th_min_minus <= minus_best_diff and plus_best_diff <= th_max_plus:
                     if -minus_best_diff == plus_best_diff:
-                        if is_selling: # 売り手のときは、best_diff>0だとshortfall penaltyが発生するのでminus優先
+                        if is_selling:  # 売り手のときは、best_diff>0だとshortfall penaltyが発生するのでminus優先
                             best_diff, best_indx = minus_best_diff, minus_best_indx
-                        else: # 買い手のときは、best_diff<0だとshortfall penaltyが発生するので、CounterOfferで補えるときは
+                        else:  # 買い手のときは、best_diff<0だとshortfall penaltyが発生するので、CounterOfferで補えるときは
                             best_diff, best_indx = plus_best_diff, plus_best_indx
                     elif -minus_best_diff < plus_best_diff:
                         best_diff, best_indx = minus_best_diff, minus_best_indx
@@ -1129,17 +1267,18 @@ class EnhancedSyncRandomOneShotAgent(OneShotSyncAgent):
                     best_diff, best_indx = plus_best_diff, plus_best_indx
                 else:
                     best_diff, best_indx = minus_best_diff, minus_best_indx
-                    
-                    
+
                 partner_ids = plist[best_indx]
                 others = list(partners.difference(partner_ids).union(future_partners))
                 response |= {
                     k: SAOResponse(ResponseType.ACCEPT_OFFER, offers[k])
                     for k in partner_ids
                 } | {k: unneeded_response for k in others}
-                
-                if best_diff < 0 and len(others) > 0: # 必要量に足りないとき、CounterOfferで補う
-                    s,p = self._step_and_price(best_price=True)
+
+                if (
+                    best_diff < 0 and len(others) > 0
+                ):  # 必要量に足りないとき、CounterOfferで補う
+                    s, p = self._step_and_price(best_price=True)
                     # distribution = dict(
                     #     zip(
                     #         others,
@@ -1148,32 +1287,56 @@ class EnhancedSyncRandomOneShotAgent(OneShotSyncAgent):
                     # )
                     t = min(states[p].relative_time for p in others)
                     if self.awi.current_step > self.awi.n_steps * 0.5:
-                        concentrated_ids = sorted(others, key=lambda x:self.total_agreed_quantity[x], reverse=True)[:1]
-                        concentrated_idx = [i for i,p in enumerate(others) if p in concentrated_ids]
-                        distribution = dict(zip(
+                        concentrated_ids = sorted(
                             others,
-                            distribute(
-                                int(-best_diff * (1 + self._overordering_fraction(t))),
-                                len(others),
-                                mx = self.awi.n_lines,
-                                concentrated = True,
-                                concentrated_idx = concentrated_idx
+                            key=lambda x: self.total_agreed_quantity[x],
+                            reverse=True,
+                        )[:1]
+                        concentrated_idx = [
+                            i for i, p in enumerate(others) if p in concentrated_ids
+                        ]
+                        distribution = dict(
+                            zip(
+                                others,
+                                distribute(
+                                    int(
+                                        -best_diff
+                                        * (1 + self._overordering_fraction(t))
+                                    ),
+                                    len(others),
+                                    mx=self.awi.n_lines,
+                                    concentrated=True,
+                                    concentrated_idx=concentrated_idx,
+                                ),
                             )
-                        ))
+                        )
                     else:
-                        distribution = dict(zip(
-                            others,
-                            distribute(int(-best_diff * (1 + self._overordering_fraction(t))), len(others), mx = self.awi.n_lines)
-                        ))
-                    response.update({
-                        k:(
-                            unneeded_response if q==0
-                            else SAOResponse(ResponseType.REJECT_OFFER, (q,s,p))
-                        ) for k,q in distribution.items()
-                    })
-                
+                        distribution = dict(
+                            zip(
+                                others,
+                                distribute(
+                                    int(
+                                        -best_diff
+                                        * (1 + self._overordering_fraction(t))
+                                    ),
+                                    len(others),
+                                    mx=self.awi.n_lines,
+                                ),
+                            )
+                        )
+                    response.update(
+                        {
+                            k: (
+                                unneeded_response
+                                if q == 0
+                                else SAOResponse(ResponseType.REJECT_OFFER, (q, s, p))
+                            )
+                            for k, q in distribution.items()
+                        }
+                    )
+
                 continue
-  
+
             # If I still do not have a good enough offer, distribute my current needs
             # randomly over my partners.
             t = min(_.relative_time for _ in states.values())
@@ -1182,50 +1345,78 @@ class EnhancedSyncRandomOneShotAgent(OneShotSyncAgent):
             partners = partners.union(future_partners)
             partners = list(partners)
             if self.awi.current_step > self.awi.n_steps * 0.5 and len(partners) > 0:
-                concentrated_ids = sorted(partners, key=lambda x:self.total_agreed_quantity[x], reverse=True)[:1]
-                concentrated_idx = [i for i,p in enumerate(partners) if p in concentrated_ids]
-                distribution = dict(zip(
-                    partners,
-                    distribute(
-                        int(needs * (1 + self._overordering_fraction(t))),
-                        len(partners),
-                        mx = self.awi.n_lines,
-                        concentrated = True,
-                        concentrated_idx = concentrated_idx
+                concentrated_ids = sorted(
+                    partners, key=lambda x: self.total_agreed_quantity[x], reverse=True
+                )[:1]
+                concentrated_idx = [
+                    i for i, p in enumerate(partners) if p in concentrated_ids
+                ]
+                distribution = dict(
+                    zip(
+                        partners,
+                        distribute(
+                            int(needs * (1 + self._overordering_fraction(t))),
+                            len(partners),
+                            mx=self.awi.n_lines,
+                            concentrated=True,
+                            concentrated_idx=concentrated_idx,
+                        ),
                     )
-                ))
+                )
             else:
-                distribution = dict(zip(
-                    partners,
-                    distribute(int(needs * (1 + self._overordering_fraction(t))), len(partners), mx = self.awi.n_lines)
-                ))
+                distribution = dict(
+                    zip(
+                        partners,
+                        distribute(
+                            int(needs * (1 + self._overordering_fraction(t))),
+                            len(partners),
+                            mx=self.awi.n_lines,
+                        ),
+                    )
+                )
 
-            response.update({
-                k: (
-                    unneeded_response if q == 0
-                    else SAOResponse(ResponseType.REJECT_OFFER, (q, self.awi.current_step, price))
-                )for k, q in distribution.items()
-            })
+            response.update(
+                {
+                    k: (
+                        unneeded_response
+                        if q == 0
+                        else SAOResponse(
+                            ResponseType.REJECT_OFFER, (q, self.awi.current_step, price)
+                        )
+                    )
+                    for k, q in distribution.items()
+                }
+            )
         return response
 
     # def _allowed_mismatch(self, r:float, n_others:int, is_selling:bool):
     #     return self.undermismatch_min * ((1-r)**self.mismatch_exp), self.overmismatch_max * (r**self.mismatch_exp)
 
-    def _allowed_mismatch(self, r:float, n_others:int, is_selling:bool):
-    #     if is_selling:
-    #         # 入荷量が一定、過剰な販売契約が良くない
-    #         # 一人平均3個くらいの算段でOK?
-    #         th_min = - 3 * n_others
-    #         th_max = self.overmismatch_max_selling * (r**self.mismatch_exp)
-    #     else:
-    #         # 不足が良くない、n_othersが多いほどth_minが小さくても(不足が多くても)良い
-    #         # 一人平均1.5個くらいの算段でOK?
-    #         th_min = - 1.5 * n_others
-    #         th_max = self.overmismatch_max_buying * (r**self.mismatch_exp)
-    #     return th_min,th_max
-        undermismatch_min = self.undermismatch_min_selling if is_selling else self.undermismatch_min_buying
-        overmismatch_max = self.overmismatch_max_selling if is_selling else self.overmismatch_max_buying
-        return undermismatch_min * ((1-r)**self.mismatch_exp), overmismatch_max * (r**self.mismatch_exp)
+    def _allowed_mismatch(self, r: float, n_others: int, is_selling: bool):
+        #     if is_selling:
+        #         # 入荷量が一定、過剰な販売契約が良くない
+        #         # 一人平均3個くらいの算段でOK?
+        #         th_min = - 3 * n_others
+        #         th_max = self.overmismatch_max_selling * (r**self.mismatch_exp)
+        #     else:
+        #         # 不足が良くない、n_othersが多いほどth_minが小さくても(不足が多くても)良い
+        #         # 一人平均1.5個くらいの算段でOK?
+        #         th_min = - 1.5 * n_others
+        #         th_max = self.overmismatch_max_buying * (r**self.mismatch_exp)
+        #     return th_min,th_max
+        undermismatch_min = (
+            self.undermismatch_min_selling
+            if is_selling
+            else self.undermismatch_min_buying
+        )
+        overmismatch_max = (
+            self.overmismatch_max_selling
+            if is_selling
+            else self.overmismatch_max_buying
+        )
+        return undermismatch_min * ((1 - r) ** self.mismatch_exp), overmismatch_max * (
+            r**self.mismatch_exp
+        )
 
     def _overordering_fraction(self, t: float):
         mn, mx = self.overordering_min, self.overordering_max
@@ -1244,10 +1435,22 @@ class EnhancedSyncRandomOneShotAgent(OneShotSyncAgent):
             return s, pmax if seller else pmin
         return s, random.randint(pmin, pmax)
 
+
 if __name__ == "__main__":
     import sys
 
+    from helpers.agents import AgentVSCforOneShot, KanbeAgent, QuantityOrientedAgent
     from helpers.runner import run
-    from helpers.agents import QuantityOrientedAgent, KanbeAgent, AgentVSCforOneShot
-    
-    run([EnhancedSyncRandomOneShotAgent,EnhancedSyncRandomOneShotAgentLegacy,QuantityOrientedAgent,KanbeAgent,AgentVSCforOneShot], sys.argv[1] if len(sys.argv) > 1 else "oneshot",print_exceptions=True,n_steps=100)
+
+    run(
+        [
+            EnhancedSyncRandomOneShotAgent,
+            EnhancedSyncRandomOneShotAgentLegacy,
+            QuantityOrientedAgent,
+            KanbeAgent,
+            AgentVSCforOneShot,
+        ],
+        sys.argv[1] if len(sys.argv) > 1 else "oneshot",
+        print_exceptions=True,
+        n_steps=100,
+    )

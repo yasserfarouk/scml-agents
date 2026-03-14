@@ -33,6 +33,7 @@ The SCML2019Agent class itself has some helper properties/methods that internall
                           executable
 - products, processes: shortcuts to awi.products and awi.processes
 """
+
 import itertools
 import math
 from collections import defaultdict
@@ -332,7 +333,6 @@ class SAHAFactoryManager(DoNothingFactoryManager):
     def respond_to_negotiation_request(
         self, cfp: "CFP", partner: str
     ) -> Optional[Negotiator]:
-
         if self.awi.is_bankrupt(partner):
             return None
         if self.use_consumer:
@@ -363,8 +363,7 @@ class SAHAFactoryManager(DoNothingFactoryManager):
         mechanism: AgentMechanismInterface,
         state: MechanismState,
     ) -> None:
-
-        cfp = annotation["cfp"]
+        annotation["cfp"]
         """print("negotiation fail. Timeout: ", mechanism.state.timedout, " Seller: ", annotation['seller'],
               " buyer: ", annotation['buyer'], " quantity: ", cfp.quantity, " product: ", cfp.product,
         " prices: ", cfp.unit_price, " time: ", cfp.time, " step: ", self.awi.current_step)
@@ -446,7 +445,7 @@ class SAHAFactoryManager(DoNothingFactoryManager):
             profit = schedule.final_balance - self.simulator.final_balance
             self.awi.logdebug(
                 f"{self.name} singing contract {contract.id} expecting "
-                f'{-profit if profit < 0 else profit} {"loss" if profit < 0 else "profit"}'
+                f"{-profit if profit < 0 else profit} {'loss' if profit < 0 else 'profit'}"
             )
         else:
             self.awi.logdebug(
@@ -458,7 +457,6 @@ class SAHAFactoryManager(DoNothingFactoryManager):
         return signature
 
     def on_contract_signed(self, contract: Contract):
-
         cfp = contract.annotation["cfp"]
         """print("contract signed. Seller: ", contract.annotation['seller'], " buyer: ", contract.annotation['buyer'],
               " quantity: ", contract.agreement['quantity'], " product: ", cfp.product, " price: ", contract.agreement['unit_price'],
@@ -573,7 +571,6 @@ class SAHAFactoryManager(DoNothingFactoryManager):
             pass
 
     def on_new_cfp(self, cfp: "CFP") -> None:
-
         if cfp.product in self.cfp_records:
             # self.cfp_records[cfp.product].HistoryPublishers.append(cfp.publisher)
             if cfp.min_unit_price not in self.cfp_records[cfp.product].HistoryMin:
@@ -592,7 +589,6 @@ class SAHAFactoryManager(DoNothingFactoryManager):
             self._process_sell_cfp(cfp)
 
     def recalculate_prices(self, product):
-
         if len(self.cfp_records[product].HistoryMin) > 0:
             self.cfp_records[product].MinPrice = max(
                 [math.floor(min(self.cfp_records[product].HistoryMin)), 1]
@@ -615,7 +611,6 @@ class SAHAFactoryManager(DoNothingFactoryManager):
         return prices
 
     def on_contract_executed(self, contract: Contract):
-
         """print("contract executed!!!. Seller: ", contract.annotation['seller'], " buyer: ", contract.annotation['buyer'],
         " quantity: ", contract.agreement['quantity'], " product: ", contract.annotation['cfp'].product,
         " price: ", contract.agreement['unit_price'], " time: ", contract.agreement['time'],
@@ -646,7 +641,6 @@ class SAHAFactoryManager(DoNothingFactoryManager):
 
         # print("step: ", self.awi.current_step)
         for key, item in self.cfp_records.items():
-
             if item.transformable:
                 stock = self.cfp_records[item.source_of].stock
                 if key in self.awi.state.storage:

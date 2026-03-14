@@ -1,17 +1,6 @@
-import logging
-
 import numpy as np
-from scml.scml2020 import DecentralizingAgent, RandomAgent, SCML2020Agent, SCML2020World
+from scml.scml2020 import SCML2020Agent
 from scml.scml2020.agents.decentralizing import _NegotiationCallbacks
-from scml.scml2020.components.production import (
-    DemandDrivenProductionStrategy,
-    ProductionStrategy,
-    SupplyDrivenProductionStrategy,
-)
-from scml.scml2020.components.trading import (
-    PredictionBasedTradingStrategy,
-    ReactiveTradingStrategy,
-)
 
 from .mixed_neg import StepBuyBestSellNegManager
 from .prod_strategy import myProductionStratgey

@@ -3,17 +3,15 @@ SCM League 2021
 Augur agent
 """
 
-from typing import List, Optional
+from typing import List
 
 import numpy as np
 from negmas import Contract
 from scml.scml2020 import (
     SCML2020Agent,
-    StepNegotiationManager,
     SupplyDrivenProductionStrategy,
     TradingStrategy,
 )
-from scml.scml2020.common import is_system_agent
 
 __all__ = ["AugurAgent"]
 

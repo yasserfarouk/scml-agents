@@ -1,11 +1,8 @@
 import time
 
-from negmas.helpers import humanize_time
-from rich import print
 from scml.oneshot.agents import RandomOneShotAgent, SyncRandomOneShotAgent
 from scml.std.agents import SyncRandomStdAgent
 from scml.utils import anac2024_oneshot, anac2024_std
-from tabulate import tabulate
 
 
 def run(
@@ -42,7 +39,7 @@ def run(
     else:
         competitors = list(competitors) + [SyncRandomStdAgent, RandomOneShotAgent]
 
-    start = time.perf_counter()
+    time.perf_counter()
     if competition == "std":
         runner = anac2024_std
     else:
@@ -56,12 +53,10 @@ def run(
     # just make names shorter
     results.total_scores.agent_type = results.total_scores.agent_type.str.split(  # type: ignore
         "."
-    ).str[
-        -1
-    ]
+    ).str[-1]
     # display results
-    pass # print(tabulate(results.total_scores, headers="keys", tablefmt="psql"))  # type: ignore
-    pass # print(f"Finished in {humanize_time(time.perf_counter() - start)}")
+    pass  # print(tabulate(results.total_scores, headers="keys", tablefmt="psql"))  # type: ignore
+    pass  # print(f"Finished in {humanize_time(time.perf_counter() - start)}")
 
 
 if __name__ == "__main__":

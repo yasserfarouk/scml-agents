@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import copy
+import random
 import sys
 import time
 import traceback
 from collections import defaultdict
-import random
 
 from negmas.events import Event
 from negmas.helpers import (
@@ -14,15 +14,13 @@ from negmas.helpers import (
 from negmas.mechanisms import Mechanism
 from negmas.situated.agent import Agent
 from negmas.situated.common import Operations
-from negmas.situated.entity import Entity
 from negmas.situated.contract import Contract
+from negmas.situated.entity import Entity
 from scml.oneshot.world import SCML2023OneShotWorld
 
 
 class SCML2023RLOneShotWorld(SCML2023OneShotWorld):
-    def __init__(self,
-                 *args,
-                 **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         # initialize stats
@@ -45,7 +43,7 @@ class SCML2023RLOneShotWorld(SCML2023OneShotWorld):
         self.pre_step_operation = (
             Operations.StatsUpdate,
             Operations.SimulationStep,
-            Operations.Negotiations
+            Operations.Negotiations,
         )
         self.post_step_operations = (
             Operations.ContractSigning,
@@ -74,7 +72,7 @@ class SCML2023RLOneShotWorld(SCML2023OneShotWorld):
                 raise e
             exc_type, exc_value, exc_traceback = sys.exc_info()
             self.logerror(
-                f"Mechanism exception: " f"{traceback.format_tb(exc_traceback)}",
+                f"Mechanism exception: {traceback.format_tb(exc_traceback)}",
                 Event("entity-exception", dict(exception=e)),
             )
         finally:
@@ -343,14 +341,14 @@ class SCML2023RLOneShotWorld(SCML2023OneShotWorld):
         n_total_broken = self.n_broken + n_broken_
         if n_total_broken > 0:
             self.n_steps_broken = (
-                                     self.n_steps_broken * self.n_broken + n_steps_broken_ * n_broken_
-                             ) / n_total_broken
+                self.n_steps_broken * self.n_broken + n_steps_broken_ * n_broken_
+            ) / n_total_broken
             self.n_broken = n_total_broken
         n_total_success = self.n_success + n_success_
         if n_total_success > 0:
             self.n_steps_success = (
-                                      self.n_steps_success * self.n_success + n_steps_success_ * n_success_
-                              ) / n_total_success
+                self.n_steps_success * self.n_success + n_steps_success_ * n_success_
+            ) / n_total_success
             self.n_success = n_total_success
 
     def _step_agents(self):
@@ -389,9 +387,7 @@ class SCML2023RLOneShotWorld(SCML2023OneShotWorld):
         if len(current_contracts) > 0:
             # remove expired contracts
             executed = set()
-            current_contracts = self.order_contracts_for_execution(
-                current_contracts
-            )
+            current_contracts = self.order_contracts_for_execution(current_contracts)
 
             for contract in current_contracts:
                 if self.time >= self.time_limit:
@@ -403,17 +399,13 @@ class SCML2023RLOneShotWorld(SCML2023OneShotWorld):
                 except Exception as e:
                     for p in contract.partners:
                         self.contracts_erred[p] += 1
-                    self.contract_exceptions[self._current_step].append(
-                        exception2str()
-                    )
+                    self.contract_exceptions[self._current_step].append(exception2str())
                     contract.executed_at = self.current_step
                     self._saved_contracts[contract.id]["breaches"] = ""
                     self._saved_contracts[contract.id]["executed_at"] = -1
                     self._saved_contracts[contract.id]["dropped_at"] = -1
                     self._saved_contracts[contract.id]["nullified_at"] = -1
-                    self._saved_contracts[contract.id][
-                        "erred_at"
-                    ] = self._current_step
+                    self._saved_contracts[contract.id]["erred_at"] = self._current_step
                     self._add_edges(
                         contract.partners[0],
                         contract.partners,
@@ -439,9 +431,9 @@ class SCML2023RLOneShotWorld(SCML2023OneShotWorld):
                     self._saved_contracts[contract.id]["breaches"] = ""
                     self._saved_contracts[contract.id]["executed_at"] = -1
                     self._saved_contracts[contract.id]["dropped_at"] = -1
-                    self._saved_contracts[contract.id][
-                        "nullified_at"
-                    ] = self._current_step
+                    self._saved_contracts[contract.id]["nullified_at"] = (
+                        self._current_step
+                    )
                     self._add_edges(
                         contract.partners[0],
                         contract.partners,
@@ -459,9 +451,9 @@ class SCML2023RLOneShotWorld(SCML2023OneShotWorld):
                         self.contracts_executed[p] += 1
                     self._saved_contracts[contract.id]["breaches"] = ""
                     self._saved_contracts[contract.id]["dropped_at"] = -1
-                    self._saved_contracts[contract.id][
-                        "executed_at"
-                    ] = self._current_step
+                    self._saved_contracts[contract.id]["executed_at"] = (
+                        self._current_step
+                    )
                     self._add_edges(
                         contract.partners[0],
                         contract.partners,
@@ -515,9 +507,7 @@ class SCML2023RLOneShotWorld(SCML2023OneShotWorld):
                                 dict(contract=contract, breach=b),
                             ),
                         )
-                    resolution = self._process_breach(
-                        contract, list(contract_breaches)
-                    )
+                    resolution = self._process_breach(contract, list(contract_breaches))
                     if resolution is None:
                         self.n_new_breaches += 1
                         self.blevel += sum(_.level for _ in contract_breaches)

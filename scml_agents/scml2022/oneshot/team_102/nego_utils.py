@@ -1,9 +1,8 @@
 from statistics import mean
+from typing import List
 
 import numpy as np
-import pandas as pd
 from negmas import SAONMI
-from typing import List, Dict
 
 QUANTITY = 0
 TIME = 1

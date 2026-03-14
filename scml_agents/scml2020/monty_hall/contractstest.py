@@ -1,11 +1,6 @@
-import pprint
-import random
 import time
 
 import pulp
-from click import Tuple
-from prettytable import PrettyTable
-from traitlets import List
 
 # A contract is a tuple (q, t, p), where q is the quantity, t the time and p the price.
 # The following solver assume that the contracts to be signed are received as lists of tuples, e.g., as follows.
@@ -113,14 +108,14 @@ def solve_signer(buy_contracts: list, sel_contracts: list, prints: bool = False)
 
     t0_solve = time.time()
     model.solve()
-    print(f"it took { time_to_generate_ILP : .4f} to generate the ILP")
+    print(f"it took {time_to_generate_ILP: .4f} to generate the ILP")
     solve_time = time.time() - t0_solve
     print(
-        f"it took { solve_time : .4f} sec to solve, result = {pulp.LpStatus[model.status]}"
+        f"it took {solve_time: .4f} sec to solve, result = {pulp.LpStatus[model.status]}"
     )
-    total_time = time.time() - t0
+    time.time() - t0
     print(
-        f"it took {time_to_generate_ILP + solve_time : .4f} sec in total, and has opt profit of {pulp.value(model.objective):.4f}"
+        f"it took {time_to_generate_ILP + solve_time: .4f} sec in total, and has opt profit of {pulp.value(model.objective):.4f}"
     )
 
     sign_plan_buy = {
@@ -131,11 +126,11 @@ def solve_signer(buy_contracts: list, sel_contracts: list, prints: bool = False)
     }
 
     for key in sign_plan_buy:
-        if sign_plan_buy[key] == None:
+        if sign_plan_buy[key] is None:
             sign_plan_buy[key] = 0
 
     for key in sign_plan_sel:
-        if sign_plan_sel[key] == None:
+        if sign_plan_sel[key] is None:
             sign_plan_sel[key] = 0
 
     # if prints:

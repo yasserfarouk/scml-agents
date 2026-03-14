@@ -1,6 +1,6 @@
-from scml.std import StdAgent
 from negmas import ResponseType
 from scml.oneshot.common import *
+from scml.std import StdAgent
 
 
 class SimpleAgent(StdAgent):

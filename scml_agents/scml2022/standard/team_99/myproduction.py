@@ -1,55 +1,17 @@
-from typing import Any, Dict, List, Optional, Iterable, Union, Tuple
+from typing import List
 
 import numpy as np
 from negmas import (
-    AgentMechanismInterface,
-    Breach,
     Contract,
-    Issue,
-    MechanismState,
-    Negotiator,
-    SAONegotiator,
-    AspirationNegotiator,
-    make_issue,
-    NegotiatorMechanismInterface,
-    UtilityFunction,
-    LinearUtilityFunction,
 )
-from negmas.helpers import humanize_time, get_class, instantiate
-from scml.scml2020 import Failure
+from scml.scml2020 import (
+    ProductionStrategy,
+    SCML2020Agent,
+)
+from scml.scml2020.common import NO_COMMAND
 
 # required for development
 # required for running the test tournament
-import time
-from tabulate import tabulate
-from scml.utils import anac2022_collusion, anac2022_std, anac2022_oneshot
-from scml.scml2020 import (
-    SCML2020Agent,
-    ProductionStrategy,
-    SupplyDrivenProductionStrategy,
-    DemandDrivenProductionStrategy,
-    TradeDrivenProductionStrategy,
-    ReactiveTradingStrategy,
-    PredictionBasedTradingStrategy,
-    TradingStrategy,
-    StepNegotiationManager,
-    IndependentNegotiationsManager,
-    MovingRangeNegotiationManager,
-    TradePredictionStrategy,
-    AWI,
-)
-from scml.scml2020.agents import (
-    BuyCheapSellExpensiveAgent,
-    DecentralizingAgent,
-    DoNothingAgent,
-)
-from scml.scml2020.common import ANY_LINE, is_system_agent, NO_COMMAND
-from scml.scml2020.components import SignAllPossible
-from scml.scml2020.components.prediction import FixedTradePredictionStrategy
-from scml.scml2020.components.prediction import MarketAwareTradePredictionStrategy
-from scml.scml2020.components.prediction import MeanERPStrategy
-from abc import abstractmethod
-from pprint import pformat
 
 
 class MyProductionStrategy(ProductionStrategy):

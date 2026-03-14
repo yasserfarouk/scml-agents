@@ -1,14 +1,13 @@
-from scml.scml2020 import SCML2020Agent
+import math
+from collections import defaultdict
 
+from scml.scml2020 import SCML2020Agent
 
 # Boss modules.
 from .BossAWICaller import BossAWICaller
 from .BossBusinessPlanner import BossBusinessPlanner
 from .BossProductionStrategy import BossProductionStrategy
 from .BossTradingStrategy import BossTradingStrategy
-from collections import defaultdict
-
-import math
 
 __all__ = ["CharliesAgent"]
 
@@ -79,9 +78,7 @@ class CharliesAgent(
         self.pseudo_sellers = {}
 
         # Keep custom stats.
-        self.reject_acceptance_rate = (
-            {}
-        )  # Key is agent id, value is {'Acceptance': int, 'Reject': int}.
+        self.reject_acceptance_rate = {}  # Key is agent id, value is {'Acceptance': int, 'Reject': int}.
 
         for supplier in self.my_suppliers:
             self.reject_acceptance_rate[supplier] = {"Acceptance": 0, "Reject": {}}

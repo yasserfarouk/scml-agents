@@ -28,35 +28,33 @@ The goal is to evolve in two phases:
 
 from __future__ import annotations
 
-# =============== 基础 & 框架依赖 ===============
-from typing import Any, Iterable, Dict, List, Tuple
-import random
 import os
-
-from scml import RandDistOneShotAgent
-# from tensorflow.python.eager.execute import must_record_gradient
-
-from . import inventory_manager_n
-from itertools import chain, combinations
+import random
 from collections import Counter
+from itertools import chain, combinations
 
-from scml.std import (
-    StdAWI,
-    TIME,
-    QUANTITY,
-    UNIT_PRICE,
-    StdSyncAgent,
-)
-from negmas import SAOState, SAOResponse, Outcome, Contract, ResponseType
+# =============== 基础 & 框架依赖 ===============
+from typing import Any, Dict, Iterable, List, Tuple
 
+from negmas import Contract, Outcome, ResponseType, SAOResponse, SAOState
 
 # numpy 的随机分配在 distribute() 中使用；仅在运行时导入以避免训练阶段缺少依赖
 from numpy.random import choice as np_choice  # type: ignore
+from scml import RandDistOneShotAgent
+from scml.std import (
+    QUANTITY,
+    TIME,
+    UNIT_PRICE,
+    StdAWI,
+    StdSyncAgent,
+)
+
+# from tensorflow.python.eager.execute import must_record_gradient
+from . import inventory_manager_n
 
 __all__ = ["LitaAgentN"]
 
-from .inventory_manager_n import IMContract, MaterialType, IMContractType
-
+from .inventory_manager_n import IMContract, IMContractType, MaterialType
 
 # ---------------------------------------------------------------------------
 # 通用辅助工具
@@ -138,7 +136,7 @@ class LitaAgentN(StdSyncAgent):
                     FlexibleActionManager(context=contexts[1]),
                 ),
             )
-        )   
+        )
         """
 
         # --------- 3. Penguin 策略相关参数 ---------
@@ -191,7 +189,10 @@ class LitaAgentN(StdSyncAgent):
     def _best_price(self, partner: str) -> float:
         """对 *自己* 最有利的价格：买入 ⇒ 最低价；卖出 ⇒ 最高价"""
         # Price most favorable to us: buy at minimum, sell at maximum
-        issue = self.get_nmi(partner).issues[UNIT_PRICE]
+        nmi = self.get_nmi(partner)
+        if nmi is None:
+            return None
+        issue = nmi.issues[UNIT_PRICE]
         pmin, pmax = issue.min_value, issue.max_value
         return pmin if self._is_supplier(partner) else pmax
 
@@ -203,7 +204,10 @@ class LitaAgentN(StdSyncAgent):
         # Concession price when countering:
         # * If I am the buyer, raise 20% above the minimum price
         # * If I am the seller, cut 30% off the maximum price
-        issue = self.get_nmi(partner).issues[UNIT_PRICE]
+        nmi = self.get_nmi(partner)
+        if nmi is None:
+            return None
+        issue = nmi.issues[UNIT_PRICE]
         pmin, pmax = issue.min_value, issue.max_value
         if self._is_consumer(partner):  # 我卖货，对方买
             return max(pmax * 0.7, pmin)
@@ -216,7 +220,10 @@ class LitaAgentN(StdSyncAgent):
         * 对供应商：必须 <= 最高价
         TODO: 要从Inventory Manager 中获取成本价，阻拦低于成本价的交易（最好再加入一个机会成本计算器）
         """
-        issue = self.get_nmi(partner).issues[UNIT_PRICE]
+        nmi = self.get_nmi(partner)
+        if nmi is None:
+            return False
+        issue = nmi.issues[UNIT_PRICE]
         pmin, pmax = issue.min_value, issue.max_value
         if self._is_consumer(partner):
             return price >= pmin
@@ -335,7 +342,7 @@ class LitaAgentN(StdSyncAgent):
 
         awi = self.awi
         s, n = awi.current_step, awi.n_steps
-        prod = self._day_production()
+        self._day_production()
         # 按 50% / 30% / 20% 划分伙伴列表
         step1, step2, step3 = self._split_partners(partners)
 
@@ -365,7 +372,7 @@ class LitaAgentN(StdSyncAgent):
 
         awi = self.awi
         s, n = awi.current_step, awi.n_steps
-        prod = self._day_production()
+        self._day_production()
         step1, step2, step3 = self._split_partners(partners)
 
         def _needs(step: int) -> int:
@@ -409,8 +416,7 @@ class LitaAgentN(StdSyncAgent):
     def _needs_at(self, step: int, partner: str) -> int:
         """计算在未来 ``step`` 日仍需与 ``partner`` 方向交易的数量。"""
         # TODO: 这里要改成根据IM的值来计算
-        prod = self._day_production()
-        awi = self.awi
+        self._day_production()
         if self._is_supplier(partner):  # 采购
             # return int(prod - awi.current_inventory_input - awi.total_supplies_at(step))
             return int(self.im.get_total_insufficient(step))
@@ -501,7 +507,7 @@ class LitaAgentN(StdSyncAgent):
                 else:
                     needs = 0
                 """
-                needs = prod = self._day_production()  # 计算到今天为止的最大产量
+                needs = self._day_production()  # 计算到今天为止的最大产量
                 # Maximum producible quantity up to today
 
             # ------------ 2. 拆分类别报价 ------------
@@ -526,8 +532,6 @@ class LitaAgentN(StdSyncAgent):
             # TODO: from here on nothing much happens except sorting
             # ----------- 2-a. 优先锁定今天必须购买的数量 ------------
             # 2-a. Prioritize locking in the quantity that must be purchased today
-            must_buy = self.today_insufficient
-            purchased_today = 0
             # 将offer根据价格由低到高排序
             current_offers = dict(
                 sorted(current_offers.items(), key=lambda x: x[1][UNIT_PRICE])
@@ -542,7 +546,7 @@ class LitaAgentN(StdSyncAgent):
                 penalty = self.awi.current_shortfall_penalty
                 if offer[UNIT_PRICE] > penalty:
                     # TODO：改进这个consession_price
-                    counter_offer = (
+                    (
                         offer[QUANTITY],
                         offer[TIME],
                         self._concession_price(p),

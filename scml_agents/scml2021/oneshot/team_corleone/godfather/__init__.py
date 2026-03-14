@@ -1,24 +1,23 @@
 # -*- coding: utf-8 -*-
 from .godfather import *
 from .godfather import (
+    AspirationUniformGodfatherAgent,
+    ChristopherTheGoldfishAgent,
+    HardnosedGoldfishBiggerAgent,
+    HardnosedGoldfishGodfatherAgent,
+    HardnosedGoldfishSmallerAgent,
+    MediumLearningGodfather,
     MinDisagreementGodfatherAgent,
     MinEmpiricalGodfatherAgent,
-    AspirationUniformGodfatherAgent,
     NonconvergentGodfatherAgent,
     ParetoEmpiricalGodfatherAgent,
-    SlowGoldfish,
-    HardnosedGoldfishGodfatherAgent,
-    HardnosedGoldfishBiggerAgent,
-    HardnosedGoldfishSmallerAgent,
-    SoftnosedGoldfishGodfatherAgent,
     QuickLearningGodfather,
-    MediumLearningGodfather,
+    SlowGoldfish,
     SlowLearningGodfather,
-    ZooGodfather,
+    SoftnosedGoldfishGodfatherAgent,
     TrainingCollectionGodfatherAgent,
-    ChristopherTheGoldfishAgent,
+    ZooGodfather,
 )
-
 
 MAIN_AGENT = GoldfishParetoEmpiricalGodfatherAgent
 

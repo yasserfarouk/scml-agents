@@ -6,30 +6,22 @@ import pathlib
 import random
 import sys
 import warnings
-from collections import defaultdict
 from datetime import datetime
-from time import sleep
-from typing import Callable, Collection, Dict, Iterable, List, Optional, Set, Tuple
+from typing import Callable, Collection, Dict, Iterable, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
 import xgboost as xgb
 from negmas import (
-    AgentMechanismInterface,
     Outcome,
     PolyAspiration,
-    ResponseType,
     SAOResponse,
 )
-from negmas.outcomes import Issue
-from negmas.preferences import UtilityFunction, normalize
-from scml.oneshot import OneShotAgent, OneShotSyncAgent, OneShotUFun
-from scml.scml2020.common import QUANTITY, TIME, UNIT_PRICE
+from scml.oneshot import OneShotSyncAgent
+from scml.scml2020.common import QUANTITY, UNIT_PRICE
 
 from .bilat_ufun import (
     BilatUFun,
-    BilatUFunAvg,
-    BilatUFunDummy,
     BilatUFunMarginalTable,
     BilatUFunUniform,
 )
@@ -50,12 +42,7 @@ from .offer import Offer
 from .outcome_distr import (
     OutcomeDistr,
     OutcomeDistrMarginal,
-    OutcomeDistrPoint,
-    OutcomeDistrRandom,
-    OutcomeDistrTable,
-    OutcomeDistrUniform,
 )
-from .simulator import BilatSimulator
 from .spaces import *
 from .strategy import *
 from .strategy import Strategy, StrategyAspiration
@@ -269,7 +256,7 @@ class GodfatherAgent(OneShotSyncAgent):
         """Decide a first proposal on every negotiation. (Defers to _counter.)"""
         call_idx, _ = self._enter_call()
 
-        first_proposals_time = datetime.now()
+        datetime.now()
 
         # self.log('first proposals beginning')
         if not self._f_opponents_initialized:
@@ -300,7 +287,7 @@ class GodfatherAgent(OneShotSyncAgent):
         call_idx, _ = self._enter_call()
         # self.log("negotiation time: ", self.get_nmi(list(offers.keys())[0]).state.time)
 
-        counter_time = datetime.now()
+        datetime.now()
 
         if not hasattr(self, "_models"):
             warnings.warn(
@@ -417,10 +404,10 @@ class GodfatherAgent(OneShotSyncAgent):
         # self.log("counter_all > _counter: making moves")
         for j in opponents_to_counter:
             if self.enable_safety_checks:
-                assert not self._history.current_negotiator_history(
-                    j
-                ).is_ended(), "history for j ended {}".format(
-                    self._history.current_negotiator_history(j)
+                assert not self._history.current_negotiator_history(j).is_ended(), (
+                    "history for j ended {}".format(
+                        self._history.current_negotiator_history(j)
+                    )
                 )
             estufuns[j] = self._est_bilat_ufun(j, outcomes)  # one last update
             moves[j] = self._strategies[j](
@@ -437,7 +424,7 @@ class GodfatherAgent(OneShotSyncAgent):
 
         offer_space = self._get_offer_space(j)
         outcome_space = self._get_outcome_space(j)
-        all_offers = offer_space.offer_set()
+        offer_space.offer_set()
         all_outcomes = outcome_space.outcome_set()
         util_table: Dict[Outcome, float] = {}  # outcome -> utility
 

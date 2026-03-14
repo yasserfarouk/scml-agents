@@ -79,34 +79,34 @@ Usage Instructions
 
 from __future__ import annotations
 
+import math
+import os
+import random
+from collections import Counter, defaultdict  # Added defaultdict / 添加了 defaultdict
+from dataclasses import dataclass
+
 # ------------------ 基础依赖 ------------------
 # Basic Dependencies
 # ------------------
-from typing import Any, Dict, List, Tuple, Iterable
-from dataclasses import dataclass
-import random
-import os
-import math
-from collections import Counter, defaultdict  # Added defaultdict / 添加了 defaultdict
+from typing import Any, Dict, Iterable, List, Tuple
 from uuid import uuid4
 
+from negmas import Contract, Outcome, ResponseType, SAOResponse, SAOState
 from numpy.random import choice as np_choice  # type: ignore
-
 from scml.std import (
-    StdSyncAgent,
-    StdAWI,
-    TIME,
     QUANTITY,
+    TIME,
     UNIT_PRICE,
+    StdAWI,
+    StdSyncAgent,
 )
-from negmas import SAOState, SAOResponse, Outcome, Contract, ResponseType
 
 # 内部工具 & manager
 # Internal Tools & Manager
 from .inventory_manager_n import (
-    InventoryManager,
     IMContract,
     IMContractType,
+    InventoryManager,
     MaterialType,
 )
 
@@ -1390,12 +1390,15 @@ class LitaAgentYR(StdSyncAgent):
         for pid, qty in distribution.items():
             if qty <= 0:
                 continue  # No need for this partner / 此伙伴无需求
-            time_issue = self.get_nmi(pid).issues[TIME]
+            nmi = self.get_nmi(pid)
+            if nmi is None:
+                continue  # No NMI available for this partner
+            time_issue = nmi.issues[TIME]
             # Propose delivery time within NMI, not before today
             # 在NMI范围内提议交货时间，不早于今天
             delivery_time = max(today, time_issue.min_value)
             delivery_time = min(delivery_time, time_issue.max_value)
-            qty_issue = self.get_nmi(pid).issues[QUANTITY]
+            qty_issue = nmi.issues[QUANTITY]
             # Propose quantity within NMI bounds
             # 在NMI范围内提议数量
             final_qty = min(qty, qty_issue.max_value)
@@ -1633,7 +1636,7 @@ class LitaAgentYR(StdSyncAgent):
         )
 
         planned_demand = sum(v for k, v in udpp.items() if k > self.awi.current_step)
-        planned_limit = (
+        (
             planned_demand
             * (1 + self.h.planned_overprocurement_factor)
             * procurement_aggressiveness_factor
@@ -1799,7 +1802,6 @@ class LitaAgentYR(StdSyncAgent):
             # 1. 优先使用代理自己观察到的市场产品均价
             if self._market_product_price_avg > 0:
                 est_sell_price = self._market_product_price_avg
-                reason = "agent_observed_avg"
 
             # 2. 回退到 AWI 提供的市场交易价格
             if (
@@ -1812,7 +1814,6 @@ class LitaAgentYR(StdSyncAgent):
                 awi_trading_price = self.awi.trading_prices[output_product_idx]
                 if awi_trading_price > 0:
                     est_sell_price = awi_trading_price
-                    reason = "awi_trading_prices"
 
             # 3. 回退到 AWI 提供的目录价格
             if (
@@ -1825,13 +1826,11 @@ class LitaAgentYR(StdSyncAgent):
                 awi_catalog_price = self.awi.catalog_prices[output_product_idx]
                 if awi_catalog_price > 0:
                     est_sell_price = awi_catalog_price
-                    reason = "awi_catalog_prices"
 
             # 4. 最后回退到基于原材料成本的简单启发式
             if est_sell_price <= 0:
                 # 'price' 是当前原材料供应报价的单价
                 est_sell_price = price * 2.0
-                reason = "heuristic_raw_x2"
 
             # 不考虑存储成本时的最大接受价格 Max accept price without considering stor cost
             min_profit_for_product = est_sell_price * self.min_profit_ratio
@@ -1932,7 +1931,6 @@ class LitaAgentYR(StdSyncAgent):
             # 1. 优先使用代理自己观察到的市场产品均价
             if self._market_product_price_avg > 0:
                 est_sell_price = self._market_product_price_avg
-                reason = "agent_observed_avg"
 
             # 2. 回退到 AWI 提供的市场交易价格
             if (
@@ -1945,7 +1943,6 @@ class LitaAgentYR(StdSyncAgent):
                 awi_trading_price = self.awi.trading_prices[output_product_idx]
                 if awi_trading_price > 0:
                     est_sell_price = awi_trading_price
-                    reason = "awi_trading_prices"
 
             # 3. 回退到 AWI 提供的目录价格
             if (
@@ -1958,13 +1955,11 @@ class LitaAgentYR(StdSyncAgent):
                 awi_catalog_price = self.awi.catalog_prices[output_product_idx]
                 if awi_catalog_price > 0:
                     est_sell_price = awi_catalog_price
-                    reason = "awi_catalog_prices"
 
             # 4. 最后回退到基于原材料成本的简单启发式
             if est_sell_price <= 0:
                 # 'price' 是当前原材料供应报价的单价
                 est_sell_price = price * 2.0
-                reason = "heuristic_raw_x2"
 
             # 不考虑存储成本时的最大接受价格 Max accept price without considering stor cost
             min_profit_for_product = est_sell_price * self.min_profit_ratio
@@ -1992,10 +1987,7 @@ class LitaAgentYR(StdSyncAgent):
             # Price OK, qty excess
             # 逻辑：提前交货日期以尽可能找到满足的需求，如果找不到足够的需求，则减少交货数量
             # 由于提前交货日期会导致库存成本提升，因此必须同时执行价格调整
-            if (
-                offer[QUANTITY] > max_qty_acceptable_on_the_day
-                and price_is_acceptable == True
-            ):
+            if offer[QUANTITY] > max_qty_acceptable_on_the_day and price_is_acceptable:
                 # 算出最大的接受可能量
                 max_qty_acceptable_from_now_on = cumulative_planned_need
                 # 如果今天往后的所有需求都不足够，直接将日子设置为今天，数量为总需求
@@ -2589,7 +2581,6 @@ class LitaAgentYR(StdSyncAgent):
             # 1. 优先使用代理自己观察到的市场产品均价
             if self._market_product_price_avg > 0:
                 est_sell_price = self._market_product_price_avg
-                reason = "agent_observed_avg"
 
             # 2. 回退到 AWI 提供的市场交易价格
             if (
@@ -2602,7 +2593,6 @@ class LitaAgentYR(StdSyncAgent):
                 awi_trading_price = self.awi.trading_prices[output_product_idx]
                 if awi_trading_price > 0:
                     est_sell_price = awi_trading_price
-                    reason = "awi_trading_prices"
 
             # 3. 回退到 AWI 提供的目录价格
             if (
@@ -2615,13 +2605,11 @@ class LitaAgentYR(StdSyncAgent):
                 awi_catalog_price = self.awi.catalog_prices[output_product_idx]
                 if awi_catalog_price > 0:
                     est_sell_price = awi_catalog_price
-                    reason = "awi_catalog_prices"
 
             # 4. 最后回退到基于原材料成本的简单启发式
             if est_sell_price <= 0:
                 # 'price' 是当前原材料供应报价的单价
                 est_sell_price = price * 2.0
-                reason = "heuristic_raw_x2"
 
             # if os.path.exists("env.test"):
             #     print(f"Debug: est_sell_price for product {output_product_idx} = {est_sell_price:.2f} (Source: {reason})")
@@ -3535,7 +3523,7 @@ class LitaAgentYR(StdSyncAgent):
         # Table header / 表头
         header = "|   日期    |  原料真库存  |  原料预计库存   | 计划生产  |  剩余产能  |  产品真库存  |  产品预计库存  |  已签署销售量  |  实际产品交付  |"
         # Date | Raw True Inv | Raw Est Inv | Planned Prod | Remain Cap | Prod True Inv | Prod Est Inv | Signed Sales | Actual Prod Deliv
-        separator = (
+        (
             "|" + "-" * (len(header) + 24) + "|"
         )  # Adjust separator length based on content / 根据内容调整分隔符长度
 

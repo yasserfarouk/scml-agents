@@ -9,19 +9,18 @@ the authors and the ANAC 2024 SCML.
 
 from __future__ import annotations
 
-# required for typing
+import random
+from itertools import combinations, product
 
+import numpy as np
+
+# required for typing
+from negmas import Contract, ResponseType, SAOResponse
+
+# required for typing
 # required for development
 from scml.oneshot import *
 from scml.std import *
-
-# required for typing
-from negmas import Contract, SAOResponse, ResponseType
-from itertools import combinations, product
-
-import random
-
-import numpy as np
 
 __all__ = ["Rchan"]
 
@@ -34,7 +33,7 @@ def distribute(
     equal=False,
     concentrated=False,
     allow_zero=False,
-    randomness = False,
+    randomness=False,
     concentrated_idx: list[int] = [],
 ) -> list[int]:
     """Distributes q values over n bins.
@@ -99,12 +98,14 @@ def distribute(
     r = Counter(choice(n, q))
     return [r.get(_, 0) + per for _ in range(n)]
 
+
 def powerset(iterable):
     """冪集合"""
-    from itertools import chain, combinations
+    from itertools import chain
 
     s = list(iterable)
     return chain.from_iterable(combinations(s, r) for r in range(len(s) + 1))
+
 
 ########################################################################################################
 
@@ -190,10 +191,12 @@ class Rchan(OneShotSyncAgent):
         self.system_scores = [0 for _ in range(self.awi.n_steps + 1)]
         self.system_scores_diff = [0 for _ in range(self.awi.n_steps + 1)]
         self.calculate_scores = [0 for _ in range(self.awi.n_steps + 1)]
-        self.price_count = [[0,0] for _ in range(self.awi.n_steps + 1)]
+        self.price_count = [[0, 0] for _ in range(self.awi.n_steps + 1)]
 
         self.contract_quantities = [0 for _ in range(20)]
-        self.contract_quantities_bystep = [ [0 for _ in range(20)] for _ in range(self.awi.n_steps + 1)]
+        self.contract_quantities_bystep = [
+            [0 for _ in range(20)] for _ in range(self.awi.n_steps + 1)
+        ]
 
         self.first_quantity = [0 for _ in range(20)]
         self.counter_quantity = [0 for _ in range(20)]
@@ -205,8 +208,8 @@ class Rchan(OneShotSyncAgent):
             else self.awi.my_suppliers
         )
 
-        self.agent_count = {k:0 for k in all_partners}
-        self.agent_ave_quantity = {k:0 for k in all_partners}
+        self.agent_count = {k: 0 for k in all_partners}
+        self.agent_ave_quantity = {k: 0 for k in all_partners}
         self.agent_quantity = {k: [0 for _ in range(20)] for k in all_partners}
 
         self.first_attempt = {k: [0 for _ in range(20)] for k in all_partners}
@@ -275,7 +278,6 @@ class Rchan(OneShotSyncAgent):
         self.overordering_q = 2
 
         self.preoffer = None
-
 
         # print(self.awi.current_disposal_cost, self.awi.current_storage_cost, self.awi.current_shortfall_penalty)
 
@@ -350,7 +352,6 @@ class Rchan(OneShotSyncAgent):
 
     #     self.total_agreed_quantity[partner_id] += contract.agreement["quantity"]
 
-
     def on_negotiation_failure(
         self,
         partners: list[str],
@@ -373,10 +374,9 @@ class Rchan(OneShotSyncAgent):
         now = self.awi.current_step
         self.system_scores[now] = self.awi.current_score
 
-        if( now > 0):
-            self.system_scores_diff[now-1] = (
-                self.awi.current_score
-                - self.system_scores[now-1]
+        if now > 0:
+            self.system_scores_diff[now - 1] = (
+                self.awi.current_score - self.system_scores[now - 1]
             )
 
     def on_negotiation_success(self, contract: Contract, mechanism) -> None:
@@ -385,24 +385,47 @@ class Rchan(OneShotSyncAgent):
         self.total_agreed_quantity[partner_id] += contract.agreement["quantity"]
 
         self.contract_quantities[contract.agreement["quantity"]] += 1
-        self.contract_quantities_bystep[self.awi.current_step][contract.agreement["quantity"]] += 1
+        self.contract_quantities_bystep[self.awi.current_step][
+            contract.agreement["quantity"]
+        ] += 1
         self.agent_count[partner_id] += 1
-        self.agent_ave_quantity[partner_id] = (self.total_agreed_quantity[partner_id]) / self.agent_count[partner_id]
+        self.agent_ave_quantity[partner_id] = (
+            (self.total_agreed_quantity[partner_id]) / self.agent_count[partner_id]
+        )
         self.agent_quantity[partner_id][contract.agreement["quantity"]] += 1
-
 
         # print("contract:", contract)
         if self.proposal_state == "first":
             if contract.mechanism_state.new_offerer_agents[0] == self.id:
                 self.first_accept[partner_id][contract.agreement["quantity"]] += 1
                 self.first_total[partner_id] += contract.agreement["quantity"]
-                self.first_accept_list[self.awi.current_step].append({partner_id: contract.agreement["quantity"]})
-                self.preres[self.awi.current_step].append(contract.agreement["quantity"])
+                self.first_accept_list[self.awi.current_step].append(
+                    {partner_id: contract.agreement["quantity"]}
+                )
+                self.preres[self.awi.current_step].append(
+                    contract.agreement["quantity"]
+                )
                 ave = 0.0
                 for i in range(len(self.first_accept[partner_id])):
                     ave += i * self.first_accept[partner_id][i]
-                self.first_accept_ave[partner_id] = ave / sum(self.first_accept[partner_id]) if sum(self.first_accept[partner_id]) > 0 else 0.0
-                self.first_accept_prob[partner_id] = sum(self.first_accept[partner_id]) / (sum(self.first_attempt[partner_id]) - self.first_attempt[partner_id][0]) if (sum(self.first_attempt[partner_id]) - self.first_attempt[partner_id][0]) > 0 else 0.0
+                self.first_accept_ave[partner_id] = (
+                    ave / sum(self.first_accept[partner_id])
+                    if sum(self.first_accept[partner_id]) > 0
+                    else 0.0
+                )
+                self.first_accept_prob[partner_id] = (
+                    sum(self.first_accept[partner_id])
+                    / (
+                        sum(self.first_attempt[partner_id])
+                        - self.first_attempt[partner_id][0]
+                    )
+                    if (
+                        sum(self.first_attempt[partner_id])
+                        - self.first_attempt[partner_id][0]
+                    )
+                    > 0
+                    else 0.0
+                )
         else:
             if contract.mechanism_state.new_offerer_agents[0] == self.id:
                 # print(contract)
@@ -412,54 +435,56 @@ class Rchan(OneShotSyncAgent):
 
         now = self.awi.current_step
         level = self.awi.is_first_level
-        exogenous_input_quantity=self.awi.current_exogenous_input_quantity
-        exogenous_input_price=self.awi.current_exogenous_input_price
-        exogenous_output_quantity=self.awi.current_exogenous_output_quantity
-        exogenous_output_price=self.awi.current_exogenous_output_price
+        exogenous_input_quantity = self.awi.current_exogenous_input_quantity
+        exogenous_output_quantity = self.awi.current_exogenous_output_quantity
 
-        if (self.awi.needed_sales < 1 and self.awi.needed_supplies < 1):
+        if self.awi.needed_sales < 1 and self.awi.needed_supplies < 1:
             self.complete_mission[now] = 1
 
-        if (self.awi.needed_sales == 0 and self.awi.needed_supplies == 0):
+        if self.awi.needed_sales == 0 and self.awi.needed_supplies == 0:
             self.perfect[now] = 1
             self.minus[now] = 0
         else:
-            if(self.awi.needed_sales > 0 or self.awi.needed_supplies > 0):
+            if self.awi.needed_sales > 0 or self.awi.needed_supplies > 0:
                 self.minus[now] = 1
             else:
                 self.plus[now] = 1
                 self.minus[now] = 0
 
-
         total_quantity = self.price_count[now][1] + self.price_count[now][0]
-        if(total_quantity != 0):
+        if total_quantity != 0:
             q = exogenous_input_quantity if level else exogenous_output_quantity
-            if( total_quantity > q):
+            if total_quantity > q:
                 self.my_diff_plus[total_quantity - q] -= 1
             else:
                 self.my_diff_minus[q - total_quantity] -= 1
 
-
-        if contract.agreement["unit_price"] is self.awi.current_input_issues[UNIT_PRICE].max_value:
-            self.price_count[now][1] = self.price_count[now][1] + contract.agreement["quantity"]
+        if (
+            contract.agreement["unit_price"]
+            is self.awi.current_input_issues[UNIT_PRICE].max_value
+        ):
+            self.price_count[now][1] = (
+                self.price_count[now][1] + contract.agreement["quantity"]
+            )
         else:
-            self.price_count[now][0] = self.price_count[now][0] + contract.agreement["quantity"]
+            self.price_count[now][0] = (
+                self.price_count[now][0] + contract.agreement["quantity"]
+            )
 
         total_quantity = self.price_count[now][1] + self.price_count[now][0]
-        if(total_quantity != 0):
+        if total_quantity != 0:
             q = exogenous_input_quantity if level else exogenous_output_quantity
             # print("total_quantity:", total_quantity, "q:", q)
-            if( total_quantity > q):
+            if total_quantity > q:
                 self.my_diff_plus[total_quantity - q] += 1
             else:
                 self.my_diff_minus[q - total_quantity] += 1
 
         # print("price_count:", self.price_count[now])
         self.system_scores[now] = self.awi.current_score
-        if( now > 0):
-            self.system_scores_diff[now-1] = (
-                self.awi.current_score
-                - self.system_scores[now-1]
+        if now > 0:
+            self.system_scores_diff[now - 1] = (
+                self.awi.current_score - self.system_scores[now - 1]
             )
 
         high, low = self.price_count[now][1], self.price_count[now][0]
@@ -510,7 +535,6 @@ class Rchan(OneShotSyncAgent):
         # print(self.counter_total, sum(self.counter_total.values()))
         # print(self.accept_total, sum(self.accept_total.values()))
 
-
         # print(self.first_attempt)
         # print(self.first_accept)
         # print(self.counter_attempt)
@@ -519,60 +543,89 @@ class Rchan(OneShotSyncAgent):
         #     print(self.contract_quantities_bystep[i])
 
     def cal_scores(self, high, low):
-
-        now = self.awi.current_step
         level = self.awi.is_first_level
-        exogenous_input_quantity=self.awi.current_exogenous_input_quantity
-        exogenous_input_price=self.awi.current_exogenous_input_price
-        exogenous_output_quantity=self.awi.current_exogenous_output_quantity
-        exogenous_output_price=self.awi.current_exogenous_output_price
+        exogenous_input_quantity = self.awi.current_exogenous_input_quantity
+        exogenous_input_price = self.awi.current_exogenous_input_price
+        exogenous_output_quantity = self.awi.current_exogenous_output_quantity
+        exogenous_output_price = self.awi.current_exogenous_output_price
 
-        if(level):
+        if level:
             sales = low + high
 
             q = min(self.awi.n_lines, exogenous_input_quantity)
 
-            if(high + low > q):
-                revenue = self.awi.current_output_issues[UNIT_PRICE].max_value * min(q, high) + self.awi.current_output_issues[UNIT_PRICE].min_value * max(0, q - high)
+            if high + low > q:
+                revenue = self.awi.current_output_issues[UNIT_PRICE].max_value * min(
+                    q, high
+                ) + self.awi.current_output_issues[UNIT_PRICE].min_value * max(
+                    0, q - high
+                )
             else:
-                revenue = self.awi.current_output_issues[UNIT_PRICE].max_value * high + self.awi.current_output_issues[UNIT_PRICE].min_value * low
+                revenue = (
+                    self.awi.current_output_issues[UNIT_PRICE].max_value * high
+                    + self.awi.current_output_issues[UNIT_PRICE].min_value * low
+                )
 
             costs = exogenous_input_price
-            prod_costs =  min(q, sales) * self.awi.profile.cost
+            prod_costs = min(q, sales) * self.awi.profile.cost
             shortfall = max(0, sales - exogenous_input_quantity)
-            shortfall_penalty = self.awi.current_shortfall_penalty * shortfall * self.awi.trading_prices[1]
+            shortfall_penalty = (
+                self.awi.current_shortfall_penalty
+                * shortfall
+                * self.awi.trading_prices[1]
+            )
             disposal = max(0, exogenous_input_quantity - sales)
-            disposal_cost = disposal * self.awi.current_disposal_cost * self.awi.trading_prices[0]
+            disposal_cost = (
+                disposal * self.awi.current_disposal_cost * self.awi.trading_prices[0]
+            )
 
-            supplier_scores = revenue - (costs + prod_costs + shortfall_penalty + disposal_cost)
+            supplier_scores = revenue - (
+                costs + prod_costs + shortfall_penalty + disposal_cost
+            )
             # print(now, self.calculate_scores[now], high, low, prod_costs, disposal_cost, shortfall_penalty, revenue, costs)
             return supplier_scores
-        
+
         else:
             supplies = low + high
 
             q = min(self.awi.n_lines, exogenous_output_quantity)
 
-            if(high + low > q):
-                costs = self.awi.current_input_issues[UNIT_PRICE].min_value * min(q, low) + self.awi.current_input_issues[UNIT_PRICE].max_value * max(0, q - low)
+            if high + low > q:
+                costs = self.awi.current_input_issues[UNIT_PRICE].min_value * min(
+                    q, low
+                ) + self.awi.current_input_issues[UNIT_PRICE].max_value * max(
+                    0, q - low
+                )
             else:
-                costs = self.awi.current_input_issues[UNIT_PRICE].max_value * high + self.awi.current_input_issues[UNIT_PRICE].min_value * low
+                costs = (
+                    self.awi.current_input_issues[UNIT_PRICE].max_value * high
+                    + self.awi.current_input_issues[UNIT_PRICE].min_value * low
+                )
 
             if exogenous_output_quantity > 0:
-                revenue = exogenous_output_price * (min((high + low), q) / exogenous_output_quantity)
+                revenue = exogenous_output_price * (
+                    min((high + low), q) / exogenous_output_quantity
+                )
             else:
                 revenue = 0
-                
-            prod_costs =  min(q, supplies) * self.awi.profile.cost
-            shortfall = max(0, exogenous_output_quantity - supplies)
-            shortfall_penalty = self.awi.current_shortfall_penalty * shortfall * self.awi.trading_prices[2]
-            disposal = max(0, supplies - exogenous_output_quantity)
-            disposal_cost = disposal * self.awi.current_disposal_cost * self.awi.trading_prices[1]
 
-            consumer_scores = revenue - (costs + prod_costs + shortfall_penalty + disposal_cost)
+            prod_costs = min(q, supplies) * self.awi.profile.cost
+            shortfall = max(0, exogenous_output_quantity - supplies)
+            shortfall_penalty = (
+                self.awi.current_shortfall_penalty
+                * shortfall
+                * self.awi.trading_prices[2]
+            )
+            disposal = max(0, supplies - exogenous_output_quantity)
+            disposal_cost = (
+                disposal * self.awi.current_disposal_cost * self.awi.trading_prices[1]
+            )
+
+            consumer_scores = revenue - (
+                costs + prod_costs + shortfall_penalty + disposal_cost
+            )
             # print(now, self.calculate_scores[now], high, low, prod_costs, disposal_cost, shortfall_penalty, revenue, costs)
             return consumer_scores
-
 
     def first_proposals(self):
         # print(self.awi.current_step, self.awi.is_first_level)
@@ -580,14 +633,13 @@ class Rchan(OneShotSyncAgent):
         self.proposal_state = "first"
         now = self.awi.current_step
         level = self.awi.is_first_level
-        exogenous_input_quantity=self.awi.current_exogenous_input_quantity
-        exogenous_input_price=self.awi.current_exogenous_input_price
-        exogenous_output_quantity=self.awi.current_exogenous_output_quantity
-        exogenous_output_price=self.awi.current_exogenous_output_price
 
-        my_aim_quantity = self.awi.needed_sales if self.awi.my_suppliers == ["SELLER"] else self.awi.needed_supplies
+        my_aim_quantity = (
+            self.awi.needed_sales
+            if self.awi.my_suppliers == ["SELLER"]
+            else self.awi.needed_supplies
+        )
 
-    
         # just randomly distribute my needs over my partners (with best price for me).
         s, price = self._step_and_price(best_price=True)
         # my_negotiators = [p for p in (self.awi.my_consumers if self.awi.my_suppliers==["SELLER"] else self.awi.my_suppliers) if p in self.negotiators.keys()]
@@ -633,33 +685,25 @@ class Rchan(OneShotSyncAgent):
         minus = sum(self.minus[before:now]) / (now + 1 - before) if now > 0 else 0
         perfect = sum(self.perfect[before:now]) / (now + 1 - before) if now > 0 else 0
 
-
-        if(plus == max(plus, minus, perfect)):
+        if plus == max(plus, minus, perfect):
             q = int(my_aim_quantity * 0.5) + 1
-        elif(minus == max(plus, minus, perfect)):
+        elif minus == max(plus, minus, perfect):
             q = int(my_aim_quantity)
             s, price = self._step_and_price(best_price=False)
         else:
-            if(plus < minus):
+            if plus < minus:
                 q = int(my_aim_quantity * 0.8) + 1
             else:
                 q = int(my_aim_quantity * 0.5) + 1
 
-        agent_to_quantities = {
-            agent: [
-                i for i in range(q)
-            ]
-            for agent in my_negotiators
-        }
-
+        agent_to_quantities = {agent: [i for i in range(q)] for agent in my_negotiators}
 
         d = {}
         if len(my_negotiators) > 0:
             if (
                 # self.awi.current_step > self.awi.n_steps * 0.5
                 # and len(my_negotiators) > 0
-                self.awi.current_step > 15
-                and len(my_negotiators) > 0
+                self.awi.current_step > 15 and len(my_negotiators) > 0
             ):
                 best_combo = [1 for _ in range(len(my_negotiators))]
                 if level:
@@ -673,7 +717,7 @@ class Rchan(OneShotSyncAgent):
                 # best_q = my_aim_quantity
 
                 precomputed_prob = {
-                    agent: { (q): 0.0 for q in range(10)}
+                    agent: {(q): 0.0 for q in range(10)}
                     # agent: { (q): 0.0 for q in range(my_aim_quantity+1)}
                     for agent in my_negotiators
                 }
@@ -681,22 +725,22 @@ class Rchan(OneShotSyncAgent):
                 max_q = int(my_aim_quantity + 0.35)
 
                 for agent in my_negotiators:
-                    for q in range(my_aim_quantity+1):
+                    for q in range(my_aim_quantity + 1):
                         # print("agent:", agent, "q:", q)
                         # print(self.first_accept)
                         # print(self.first_attempt)
                         a = self.first_accept[agent][q] + 1
-                        b = self.first_attempt[agent][q] - self.first_accept[agent][q] + 1
+                        b = (
+                            self.first_attempt[agent][q]
+                            - self.first_accept[agent][q]
+                            + 1
+                        )
                         # print(a, b)
                         p = np.random.beta(a, b)
                         precomputed_prob[agent][q] = p
 
-
                 if len(my_negotiators) > 2:
-                    
-                    best_quantity = {
-                        agent: 0 for agent in my_negotiators
-                    }
+                    best_quantity = {agent: 0 for agent in my_negotiators}
                     concentrated_ids = sorted(
                         my_negotiators,
                         key=lambda x: self.first_accept_prob[x],
@@ -705,23 +749,28 @@ class Rchan(OneShotSyncAgent):
                         reverse=True,
                     )[:4]
                     # concentrated_ids = [id for id in concentrated_ids if self.first_accept_prob[id] > 0.4]
-                    
 
-                    quantity_options = [agent_to_quantities[agent] if agent in concentrated_ids else [best_quantity[agent]] for agent in my_negotiators]
+                    quantity_options = [
+                        agent_to_quantities[agent]
+                        if agent in concentrated_ids
+                        else [best_quantity[agent]]
+                        for agent in my_negotiators
+                    ]
                     # print("quantity_options:", quantity_options)
 
-                    for q_combo in product(*quantity_options):  # 各エージェントに対する個数の全パターン
+                    for q_combo in product(
+                        *quantity_options
+                    ):  # 各エージェントに対する個数の全パターン
                         # print("q_combo:", q_combo)
                         total_quantity = sum(q_combo)
                         # print("total_quantity:", total_quantity)
                         if total_quantity > max_q:
                             continue
                         if level:
-                            score = self.cal_scores(0, total_quantity)
+                            self.cal_scores(0, total_quantity)
                         else:
-                            score = self.cal_scores(total_quantity, 0)
+                            self.cal_scores(total_quantity, 0)
                         # print("score:", score)
-
 
                         # 成功確率は precomputed_prob[agent][q]
                         success_prob = 1.0
@@ -731,32 +780,38 @@ class Rchan(OneShotSyncAgent):
                             expected_value += q * precomputed_prob[agent][q]
                             success_prob *= precomputed_prob[agent][q]
 
-
-                        if (abs(expected_value - my_aim_quantity) < abs(best_score - my_aim_quantity)):
+                        if abs(expected_value - my_aim_quantity) < abs(
+                            best_score - my_aim_quantity
+                        ):
                             # if (expected_value > my_aim_quantity - 1):
                             best_score = expected_value
                             best_combo = q_combo
                             best_p = success_prob
 
-                    if(plus == max(plus, minus, perfect)):
+                    if plus == max(plus, minus, perfect):
                         # self.overordering_q = self.overordering_q - 1
                         self.overordering_exp = self.overordering_exp * 0.7
-                    elif(minus == max(plus, minus, perfect)):
+                    elif minus == max(plus, minus, perfect):
                         # self.overordering_q = self.overordering_q + 1
                         self.overordering_exp = self.overordering_exp * 1.3
                     else:
-                        if(plus < minus):
+                        if plus < minus:
                             # self.overordering_q = self.overordering_q + 1
                             self.overordering_exp = self.overordering_exp * 1.1
                         else:
                             # self.overordering_q = self.overordering_q
                             self.overordering_exp = self.overordering_exp
-                    
 
                     # amari = my_aim_quantity - sum(best_combo)
-                    amari = (offering_quantity - best_score) * max(min(self.overordering_exp, 3), 0.3)
+                    amari = (offering_quantity - best_score) * max(
+                        min(self.overordering_exp, 3), 0.3
+                    )
 
-                    amari_agents = [agent for agent in my_negotiators if best_combo[my_negotiators.index(agent)] < 1]
+                    amari_agents = [
+                        agent
+                        for agent in my_negotiators
+                        if best_combo[my_negotiators.index(agent)] < 1
+                    ]
 
                     # # if( ave_prob < 0.3):
                     # print(amari)
@@ -785,20 +840,23 @@ class Rchan(OneShotSyncAgent):
                     # print("best_combo:", best_combo)
 
                 else:
-                    quantity_options = [agent_to_quantities[agent] for agent in my_negotiators]
+                    quantity_options = [
+                        agent_to_quantities[agent] for agent in my_negotiators
+                    ]
                     # print("quantity_options:", quantity_options)
-                    for q_combo in product(*quantity_options):  # 各エージェントに対する個数の全パターン
+                    for q_combo in product(
+                        *quantity_options
+                    ):  # 各エージェントに対する個数の全パターン
                         # print("q_combo:", q_combo)
                         total_quantity = sum(q_combo)
                         # print("total_quantity:", total_quantity)
                         if total_quantity > max_q:
                             continue
                         if level:
-                            score = self.cal_scores(0, total_quantity)
+                            self.cal_scores(0, total_quantity)
                         else:
-                            score = self.cal_scores(total_quantity, 0)
+                            self.cal_scores(total_quantity, 0)
                         # print("score:", score)
-
 
                         # 成功確率は precomputed_prob[agent][q]
                         expected_value = 0.0
@@ -808,8 +866,7 @@ class Rchan(OneShotSyncAgent):
                             expected_value += q * precomputed_prob[agent][q]
                             success_prob *= precomputed_prob[agent][q]
 
-
-                        if (expected_value > best_score):
+                        if expected_value > best_score:
                             best_score = expected_value
                             best_combo = q_combo
                             best_p = success_prob
@@ -845,17 +902,19 @@ class Rchan(OneShotSyncAgent):
                     # print(self.awi.current_input_issues)
                     distribution[k] = best_combo[my_negotiators.index(k)]
 
-
             else:
                 distribution = dict(
                     zip(
                         my_negotiators,
                         # distribute(offering_quantity, len(my_negotiators),randomness=True,),
-                        distribute(offering_quantity, len(my_negotiators),),
+                        distribute(
+                            offering_quantity,
+                            len(my_negotiators),
+                        ),
                         # distribute(offering_quantity, len(my_negotiators), equal=True, ),
                     )
                 )
-        
+
             for k, q in distribution.items():
                 self.first_quantity[q] += 1
                 self.first_attempt[k][q] += 1
@@ -865,7 +924,7 @@ class Rchan(OneShotSyncAgent):
                 k: (q, s, price) if q >= 0 or self.awi.allow_zero_quantity else None
                 for k, q in distribution.items()
             }
-        d |= {k:  (1, s, price) for k in not_negotiators}
+        d |= {k: (1, s, price) for k in not_negotiators}
         # print("first proposals:", d)
         return d
 
@@ -874,10 +933,6 @@ class Rchan(OneShotSyncAgent):
         self.proposal_state = "counter"
         now = self.awi.current_step
         level = self.awi.is_first_level
-        exogenous_input_quantity=self.awi.current_exogenous_input_quantity
-        exogenous_input_price=self.awi.current_exogenous_input_price
-        exogenous_output_quantity=self.awi.current_exogenous_output_quantity
-        exogenous_output_price=self.awi.current_exogenous_output_price
 
         for k, v in offers.items():
             # if v[TIME] != now:
@@ -886,19 +941,20 @@ class Rchan(OneShotSyncAgent):
             #     if( v[QUANTITY] >= 0):
             #         self.opo_q[v[QUANTITY]] += 1
             if v[TIME] == now:
-                if( v[QUANTITY] >= 0):
+                if v[QUANTITY] >= 0:
                     self.opo_q[v[QUANTITY]] += 1
-
 
         unneeded_response = (
             SAOResponse(ResponseType.END_NEGOTIATION, None)
             if not self.awi.allow_zero_quantity
-            else SAOResponse(
-                ResponseType.REJECT_OFFER, (0, self.awi.current_step, 0)
-            )
-        ) 
+            else SAOResponse(ResponseType.REJECT_OFFER, (0, self.awi.current_step, 0))
+        )
 
-        my_aim_quantity = self.awi.needed_sales if self.awi.my_suppliers == ["SELLER"] else self.awi.needed_supplies
+        my_aim_quantity = (
+            self.awi.needed_sales
+            if self.awi.my_suppliers == ["SELLER"]
+            else self.awi.needed_supplies
+        )
 
         response = dict()
         future_partners = {
@@ -929,19 +985,19 @@ class Rchan(OneShotSyncAgent):
             # find the set of partners that gave me the best offer set
             # (i.e. total quantity nearest to my needs)
             plist = list(powerset(partners))[::-1]
-            plus_best_diff, plus_best_expected_diff, plus_best_indx = (
+            plus_best_diff, _plus_best_expected_diff, plus_best_indx = (
                 float("inf"),
                 float("inf"),
                 -1,
             )
-            minus_best_diff, minus_best_expected_diff, minus_best_indx = (
+            minus_best_diff, _minus_best_expected_diff, minus_best_indx = (
                 -float("inf"),
                 -float("inf"),
                 -1,
             )
             best_diff, best_indx = float("inf"), -1
 
-            # print("offers:", offers) 
+            # print("offers:", offers)
             # print("needs:", needs)
             for i, partner_ids in enumerate(plist):
                 offered = sum(offers[p][QUANTITY] for p in partner_ids)
@@ -994,46 +1050,53 @@ class Rchan(OneShotSyncAgent):
                 now_scores = self.cal_scores(high, low)
                 now = self.awi.current_step
                 level = self.awi.is_first_level
-                exogenous_input_quantity=self.awi.current_exogenous_input_quantity
-                exogenous_input_price=self.awi.current_exogenous_input_price
-                exogenous_output_quantity=self.awi.current_exogenous_output_quantity
-                exogenous_output_price=self.awi.current_exogenous_output_price
 
                 # print(exogenous_input_quantity,exogenous_input_price,exogenous_output_quantity,exogenous_output_price)
 
-                if(len(plist[plus_best_indx]) != 0):
+                if len(plist[plus_best_indx]) != 0:
                     high, low = self.price_count[now][1], self.price_count[now][0]
                     for id in plist[plus_best_indx]:
                         if level:
-                            ind = offers[id][2] - self.awi.current_output_issues[UNIT_PRICE].min_value
+                            ind = (
+                                offers[id][2]
+                                - self.awi.current_output_issues[UNIT_PRICE].min_value
+                            )
                         else:
-                            ind = offers[id][2] - self.awi.current_input_issues[UNIT_PRICE].min_value
-                        if(ind == 0):
+                            ind = (
+                                offers[id][2]
+                                - self.awi.current_input_issues[UNIT_PRICE].min_value
+                            )
+                        if ind == 0:
                             low = low + offers[id][0]
                         else:
                             high = high + offers[id][0]
 
                     plus_scores = self.cal_scores(high, low)
 
-
-                if(len(plist[minus_best_indx]) != 0):
+                if len(plist[minus_best_indx]) != 0:
                     high, low = self.price_count[now][1], self.price_count[now][0]
                     for id in plist[minus_best_indx]:
-                        quantity = self.price_count[now]
+                        self.price_count[now]
                         if level:
-                            ind = offers[id][2] - self.awi.current_output_issues[UNIT_PRICE].min_value
+                            ind = (
+                                offers[id][2]
+                                - self.awi.current_output_issues[UNIT_PRICE].min_value
+                            )
                         else:
-                            ind = offers[id][2] - self.awi.current_input_issues[UNIT_PRICE].min_value
+                            ind = (
+                                offers[id][2]
+                                - self.awi.current_input_issues[UNIT_PRICE].min_value
+                            )
 
-                        if(ind == 0):
+                        if ind == 0:
                             low = low + offers[id][0]
                         else:
                             high = high + offers[id][0]
 
                     minus_scores = self.cal_scores(high, low)
 
-                avarage_calculate_scores = sum(self.calculate_scores) / (now + 1)  
-            
+                sum(self.calculate_scores) / (now + 1)
+
             th_min_plus, th_max_plus = self._allowed_mismatch(
                 min(state.relative_time for state in states.values()),
                 len(partners.difference(plist[plus_best_indx]).union(future_partners)),
@@ -1045,7 +1108,11 @@ class Rchan(OneShotSyncAgent):
                 is_selling,
             )
 
-            if th_min_minus <= minus_best_diff or plus_best_diff <= th_max_plus or (states[list(offers.keys())[0]].step > 5):
+            if (
+                th_min_minus <= minus_best_diff
+                or plus_best_diff <= th_max_plus
+                or (states[list(offers.keys())[0]].step > 5)
+            ):
                 if th_min_minus <= minus_best_diff and plus_best_diff <= th_max_plus:
                     if -minus_best_diff == plus_best_diff:
                         if is_selling:  # 売り手のときは、best_diff>0だとshortfall penaltyが発生するのでminus優先
@@ -1075,40 +1142,39 @@ class Rchan(OneShotSyncAgent):
 
                 best_scores = -float("inf")
                 if best_indx != -1:
-                    if(best_indx == plus_best_indx):
+                    if best_indx == plus_best_indx:
                         best_scores = plus_scores
-                    elif(best_indx == minus_best_indx):
+                    elif best_indx == minus_best_indx:
                         best_scores = minus_scores
 
-                if(best_scores != -float("inf")):
+                if best_scores != -float("inf"):
                     max_scores = max(plus_scores, minus_scores)
-                    average_calculate_scores = sum(self.calculate_scores) / (self.awi.current_step + 1)
+                    sum(self.calculate_scores) / (self.awi.current_step + 1)
                     # print(self.awi.current_step, best_scores, average_calculate_scores)
-                    if(best_scores < max_scores):
+                    if best_scores < max_scores:
                         # print(self.awi.current_step, "best_scores < max_scores", best_scores, max_scores, self.awi.needed_sales, self.awi.needed_supplies)
-                        if(best_indx == plus_best_indx):
+                        if best_indx == plus_best_indx:
                             best_indx = minus_best_indx
                             best_diff = minus_best_diff
                             best_scores = minus_scores
                             # print("changing socres", best_scores, max_scores, self.awi.current_step, level)
-                        elif(best_indx == minus_best_indx):
+                        elif best_indx == minus_best_indx:
                             # print("changing socres??", best_scores, max_scores, self.awi.current_step, level)
                             now = self.awi.current_step
                             plus = sum(self.plus) / (now + 1) if now > 0 else 0
                             minus = sum(self.minus) / (now + 1) if now > 0 else 0
                             perfect = sum(self.perfect) / (now + 1) if now > 0 else 0
-                            if(perfect == max([minus, plus, perfect]) and minus > plus):
+                            if perfect == max([minus, plus, perfect]) and minus > plus:
                                 best_indx = plus_best_indx
                                 best_diff = plus_best_diff
                                 best_scores = plus_scores
                                 # print("changing socres", best_scores, max_scores, self.awi.current_step, level)
 
-
                     accept_q = sum(self.counter_total.values())
 
-                    if(accept_q == 0):
-                        if (minus_scores < plus_scores):
-                            best_indx =  plus_best_indx
+                    if accept_q == 0:
+                        if minus_scores < plus_scores:
+                            best_indx = plus_best_indx
                             best_diff = plus_best_diff
                             best_scores = plus_scores
                         else:
@@ -1121,61 +1187,61 @@ class Rchan(OneShotSyncAgent):
                 accept_sum = 0
                 for k in plist[best_indx]:
                     accept_sum += offers[k][0]
-                
+
                 partner_ids = plist[best_indx]
 
                 partner_ids_tmp = list(partner_ids)
                 test_b = True
-                if(accept_sum < my_aim_quantity):
+                if accept_sum < my_aim_quantity:
                     for p in partner_ids:
                         if offers[p][0] == 1:
-                            if(self.counter_total[p] != 0):
-                                if(test_b):
+                            if self.counter_total[p] != 0:
+                                if test_b:
                                     partner_ids_tmp.remove(p)
                                     best_diff -= 1
                                     test_b = False
 
-                if(accept_sum < my_aim_quantity):
+                if accept_sum < my_aim_quantity:
                     for p in partner_ids:
                         if offers[p][0] == 1:
-                            if(self.counter_total[p] == 0):
-                                if(test_b):
+                            if self.counter_total[p] == 0:
+                                if test_b:
                                     partner_ids_tmp.remove(p)
                                     test_b = False
                                     best_diff -= 1
 
-
-                if(states[list(offers.keys())[0]].step < 5):
-
-                    others = list(partners.difference(partner_ids).union(future_partners))
+                if states[list(offers.keys())[0]].step < 5:
+                    others = list(
+                        partners.difference(partner_ids).union(future_partners)
+                    )
                     partner_ids = tuple(partner_ids_tmp)
 
-                    others = list(partners.difference(partner_ids).union(future_partners))
+                    others = list(
+                        partners.difference(partner_ids).union(future_partners)
+                    )
                     # print("partner_ids:", partner_ids, "others:", others)
 
                     # print(states)
                 else:
-                    if(len(partner_ids) == 0):
-                        if(now_scores < plus_scores):
+                    if len(partner_ids) == 0:
+                        if now_scores < plus_scores:
                             partner_ids = plist[plus_best_indx]
                             best_diff = plus_best_diff
-                        elif(now_scores < minus_scores):
+                        elif now_scores < minus_scores:
                             partner_ids = plist[minus_best_indx]
                             best_diff = minus_best_diff
                         # print("jikannmoltatimasitayo")
                         # print(now_scores, plus_scores, minus_scores)
-                    others = list(partners.difference(partner_ids).union(future_partners))
+                    others = list(
+                        partners.difference(partner_ids).union(future_partners)
+                    )
                     # print("partner_ids:", partner_ids, "others:", others)
 
-
-
-   
                 for k in partner_ids:
                     self.accept_quantity[offers[k][0]] += 1
                     self.accept[k][offers[k][0]] += 1
                     self.accept_total[k] += offers[k][0]
                     # print("accept:", k, offers[k][0], self.awi.current_step)
-
 
                 response |= {
                     k: SAOResponse(ResponseType.ACCEPT_OFFER, offers[k])
@@ -1195,7 +1261,7 @@ class Rchan(OneShotSyncAgent):
                     my_aim_quantity = offering_quanitity
                     # print(best_diff)
                     # print("offering_quanitity:", offering_quanitity)
-                    if(offering_quanitity < 1):
+                    if offering_quanitity < 1:
                         offering_quanitity = 0
 
                     # agent_to_quantities = {
@@ -1205,15 +1271,12 @@ class Rchan(OneShotSyncAgent):
                     #     for agent in others
                     # }
                     if self.awi.current_step > self.awi.n_steps * 0.5:
-     
                         concentrated_ids = sorted(
                             others,
                             key=lambda x: self.counter_total[x],
                             reverse=True,
                         )[:1]
-                        concentrated_idx = [
-                            i for i, p in enumerate(others) if p in concentrated_ids
-                        ]
+                        [i for i, p in enumerate(others) if p in concentrated_ids]
                         distribution = dict(
                             zip(
                                 others,
@@ -1231,7 +1294,6 @@ class Rchan(OneShotSyncAgent):
                         # for k, q in distribution.items():
                         #     # print(self.awi.current_input_issues)
                         #     distribution[k] = best_combo[others.index(k)]
-
 
                     else:
                         distribution = dict(
@@ -1254,15 +1316,14 @@ class Rchan(OneShotSyncAgent):
                         #         ),
                         #     )
                         # )
-                    
+
                     # print(others)
 
-
-                    if(self.preoffer == distribution):
-                        if (states[list(offers.keys())[0]].step > 2):
+                    if self.preoffer == distribution:
+                        if states[list(offers.keys())[0]].step > 2:
                             # print("preoffer is same as distribution")
                             for k, q in distribution.items():
-                                distribution[k] = max(1, distribution[k]-1)
+                                distribution[k] = max(1, distribution[k] - 1)
 
                     self.preoffer = distribution
 
@@ -1284,9 +1345,6 @@ class Rchan(OneShotSyncAgent):
 
                 continue
 
-
-
-
             # If I still do not have a good enough offer, distribute my current needs
             # randomly over my partners.
             t = min(_.relative_time for _ in states.values())
@@ -1302,16 +1360,11 @@ class Rchan(OneShotSyncAgent):
 
             my_aim_quantity = offering_quanitity
 
-
             if self.awi.current_step > self.awi.n_steps * 0.5 and len(partners) > 0:
-              
-
                 concentrated_ids = sorted(
                     partners, key=lambda x: self.counter_total[x], reverse=True
                 )[:1]
-                concentrated_idx = [
-                    i for i, p in enumerate(partners) if p in concentrated_ids
-                ]
+                [i for i, p in enumerate(partners) if p in concentrated_ids]
                 distribution = dict(
                     zip(
                         partners,
@@ -1328,9 +1381,8 @@ class Rchan(OneShotSyncAgent):
 
                 delete_list = []
                 for k, q in distribution.items():
-                    if(self.counter_total[k] == 0):
+                    if self.counter_total[k] == 0:
                         delete_list.append(k)
-
 
                 plist = list(powerset(delete_list))[::-1]
 
@@ -1344,27 +1396,31 @@ class Rchan(OneShotSyncAgent):
 
                     for id in partner_ids:
                         if level:
-                            ind = offers[id][2] - self.awi.current_output_issues[UNIT_PRICE].min_value
+                            ind = (
+                                offers[id][2]
+                                - self.awi.current_output_issues[UNIT_PRICE].min_value
+                            )
                         else:
-                            ind = offers[id][2] - self.awi.current_input_issues[UNIT_PRICE].min_value
-                        if(ind == 0):
+                            ind = (
+                                offers[id][2]
+                                - self.awi.current_input_issues[UNIT_PRICE].min_value
+                            )
+                        if ind == 0:
                             low = low + offers[id][0]
                         else:
                             high = high + offers[id][0]
 
                     scores = self.cal_scores(high, low)
 
-                    if( scores > best_scores):
+                    if scores > best_scores:
                         best_scores = scores
                         best_indx = i
 
                 # print("best_indx:", best_indx, "best_scores:", best_scores, "plist:", plist[best_indx])
-                
+
                 for k in plist[best_indx]:
                     response.update(
-                        {
-                            k: SAOResponse(ResponseType.ACCEPT_OFFER, offers[k])
-                        }
+                        {k: SAOResponse(ResponseType.ACCEPT_OFFER, offers[k])}
                     )
                     self.accept_quantity[offers[k][0]] += 1
                     self.accept[k][offers[k][0]] += 1
@@ -1374,7 +1430,6 @@ class Rchan(OneShotSyncAgent):
 
                 # print("distribution:", distribution)
 
-
                 # for k, q in distribution.items():
                 #     # print(self.awi.current_input_issues)
                 #     distribution[k] = best_combo[partners.index(k)]
@@ -1383,20 +1438,21 @@ class Rchan(OneShotSyncAgent):
                     zip(
                         partners,
                         distribute(
-                            offering_quanitity, len(partners), mx=self.awi.n_lines, equal=True
+                            offering_quanitity,
+                            len(partners),
+                            mx=self.awi.n_lines,
+                            equal=True,
                         ),
                     )
                 )
 
             # print(partners)
 
-
-
-            if(self.preoffer == distribution):
-                if (states[list(offers.keys())[0]].step > 2):
-                    pass # print("preoffer is same as distribution")
+            if self.preoffer == distribution:
+                if states[list(offers.keys())[0]].step > 2:
+                    pass  # print("preoffer is same as distribution")
                     for k, q in distribution.items():
-                        distribution[k] = max(1, distribution[k]-1)
+                        distribution[k] = max(1, distribution[k] - 1)
 
             self.preoffer = distribution
 

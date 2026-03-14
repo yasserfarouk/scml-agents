@@ -7,23 +7,23 @@
 """
 
 from __future__ import annotations
-from negmas import SAOResponse, ResponseType
+
+import math
+import random
+
+# required for typing
+from negmas import Contract, ResponseType, SAOResponse
 from scml.oneshot import *
 
 # required for typing
 # required for development
 from scml.oneshot import OneShotSyncAgent
 
-# required for typing
-from negmas import Contract
-import random
-import math
-
 __all__ = ["EpsilonGreedyAgent"]
 
 
 def log_message(*args, **kwargs):
-    message = " ".join(str(arg) for arg in args)
+    " ".join(str(arg) for arg in args)
     # print(message, **kwargs)
 
 
@@ -56,8 +56,9 @@ def distribute_evenly(total: int, n: int) -> list[int]:
 
 
 def distribute(q: int, n: int) -> list[int]:
-    from numpy.random import choice
     from collections import Counter
+
+    from numpy.random import choice
 
     if q < n:
         lst = [0] * (n - q) + [1] * q
@@ -292,7 +293,7 @@ class EpsilonGreedyAgent(OneShotSyncAgent):
     def on_negotiation_success(self, contract: Contract, mechanism) -> None:
         buyer = contract.annotation["buyer"]
         seller = contract.annotation["seller"]
-        caller = contract.annotation["caller"]
+        contract.annotation["caller"]
         # callerと一致する方のみを出力
         if self.awi.is_first_level:
             log_message("agreement with", buyer)
@@ -370,7 +371,7 @@ class EpsilonGreedyAgent(OneShotSyncAgent):
             # 現在時刻
             current_time = min([_.relative_time for _ in states.values()])
             log_message("current_time:", current_time)
-            th = self._current_threshold(current_time)
+            self._current_threshold(current_time)
 
             time_threshold = 0.2
 

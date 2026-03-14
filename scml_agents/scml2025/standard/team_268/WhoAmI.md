@@ -10,7 +10,7 @@
 
 ## 1. SimpleAgent
 
-**定義ファイル**：`simple_agent.py`  
+**定義ファイル**：`simple_agent.py`
 **継承元クラス**：StdAgent
 
 - **戦略概要**：
@@ -28,7 +28,7 @@
 
 ## 2. OptimisticAgent
 
-**定義ファイル**：`optimistic_agent.py`  
+**定義ファイル**：`optimistic_agent.py`
 **継承元クラス**：`SimpleAgent`
 
 - **戦略概要**：
@@ -45,7 +45,7 @@
 
 ## 3. SimpleSyncAgent
 
-**定義ファイル**：`simple_sync_agent.py`  
+**定義ファイル**：`simple_sync_agent.py`
 **継承元クラス**：StdSyncAgent, SimpleAgent
 
 - **戦略概要**：
@@ -60,7 +60,7 @@
   - python -m myagent.simple_sync_agent
 
 
-**定義ファイル**：`proactive_agent.py`  
+**定義ファイル**：`proactive_agent.py`
 **継承元クラス**：SimpleSyncAgent
 
 - **戦略概要**：

@@ -1,27 +1,14 @@
-import os
 import pickle
-from typing import Dict, List, Optional, Tuple
+from typing import List, Optional
 
-import matplotlib.pyplot as plt
 import numpy as np
 from negmas import Breach, Contract
-from scml import SCML2020World
 from scml.scml2020 import (
-    NO_COMMAND,
-    BuyCheapSellExpensiveAgent,
-    DecentralizingAgent,
-    Factory,
-    IndDecentralizingAgent,
-    MovingRangeAgent,
-    MovingRangeNegotiationManager,
-    PredictionBasedTradingStrategy,
     SCML2020Agent,
 )
 from scml.scml2020.components.production import (
-    DemandDrivenProductionStrategy,
     ProductionStrategy,
 )
-from scml.scml2020.components.trading import FixedTradePredictionStrategy
 
 
 class OmerProductionStrategyAgent(ProductionStrategy):

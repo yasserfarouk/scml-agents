@@ -143,6 +143,7 @@
 
 import numpy as np
 
+
 def needs_parameter_sigmoid(needs, k=0.2, needs0=1, param_max=6.0, param_min=1.2):
     """
     needs: 必要量（1以上）
@@ -155,6 +156,7 @@ def needs_parameter_sigmoid(needs, k=0.2, needs0=1, param_max=6.0, param_min=1.2
     param = param_min + (param_max - param_min) * s
     return param
 
+
 for i in range(50):
-     pass # print(f"num;{i}")
-     pass # print(needs_parameter_sigmoid(i, k=0.2, needs0=1, param_max=6.0, param_min=1.2))
+    pass  # print(f"num;{i}")
+    pass  # print(needs_parameter_sigmoid(i, k=0.2, needs0=1, param_max=6.0, param_min=1.2))

@@ -61,17 +61,16 @@ import time
 
 # required for typing
 import types
-from typing import Any, Optional, Type, Union
+from typing import Optional
 
-import numpy as np
-from negmas import ControlledNegotiator, Outcome, ResponseType
+from negmas import Outcome, ResponseType
 from negmas.helpers import humanize_time
 from negmas.sao import SAOState
 
 # required for development
 from scml import QUANTITY, UNIT_PRICE, GreedyOneShotAgent
 from scml.oneshot import OneShotAgent
-from scml.oneshot.agents import RandomOneShotAgent, SyncRandomOneShotAgent
+from scml.oneshot.agents import RandomOneShotAgent
 from scml.utils import anac2021_collusion, anac2021_oneshot, anac2021_std
 from tabulate import tabulate
 
@@ -157,14 +156,14 @@ class ZilberanBackup(OneShotAgent):
                     try:
                         getattr(agent, method_name)(*args[1:], **kwargs)
 
-                    except TypeError as e:
+                    except TypeError:
                         raise ValueError(f"{args} {kwargs}")
 
             if hasattr(self, method_name):
                 try:
                     getattr(super(), method_name)(*args[1:], **kwargs)
 
-                except TypeError as e:
+                except TypeError:
                     raise ValueError(f"{args} {kwargs}")
 
         modified_method.__name__ = method_name

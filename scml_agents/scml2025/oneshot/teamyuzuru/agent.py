@@ -2,22 +2,17 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import annotations
-from negmas import SAOResponse, ResponseType
-
-from scml.oneshot import *
 
 import math
-
+import random
 
 # required for typing
+from negmas import Contract, ResponseType, SAOResponse
+from scml.oneshot import *
 
+# required for typing
 # required for development
 from scml.oneshot import OneShotSyncAgent
-
-# required for typing
-from negmas import Contract
-
-import random
 
 __all__ = ["CostAverseAgent"]
 
@@ -55,8 +50,9 @@ def distribute_evenly(total: int, n: int) -> list[int]:
 
 
 def distribute(q: int, n: int) -> list[int]:
-    from numpy.random import choice
     from collections import Counter
+
+    from numpy.random import choice
 
     if q < n:
         lst = [0] * (n - q) + [1] * q
@@ -211,7 +207,7 @@ class CostAverseAgent(OneShotSyncAgent):
     def on_negotiation_success(self, contract: Contract, mechanism) -> None:
         buyer = contract.annotation["buyer"]
         seller = contract.annotation["seller"]
-        caller = contract.annotation["caller"]
+        contract.annotation["caller"]
         if self.awi.is_first_level:
             log_message("agreement with", buyer)
         else:
@@ -273,7 +269,7 @@ class CostAverseAgent(OneShotSyncAgent):
                 offered = sum(offers[p][QUANTITY] for p in partner_ids)
                 diff = abs(offered - needs)
                 shortfall = needs - offered
-                estimated_cost = self._calc_estimated_cost(offered, needs)
+                self._calc_estimated_cost(offered, needs)
                 utility_value = self.ufun.from_offers(
                     tuple(offers[k] for k in partner_ids),
                     tuple([self.awi.is_first_level] * len(partner_ids)),

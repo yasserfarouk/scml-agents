@@ -1,12 +1,22 @@
 from __future__ import annotations
+
 from typing import *
+
 import numpy as np
-from scml.scml2020 import TIME,QUANTITY,UNIT_PRICE
-from negmas import ResponseType,outcome_is_valid,SAOMetaNegotiatorController,UtilityFunction,LinearUtilityFunction
-from negmas.sao import SAOResponse,SAOSyncController
+from negmas import (
+    LinearUtilityFunction,
+    ResponseType,
+    SAOMetaNegotiatorController,
+    UtilityFunction,
+    outcome_is_valid,
+)
+from negmas.sao import SAOResponse, SAOSyncController
+from scml.scml2020 import QUANTITY, TIME, UNIT_PRICE
+
 
 class ControllerUFun(UtilityFunction):
     """A utility function for the controller"""
+
     def __init__(self, controller=None):
         super().__init__()
         self.controller = controller
@@ -16,6 +26,7 @@ class ControllerUFun(UtilityFunction):
 
     def xml(self, issues):
         pass
+
 
 class SyncController(SAOSyncController):
     """
@@ -62,9 +73,15 @@ class SyncController(SAOSyncController):
 
         # get my needs and secured amounts arrays
         if self._is_seller:
-            _needed, _secured = (self.__parent.outputs_needed,self.__parent.outputs_secured)
+            _needed, _secured = (
+                self.__parent.outputs_needed,
+                self.__parent.outputs_secured,
+            )
         else:
-            _needed, _secured = (self.__parent.inputs_needed,self.__parent.inputs_secured)
+            _needed, _secured = (
+                self.__parent.inputs_needed,
+                self.__parent.inputs_secured,
+            )
 
         # invalide offers have no utility
         if offer is None:
@@ -164,6 +181,7 @@ class SyncController(SAOSyncController):
             self.__parent.outputs_secured[t] += q
         else:
             self.__parent.inputs_secured[t] += q
+
 
 class MyNegotiationManager:
     """My negotiation strategy
@@ -275,6 +293,7 @@ class MyNegotiationManager:
             return None
         return controller.create_negotiator()
 
+
 class YetAnotherNegotiationManager:
     """My new negotiation strategy
 
@@ -283,7 +302,13 @@ class YetAnotherNegotiationManager:
         time_range: The time-range for each controller as a fraction of the number of simulation steps
     """
 
-    def __init__( self, *args, price_weight=0.7, time_horizon=0.1, **kwargs,):
+    def __init__(
+        self,
+        *args,
+        price_weight=0.7,
+        time_horizon=0.1,
+        **kwargs,
+    ):
         super().__init__(*args, **kwargs)
         self.index: List[int] = None
         self.time_horizon = time_horizon
@@ -306,11 +331,17 @@ class YetAnotherNegotiationManager:
 
         for seller, needed, secured, product in [
             (False, self.inputs_needed, self.inputs_secured, self.awi.my_input_product),
-            ( True, self.outputs_needed, self.outputs_secured, self.awi.my_output_product),
+            (
+                True,
+                self.outputs_needed,
+                self.outputs_secured,
+                self.awi.my_output_product,
+            ),
         ]:
             # find the maximum amount needed at any time-step in the given range
             needs = np.max(
-                needed[self._current_start:self._current_end] - secured[self._current_start:self._current_end]
+                needed[self._current_start : self._current_end]
+                - secured[self._current_start : self._current_end]
             )
             if needs < 1:
                 continue
@@ -319,15 +350,19 @@ class YetAnotherNegotiationManager:
                 # for selling set a price that is at least the catalog price
                 min_price = self.awi.catalog_prices[product]
                 price_range = (min_price, 2 * min_price)
-                controller = SAOMetaNegotiatorController(ufun=LinearUtilityFunction(
-                    (0.0, (1-self._price_weight), 0.0, self._price_weight)
-                ))
+                controller = SAOMetaNegotiatorController(
+                    ufun=LinearUtilityFunction(
+                        (0.0, (1 - self._price_weight), 0.0, self._price_weight)
+                    )
+                )
             else:
                 # for buying sell a price that is at most the catalog price
                 price_range = (0, self.awi.catalog_prices[product])
-                controller = SAOMetaNegotiatorController(ufun=LinearUtilityFunction(
-                    ((1-self._price_weight), 0.0, -self._price_weight)
-                ))
+                controller = SAOMetaNegotiatorController(
+                    ufun=LinearUtilityFunction(
+                        ((1 - self._price_weight), 0.0, -self._price_weight)
+                    )
+                )
 
             self.awi.request_negotiations(
                 not seller,
@@ -346,6 +381,6 @@ class YetAnotherNegotiationManager:
         mechanism: "NegotiatorMechanismInterface",
     ) -> Optional["Negotiator"]:
         return None
-    
+
     """def respond_to_negotiation_request(self,initiator: str,issues,annotation,mechanism):
         return None"""

@@ -79,33 +79,33 @@ Usage Instructions
 
 from __future__ import annotations
 
+import math
+import os
+import random
+from collections import Counter, defaultdict  # Added defaultdict / 添加了 defaultdict
+
 # ------------------ 基础依赖 ------------------
 # Basic Dependencies
 # ------------------
-from typing import Any, Dict, List, Tuple, Iterable
-import random
-import os
-import math
-from collections import Counter, defaultdict  # Added defaultdict / 添加了 defaultdict
+from typing import Any, Dict, Iterable, List, Tuple
 from uuid import uuid4
 
+from negmas import Contract, Outcome, ResponseType, SAOResponse, SAOState
 from numpy.random import choice as np_choice  # type: ignore
-
 from scml.std import (
-    StdSyncAgent,
-    StdAWI,
-    TIME,
     QUANTITY,
+    TIME,
     UNIT_PRICE,
+    StdAWI,
+    StdSyncAgent,
 )
-from negmas import SAOState, SAOResponse, Outcome, Contract, ResponseType
 
 # 内部工具 & manager
 # Internal Tools & Manager
 from .inventory_manager_n import (
-    InventoryManager,
     IMContract,
     IMContractType,
+    InventoryManager,
     MaterialType,
 )
 
@@ -1251,12 +1251,15 @@ class LitaAgentY(StdSyncAgent):
         for pid, qty in distribution.items():
             if qty <= 0:
                 continue  # No need for this partner / 此伙伴无需求
-            time_issue = self.get_nmi(pid).issues[TIME]
+            nmi = self.get_nmi(pid)
+            if nmi is None:
+                continue  # No NMI available for this partner
+            time_issue = nmi.issues[TIME]
             # Propose delivery time within NMI, not before today
             # 在NMI范围内提议交货时间，不早于今天
             delivery_time = max(today, time_issue.min_value)
             delivery_time = min(delivery_time, time_issue.max_value)
-            qty_issue = self.get_nmi(pid).issues[QUANTITY]
+            qty_issue = nmi.issues[QUANTITY]
             # Propose quantity within NMI bounds
             # 在NMI范围内提议数量
             final_qty = min(qty, qty_issue.max_value)
@@ -2461,7 +2464,7 @@ class LitaAgentY(StdSyncAgent):
         # Table header / 表头
         header = "|   日期    |  原料真库存  |  原料预计库存   | 计划生产  |  剩余产能  |  产品真库存  |  产品预计库存  |  已签署销售量  |  实际产品交付  |"
         # Date | Raw True Inv | Raw Est Inv | Planned Prod | Remain Cap | Prod True Inv | Prod Est Inv | Signed Sales | Actual Prod Deliv
-        separator = (
+        (
             "|" + "-" * (len(header) + 24) + "|"
         )  # Adjust separator length based on content / 根据内容调整分隔符长度
 

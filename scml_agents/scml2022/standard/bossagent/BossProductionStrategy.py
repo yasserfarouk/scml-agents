@@ -1,7 +1,9 @@
-from scml.scml2020.common import ANY_LINE, QUANTITY, TIME, UNIT_PRICE
-from .helper import get_contract_buyer_sellers, sort_negotiators_by_delivery
 import copy
+
 import numpy as np
+from scml.scml2020.common import QUANTITY, TIME, UNIT_PRICE
+
+from .helper import get_contract_buyer_sellers, sort_negotiators_by_delivery
 
 
 class BossProductionStrategy:
@@ -28,7 +30,7 @@ class BossProductionStrategy:
 
 			scheduled buyer contracts ve scheduled seller contracts defaultdict olmali. her yeni schedule productionda eklemeli, sifirdan yaratamayiz.
 
-		
+
 			signed: [contract1, contract2, contract3]
 			cancelled:  [contract1, contract2, contract3]
 
@@ -36,8 +38,8 @@ class BossProductionStrategy:
 			signed_sellers = {contract_1_id: (q, t, p), contract_2_id: (q, t, p)}
 
 			self.pseudo_buyer: {buyer_contract_id: (q, t, p) }
-			self.pseudo_seller: {seller_contract_id: (q, t, p) } 
-			
+			self.pseudo_seller: {seller_contract_id: (q, t, p) }
+
 			dispatch -> dispatch_partners[buyer_contract_id][seller_contract_id] = schedule -> schedule: {'1': 3, '2', 5, '3': 7}
 
 			dispatch_partners = {buyer_contract_id: {seller_contract_id: schedule} }

@@ -1,30 +1,31 @@
 from __future__ import annotations
-from negmas.sao import SAONMI
+
+import random
 import uuid
 
-
-from scml.oneshot import QUANTITY, TIME, UNIT_PRICE, OneShotAgent
 # required for typing
-from typing import Any
-import random
-import numpy as np
+# required for typing
+from negmas import (
+    ResponseType,
+    SAOState,
+)
+from scml.oneshot import QUANTITY, TIME, UNIT_PRICE
+from scml.scml2020.components import *
+
 # from scipy.stats import linregress
 # required for development
-from scml.std import StdSyncAgent, StdAgent
-from scml.scml2020.components import *
-# required for typing
-from negmas import Contract, Outcome, SAOResponse, SAOState
-from negmas import LinearUtilityFunction
+from scml.std import StdAgent
 
-from typing import List, Dict, Any
-from negmas import Contract, ResponseType
+
 class Neg_list:
-    # 
-    def __init__(self,neg_id):
+    #
+    def __init__(self, neg_id):
         self.neg_id = neg_id
-        self.q_dif = [] # 量の差分
-        self.p_dif = [] # 価格の差分
-        self.t_dif = [] # 納期の差分
+        self.q_dif = []  # 量の差分
+        self.p_dif = []  # 価格の差分
+        self.t_dif = []  # 納期の差分
+
+
 class InventoryManager:
     def __init__(self, agent):
         self.agent = agent
@@ -47,14 +48,24 @@ class InventoryManager:
     def remove_raw_material(self, quantity, time):
         self.raw_materials[time] -= quantity
 
+
 class Product:
-    def __init__(self, product_id, production_time, quantity, buy_price, sell_price=None, sell_time=None):
+    def __init__(
+        self,
+        product_id,
+        production_time,
+        quantity,
+        buy_price,
+        sell_price=None,
+        sell_time=None,
+    ):
         self.id = product_id
         self.production_time = production_time
         self.quantity = quantity
         self.buy_price = buy_price
         self.sell_price = sell_price
         self.sell_time = sell_time
+
 
 class NegotiationManager:
     def __init__(self, agent):
@@ -77,6 +88,7 @@ class NegotiationManager:
             del self.sell_negotiations[negotiation.id]
         del self.negotiations[negotiation.id]  # 追加
 
+
 class Negotiation:
     def __init__(self, negotiation_id, is_buy, quantity=0, price=0, time=0):
         self.id = negotiation_id
@@ -86,8 +98,8 @@ class Negotiation:
         self.time = time
         self.counter = 0  # 追加
 
-class S6s(StdAgent):
 
+class S6s(StdAgent):
     def init(self):
         super().init()
         self.inventory_manager = InventoryManager(self)
@@ -103,7 +115,7 @@ class S6s(StdAgent):
         self.sell_cont_day = 0
 
     def propose(self, negotiator_id: str, state):
-        nmi = self.get_nmi(negotiator_id)
+        self.get_nmi(negotiator_id)
         offer_list = []
         q = 0
         t = 0
@@ -119,17 +131,30 @@ class S6s(StdAgent):
                     negotiation = nego
                     break
         if negotiation is None:
-            negotiation = Negotiation(negotiator_id, negotiator_id in self.awi.my_suppliers)
-            self.negotiation_manager.add_negotiation(negotiation, negotiator_id in self.awi.my_suppliers)
+            negotiation = Negotiation(
+                negotiator_id, negotiator_id in self.awi.my_suppliers
+            )
+            self.negotiation_manager.add_negotiation(
+                negotiation, negotiator_id in self.awi.my_suppliers
+            )
 
         if negotiator_id in self.awi.my_suppliers:
-            highest_price = int(self.awi.trading_prices[self.awi.my_output_product] - self.process_cost)
-            lowest_price = int(min(self.awi.current_input_issues[0].values[0], self.awi.trading_prices[self.awi.my_input_product] * 0.7))
+            highest_price = int(
+                self.awi.trading_prices[self.awi.my_output_product] - self.process_cost
+            )
+            lowest_price = int(
+                min(
+                    self.awi.current_input_issues[0].values[0],
+                    self.awi.trading_prices[self.awi.my_input_product] * 0.7,
+                )
+            )
             n = self.negotiation_manager.negotiations[negotiator_id].counter // 5
 
             if len(self.less_inve) > 0:
                 if state.step < 5:
-                    t = random.randint(self.awi.current_step, self.less_inve[0].sell_time)
+                    t = random.randint(
+                        self.awi.current_step, self.less_inve[0].sell_time
+                    )
                     q = self.less_inve[0].quantity
                     p = random.randint(lowest_price, highest_price)
                     offer = self.check_proposal([q, t, p], negotiator_id)
@@ -140,7 +165,9 @@ class S6s(StdAgent):
                         if time < self.less_inve[n].sell_time:
                             for quantity in negotiation.quantity:
                                 if quantity <= self.less_inve[n].quantity + 2:
-                                    offer = self.check_proposal([quantity, time, p], negotiator_id)
+                                    offer = self.check_proposal(
+                                        [quantity, time, p], negotiator_id
+                                    )
                                     offer_list.append(tuple(offer))
                                     break
                     offer_list = sorted(offer_list, key=lambda x: x[1])
@@ -150,8 +177,10 @@ class S6s(StdAgent):
                 need_buy = 0
                 if len(self.inventory_manager.products[-1]) > self.awi.n_lines * 2:
                     return None
-                if len(self.buy_inventory[self.awi.current_step:]) > 0:
-                    need_buy = sum(self.buy_inventory[self.awi.current_step:]) / len(self.buy_inventory[self.awi.current_step:])
+                if len(self.buy_inventory[self.awi.current_step :]) > 0:
+                    need_buy = sum(self.buy_inventory[self.awi.current_step :]) / len(
+                        self.buy_inventory[self.awi.current_step :]
+                    )
                     if need_buy > self.awi.n_lines:
                         need_buy = self.awi.n_lines
                 else:
@@ -165,14 +194,28 @@ class S6s(StdAgent):
                 offer = self.check_proposal([q, t, p], negotiator_id)
                 return tuple(offer)
         else:
-            much_inve = sorted(self.inventory_manager.products[self.awi.current_step:], key=len, reverse=True)
-            indexed_lists = [(index, sublist) for index, sublist in enumerate(self.inventory_manager.products[self.awi.current_step:])]
-            sorted_indexed_lists = sorted(indexed_lists, key=lambda x: len(x[1]), reverse=True)
+            much_inve = sorted(
+                self.inventory_manager.products[self.awi.current_step :],
+                key=len,
+                reverse=True,
+            )
+            indexed_lists = [
+                (index, sublist)
+                for index, sublist in enumerate(
+                    self.inventory_manager.products[self.awi.current_step :]
+                )
+            ]
+            sorted_indexed_lists = sorted(
+                indexed_lists, key=lambda x: len(x[1]), reverse=True
+            )
             much_inve = [index for index, sublist in sorted_indexed_lists]
 
             t = much_inve[state.step // 5]
             q = min(int(len(self.inventory_manager.products[t]) / 3), self.awi.n_lines)
-            p = random.randint(int(self.awi.trading_prices[self.awi.my_output_product] * 0.8), int(self.awi.trading_prices[self.awi.my_output_product] * 1.5))
+            p = random.randint(
+                int(self.awi.trading_prices[self.awi.my_output_product] * 0.8),
+                int(self.awi.trading_prices[self.awi.my_output_product] * 1.5),
+            )
             return tuple([q, t, p])
 
     def respond(self, negotiator_id: str, state: SAOState, source="") -> ResponseType:
@@ -187,8 +230,12 @@ class S6s(StdAgent):
                     negotiation = nego
                     break
         if negotiation is None:
-            negotiation = Negotiation(negotiator_id, negotiator_id in self.awi.my_suppliers)
-            self.negotiation_manager.add_negotiation(negotiation, negotiator_id in self.awi.my_suppliers)
+            negotiation = Negotiation(
+                negotiator_id, negotiator_id in self.awi.my_suppliers
+            )
+            self.negotiation_manager.add_negotiation(
+                negotiation, negotiator_id in self.awi.my_suppliers
+            )
 
         negotiation.quantity = state.current_offer[QUANTITY]
         negotiation.price = state.current_offer[UNIT_PRICE]
@@ -203,18 +250,29 @@ class S6s(StdAgent):
             if T == 0:
                 return ResponseType.REJECT_OFFER
             elif len(self.inventory_manager.products[T]) >= Q:
-                if self.inventory_manager.products[T][0].buy_price + self.process_cost + self.inventory_manager.products[T][0].buy_price * 0.01 < 0.9 * P:
+                if (
+                    self.inventory_manager.products[T][0].buy_price
+                    + self.process_cost
+                    + self.inventory_manager.products[T][0].buy_price * 0.01
+                    < 0.9 * P
+                ):
                     return ResponseType.ACCEPT_OFFER
                 elif self.awi.current_step / self.awi.n_steps > 0.8:
                     return ResponseType.ACCEPT_OFFER
                 else:
                     return ResponseType.REJECT_OFFER
             else:
-                if P > self.awi.trading_prices[self.awi.my_output_product] * 1.2 and T - self.awi.current_step > self.awi.n_steps / 5:
+                if (
+                    P > self.awi.trading_prices[self.awi.my_output_product] * 1.2
+                    and T - self.awi.current_step > self.awi.n_steps / 5
+                ):
                     return ResponseType.ACCEPT_OFFER
                 return ResponseType.REJECT_OFFER
         else:
-            if len(self.inventory_manager.products[self.awi.n_steps - 1]) >= self.awi.n_lines * 1.5:
+            if (
+                len(self.inventory_manager.products[self.awi.n_steps - 1])
+                >= self.awi.n_lines * 1.5
+            ):
                 return ResponseType.REJECT_OFFER
             if len(self.less_inve) > 0:
                 if self.less_inve[0].sell_time == self.awi.current_step:
@@ -230,7 +288,10 @@ class S6s(StdAgent):
                 if count_positive == 0:
                     if P < self.awi.trading_prices[self.awi.my_input_product] * 1.2:
                         return ResponseType.ACCEPT_OFFER
-                elif len(self.inventory_manager.products[T]) >= self.sell_num_day / count_positive:
+                elif (
+                    len(self.inventory_manager.products[T])
+                    >= self.sell_num_day / count_positive
+                ):
                     return ResponseType.REJECT_OFFER
                 else:
                     if P < self.awi.trading_prices[self.awi.my_input_product] * 1.1:
@@ -267,8 +328,6 @@ class S6s(StdAgent):
                     product.sell_price = price
                     product.sell_time = time
 
-
-
     def step(self):
         self.current_finances = self.awi.current_balance
         if self.buy_num_day > 0:
@@ -279,20 +338,20 @@ class S6s(StdAgent):
         self.buy_cont_day = 0
         self.sell_num_day = 0
         self.sell_cont_day = 0
+
     def check_proposal(self, offer, nego_id):
-        
         if nego_id in self.awi.my_suppliers:
             current_issue = self.awi.current_input_issues
             if offer[0] < current_issue[0].values[0]:
                 offer[0] = current_issue[0].values[0]
             elif offer[0] > current_issue[0].values[1]:
                 offer[0] = current_issue[0].values[1]
-            
+
             if offer[1] < current_issue[1].values[0]:
                 offer[1] = current_issue[1].values[0]
             elif offer[1] > current_issue[1].values[1]:
                 offer[1] = current_issue[1].values[1]
-            
+
             if offer[2] < current_issue[2].values[0]:
                 offer[2] = current_issue[2].values[0]
             elif offer[2] > current_issue[2].values[1]:
@@ -303,19 +362,17 @@ class S6s(StdAgent):
                 offer[0] = current_issue[0].values[0]
             elif offer[0] > current_issue[0].values[1]:
                 offer[0] = current_issue[0].values[1]
-            
+
             if offer[1] < current_issue[1].values[0]:
                 offer[1] = current_issue[1].values[0]
             elif offer[1] > current_issue[1].values[1]:
                 offer[1] = current_issue[1].values[1]
-            
+
             if offer[2] < current_issue[2].values[0]:
                 offer[2] = current_issue[2].values[0]
             elif offer[2] > current_issue[2].values[1]:
                 offer[2] = current_issue[2].values[1]
         return offer
 
-
     def generate_product_id(self):
         return str(uuid.uuid4())
-

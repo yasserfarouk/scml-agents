@@ -2,10 +2,10 @@
 # 这是给Agent使用的库存管理器，用来管理代理的协议、生产、和库存。
 # This is the Inventory Manager for Agents to manage the agent's protocols, production, and inventory.
 
-from enum import Enum, auto
-from dataclasses import dataclass, field
-from typing import List, Dict, Optional
 import os
+from dataclasses import dataclass
+from enum import Enum, auto
+from typing import Dict, List, Optional
 
 
 class IMContractType(Enum):
@@ -40,14 +40,14 @@ class Batch:
 
 class InventoryManager:
     def __init__(
-            self,
-            raw_storage_cost: float,
-            product_storage_cost: float,
-            processing_cost: float,
-            # 可选：日生产能力，若不指定则视为无限 Unlimited if not specified
-            daily_production_capacity: Optional[float] = None,
-            # 可选：最大仿真天数，默认100天 Should be initialized while the instance is created
-            max_day: int = 100,
+        self,
+        raw_storage_cost: float,
+        product_storage_cost: float,
+        processing_cost: float,
+        # 可选：日生产能力，若不指定则视为无限 Unlimited if not specified
+        daily_production_capacity: Optional[float] = None,
+        # 可选：最大仿真天数，默认100天 Should be initialized while the instance is created
+        max_day: int = 100,
     ):
         # 当前仿真天
         # Current simulation day
@@ -59,7 +59,9 @@ class InventoryManager:
         self.product_storage_cost = product_storage_cost
         self.processing_cost = processing_cost
         self.daily_production_capacity = (
-            daily_production_capacity if daily_production_capacity is not None else float("inf")
+            daily_production_capacity
+            if daily_production_capacity is not None
+            else float("inf")
         )
 
         # 库存批次 Inventory batches
@@ -96,7 +98,8 @@ class InventoryManager:
         if contract.delivery_time < self.current_day:
             if os.path.exists("env.test"):
                 print(
-                    f"IM LOG ERROR: Attempted to add contract {contract.contract_id} with past delivery time {contract.delivery_time} on day {self.current_day}.")
+                    f"IM LOG ERROR: Attempted to add contract {contract.contract_id} with past delivery time {contract.delivery_time} on day {self.current_day}."
+                )
             return False
         if contract.type == IMContractType.SUPPLY:
             self._pending_supply.append(contract)
@@ -123,7 +126,7 @@ class InventoryManager:
             if contract.contract_id == contract_id:
                 self._pending_supply.remove(contract)
                 if os.path.exists("env.test"):
-                    pass # print(f"IM LOG: Voided SUPPLY contract ID: {contract_id} from _pending_supply.")
+                    pass  # print(f"IM LOG: Voided SUPPLY contract ID: {contract_id} from _pending_supply.")
                 found_and_removed = True
                 break
 
@@ -133,19 +136,22 @@ class InventoryManager:
                 if contract.contract_id == contract_id:
                     self._pending_demand.remove(contract)
                     if os.path.exists("env.test"):
-                        pass # print(f"IM LOG: Voided DEMAND contract ID: {contract_id} from _pending_demand.")
+                        pass  # print(f"IM LOG: Voided DEMAND contract ID: {contract_id} from _pending_demand.")
                     found_and_removed = True
                     break
 
         if found_and_removed:
             # Re-plan production as voiding a contract can change needs
             if os.path.exists("env.test"):
-                pass # print(f"IM LOG: Contract {contract_id} voided. Re-planning production up to day {self.max_day}.")
-            self.plan_production(self.max_day)  # Use self.max_day for full horizon planning
+                pass  # print(f"IM LOG: Contract {contract_id} voided. Re-planning production up to day {self.max_day}.")
+            self.plan_production(
+                self.max_day
+            )  # Use self.max_day for full horizon planning
         else:
             if os.path.exists("env.test"):
                 print(
-                    f"IM LOG WARNING: Attempted to void contract ID: {contract_id}, but it was not found in pending lists.")
+                    f"IM LOG WARNING: Attempted to void contract ID: {contract_id}, but it was not found in pending lists."
+                )
 
         return found_and_removed
 
@@ -156,25 +162,27 @@ class InventoryManager:
         Convert upstream contracts that arrive on the same day into raw material inbound batches, FIFO management;
         Returns a list of contract IDs that have completed delivery on the current day.
         """
-        arrived = [c for c in self._pending_supply if c.delivery_time == self.current_day]
+        arrived = [
+            c for c in self._pending_supply if c.delivery_time == self.current_day
+        ]
         for c in arrived:
             batch = Batch(
                 batch_id=c.contract_id,
                 remaining=c.quantity,
                 unit_cost=c.price,
-                production_time=self.current_day
+                production_time=self.current_day,
             )
             self.raw_batches.append(batch)
             self._pending_supply.remove(c)
         return [c.contract_id for c in arrived]
 
     def _compute_summary(
-            self,
-            day: int,
-            batches: List[Batch],
-            storage_cost_per_unit: float,
-            pending: List[IMContract],
-            mtype: MaterialType
+        self,
+        day: int,
+        batches: List[Batch],
+        storage_cost_per_unit: float,
+        pending: List[IMContract],
+        mtype: MaterialType,
     ):
         """通用：计算指定 day 的真实库存 & 预期库存摘要。
         General utility to compute the real and expected inventory summary for the given day."""
@@ -197,17 +205,31 @@ class InventoryManager:
         # 预期可用：指的是从今天开始，按照计划生产和交付的情况下，到指定日期的可用数量（指定日期之后的不计算）
         # [可用于生产的原材料]当日真实库存 + 当日至指定日期到货 - 当日至指定日期前一天的生产计划Estimated available inventory, = real + future(contracted)until day
         if mtype == MaterialType.RAW:
-            future_in_inv = sum(c.quantity for c in pending if self.current_day <= c.delivery_time <= day)
-            future_prod_plan = sum(self.get_production_plan(prod_day) for prod_day in range(self.current_day, day))
+            future_in_inv = sum(
+                c.quantity
+                for c in pending
+                if self.current_day <= c.delivery_time <= day
+            )
+            future_prod_plan = sum(
+                self.get_production_plan(prod_day)
+                for prod_day in range(self.current_day, day)
+            )
 
             total_est = total_qty + future_in_inv - future_prod_plan
         # [可用于交割的产品]当日真实库存 - 当日至指定日期前一天的交割 + 当日至指定日期的生产计划 Estimated available inventory, = real - future(contracted) until day + production_plan until day
         elif mtype == MaterialType.PRODUCT:
-            future_out_inv = sum(c.quantity for c in pending if self.current_day <= c.delivery_time < day)
-            future_prod_plan = sum(self.get_production_plan(prod_day) for prod_day in range(self.current_day, day+1))
+            future_out_inv = sum(
+                c.quantity for c in pending if self.current_day <= c.delivery_time < day
+            )
+            future_prod_plan = sum(
+                self.get_production_plan(prod_day)
+                for prod_day in range(self.current_day, day + 1)
+            )
             total_est = total_qty - future_out_inv + future_prod_plan
         # 预期成本：真实（含存储）+ 未来（仅入库价，不含后续存储） Estimated cost = real (including storage) + future (only inbound price, excluding subsequent storage)
-        future_cost = sum(c.price * c.quantity for c in pending if c.delivery_time >= day)
+        future_cost = sum(
+            c.price * c.quantity for c in pending if c.delivery_time >= day
+        )
         est_avg_cost = (total_cost + future_cost) / total_est if total_est > 0 else 0.0
 
         return {
@@ -215,7 +237,7 @@ class InventoryManager:
             "average_cost": avg_cost,
             "storage_cost": total_store_cost,
             "estimated_available": total_est,
-            "estimated_average_cost": est_avg_cost
+            "estimated_average_cost": est_avg_cost,
         }
 
     def get_inventory_summary(self, day: int, mtype: MaterialType) -> Dict[str, float]:
@@ -227,11 +249,19 @@ class InventoryManager:
         """
         if mtype == MaterialType.RAW:
             return self._compute_summary(
-                day, self.raw_batches, self.raw_storage_cost, self._pending_supply, MaterialType.RAW
+                day,
+                self.raw_batches,
+                self.raw_storage_cost,
+                self._pending_supply,
+                MaterialType.RAW,
             )
         else:
             return self._compute_summary(
-                day, self.product_batches, self.product_storage_cost, self._pending_demand, MaterialType.PRODUCT
+                day,
+                self.product_batches,
+                self.product_storage_cost,
+                self._pending_demand,
+                MaterialType.PRODUCT,
             )
 
     def get_today_insufficient(self, day: int) -> int:
@@ -268,14 +298,14 @@ class InventoryManager:
     # ----------------------------------------------------------------
 
     def jit_production_plan_abs(
-            self,
-            start_day: int,
-            horizon: int,
-            capacity: int,
-            inv_raw: int,
-            inv_prod: int,
-            future_raw_deliver: Dict[int, int],
-            future_prod_deliver: Dict[int, int],
+        self,
+        start_day: int,
+        horizon: int,
+        capacity: int,
+        inv_raw: int,
+        inv_prod: int,
+        future_raw_deliver: Dict[int, int],
+        future_prod_deliver: Dict[int, int],
     ) -> Dict[str, Dict[int, int]]:
         """
         JIT 最晚化生产计划（绝对日历版）
@@ -385,8 +415,13 @@ class InventoryManager:
         horizon = up_to_day - self.current_day
 
         # 清空当前的生产计划（重新规划）和不足原料记录 Empty the current production schedule (reprogramming) and records of insufficient raw materials
-        self.production_plan = {day: 0.0 for day in range(self.current_day, up_to_day + 1)}
-        self.insufficient_raw = {day: {"daily": 0.0, "total": 0.0} for day in range(self.current_day, up_to_day + 1)}
+        self.production_plan = {
+            day: 0.0 for day in range(self.current_day, up_to_day + 1)
+        }
+        self.insufficient_raw = {
+            day: {"daily": 0.0, "total": 0.0}
+            for day in range(self.current_day, up_to_day + 1)
+        }
 
         # 获取当前原材料库存 Get current raw material inventory
         inv_raw = sum(batch.remaining for batch in self.raw_batches)
@@ -400,24 +435,24 @@ class InventoryManager:
         # 按交割日期排序的需求合同 Sales Contracts sorted by delivery date
         demand_contracts = sorted(
             [c for c in self._pending_demand if c.delivery_time <= up_to_day],
-            key=lambda c: c.delivery_time
+            key=lambda c: c.delivery_time,
         )
 
         # 按交割日期排序的供应合同 Supply Contracts sorted by delivery date
         supply_contracts = sorted(
             [c for c in self._pending_supply if c.delivery_time <= up_to_day],
-            key=lambda c: c.delivery_time
+            key=lambda c: c.delivery_time,
         )
 
         # 计算每天的需求量（产品交割） Daily demand for product delivery
-        daily_demand = {day: 0 for day in range(self.current_day, up_to_day+1)}
+        daily_demand = {day: 0 for day in range(self.current_day, up_to_day + 1)}
         for contract in demand_contracts:
             day = contract.delivery_time
             if day in daily_demand:
                 daily_demand[day] += int(contract.quantity)
 
         # 计算每天的供应量（原材料到货） Daily supply of raw materials
-        daily_supply = {day: 0 for day in range(self.current_day, up_to_day+1)}
+        daily_supply = {day: 0 for day in range(self.current_day, up_to_day + 1)}
         for contract in supply_contracts:
             day = contract.delivery_time
             if day in daily_supply:
@@ -433,16 +468,17 @@ class InventoryManager:
             future_prod_deliver=daily_demand,
         )
 
-
         # 需要计算的值
         self.production_plan = result["prod_plan"]
-        for day in range(self.current_day, up_to_day+1):
+        for day in range(self.current_day, up_to_day + 1):
             if day not in self.insufficient_raw:
                 self.insufficient_raw[day] = {"daily": 0.0, "total": 0.0}
-            self.insufficient_raw[day]["daily"] = result["emergency_raw_demand"].get(day, 0)
-            self.insufficient_raw[day]["total"] = result["planned_raw_demand"].get(day, 0)
-
-
+            self.insufficient_raw[day]["daily"] = result["emergency_raw_demand"].get(
+                day, 0
+            )
+            self.insufficient_raw[day]["total"] = result["planned_raw_demand"].get(
+                day, 0
+            )
 
         return self.production_plan
 
@@ -457,7 +493,9 @@ class InventoryManager:
         """
         # 查找当天需要交割的销售合同
         # Find the sales contracts that need to be delivered on the same day
-        to_deliver = [c for c in self._pending_demand if c.delivery_time == self.current_day]
+        to_deliver = [
+            c for c in self._pending_demand if c.delivery_time == self.current_day
+        ]
 
         # 计算需交付总量
         # Calculate the total amount to be delivered
@@ -475,17 +513,18 @@ class InventoryManager:
             # 更新不足记录
             # UPDATE the shortage record
             if self.current_day not in self.insufficient_raw:
-                self.insufficient_raw[self.current_day] = {"daily": shortfall, "total": shortfall}
+                self.insufficient_raw[self.current_day] = {
+                    "daily": shortfall,
+                    "total": shortfall,
+                }
             else:
                 # 在实际交付时发现的不足立即成为当日不足
                 self.insufficient_raw[self.current_day]["daily"] = max(
-                    self.insufficient_raw[self.current_day]["daily"],
-                    shortfall
+                    self.insufficient_raw[self.current_day]["daily"], shortfall
                 )
                 # 确保总不足量至少等于当日不足量
                 self.insufficient_raw[self.current_day]["total"] = max(
-                    self.insufficient_raw[self.current_day]["total"],
-                    shortfall
+                    self.insufficient_raw[self.current_day]["total"], shortfall
                 )
 
             # 交付所有可用产品
@@ -533,7 +572,7 @@ class InventoryManager:
             self._reduce_product_inventory(total_demand)
 
             # 更新合同状态
-            delivered_ids = [c.contract_id for c in to_deliver]
+            [c.contract_id for c in to_deliver]
             for contract in to_deliver:
                 self._pending_demand.remove(contract)
 
@@ -592,7 +631,9 @@ class InventoryManager:
         # 2. Initialization
         # 2. 初始化
         udpp = {}
-        inventory_on_hand = self.get_inventory_summary(day=current_day, mtype=MaterialType.RAW)["current_stock"]
+        inventory_on_hand = self.get_inventory_summary(
+            day=current_day, mtype=MaterialType.RAW
+        )["current_stock"]
 
         # Extract future deliveries from contracts.
         # 从合同中提取未来的交货计划。
@@ -677,7 +718,7 @@ class InventoryManager:
 
         max_prod = self.get_max_possible_production(day)
         planned = sum(
-            self.production_plan.get(d, 0) for d in range(self.current_day, day+1)
+            self.production_plan.get(d, 0) for d in range(self.current_day, day + 1)
         )
         remaining = max_prod - planned
         return max(0.0, remaining)
@@ -711,21 +752,23 @@ class InventoryManager:
         # Demand contracts sorted by delivery date
         demand_contracts = sorted(
             [c for c in self._pending_demand if c.delivery_time <= up_to_day],
-            key=lambda c: c.delivery_time
+            key=lambda c: c.delivery_time,
         )
 
         # 按交割日期排序的供应合同
         # Supply contracts sorted by delivery date
         supply_contracts = sorted(
             [c for c in self._pending_supply if c.delivery_time <= up_to_day],
-            key=lambda c: c.delivery_time
+            key=lambda c: c.delivery_time,
         )
 
         # 模拟每天的变化
         # Simulate day-by-day changes
         for day in range(self.current_day, up_to_day + 1):
             # 添加当天的原料供应
-            day_supply = sum(c.quantity for c in supply_contracts if c.delivery_time == day)
+            day_supply = sum(
+                c.quantity for c in supply_contracts if c.delivery_time == day
+            )
             raw_inventory += day_supply
 
             # 使用当天的生产计划
@@ -735,16 +778,18 @@ class InventoryManager:
                 product_inventory += day_production
 
             # 减去当天的产品需求
-            day_demand = sum(c.quantity for c in demand_contracts if c.delivery_time == day)
+            day_demand = sum(
+                c.quantity for c in demand_contracts if c.delivery_time == day
+            )
             product_inventory = max(0, product_inventory - day_demand)
 
             # 记录当天的库存情况
             result[day] = {
-                'raw_inventory': raw_inventory,
-                'product_inventory': product_inventory,
-                'day_supply': day_supply,
-                'day_production': day_production,
-                'day_demand': day_demand
+                "raw_inventory": raw_inventory,
+                "product_inventory": product_inventory,
+                "day_supply": day_supply,
+                "day_production": day_production,
+                "day_demand": day_demand,
             }
 
         return result
@@ -788,10 +833,12 @@ class InventoryManager:
 
         return {
             "received_materials": received_materials,
-            "delivered_products": delivered_products
+            "delivered_products": delivered_products,
         }
 
-    def get_pending_contracts(self, is_supply: bool = None, day: int = None) -> List[IMContract]:
+    def get_pending_contracts(
+        self, is_supply: bool = None, day: int = None
+    ) -> List[IMContract]:
         """
         获取所有未交割的合同列表。
 
@@ -818,13 +865,17 @@ class InventoryManager:
             if day is None:
                 contracts.extend(self._pending_supply)
             else:
-                contracts.extend([c for c in self._pending_supply if c.delivery_time == day])
+                contracts.extend(
+                    [c for c in self._pending_supply if c.delivery_time == day]
+                )
 
         if is_supply is None or is_supply is False:
             if day is None:
                 contracts.extend(self._pending_demand)
             else:
-                contracts.extend([c for c in self._pending_demand if c.delivery_time == day])
+                contracts.extend(
+                    [c for c in self._pending_demand if c.delivery_time == day]
+                )
 
         return contracts
 
@@ -833,8 +884,14 @@ class InventoryManager:
         返回指定日期指定类型库存的批次详情，包括每批次的数量、单价、
         存储成本和存储天数。
         """
-        batches = self.raw_batches if mtype == MaterialType.RAW else self.product_batches
-        storage_cost = self.raw_storage_cost if mtype == MaterialType.RAW else self.product_storage_cost
+        batches = (
+            self.raw_batches if mtype == MaterialType.RAW else self.product_batches
+        )
+        storage_cost = (
+            self.raw_storage_cost
+            if mtype == MaterialType.RAW
+            else self.product_storage_cost
+        )
 
         details = []
         for batch in batches:
@@ -844,18 +901,20 @@ class InventoryManager:
             days_stored = max(0, day - batch.production_time)
             storage_cost_total = storage_cost * days_stored * batch.remaining
 
-            details.append({
-                'batch_id': batch.batch_id,
-                'quantity': batch.remaining,
-                'base_unit_cost': batch.unit_cost,
-                'current_unit_cost': batch.unit_cost + storage_cost * days_stored,
-                'storage_days': days_stored,
-                'storage_cost': storage_cost_total,
-                'production_time': batch.production_time
-            })
+            details.append(
+                {
+                    "batch_id": batch.batch_id,
+                    "quantity": batch.remaining,
+                    "base_unit_cost": batch.unit_cost,
+                    "current_unit_cost": batch.unit_cost + storage_cost * days_stored,
+                    "storage_days": days_stored,
+                    "storage_cost": storage_cost_total,
+                    "production_time": batch.production_time,
+                }
+            )
 
         # 按生产时间排序（FIFO顺序）
-        return sorted(details, key=lambda x: x['production_time'])
+        return sorted(details, key=lambda x: x["production_time"])
 
     def execute_production(im, day):
         """模拟执行生产过程"""
@@ -865,17 +924,17 @@ class InventoryManager:
 
         if production_qty <= 0:
             if os.path.exists("env.test"):
-                pass # print("今天没有计划生产")
+                pass  # print("今天没有计划生产")
             return
 
         # 检查原材料库存是否足够
         raw_summary = im.get_inventory_summary(day, MaterialType.RAW)
 
-        if raw_summary['current_stock'] >= production_qty:
+        if raw_summary["current_stock"] >= production_qty:
             # 模拟生产批次创建
             # Simulate creation of a production batch
             batch_id = f"PROD_{day}"
-            unit_cost = raw_summary['average_cost'] + im.processing_cost
+            unit_cost = raw_summary["average_cost"] + im.processing_cost
 
             # 创建产品批次
             # Create a product batch
@@ -883,7 +942,7 @@ class InventoryManager:
                 batch_id=batch_id,
                 remaining=production_qty,
                 unit_cost=unit_cost,
-                production_time=day
+                production_time=day,
             )
 
             # 减少原材料库存（模拟FIFO减少）
@@ -891,7 +950,9 @@ class InventoryManager:
             remaining_to_reduce = production_qty
             raw_batches_copy = im.raw_batches.copy()
 
-            for i, batch_item in enumerate(raw_batches_copy):  # Renamed batch to batch_item
+            for i, batch_item in enumerate(
+                raw_batches_copy
+            ):  # Renamed batch to batch_item
                 if batch_item.remaining <= 0:
                     continue
 
@@ -912,14 +973,17 @@ class InventoryManager:
             im.product_batches.append(batch)
 
             if os.path.exists("env.test"):
-                pass # print(f"执行生产: 生产了 {production_qty} 单位产品")
+                pass  # print(f"执行生产: 生产了 {production_qty} 单位产品")
         else:
             if os.path.exists("env.test"):
-                pass # print(f"原材料不足，无法执行计划生产量 {production_qty}")
+                pass  # print(f"原材料不足，无法执行计划生产量 {production_qty}")
             # 记录原材料不足情况
             # Record the shortage of raw materials
             if day not in im.insufficient_raw:
-                im.insufficient_raw[day] = {"daily": production_qty, "total": production_qty}
+                im.insufficient_raw[day] = {
+                    "daily": production_qty,
+                    "total": production_qty,
+                }
             else:
                 im.insufficient_raw[day]["daily"] += production_qty
                 im.insufficient_raw[day]["total"] += production_qty

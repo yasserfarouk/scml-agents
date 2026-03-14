@@ -7,31 +7,30 @@ LitaAgentCIR — 库存敏感型统一策略（SDK 对接版）
 =================================================
 """
 
+import math
+import random
 from copy import deepcopy
-from typing import Dict, List, Tuple, Optional  # Added Optional
-
-from .inventory_manager_cirs import (
-    InventoryManagerCIR,
-    IMContract,
-    IMContractType,
-    MaterialType,
-)
 
 # ------------------ 基础依赖 ------------------
 from itertools import combinations as iter_combinations  # Added for combinations
-import random
-import math
+from typing import Dict, List, Optional, Tuple  # Added Optional
 from uuid import uuid4
 
-
+from negmas import Contract, Outcome, ResponseType, SAOResponse, SAOState
 from scml.std import (
-    StdSyncAgent,
-    StdAWI,
-    TIME,
     QUANTITY,
+    TIME,
     UNIT_PRICE,
+    StdAWI,
+    StdSyncAgent,
 )
-from negmas import SAOState, SAOResponse, Outcome, Contract, ResponseType
+
+from .inventory_manager_cirs import (
+    IMContract,
+    IMContractType,
+    InventoryManagerCIR,
+    MaterialType,
+)
 
 # 内部工具 & manager
 
@@ -251,8 +250,6 @@ class LitaAgentCIRS(StdSyncAgent):
         achieved_today = self.daily_achieved_procurement_for_adjustment.get(
             current_day, 0
         )
-
-        original_over_proc_factor = self.over_procurement_factor
 
         if targeted_today > 0:
             success_ratio = achieved_today / targeted_today
@@ -1030,10 +1027,9 @@ class LitaAgentCIRS(StdSyncAgent):
         best_norm_score = current_norm_score
 
         temp = self.sa_initial_temp
-        iterations_done = 0
 
         for i in range(self.sa_iterations):
-            iterations_done = i + 1
+            i + 1
             if temp < 1e-3:
                 break
 
@@ -1333,15 +1329,9 @@ class LitaAgentCIRS(StdSyncAgent):
 
         # Heuristic parameters
         # 启发式参数
-        epsilon_qty_change = 0.10
-        price_concession_inventory_time_change = 0.01  # Smaller concession specifically for time change if it improves score / 如果能提高分数，为时间变化提供较小的让步
-        price_concession_inventory_qty_change = 0.02
-        price_target_profit_opt = 0.05
 
         # --- Store initial proposed quantity and price before time evaluation ---
         # --- 在时间评估前存储初始提议的数量和价格 ---
-        temp_q_for_time_eval = orig_q
-        temp_p_for_time_eval = orig_p
 
         if optimize_for_inventory:
             # Quantity adjustment logic (applied before time evaluation for simplicity in this version)
@@ -1490,7 +1480,6 @@ class LitaAgentCIRS(StdSyncAgent):
         for nid in offers.keys():
             responses[nid] = SAOResponse(ResponseType.REJECT_OFFER, None)
         current_day = self.awi.current_step
-        total_steps = self.awi.n_steps
         time_decay_factor = self.threshold_time_decay_factor**current_day
         dynamic_p_threshold = self.p_threshold * time_decay_factor
         dynamic_q_threshold = self.q_threshold * time_decay_factor
@@ -1712,7 +1701,7 @@ class LitaAgentCIRS(StdSyncAgent):
         current_day = self.awi.current_step
         horizon_days = min(10, self.awi.n_steps - current_day)
         header = "|   日期    |  原料真库存  |  原料预计库存   | 计划生产  |  剩余产能  |  产品真库存  |  产品预计库存  |  已签署销售量  |  实际产品交付  |"
-        separator = "|" + "-" * (len(header) + 24) + "|"
+        "|" + "-" * (len(header) + 24) + "|"
 
         # 当前日期及未来预测
         for day_offset in range(horizon_days):
@@ -1724,17 +1713,17 @@ class LitaAgentCIRS(StdSyncAgent):
                 forecast_day, MaterialType.PRODUCT
             )
 
-            raw_current_stock = raw_summary.get("current_stock", 0)
-            raw_estimated = raw_summary.get("estimated_available", 0)
+            raw_summary.get("current_stock", 0)
+            raw_summary.get("estimated_available", 0)
 
-            product_current_stock = product_summary.get("current_stock", 0)
-            product_estimated = product_summary.get("estimated_available", 0)
+            product_summary.get("current_stock", 0)
+            product_summary.get("estimated_available", 0)
 
             # 计划生产量 - CustomIM stores production_plan as Dict[day, qty]
-            planned_production = self.im.production_plan.get(forecast_day, 0)
+            self.im.production_plan.get(forecast_day, 0)
 
             # 剩余产能
-            remaining_capacity = self.im.get_available_production_capacity(forecast_day)
+            self.im.get_available_production_capacity(forecast_day)
 
             # 已签署的销售合同数量 - CustomIM stores these in self.pending_demand_contracts
             signed_sales = 0
@@ -1746,18 +1735,13 @@ class LitaAgentCIRS(StdSyncAgent):
             # Delivered products might not be directly in result dict from CustomIM.
             # This was from the old IM. Let's assume 0 for now or get from CustomIM if it provides this.
             # For simplicity, let's show 0 if not available in result.
-            delivered_today = (
+            (
                 result.get("delivered_products", 0)
                 if isinstance(result, dict) and day_offset == 0
                 else 0
             )
 
             # 格式化并输出
-            day_str = (
-                f"{forecast_day} (T+{day_offset})"
-                if day_offset == 0
-                else f"{forecast_day} (T+{day_offset})"
-            )
 
 
 # ----------------------------------------------------

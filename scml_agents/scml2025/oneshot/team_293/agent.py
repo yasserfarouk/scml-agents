@@ -7,20 +7,21 @@ This code is free to use or update given that proper attribution is given to
 the authors and the ANAC 2024 SCML competition.
 """
 
-from scml.oneshot.rl.agent import OneShotRLAgent
-from scml.oneshot.rl.action import FlexibleActionManager
-from scml.oneshot.rl.common import model_wrapper
-from scml.oneshot.common import UNIT_PRICE, TIME, QUANTITY
-from .common import MODEL_PATH, MyObservationManager, TrainingAlgorithm
-from .mycontext import MySupplierContext, MyConsumerContext
-
 # used to repeat the response to every negotiator.
 # from scml_agents.scml2024.oneshot.team_miyajima_oneshot.cautious import CautiousOneShotAgent # なんかエラー
 from scml.oneshot.agent import OneShotSyncAgent
+from scml.oneshot.common import QUANTITY, TIME, UNIT_PRICE
+from scml.oneshot.rl.action import FlexibleActionManager
+from scml.oneshot.rl.agent import OneShotRLAgent
+from scml.oneshot.rl.common import model_wrapper
+
+from .common import MODEL_PATH, MyObservationManager, TrainingAlgorithm
+from .mycontext import MyConsumerContext, MySupplierContext
 
 """required Cautious"""
-from negmas import Contract, SAOResponse, ResponseType
 import random
+
+from negmas import Contract, ResponseType, SAOResponse
 
 
 def distribute(
@@ -415,12 +416,12 @@ class CautiousOneShotAgent(OneShotSyncAgent):
             # find the set of partners that gave me the best offer set
             # (i.e. total quantity nearest to my needs)
             plist = list(powerset(partners))[::-1]
-            plus_best_diff, plus_best_expected_diff, plus_best_indx = (
+            plus_best_diff, _plus_best_expected_diff, plus_best_indx = (
                 float("inf"),
                 float("inf"),
                 -1,
             )
-            minus_best_diff, minus_best_expected_diff, minus_best_indx = (
+            minus_best_diff, _minus_best_expected_diff, minus_best_indx = (
                 -float("inf"),
                 -float("inf"),
                 -1,

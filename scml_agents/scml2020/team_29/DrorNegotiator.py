@@ -17,7 +17,6 @@ from negmas import (
     Issue,
     Negotiator,
     SAONegotiator,
-    UtilityFunction,
     num_outcomes,
 )
 from negmas.helpers import get_class
@@ -31,11 +30,10 @@ from scml.scml2020 import (
 from scml.scml2020.common import TIME
 from scml.scml2020.components.prediction import (
     ExecutionRatePredictionStrategy,
-    MeanERPStrategy,
 )
 from scml.scml2020.components.production import SupplyDrivenProductionStrategy
 from scml.scml2020.components.trading import PredictionBasedTradingStrategy
-from scml.scml2020.services.controllers import StepController, SyncController
+from scml.scml2020.services.controllers import StepController
 
 
 class DrorMeanERPStrategy(ExecutionRatePredictionStrategy):
@@ -498,7 +496,6 @@ class DrorStepNegotiationManager(DrorMeanERPStrategy, DrorNegotiationManager):
         annotation: Dict[str, Any],
         mechanism: AgentMechanismInterface,
     ) -> Optional[Negotiator]:
-
         # find negotiation parameters
         is_seller = annotation["seller"] == self.id
         tmin, tmax = issues[TIME].min_value, issues[TIME].max_value + 1
@@ -545,7 +542,6 @@ class DrorStepNegotiationManager(DrorMeanERPStrategy, DrorNegotiationManager):
             return
         quantity = c.secured
         target = c.target
-        time_range = info.time_range
         if is_seller:
             controllers = self.sellers
         else:

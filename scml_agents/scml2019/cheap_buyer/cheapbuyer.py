@@ -35,6 +35,7 @@ The SCML2019Agent class itself has some helper properties/methods that internall
                           executable
 - products, processes: shortcuts to awi.products and awi.processes
 """
+
 import sys
 
 sys.path.append("/".join(__file__.split("/")[:-1]))
@@ -184,7 +185,6 @@ class CheapBuyerFactoryManager(GreedyFactoryManager):
         #       " Output : "+str(self.processes[self.line_profiles.get(0)[0].process].outputs))
 
         # )
-        a = 0
 
     def register_all_products(self):
         products_to_be_registered = []
@@ -194,21 +194,16 @@ class CheapBuyerFactoryManager(GreedyFactoryManager):
 
     def step(self):
         super().step()
-        balance = str(self.get_balance())
-        amount_of_raw_materials = self.get_amount_of_raw_materials()
-        amount_of_final_products = self.get_amount_of_final_products()
-        successful_buying_negotiations = len(self.successful_buying_negotiations)
-        successful_selling_negotiations = len(self.successful_selling_negotiations)
-        failed_buying_negotiations = len(self.failed_buying_negotiations)
-        failed_selling_negotiations = len(self.failed_selling_negotiations)
-        average_buying_price = self.get_average_buying_price()
+        str(self.get_balance())
+        self.get_amount_of_raw_materials()
+        self.get_amount_of_final_products()
+        len(self.successful_buying_negotiations)
+        len(self.successful_selling_negotiations)
+        len(self.failed_buying_negotiations)
+        len(self.failed_selling_negotiations)
+        self.get_average_buying_price()
         _negotiation_requests = self._negotiation_requests
-        agents_bankrupt = self.agents_bankrupt
-        amount_sold = self.amount_sold
-        amount_receivable = self.amount_receivable
-        average_selling_price = self.get_average_selling_price()
-        sell_contract_cancellations = self.sell_contract_cancellations
-        buy_contract_cancellations = self.buy_contract_cancellations
+        self.get_average_selling_price()
         available_cfps = self.awi.bb_query(
             section="cfps",
             query={"is_buy": True, "products": list(self.producing.keys())},
@@ -238,7 +233,6 @@ class CheapBuyerFactoryManager(GreedyFactoryManager):
         for cfp in available_cfps.values():
             self.respond_to_cfp(cfp=cfp)
 
-        jobs = []
         # step = self.awi.current_step
         # while amount_of_raw_materials > 0:
         #     line_idleness = self.line_idlenesses[step]
@@ -571,7 +565,6 @@ class CheapBuyerFactoryManager(GreedyFactoryManager):
     ) -> None:
         negotiator_id = None
         if annotation.get("buyer") == self.id:
-
             for participant in mechanism.participants:
                 if self.consumer.NEGOTIATOR_ID_FIXED_PART in participant.id:
                     negotiator_id = participant.name

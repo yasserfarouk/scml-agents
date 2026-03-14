@@ -54,31 +54,13 @@ On Windows:
 You should see a short tournament running and results reported.
 """
 
-
 # required for development
 # required for running the test tournament
 import time
 
 # required for typing
-from typing import Any, Dict, List, Optional
-
-import numpy as np
 from myagent2 import StagHunterV2
-from negmas import (
-    AgentMechanismInterface,
-    Breach,
-    Contract,
-    Issue,
-    MechanismState,
-    Negotiator,
-)
 from negmas.helpers import humanize_time
-from scml.scml2020 import Failure, SCML2020Agent
-from scml.scml2020.agents import (
-    BuyCheapSellExpensiveAgent,
-    DecentralizingAgent,
-    DoNothingAgent,
-)
 from scml.utils import anac2021_collusion, anac2021_oneshot, anac2021_std
 from tabulate import tabulate
 

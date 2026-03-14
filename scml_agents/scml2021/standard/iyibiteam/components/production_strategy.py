@@ -1,9 +1,8 @@
-from typing import Dict, List, Tuple
+from typing import List
 
 import numpy as np
 from negmas import Contract
 from scml.scml2020 import DemandDrivenProductionStrategy
-from scml.scml2020.common import NO_COMMAND
 
 
 class MyProductionStrategy(DemandDrivenProductionStrategy):

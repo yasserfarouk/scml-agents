@@ -1,12 +1,7 @@
 # required for typing
-from abc import abstractmethod
-from pprint import pprint
-from typing import Iterable, List, Optional, Union
+from typing import Iterable, List, Optional
 
-import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
-import seaborn as sns
 from negmas import *
 from scml.scml2020 import *
 
@@ -104,7 +99,9 @@ class MyTradePredictor(TradePredictionStrategy):
             contract_weight = 0.5  # 契約による影響度 0.5以下でどれくらいがいいかな？
             # breach_levelを参照して予測値を調整，ステップ数が増えると効いてくる（多分）
             if contract.annotation["seller"] == self.id:
-                penalty = pow(check_breach(contract, True), 1)  # 何乗かするより1乗のままが一番性能良かった
+                penalty = pow(
+                    check_breach(contract, True), 1
+                )  # 何乗かするより1乗のままが一番性能良かった
                 self.expected_outputs[t] += q * (1 - penalty)  # 数の予測
                 # 価格も予測してみる
                 if step >= 3:

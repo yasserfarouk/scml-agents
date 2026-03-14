@@ -6,42 +6,19 @@
 This code is free to use or update given that proper attribution is given to
 the authors and the ANAC 2023 SCML.
 """
+
 from __future__ import annotations
 
 # used to repeat the response to every negotiator.
-import itertools
-import random
-import re
-
 # required for running tournaments and printing
-import time
 from collections import defaultdict
-from pprint import pprint
-from time import sleep
 
 # required for typing
-from typing import Any
-
-import numpy as np
-import pandas as pd
-from matplotlib import pylab as plt
-from negmas import Contract, Outcome, ResponseType, SAOState
-from negmas.helpers import humanize_time
-from negmas.sao import SAOResponse, SAOState
+from negmas import Outcome, ResponseType
 
 # required for development
 from scml.oneshot import *
-from scml.oneshot import OneShotAWI, OneShotSyncAgent
 from scml.scml2020 import *
-from scml.utils import (
-    anac2022_oneshot,
-    anac2023_collusion,
-    anac2023_oneshot,
-    anac2023_std,
-)
-from tabulate import tabulate
-
-import scml_agents
 
 __all__ = ["Shochan"]
 
@@ -351,7 +328,7 @@ class Shochan(AdaptiveAgent):
     def propose(self, negotiator_id: str, state) -> "Outcome":
         offer = self.best_offer(negotiator_id)
 
-        if self.now == True:
+        if self.now:
             return None
         return offer
 
@@ -424,7 +401,7 @@ class Shochan(AdaptiveAgent):
             if not self._is_good_price(ami, state, offer[UNIT_PRICE]):
                 response = ResponseType.REJECT_OFFER
 
-        if self.now == True:
+        if self.now:
             return ResponseType.END_NEGOTIATION
         else:
             dis = self.awi.current_disposal_cost

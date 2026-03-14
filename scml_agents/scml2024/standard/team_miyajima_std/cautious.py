@@ -1,15 +1,13 @@
+import copy
 import random
+from itertools import combinations
+from typing import *
 
 from negmas import *
 from negmas.sao import SAOResponse
-
 from scml.common import distribute
 from scml.oneshot.common import QUANTITY, TIME, UNIT_PRICE
 from scml.std.agent import StdSyncAgent
-
-from typing import *
-from itertools import combinations
-import copy
 
 __all__ = ["CautiousStdAgent"]
 MAX_INVENTORY = 100
@@ -1112,7 +1110,6 @@ class AgentVSC2024(StdSyncAgent):
         # Selling (Propose to consumer)
         # 在庫をできるだけ早く売り切る
         remained_consumers = self.awi.my_consumers.copy()
-        secured_output = 0
         for t in range(self.awi.current_step, self.awi.n_steps):
             if t == self.awi.current_step:
                 todays_output_needed = max(self.awi.needed_sales, 0)
@@ -1167,7 +1164,7 @@ class AgentVSC2024(StdSyncAgent):
         }
 
         tmp_step_input_quantities = copy.deepcopy(self.step_input_quantities)
-        tmp_step_output_quantities = copy.deepcopy(self.step_output_quantities)
+        copy.deepcopy(self.step_output_quantities)
 
         unneeded_response = (
             SAOResponse(ResponseType.END_NEGOTIATION, None)

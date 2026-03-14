@@ -1,42 +1,20 @@
 #!/usr/bin/env python
-import argparse
 import ast
-import csv
-import itertools
 import math
-import os
-import pickle
 import random
 
 # other libraries
-import sys
-
 # required for running tournaments and printing
-import time
 from collections import defaultdict
 
 # required for typing
-from typing import Any, Dict, List, Optional
-
 import numpy as np
 from negmas import (
-    AgentMechanismInterface,
-    Breach,
-    Contract,
-    Issue,
-    MechanismState,
-    Negotiator,
     ResponseType,
 )
-from negmas.helpers import humanize_time
 
 # required for development
-from numpy import isin
 from scml.oneshot import OneShotAgent
-from scml.oneshot.agents import RandomOneShotAgent, SyncRandomOneShotAgent
-from scml.oneshot.world import SCML2020OneShotWorld, is_system_agent
-from scml.utils import anac2021_collusion, anac2021_oneshot, anac2021_std
-from tabulate import tabulate
 
 __all__ = ["AdaptiveQlAgent"]
 
@@ -439,13 +417,14 @@ class AdaptiveQlAgent(OneShotAgent):
         if self._is_selling(mechanism):
             partner = contract.annotation["buyer"]
             cur_profit = (
-                contract.agreement["unit_price"]
-                - float(self.awi.current_exogenous_input_price)
-                / (self.awi.current_exogenous_input_quantity + 0.05)
-                - self.awi.profile.cost
-            ) * contract.agreement[
-                "quantity"
-            ]  # -self.awi.current_exogenous_input_price#*self.awi.current_exogenous_input_quantity
+                (
+                    contract.agreement["unit_price"]
+                    - float(self.awi.current_exogenous_input_price)
+                    / (self.awi.current_exogenous_input_quantity + 0.05)
+                    - self.awi.profile.cost
+                )
+                * contract.agreement["quantity"]
+            )  # -self.awi.current_exogenous_input_price#*self.awi.current_exogenous_input_quantity
             self.online_balance = (
                 self.online_balance
                 - (
@@ -455,7 +434,7 @@ class AdaptiveQlAgent(OneShotAgent):
                 )
                 * contract.agreement["quantity"]
             )
-            fctr = contract.agreement["unit_price"]  # **2)
+            contract.agreement["unit_price"]  # **2)
         else:
             partner = contract.annotation["seller"]
             cur_profit = (
@@ -471,7 +450,7 @@ class AdaptiveQlAgent(OneShotAgent):
                 - (contract.agreement["unit_price"] + self.awi.profile.cost)
                 * contract.agreement["quantity"]
             )
-            fctr = -(contract.agreement["unit_price"])  # **2)
+            -(contract.agreement["unit_price"])  # **2)
 
         # cur_profit = cur_profit*(1.01**(self.num_of_nego_total))#*(1+0.5*self.num_of_nego_total) #cur_profit*(1+1.1**(self.num_of_nego_total-100))
 
@@ -969,8 +948,8 @@ class AdaptiveQlAgent(OneShotAgent):
             self.started[partner] = True
             self.q_table_per_opp[partner] = dict()
             # print(self.q_table_per_opp)
-            price_gap = unit_price_issue.max_value - unit_price_issue.min_value
-            quantity_gap = quantity_issue.max_value - quantity_issue.min_value
+            unit_price_issue.max_value - unit_price_issue.min_value
+            quantity_issue.max_value - quantity_issue.min_value
 
             # initializing an action vector with all action and a Q table against this partner.
             self.action_vec[partner] = dict()  # []
@@ -1111,8 +1090,8 @@ class AdaptiveQlAgent(OneShotAgent):
                 self.started[partner] = True
                 # self.q_table_per_opp[partner] = dict()
                 # print(self.q_table_per_opp)
-                price_gap = unit_price_issue.max_value - unit_price_issue.min_value
-                quantity_gap = quantity_issue.max_value - quantity_issue.min_value
+                unit_price_issue.max_value - unit_price_issue.min_value
+                quantity_issue.max_value - quantity_issue.min_value
                 # self.action_vec[partner] = []
                 # self._q_learning_q_init(self.q_table_per_opp[partner], unit_price_issue, quantity_issue, self.action_vec[partner])
 
@@ -1306,8 +1285,8 @@ class AdaptiveQlAgent(OneShotAgent):
             self.q_table_per_opp[partner] = dict()
             unit_price_issue = ami.issues[OFFER_FIELD_IDX.UNIT_PRICE]
             quantity_issue = ami.issues[OFFER_FIELD_IDX.QUANTITY]
-            price_gap = unit_price_issue.max_value - unit_price_issue.min_value
-            quantity_gap = quantity_issue.max_value - quantity_issue.min_value
+            unit_price_issue.max_value - unit_price_issue.min_value
+            quantity_issue.max_value - quantity_issue.min_value
             self.action_vec[partner] = dict()  # []
             # self.q_table_per_opp[partner], self.action_vec[partner] = self._q_learning_q_init(self.q_table_per_opp[partner], unit_price_issue, quantity_issue, self.action_vec[partner], is_seller, ami)
             self._q_learning_q_init(
@@ -1347,8 +1326,8 @@ class AdaptiveQlAgent(OneShotAgent):
             # Setting the new state if needed
             unit_price_issue = ami.issues[OFFER_FIELD_IDX.UNIT_PRICE]
             quantity_issue = ami.issues[OFFER_FIELD_IDX.QUANTITY]
-            price_gap = unit_price_issue.max_value - unit_price_issue.min_value
-            quantity_gap = quantity_issue.max_value - quantity_issue.min_value
+            unit_price_issue.max_value - unit_price_issue.min_value
+            quantity_issue.max_value - quantity_issue.min_value
             # print(self.last_a_per_opp)
             if (
                 self.last_a_per_opp == {}
@@ -2168,9 +2147,9 @@ class AdaptiveQlAgent(OneShotAgent):
                                             )  # 0
                             else:
                                 # q_t[s][(p,np.ceil(q))] = 0#self._initial_q_seller(p,np.ceil(q),needs,ami)
-                                q_t[s][
-                                    (i_p, i_q)
-                                ] = 0  # self._initial_q_seller(p,np.ceil(q),needs,ami)
+                                q_t[s][(i_p, i_q)] = (
+                                    0  # self._initial_q_seller(p,np.ceil(q),needs,ami)
+                                )
                         else:
                             if s == STATE_TYPE.INIT:
                                 # for needs in range(-1,self.awi.n_lines+1,self.needs_res):
@@ -2554,8 +2533,6 @@ class AdaptiveQlAgent(OneShotAgent):
                         if (p, q) in self.learned_q_seller_t[state]:
                             return self.learned_q_seller_t[state][(p, q)]
         unit_price_issue = ami.issues[OFFER_FIELD_IDX.UNIT_PRICE]
-        mxp = unit_price_issue.max_value
-        mnp = unit_price_issue.min_value
         # if q <= needs:
         # return np.random.random()-0.5
         if needs < 0:
@@ -2602,7 +2579,6 @@ class AdaptiveQlAgent(OneShotAgent):
 
         unit_price_issue = ami.issues[OFFER_FIELD_IDX.UNIT_PRICE]
         mxp = unit_price_issue.max_value
-        mnp = unit_price_issue.min_value
         # return np.random.random()-0.5
         # if q <= needs:
 
@@ -2618,8 +2594,8 @@ class AdaptiveQlAgent(OneShotAgent):
                 return -0.01 * unit_price_issue.max_value  # *(1+0.001*abs(needs-q))
             elif terminal_action == "acc":
                 # return 1.01*(unit_price_issue.max_value-p)/unit_price_issue.max_value
-                return 1.001 * (
-                    mxp - p
+                return (
+                    1.001 * (mxp - p)
                 )  # *(1+0.001*abs(needs-q))#1.01*(mxp-p)/mxp#1.001*1.001*(mxp-p-mnp)/(mxp-mnp) #+ 0.01
             else:
                 # return (unit_price_issue.max_value-p)/unit_price_issue.max_value#q*(unit_price_issue.max_value-p)#-p#q*(unit_price_issue.max_value-p)-(needs-q)*self._too_much_penalty(ami)

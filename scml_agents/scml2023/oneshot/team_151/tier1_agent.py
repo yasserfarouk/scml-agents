@@ -160,7 +160,7 @@ class LearningAgent(AdaptiveAgent):
         opp_price_slack=0.0,
         opp_acc_price_slack=0.2,
         range_slack=0.03,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self._acc_price_slack = acc_price_slack

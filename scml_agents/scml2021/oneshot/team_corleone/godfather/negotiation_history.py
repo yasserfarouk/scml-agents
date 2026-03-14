@@ -1,8 +1,5 @@
-import sys
 import warnings
-from typing import Any, Dict, Iterable, List, Optional, Tuple
-
-from tabulate import tabulate
+from typing import Any, Dict, List, Optional, Tuple
 
 from .offer import Offer
 from .spaces import Move, Moves, Outcome, OutcomeSpace
@@ -14,7 +11,7 @@ class WorldInfo:
         n_negotiation_rounds: int,
         my_level: int,
         n_competitors: int,
-        n_partners: int
+        n_partners: int,
         # competition_idx: float
         # etc.
     ) -> None:
@@ -190,7 +187,7 @@ class SCMLHistory:
         self.world_info = world_info
 
     def register_agent(self, opp_id: str, outcome_space: OutcomeSpace) -> None:
-        if not opp_id in self.negotiations:
+        if opp_id not in self.negotiations:
             if self.round != 0:
                 warnings.warn(f"Cannot add negotiator {opp_id} at round {self.round}")
             self.outcome_spaces[opp_id] = outcome_space
@@ -237,7 +234,7 @@ class SCMLHistory:
         self.move(opp_id, move, is_me=False)
 
     def negotiator_histories(self, opp_id: str) -> List[BilateralHistory]:
-        if not opp_id in self.negotiations:
+        if opp_id not in self.negotiations:
             raise ValueError(
                 "Invalid negotiator id {} is not a registered agent ({})".format(
                     opp_id, self.negotiations.keys()

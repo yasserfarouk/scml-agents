@@ -6,13 +6,15 @@ Author:
 """
 
 from __future__ import annotations
+
 from typing import Any
-from scml.std import StdAWI
+
 from negmas import Contract, SAOState
+from scml.std import StdAWI
 from scml.std.agent import StdSyncAgent
 
-from .record_manager import RecordManager
 from .proposal_strategy import ProposalStrategy
+from .record_manager import RecordManager
 
 __all__ = ["XenoSotaAgent"]
 

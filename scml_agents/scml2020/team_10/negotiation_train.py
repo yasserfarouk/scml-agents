@@ -8,7 +8,7 @@ from hyperparameters import *
 from neg_model import NegModel, load_buyer_neg_model, load_seller_neg_model
 from patches import *
 from scml import SCML2020World
-from scml.scml2020 import DecentralizingAgent, RandomAgent
+from scml.scml2020 import DecentralizingAgent
 from tqdm import tqdm
 
 
@@ -16,7 +16,7 @@ def get_train_data(world):
     seller_train_data = []
     buyer_train_data = []
     for agent in world.agents.values():
-        if not "MyL" in agent.name:
+        if "MyL" not in agent.name:
             continue
 
         seller_data = [
@@ -65,7 +65,7 @@ for i in tqdm(range(NEG_TRAIN_DATA)):
             n_steps=40,
             n_processes=2,
         ),
-        construct_graphs=True
+        construct_graphs=True,
     )
     SCML2020World.cancelled_contracts = cancelled_contracts
     world.run()

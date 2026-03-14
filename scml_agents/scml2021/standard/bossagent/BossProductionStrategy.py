@@ -1,14 +1,12 @@
 import copy
 
 import numpy as np
-from scml.scml2020.common import ANY_LINE, QUANTITY, TIME, UNIT_PRICE
+from scml.scml2020.common import QUANTITY, TIME, UNIT_PRICE
 
 from .helper import (
     calculate_contract_quantity,
     format_schedule,
     get_contract_buyer_sellers,
-    get_unscheduled_total_pseudo_quantity,
-    is_schedule_available,
     sort_negotiators_by_delivery,
 )
 
@@ -130,7 +128,7 @@ class BossProductionStrategy:
                         buyer_contract_id
                     ] = (buyer_offer, schedule)
                 else:
-                    current_offer = self.scheduled_buyer_contracts[buyer_contract_id][
+                    self.scheduled_buyer_contracts[buyer_contract_id][
                         seller_contract_id
                     ][0]
                     current_schedule = copy.deepcopy(

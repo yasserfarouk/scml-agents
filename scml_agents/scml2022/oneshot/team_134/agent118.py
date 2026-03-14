@@ -135,8 +135,7 @@ class DelayAgent(OneShotAgent):
 
     def propose(self, negotiator_id: str, state):
         self.wait_count[negotiator_id] = 0
-        step = state.step
-        ami = self.get_nmi(negotiator_id)
+        self.get_nmi(negotiator_id)
         if self.sent_offers[negotiator_id] == "First":
             offer = self.get_first_offer(negotiator_id, state)
             self.sent_offers[negotiator_id] = offer

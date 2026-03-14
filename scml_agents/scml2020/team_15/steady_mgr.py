@@ -3,6 +3,7 @@
 *Authors* Masahito Okuno:okuno.masahito@otsukalab.nitech.ac.jp;
 
 """
+
 # Libraries
 from typing import List, Optional
 
@@ -60,26 +61,26 @@ class MyTradingStrategy(TradingStrategy):
         sold, bought = 0, 0  # count the number of sold/bought contracts
         for contract in signed:
             is_seller = contract.annotation["seller"] == self.id
-            q, u, t = (
+            q, _u, t = (
                 contract.agreement["quantity"],
                 contract.agreement["unit_price"],
                 contract.agreement["time"],
             )
             if is_seller:
                 self.outputs_secured[t] += q  # Add the number of sells at t
-                self.outputs_needed[
-                    t:
-                ] -= q  # Subtract the number of products that need to sell after t
+                self.outputs_needed[t:] -= (
+                    q  # Subtract the number of products that need to sell after t
+                )
                 sold += 1
 
             else:
                 self.inputs_secured[t] += q  # Add the number of buys at t
-                self.inputs_needed[
-                    t:
-                ] -= q  # Subtract the number of units that need to buy after t
-                self.outputs_needed[
-                    t + 1 :
-                ] += q  # Add 'outputs_needed' as many as buys
+                self.inputs_needed[t:] -= (
+                    q  # Subtract the number of units that need to buy after t
+                )
+                self.outputs_needed[t + 1 :] += (
+                    q  # Add 'outputs_needed' as many as buys
+                )
                 bought += 1
 
         step = self.awi.current_step

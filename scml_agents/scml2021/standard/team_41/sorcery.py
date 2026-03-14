@@ -2,10 +2,7 @@ import time
 from pprint import pformat
 from typing import Optional
 
-import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
-from negmas.helpers import humanize_time
 from scml.scml2020 import (
     FixedTradePredictionStrategy,
     MeanERPStrategy,
@@ -19,21 +16,16 @@ from scml.scml2020.agents import BuyCheapSellExpensiveAgent, DecentralizingAgent
 from scml.scml2020.agents.bcse import BuyCheapSellExpensiveAgent
 from scml.scml2020.common import ANY_LINE, is_system_agent
 from scml.utils import anac2021_collusion, anac2021_oneshot, anac2021_std
-from tabulate import tabulate
 
 __all__ = ["SorceryAgent"]
 
-from typing import Dict, List, Tuple
+from typing import List
 
-import numpy as np
 from negmas import Contract
-from scml.scml2020 import SCML2020Agent, SCML2021World
 from scml.scml2020.agents import (
-    DecentralizingAgent,
     MarketAwareDecentralizingAgent,
     RandomAgent,
 )
-from scml.scml2020.common import NO_COMMAND
 
 #####仮エージェント#####
 
@@ -113,7 +105,7 @@ class PredictionBasedTradingStrategy(
             if contract.annotation["caller"] == self.id:
                 continue
             is_seller = contract.annotation["seller"] == self.id
-            q, u, t = (
+            q, _u, t = (
                 contract.agreement["quantity"],
                 contract.agreement["unit_price"],
                 contract.agreement["time"],
@@ -205,7 +197,7 @@ class PredictionBasedTradingStrategy(
 
     def _format(self, c: Contract):
         return (
-            f"{f'>' if c.annotation['seller'] == self.id else '<'}"
+            f"{'>' if c.annotation['seller'] == self.id else '<'}"
             f"{c.annotation['buyer'] if c.annotation['seller'] == self.id else c.annotation['seller']}: "
             f"{c.agreement['quantity']} of {c.annotation['product']} @ {c.agreement['unit_price']} on {c.agreement['time']}"
         )
@@ -321,7 +313,7 @@ def run(
         BuyCheapSellExpensiveAgent,
         RandomAgent,
     ]
-    start = time.perf_counter()
+    time.perf_counter()
     if competition == "std":
         results = anac2021_std(
             competitors=competitors,

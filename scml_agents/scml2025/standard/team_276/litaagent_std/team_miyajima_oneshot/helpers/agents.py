@@ -56,7 +56,7 @@ class QuantityOrientedAgent(OneShotAgent):
         offer = state.current_offer
         if not offer:
             return ResponseType.REJECT_OFFER
-        ami = self.get_nmi(negotiator_id)
+        self.get_nmi(negotiator_id)
         step = state.step
         my_needs = self._needed(negotiator_id)
         if my_needs <= 0:
@@ -81,7 +81,7 @@ class QuantityOrientedAgent(OneShotAgent):
         ami = self.get_nmi(negotiator_id)
         if not ami:
             return None
-        quantity_issue = ami.issues[QUANTITY]
+        ami.issues[QUANTITY]
         unit_price_issue = ami.issues[UNIT_PRICE]
         offer = [-1] * 3
         if my_needs <= 5:
@@ -103,7 +103,7 @@ class QuantityOrientedAgent(OneShotAgent):
         ami = self.get_nmi(negotiator_id)
         if not ami:
             return None
-        quantity_issue = ami.issues[QUANTITY]
+        ami.issues[QUANTITY]
         unit_price_issue = ami.issues[UNIT_PRICE]
         offer = [-1] * 3
         if step <= 3:
@@ -116,14 +116,15 @@ class QuantityOrientedAgent(OneShotAgent):
 
         offer[TIME] = self.awi.current_step
         if self._is_selling(ami):
-            offer[
-                UNIT_PRICE
-            ] = unit_price_issue.min_value  # Offers the best value FOR THE BUYER!!!
+            offer[UNIT_PRICE] = (
+                unit_price_issue.min_value
+            )  # Offers the best value FOR THE BUYER!!!
         else:
-            offer[
-                UNIT_PRICE
-            ] = unit_price_issue.max_value  # Offers the best value FOR THE SELLER!!!
+            offer[UNIT_PRICE] = (
+                unit_price_issue.max_value
+            )  # Offers the best value FOR THE SELLER!!!
         return tuple(offer)
+
 
 class SimpleAgent(OneShotAgent):
     """A greedy agent based on OneShotAgent"""
@@ -258,6 +259,7 @@ class BetterAgent(SimpleAgent):
         """calculates a descending threshold (0 <= th <= 1)"""
         return ((n_steps - step - 1) / (n_steps - 1)) ** self._e
 
+
 class AdaptiveAgent(BetterAgent):
     """Considers best price offers received when making its decisions"""
 
@@ -286,6 +288,7 @@ class AdaptiveAgent(BetterAgent):
         else:
             mx = min(mx, self._best_buying)
         return mn, mx
+
 
 class AgentVSCforOneShot(OneShotSyncAgent, BetterAgent):
     """A greedy agent based on OneShotSyncAgent"""
@@ -377,6 +380,7 @@ class AgentVSCforOneShot(OneShotSyncAgent, BetterAgent):
             offer[UNIT_PRICE] = unit_price_issue.min_value
         return tuple(offer)
 
+
 class KanbeAgent(AdaptiveAgent):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -393,18 +397,22 @@ class KanbeAgent(AdaptiveAgent):
         )
         for partner_id in self.partners:
             self._received_offers[partner_id] = []
-        self._bp_mxq_opp_acc_selling, self._bp_mnq_opp_acc_selling = defaultdict(
-            int
-        ), defaultdict(lambda: int(10))
-        self._wp_mxq_opp_acc_selling, self._wp_mnq_opp_acc_selling = defaultdict(
-            int
-        ), defaultdict(lambda: int(10))
-        self._bp_mxq_opp_acc_buying, self._bp_mnq_opp_acc_buying = defaultdict(
-            int
-        ), defaultdict(lambda: int(10))
-        self._wp_mxq_opp_acc_buying, self._wp_mnq_opp_acc_buying = defaultdict(
-            int
-        ), defaultdict(lambda: int(10))
+        self._bp_mxq_opp_acc_selling, self._bp_mnq_opp_acc_selling = (
+            defaultdict(int),
+            defaultdict(lambda: int(10)),
+        )
+        self._wp_mxq_opp_acc_selling, self._wp_mnq_opp_acc_selling = (
+            defaultdict(int),
+            defaultdict(lambda: int(10)),
+        )
+        self._bp_mxq_opp_acc_buying, self._bp_mnq_opp_acc_buying = (
+            defaultdict(int),
+            defaultdict(lambda: int(10)),
+        )
+        self._wp_mxq_opp_acc_buying, self._wp_mnq_opp_acc_buying = (
+            defaultdict(int),
+            defaultdict(lambda: int(10)),
+        )
 
     def before_step(self):
         super().before_step()
@@ -463,7 +471,7 @@ class KanbeAgent(AdaptiveAgent):
             up = int(ami.issues[QUANTITY].max_value / 2)
             quantity = min(my_needs, max(up, opbq))
 
-            if olo == None:
+            if olo is None:
                 self.firstproposer = True
             else:
                 if olo[UNIT_PRICE] == self.best_price:
@@ -492,7 +500,9 @@ class KanbeAgent(AdaptiveAgent):
         if len(self._sent_offers[negotiator_id]) > 1:
             lp = self._sent_offers[negotiator_id][-1]
         else:
-            if self.concession and state.step == self.concession_step:  # 個数はneededの半分
+            if (
+                self.concession and state.step == self.concession_step
+            ):  # 個数はneededの半分
                 if olo is not None:
                     if olo[UNIT_PRICE] == self.best_price:
                         price = self.best_price

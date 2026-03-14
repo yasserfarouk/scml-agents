@@ -9,6 +9,7 @@ It also visualizes negotiation traces and the Pareto frontier.
 
 import argparse
 import importlib
+
 import matplotlib.pyplot as plt
 import pandas as pd
 
@@ -20,12 +21,13 @@ except ImportError:  # pragma: no cover - fallback for older library
 
 # Import commonly used agents
 from scml.oneshot.agents import GreedyOneShotAgent
-from scml.std.agents import RandomStdAgent, SyncRandomStdAgent, GreedyStdAgent
-from .litaagent_std.team_miyajima_oneshot.cautious import CautiousOneShotAgent
+from scml.std.agents import GreedyStdAgent, RandomStdAgent, SyncRandomStdAgent
+
+from .litaagent_std.litaagent_n import LitaAgentN
 
 # Import local agents defined in this repository
 from .litaagent_std.litaagent_y import LitaAgentY
-from .litaagent_std.litaagent_n import LitaAgentN
+from .litaagent_std.team_miyajima_oneshot.cautious import CautiousOneShotAgent
 
 # Map simple names to classes so they can be provided on the command line
 AVAILABLE_AGENTS = {

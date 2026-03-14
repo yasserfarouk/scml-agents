@@ -1,15 +1,13 @@
 #!/usr/bin/env python
 from __future__ import annotations
 
+import random
+from itertools import repeat
 from typing import Any
 
-from scml.std import StdAWI, StdSyncAgent
+from negmas import Contract, ResponseType, SAOResponse, SAOState
 from scml.oneshot.common import *
-
-from negmas import Contract, SAOResponse, SAOState, ResponseType
-
-from itertools import repeat
-import random
+from scml.std import StdAWI, StdSyncAgent
 
 # def distribute(self, q: int, n: int, mx: int = None, **kwargs) -> list[int]:
 #     # mxが設定されていれば、分配の最大制限として扱う
@@ -808,9 +806,8 @@ class UltraSuperMiracleSoraFinalAgentZ(StdSyncAgent):
         role = "SELLER" if contract.annotation.get("seller") == self.id else "BUYER"
         partner = [p for p in contract.partners if p != self.id][0]
         self.negotiation_history[partner]["success"] += 1
-        agreement = contract.agreement
         incoming_quantity = contract.agreement.get("quantity")
-        time = contract.agreement.get("time")
+        contract.agreement.get("time")
         if role == "BUYER":
             self.cumulative_input += incoming_quantity
         input_inv, output_inv = self.awi.current_inventory
@@ -847,6 +844,7 @@ class UltraSuperMiracleSoraFinalAgentZ(StdSyncAgent):
 
 if __name__ == "__main__":
     import sys
+
     from .helpers.runner import run
 
     run([UltraSuperMiracleSoraFinalAgentZ], sys.argv[1] if len(sys.argv) > 1 else "std")

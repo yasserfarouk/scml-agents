@@ -1,11 +1,8 @@
 import copy
 import math
-from statistics import mean
 
 from .helper import (
     get_negotiable_agent_rate,
-    get_unscheduled_total_pseudo_quantity,
-    most_available_amount_in_schedule,
 )
 
 

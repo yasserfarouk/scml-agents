@@ -1,4 +1,3 @@
-import math
 import random
 from itertools import combinations
 from typing import *
@@ -6,22 +5,6 @@ from typing import *
 # from .negotiation_control_strategy import *
 # from .trading_strategy import *
 import numpy as np
-from negmas import AspirationNegotiator, LinearUtilityFunction, MappingUtilityFunction
-from scml.scml2020 import (
-    NO_COMMAND,
-    QUANTITY,
-    TIME,
-    UNIT_PRICE,
-    DecentralizingAgent,
-    SCML2020Agent,
-)
-from scml.scml2020.components.negotiation import IndependentNegotiationsManager
-from scml.scml2020.components.production import (
-    DemandDrivenProductionStrategy,
-    SupplyDrivenProductionStrategy,
-    TradeDrivenProductionStrategy,
-)
-from scml.scml2020.components.trading import PredictionBasedTradingStrategy
 
 from .agents_std import Prot11std
 
@@ -178,7 +161,9 @@ class Prot11(Prot11std):
 
             random.shuffle(candidates)
 
-            signed_combination = candidates[0]  # 後でもうちょっとちゃんと選ぶように改良する
+            signed_combination = candidates[
+                0
+            ]  # 後でもうちょっとちゃんと選ぶように改良する
             # 署名する売りの契約の組み合わせの候補(candidates)から，相手の署名率*契約単価を最大化する契約の組み合わせを選択
             # val = sum([contract.agreement["unit_price"]*self.opp_sign_rates[1][contract.annotation['buyer']] for contract in signed_combination])
             max_up = max(

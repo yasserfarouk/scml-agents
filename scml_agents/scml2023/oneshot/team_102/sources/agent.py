@@ -1,7 +1,6 @@
 import datetime
 import os
 import pathlib
-import sys
 from typing import Dict, List
 
 from negmas import Contract, ResponseType, SAOResponse
@@ -133,7 +132,7 @@ class RLSyncAgent(SyncAgent):
             self.checkpoint_path = os.path.join(
                 directory,
                 "models",
-                f'Sync_PPO_{self.action_manager}_{self.observe_manager}_{"-".join([str(i) for i in self.net_arch])}.pth',
+                f"Sync_PPO_{self.action_manager}_{self.observe_manager}_{'-'.join([str(i) for i in self.net_arch])}.pth",
             )
         # print("save checkpoint path : " + self.checkpoint_path)
 
@@ -160,7 +159,7 @@ class RLSyncAgent(SyncAgent):
         profit = self.ufun.from_contracts(
             list(self.contracts.values()), ignore_exogenous=False
         )
-        diff = abs(self.step_need - self.secured) ** 2
+        abs(self.step_need - self.secured) ** 2
         reward = profit
 
         # record reward
@@ -224,7 +223,7 @@ class RLSyncAgent(SyncAgent):
                 self.ppo.save(self.checkpoint_path)
 
                 if RLSyncAgent.reward_th[self.idx] < sim_reward:
-                    self.ppo.save(f'{self.checkpoint_path.split(".")[0]}_BEST.pth')
+                    self.ppo.save(f"{self.checkpoint_path.split('.')[0]}_BEST.pth")
 
     def on_negotiation_success(self, contract, mechanism):
         # todo: 交渉成功時の報酬を記述
@@ -402,7 +401,7 @@ class RLIndAgent(SimpleAgent):
             self.checkpoint_path = os.path.join(
                 directory,
                 "models",
-                f'Ind_PPO_{self.action_manager}_{self.observe_manager}_{"-".join([str(i) for i in self.net_arch])}.pth',
+                f"Ind_PPO_{self.action_manager}_{self.observe_manager}_{'-'.join([str(i) for i in self.net_arch])}.pth",
             )
         # print("save checkpoint path : " + self.checkpoint_path)
 
@@ -430,7 +429,7 @@ class RLIndAgent(SimpleAgent):
         profit = self.ufun.from_contracts(
             list(self.contracts.values()), ignore_exogenous=False
         )
-        diff = abs(self.step_need - self.secured) ** 2
+        abs(self.step_need - self.secured) ** 2
         reward = profit
 
         # record reward
@@ -494,7 +493,7 @@ class RLIndAgent(SimpleAgent):
                 self.ppo.save(self.checkpoint_path)
 
                 if RLIndAgent.reward_th[self.idx] < sim_reward:
-                    self.ppo.save(f'{self.checkpoint_path.split(".")[0]}_BEST.pth')
+                    self.ppo.save(f"{self.checkpoint_path.split('.')[0]}_BEST.pth")
 
     def on_negotiation_success(self, contract, mechanism):
         # todo: 交渉成功時の報酬を記述
@@ -506,9 +505,7 @@ class RLIndAgent(SimpleAgent):
     def propose(self, negotiator_id: str, state) -> "Outcome":
         nmi = self.get_nmi(negotiator_id)
         if negotiator_id not in self.opp_offers.keys():
-            q = self.first_quantity
-            t = self.awi.current_step
-            p = (
+            (
                 nmi.issues[UNIT_PRICE].min_value
                 if self.is_selling
                 else nmi.issues[UNIT_PRICE].max_value

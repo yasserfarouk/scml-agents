@@ -11,23 +11,22 @@ from __future__ import annotations
 
 # required for typing
 import random
-
-# required for development
-from scml.std import *
+from itertools import chain, combinations, repeat
 
 # required for typing
 from negmas import *
 
-
-from itertools import chain, combinations, repeat
+# required for development
+from scml.std import *
 
 __all__ = ["DogAgent"]
 
 
 def distribute(q: int, n: int) -> list[int]:
     """Distributes n values over m bins with at least one item per bin assuming q > n"""
-    from numpy.random import choice
     from collections import Counter
+
+    from numpy.random import choice
 
     if q < n:
         lst = [0] * (n - q) + [1] * q
@@ -120,7 +119,7 @@ class DogAgent(StdSyncAgent):
                         if abs(diff) < abs(best_diff):
                             best_diff, best_indx = diff, i
                     if offered >= totalsell:
-                        totalsell, total_indx = offered, i
+                        totalsell, _total_indx = offered, i
                 if diff == 0:
                     break
 

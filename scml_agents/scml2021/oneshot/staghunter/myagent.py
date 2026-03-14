@@ -54,17 +54,12 @@ You should see a short tournament running and results reported.
 
 """
 
-import pickle
-import random
-
 # required for running tournaments and printing
 import time
-import warnings
 from copy import deepcopy
-from functools import partial
 
 # required for typing
-from typing import Any, Collection, Dict, Iterable, List, Optional, Tuple, Union
+from typing import Any, Dict, List
 
 import numpy as np
 from negmas import (
@@ -172,28 +167,28 @@ class EstimatedUtility(UtilityFunction):
     def check_updated(self):
         if type(self.historical_parameter[self.awi.current_step]) == type(None):
             cur_market_parameters = {}
-            cur_market_parameters[
-                "current_exogenous_input_quantity"
-            ] = self.awi.current_exogenous_input_quantity
-            cur_market_parameters[
-                "current_exogenous_input_price"
-            ] = self.awi.current_exogenous_input_price
-            cur_market_parameters[
-                "current_exogenous_output_quantity"
-            ] = self.awi.current_exogenous_output_quantity
-            cur_market_parameters[
-                "current_exogenous_output_price"
-            ] = self.awi.current_exogenous_output_price
+            cur_market_parameters["current_exogenous_input_quantity"] = (
+                self.awi.current_exogenous_input_quantity
+            )
+            cur_market_parameters["current_exogenous_input_price"] = (
+                self.awi.current_exogenous_input_price
+            )
+            cur_market_parameters["current_exogenous_output_quantity"] = (
+                self.awi.current_exogenous_output_quantity
+            )
+            cur_market_parameters["current_exogenous_output_price"] = (
+                self.awi.current_exogenous_output_price
+            )
             cur_market_parameters["current_step"] = self.awi.current_step
             cur_market_parameters["current_balance"] = self.awi.current_balance
             cur_market_parameters["cost"] = self.awi.profile.cost
             cur_market_parameters["n_lines"] = self.awi.profile.n_lines
-            cur_market_parameters[
-                "current_shortfall_penalty"
-            ] = self.awi.current_shortfall_penalty
-            cur_market_parameters[
-                "current_disposal_cost"
-            ] = self.awi.current_disposal_cost
+            cur_market_parameters["current_shortfall_penalty"] = (
+                self.awi.current_shortfall_penalty
+            )
+            cur_market_parameters["current_disposal_cost"] = (
+                self.awi.current_disposal_cost
+            )
             self.historical_parameter[self.awi.current_step] = cur_market_parameters
             if self.awi.is_first_level:
                 self.issues = self.awi.current_output_issues
@@ -419,7 +414,7 @@ class EstimatedUtility(UtilityFunction):
         current_shortfall_penalty = param["current_shortfall_penalty"]
         current_disposal_cost = param["current_disposal_cost"]
         # copy inputs because we are going to modify them.
-        original_offers = deepcopy(list(offers))
+        deepcopy(list(offers))
         offers, outputs = deepcopy(list(offers)), deepcopy(list(outputs))
         # indicate that all inputs are not exogenous and that we are adding two
         # exogenous contracts after them.
@@ -637,7 +632,7 @@ class StagHunter(OneShotAgent):
         """Called once after the agent-world interface is initialized"""
 
         if not self.awi:
-            raise ValueError(f"I do not know my AWI!!!")
+            raise ValueError("I do not know my AWI!!!")
         # GreedySyncAgent.init()
 
         if self.awi.is_first_level:

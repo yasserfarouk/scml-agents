@@ -13,27 +13,20 @@ The agents make the most profits and take least penalties for shortfall and disp
 
 # required for running tournaments and printing
 import math
-import random
 
 # required for running tournaments and printing
 import time
 from collections import defaultdict
-from pprint import pprint
 
 # required for typing
 # required for typing
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List
 
 # from Learningagent import LearningAgent
-import numpy as np
-from matplotlib import pyplot as plt
 from negmas import (
     AgentMechanismInterface,
-    Breach,
     Contract,
-    Issue,
     MechanismState,
-    Negotiator,
     ResponseType,
 )
 from negmas.helpers import humanize_time
@@ -43,7 +36,6 @@ from negmas.helpers import humanize_time
 from scml.oneshot import *
 from scml.oneshot import OneShotAgent
 from scml.oneshot.agents import RandomOneShotAgent, SyncRandomOneShotAgent
-from scml.scml2020 import is_system_agent
 from scml.utils import anac2021_collusion, anac2021_oneshot, anac2021_std
 from tabulate import tabulate
 
@@ -97,9 +89,8 @@ class Agent97(OneShotAgent):
         """Called when the agent is asking to propose in one negotiation"""
         my_needs = self._needed(negotiator_id)
         nmi = self.get_nmi(negotiator_id)
-        rep = 0.1
         if self.reputation:
-            rep = self.sigmoid(self.reputation[min(self.reputation)])
+            self.sigmoid(self.reputation[min(self.reputation)])
         if my_needs <= 0:
             return None
 
@@ -383,7 +374,7 @@ class Agent97(OneShotAgent):
             return ResponseType.REJECT_OFFER
         nmi = self.get_nmi(negotiator_id)
         image = self.get_image(negotiator_id, state, offer, nmi)
-        reputation = self.get_reputation(image, state, nmi)
+        self.get_reputation(image, state, nmi)
         # print(self._selling_log)
         # print(self._buying_log)
         my_needs = self._needed(negotiator_id)
@@ -448,7 +439,7 @@ class Agent97(OneShotAgent):
                 self._sold,
                 self._selling_log[nmi.annotation["buyer"]],
             )
-            ave = (maxx + min(minin)) / 2
+            (maxx + min(minin)) / 2
             if self.reputation[nmi.annotation["buyer"]]:
                 threshold = 0.7 * abs(
                     self.sigmoid(self.reputation[nmi.annotation["buyer"]])

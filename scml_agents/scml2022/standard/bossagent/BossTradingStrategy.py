@@ -1,24 +1,21 @@
-from negmas import Contract, Breach
+import copy
+from typing import Any, Dict, List, Optional
+
+from negmas import Breach, Contract
 from negmas.common import AgentMechanismInterface, MechanismState
-from scml.scml2020.common import QUANTITY
 
 from .helper import (
     calculate_current_keep_amount,
-    sort_buyers_by_price,
-    sort_sellers_by_price,
-    get_contract_buyer_sellers,
-    sort_negotiators_by_delivery,
-    get_unscheduled_total_pseudo_quantity,
-    schedule_dispatch_production,
     format_schedule,
+    get_contract_buyer_sellers,
+    get_unscheduled_total_pseudo_quantity,
     is_schedule_available,
+    schedule_dispatch_production,
+    sort_buyers_by_price,
     sort_negotiators_by_delivery,
     sort_negotiators_by_descending_delivery,
+    sort_sellers_by_price,
 )
-
-from typing import Any, Dict, List, Optional
-import math
-import copy
 
 
 class BossTradingStrategy:
@@ -91,7 +88,7 @@ class BossTradingStrategy:
                     # Sign buyer contract.
                     signs[buyer_index] = self.id
             # Check signing for red buyers.
-            for (contract_id, offer) in delivery_sorted_sellers:
+            for contract_id, offer in delivery_sorted_sellers:
                 # Check if schedule is available or not.
                 is_available, _ = is_schedule_available(
                     formatted_temp_schedule,
@@ -175,7 +172,7 @@ class BossTradingStrategy:
                     # Sign buyer contract.
                     signs[buyer_index] = self.id
             # Check signing for red buyers.
-            for (contract_id, offer) in delivery_sorted_buyers:
+            for contract_id, offer in delivery_sorted_buyers:
                 # Check if schedule is available or not.
                 is_available, _ = is_schedule_available(
                     formatted_temp_schedule,
@@ -356,7 +353,6 @@ class BossTradingStrategy:
         """Called when a breach occur. In 2020, there will be no resolution
         (i.e. resoluion is None)"""
         # Get the breached id.
-        breached_contract_id = contract.id
 
     def on_agent_bankrupt(
         self,
@@ -563,7 +559,7 @@ class BossTradingStrategy:
         """Called when a negotiation the agent is a party of ends without
         agreement"""
         # Get opponent agent id that we negotiated with. 0th index is our agent id.
-        opponent_agentID = mechanism.agent_names[1]
+        mechanism.agent_names[1]
 
     def on_negotiation_success(
         self, contract: Contract, mechanism: AgentMechanismInterface
@@ -571,4 +567,4 @@ class BossTradingStrategy:
         """Called when a negotiation the agent is a party of ends with
         agreement"""
         # Get opponent agent id that we negotiated with. 0th index is our agent id.
-        opponent_agentID = mechanism.agent_names[1]
+        mechanism.agent_names[1]

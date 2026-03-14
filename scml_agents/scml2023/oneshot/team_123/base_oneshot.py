@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any, Collection, Iterable, Optional
+from typing import Any, Optional
 
 from negmas import (
     Contract,
@@ -87,9 +87,9 @@ class BaseAgent(OneShotSyncAgent, ABC):
         super().on_negotiation_success(contract, mechanism)
         partner_id = self.get_partner_id(contract)
         if self.negotiation_status[partner_id] == NegotiationStatus.CONTINUING:
-            self.negotiation_status[
-                partner_id
-            ] = NegotiationStatus.AGREED_IN_OWN_OPINION
+            self.negotiation_status[partner_id] = (
+                NegotiationStatus.AGREED_IN_OWN_OPINION
+            )
 
         if (
             self.negotiation_status[partner_id]
@@ -143,9 +143,9 @@ class BaseAgent(OneShotSyncAgent, ABC):
         result = self._counter_all(offers, states)
         for partner_id, response in result.items():
             if response.response == ResponseType.ACCEPT_OFFER:
-                self.negotiation_status[
-                    partner_id
-                ] = NegotiationStatus.AGREED_IN_PARTNER_OPINION
+                self.negotiation_status[partner_id] = (
+                    NegotiationStatus.AGREED_IN_PARTNER_OPINION
+                )
             elif response.response == ResponseType.END_NEGOTIATION:
                 self.negotiation_status[partner_id] = NegotiationStatus.FAILED
         return result

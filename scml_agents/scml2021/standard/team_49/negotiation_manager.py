@@ -5,7 +5,6 @@ import numpy as np
 from controller import Controller
 from scml import PredictionBasedTradingStrategy, StepNegotiationManager
 from scml.scml2020.components.negotiation import ControllerInfo
-from scml.scml2020.services import StepController, SyncController
 
 
 class NegotiationManager(StepNegotiationManager, PredictionBasedTradingStrategy):

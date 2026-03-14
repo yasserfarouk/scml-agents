@@ -1,7 +1,7 @@
 from typing import TypeVar
 
 from negmas import Outcome
-from scml import UNIT_PRICE, QUANTITY, TIME
+from scml import QUANTITY, TIME, UNIT_PRICE
 
 T = TypeVar("T")
 

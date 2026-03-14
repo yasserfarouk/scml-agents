@@ -376,7 +376,7 @@ class MyNegotiator(SAONegotiator):
         self, state: MechanismState, dest: str | None = None
     ) -> Optional["Outcome"]:
         # initialize last_offer
-        if self.last_offer == None:
+        if self.last_offer is None:
             self.last_offer = (
                 self.target_quantity,
                 (self.target_time[0] + self.target_time[1]) // 2,
@@ -835,7 +835,7 @@ class ArtisanKangaroo(
             agent_name = ""
             for c in name.split("@")[0]:
                 try:
-                    n = int(c)
+                    int(c)
                 except Exception:
                     agent_name += c
 
@@ -1080,7 +1080,7 @@ class ArtisanKangaroo(
             # check if it is possible to produce output products from its corresponding input contract
             is_possible = True
             for prov_correspond_input_contract in output_contract["prov_correspond"]:
-                if prov_correspond_input_contract["index"] != None:
+                if prov_correspond_input_contract["index"] is not None:
                     if not self.is_available_capacity(
                         prov_correspond_input_contract["time"],
                         output_contract["time"],
@@ -1094,7 +1094,7 @@ class ArtisanKangaroo(
                 for prov_correspond_input_contract in output_contract[
                     "prov_correspond"
                 ]:
-                    if prov_correspond_input_contract["index"] != None:
+                    if prov_correspond_input_contract["index"] is not None:
                         if self.use_available_capacity(
                             prov_correspond_input_contract["time"],
                             output_contract["time"],
@@ -1113,7 +1113,7 @@ class ArtisanKangaroo(
                                 prov_correspond_input_contract
                             )
 
-                if output_contract["index"] != None:
+                if output_contract["index"] is not None:
                     results[output_contract["index"]] = self.id
 
                 all_output_contracts_stack = list(
@@ -1134,12 +1134,14 @@ class ArtisanKangaroo(
         )
         all_input_contracts_stack = list(
             filter(
-                lambda contract: contract["index"] != None, all_input_contracts_stack
+                lambda contract: contract["index"] is not None,
+                all_input_contracts_stack,
             )
         )
         all_output_contracts_stack = list(
             filter(
-                lambda contract: contract["index"] != None, all_output_contracts_stack
+                lambda contract: contract["index"] is not None,
+                all_output_contracts_stack,
             )
         )
         all_input_contracts_stack = sorted(
@@ -1157,10 +1159,10 @@ class ArtisanKangaroo(
         # sign output contracts as stock contracts
         stock_output_contracts = []
         for output_contract in all_output_contracts_stack:
-            id = output_contract["id"]
+            output_contract["id"]
             step = output_contract["time"]
             quantity = output_contract["quantity"]
-            partner = output_contract["partner"]
+            output_contract["partner"]
 
             if quantity <= 0:
                 continue
@@ -1233,10 +1235,10 @@ class ArtisanKangaroo(
         # sign input contracts as stock contracts
         stock_input_contracts = []
         for input_contract in all_input_contracts_stack:
-            id = input_contract["id"]
+            input_contract["id"]
             step = input_contract["time"]
             quantity = input_contract["quantity"]
-            partner = input_contract["partner"]
+            input_contract["partner"]
 
             if quantity <= 0:
                 continue

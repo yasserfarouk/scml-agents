@@ -1,6 +1,5 @@
 import copy
 import math
-import os
 from collections import defaultdict
 from typing import Any, Dict, List, Optional
 
@@ -15,15 +14,12 @@ from .BossNegoStats import BossNegoStats
 from .helper import (
     buyer_closest_available_delivery,
     calculate_current_keep_amount,
-    calculate_produced_quantity,
     calculate_total_keep_amount,
-    format_pseudo_contracts,
     format_schedule,
     get_agent_reject_rate,
     get_negotiable_agent_rate,
     get_pseudo_buyer_contracts_with_quota,
     get_pseudo_seller_contracts_with_quota,
-    get_unscheduled_total_pseudo_quantity,
     is_balance_available,
     is_schedule_available,
     seller_closest_available_delivery,
@@ -76,12 +72,12 @@ class BossBusinessPlanner:
                     ].cash
                     self.supplier_pred_days[supplier] = -1
                 else:
-                    self.supplier_balances[
-                        supplier
-                    ] = self.business_analytics.pred_cash(supplier, self.current_step)
-                    self.supplier_pred_days[
-                        supplier
-                    ] = self.business_analytics.pred_bankruptcy_day(supplier)
+                    self.supplier_balances[supplier] = (
+                        self.business_analytics.pred_cash(supplier, self.current_step)
+                    )
+                    self.supplier_pred_days[supplier] = (
+                        self.business_analytics.pred_bankruptcy_day(supplier)
+                    )
 
         self.consumer_balances = defaultdict(int)
         self.consumer_pred_days = defaultdict(int)
@@ -96,12 +92,12 @@ class BossBusinessPlanner:
                     ].cash
                     self.consumer_pred_days[consumer] = -1
                 else:
-                    self.consumer_balances[
-                        consumer
-                    ] = self.business_analytics.pred_cash(consumer, self.current_step)
-                    self.consumer_pred_days[
-                        consumer
-                    ] = self.business_analytics.pred_bankruptcy_day(consumer)
+                    self.consumer_balances[consumer] = (
+                        self.business_analytics.pred_cash(consumer, self.current_step)
+                    )
+                    self.consumer_pred_days[consumer] = (
+                        self.business_analytics.pred_bankruptcy_day(consumer)
+                    )
 
     def update_constraints(self):
         """
@@ -298,7 +294,7 @@ class BossBusinessPlanner:
                             predicted_max_buyer_delivery_day,
                         )
 
-                    for (offer_t, offer_q) in formatted_pseudos:
+                    for offer_t, offer_q in formatted_pseudos:
                         if offer_t != -1:  # Check if the contract is keep.
                             buyer_delivery_lower = buyer_closest_available_delivery(
                                 self.formatted_schedule,
@@ -460,7 +456,7 @@ class BossBusinessPlanner:
                             predicted_max_buyer_delivery_day,
                         )
 
-                    for (offer_t, offer_q) in formatted_pseudos:
+                    for offer_t, offer_q in formatted_pseudos:
                         if offer_t != -1:  # Check if the contract is keep.
                             buyer_delivery_lower = buyer_closest_available_delivery(
                                 self.formatted_schedule,
@@ -665,7 +661,6 @@ class BossBusinessPlanner:
                             and seller_delivery_upper
                             <= predicted_max_seller_delivery_day
                         ):
-
                             if self.is_supplier_collusion_mode:
                                 # If it is ok, send the negotiation request with boundries that are determined in before step.
                                 is_accepted = self.awi.request_negotiation(

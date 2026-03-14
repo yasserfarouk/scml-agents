@@ -61,26 +61,14 @@ You should see a short tournament running and results reported.
 import time
 
 # required for typing
-from typing import Any, Dict, List, Optional
-
-import numpy as np
 from negmas import (
-    AgentMechanismInterface,
-    Breach,
-    Contract,
-    Issue,
-    MechanismState,
-    Negotiator,
     Outcome,
     ResponseType,
 )
 from negmas.helpers import humanize_time
-from negmas.sao import SAOState
 from scml.oneshot import OneShotAgent
 from scml.oneshot.agents import (
-    GreedyOneShotAgent,
     RandomOneShotAgent,
-    SingleAgreementAspirationAgent,
     SyncRandomOneShotAgent,
 )
 from scml.scml2020.common import QUANTITY, TIME, UNIT_PRICE

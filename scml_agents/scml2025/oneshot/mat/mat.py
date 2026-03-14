@@ -9,11 +9,11 @@ the authors and the ANAC 2024 SCML competition.
 
 import math
 from collections import defaultdict
-from typing import Any
-from negmas import SAOResponse, ResponseType, Outcome, SAOState, Contract
-from scml.oneshot import QUANTITY, UNIT_PRICE
-from scml.oneshot import OneShotSyncAgent
 from itertools import chain, combinations
+from typing import Any
+
+from negmas import Contract, Outcome, ResponseType, SAOResponse, SAOState
+from scml.oneshot import QUANTITY, UNIT_PRICE, OneShotSyncAgent
 
 __all__ = ["MATAgent"]
 
@@ -150,7 +150,7 @@ class MATAgent(OneShotSyncAgent):
             if not active or needs <= 0:
                 continue
 
-            price = issues[UNIT_PRICE].rand()
+            issues[UNIT_PRICE].rand()
 
             subset = self.best_subset(needs, active, offers)
             others = list(active.difference(subset))
@@ -197,7 +197,7 @@ class MATAgent(OneShotSyncAgent):
                         )
 
         for pid, res in response.items():
-            kind = "accept" if res.response == ResponseType.ACCEPT_OFFER else "counter"
+            pass
             # self._csv.writerow([
             #     self.awi.current_step,
             #     states[pid].step,
@@ -249,7 +249,7 @@ class MATAgent(OneShotSyncAgent):
 
         # find the counterpart(s) – exclude own id, keep the rest
         others = [p for p in partners if p != self.id]
-        partner_field = ",".join(others) if others else partners[0]  # fallback
+        ",".join(others) if others else partners[0]  # fallback
 
         # log – keep exactly 11 columns to match the header
         # self._csv.writerow([
@@ -345,30 +345,29 @@ class MATAgent(OneShotSyncAgent):
 
         # default decision
         decision = ResponseType.REJECT_OFFER
-        reason = "no_offer"
 
         if not offer:
             return decision
 
         my_needs = self._needed(negotiator_id)
-        offered_qty, offered_price = offer[QUANTITY], offer[UNIT_PRICE]
+        offered_qty, _offered_price = offer[QUANTITY], offer[UNIT_PRICE]
 
         # 1) already done
         if my_needs <= 0:
-            decision, reason = ResponseType.END_NEGOTIATION, "need_met"
+            decision, _reason = ResponseType.END_NEGOTIATION, "need_met"
 
         # 2) perfect match
         elif offered_qty == my_needs:
-            decision, reason = ResponseType.ACCEPT_OFFER, "exact_qty"
+            decision, _reason = ResponseType.ACCEPT_OFFER, "exact_qty"
 
         # 3) helpful partial
         elif offered_qty < my_needs:
             ratio = offered_qty / my_needs
             if ratio >= 0.25:  # accept any offer that covers ≥25 %
-                decision, reason = ResponseType.ACCEPT_OFFER, "partial_ok"
+                decision, _reason = ResponseType.ACCEPT_OFFER, "partial_ok"
             else:
                 # counter with *something* meaningful, not 1‑unit
-                counter_q = max(1, math.ceil(my_needs * 0.25))
+                max(1, math.ceil(my_needs * 0.25))
                 return ResponseType.REJECT_OFFER
                 # yasser: bugfix. Cannot return an SAOResponse here. You just reject and propose() will create the proposal
                 # return SAOResponse(
@@ -378,7 +377,7 @@ class MATAgent(OneShotSyncAgent):
 
         # 4) almost good in late rounds
         elif abs(offered_qty - my_needs) < my_needs and step >= 18:
-            decision, reason = ResponseType.ACCEPT_OFFER, "late_close"
+            decision, _reason = ResponseType.ACCEPT_OFFER, "late_close"
 
         # # NEW
         # elif offered_qty > my_needs and (offered_qty - my_needs) / my_needs <= 0.05:
@@ -513,6 +512,7 @@ class MATAgent(OneShotSyncAgent):
 
 if __name__ == "__main__":
     import sys
+
     from .helpers.runner import run
 
     run([MATAgent], sys.argv[1] if len(sys.argv) > 1 else "oneshot")

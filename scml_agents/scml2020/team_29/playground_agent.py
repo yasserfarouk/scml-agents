@@ -1,7 +1,5 @@
-from collections import defaultdict
 from typing import Any, Dict, List, Optional, Tuple
 
-import matplotlib.pyplot as plt
 import numpy as np
 from negmas import (
     LinearUtilityFunction,
@@ -14,21 +12,11 @@ from scml.scml2020 import (
     QUANTITY,
     TIME,
     UNIT_PRICE,
-    DecentralizingAgent,
-    RandomAgent,
     SCML2020Agent,
-    SCML2020World,
 )
 from scml.scml2020.components import TradePredictionStrategy
-from scml.scml2020.components.negotiation import (
-    IndependentNegotiationsManager,
-    MovingRangeNegotiationManager,
-)
 from scml.scml2020.components.production import (
     DemandDrivenProductionStrategy,
-    ProductionStrategy,
-    SupplyDrivenProductionStrategy,
-    TradeDrivenProductionStrategy,
 )
 from scml.scml2020.components.trading import PredictionBasedTradingStrategy
 
@@ -213,7 +201,6 @@ class SyncController(SAOSyncController):
 
 
 class MyNegotiationManager:
-
     """My negotiation strategy
 
     Args:
@@ -399,6 +386,5 @@ class MyAgentDror(
 
 class MyPredictor(TradePredictionStrategy):
     def trade_prediction_init(self):
-        inp = self.awi.my_input_product
         self.expected_outputs = self.awi.n_lines * np.ones(self.awi.n_steps, dtype=int)
         self.expected_inputs = self.awi.n_lines * np.ones(self.awi.n_steps, dtype=int)

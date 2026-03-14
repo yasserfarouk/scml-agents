@@ -33,7 +33,7 @@ To test this template do the following:
 On Linux/Mac:
     >> source .venv/bin/activate
 On Windows:
-    >> \.venv\Scripts\activate.bat
+    >> \\.venv\\Scripts\activate.bat
 
 3. Update pip just in case (recommended)
 
@@ -56,65 +56,26 @@ You should see a short tournament running and results reported.
 
 
 # required for typing
-from typing import Any, Dict, List, Optional, Iterable, Union, Tuple
-
-import numpy as np
-from negmas import (
-    AgentMechanismInterface,
-    Breach,
-    Contract,
-    Issue,
-    MechanismState,
-    Negotiator,
-    SAONegotiator,
-    AspirationNegotiator,
-    make_issue,
-    NegotiatorMechanismInterface,
-    UtilityFunction,
-    LinearUtilityFunction,
-)
-from negmas.helpers import humanize_time, get_class, instantiate
-from scml.scml2020 import Failure
 
 # required for development
 # required for running the test tournament
+import os
+import sys
 import time
-from tabulate import tabulate
-from scml.utils import anac2022_collusion, anac2022_std, anac2022_oneshot
+
 from scml.scml2020 import (
     SCML2020Agent,
-    ProductionStrategy,
-    SupplyDrivenProductionStrategy,
-    DemandDrivenProductionStrategy,
-    TradeDrivenProductionStrategy,
-    ReactiveTradingStrategy,
-    PredictionBasedTradingStrategy,
-    TradingStrategy,
-    StepNegotiationManager,
-    IndependentNegotiationsManager,
-    MovingRangeNegotiationManager,
-    TradePredictionStrategy,
-    AWI,
 )
 from scml.scml2020.agents import (
     BuyCheapSellExpensiveAgent,
     DecentralizingAgent,
-    DoNothingAgent,
 )
-from scml.scml2020.common import ANY_LINE, is_system_agent, NO_COMMAND
-from scml.scml2020.components import SignAllPossible
-from scml.scml2020.components.prediction import FixedTradePredictionStrategy
-from scml.scml2020.components.prediction import MarketAwareTradePredictionStrategy
-from scml.scml2020.components.prediction import MeanERPStrategy
-from abc import abstractmethod
-from pprint import pformat
-
-import os, sys
+from scml.utils import anac2022_collusion, anac2022_oneshot, anac2022_std
 
 sys.path.append(os.path.dirname(__file__))
-from mynegotiations import MyNegotiationsManager, MyIndependentNegotiationsManager
-from mytrading import MyTradePredictionStrategy, MyTradingStrategy
+from mynegotiations import MyIndependentNegotiationsManager
 from myproduction import MyProductionStrategy
+from mytrading import MyTradingStrategy
 
 __all__ = ["SmartAgent"]
 
@@ -170,7 +131,7 @@ def run(
         DecentralizingAgent,
         BuyCheapSellExpensiveAgent,
     ]
-    start = time.perf_counter()
+    time.perf_counter()
     if competition == "std":
         results = anac2022_std(
             competitors=competitors,

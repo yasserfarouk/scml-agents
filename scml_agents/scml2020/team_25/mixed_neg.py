@@ -1,12 +1,9 @@
-import logging
-from typing import Any, Dict, List, Optional, Tuple
+from typing import List, Optional, Tuple
 
 import numpy as np
 from negmas import (
     AspirationNegotiator,
     ResponseType,
-    SAOSyncController,
-    outcome_is_valid,
 )
 from negmas.common import PreferencesChange, PreferencesChangeType
 from negmas.sao import SAOResponse
@@ -16,24 +13,18 @@ from scml.scml2020 import (
     TIME,
     UNIT_PRICE,
     DecentralizingAgent,
-    RandomAgent,
     SCML2020Agent,
     SCML2020World,
 )
 from scml.scml2020.agents.decentralizing import _NegotiationCallbacks
 from scml.scml2020.components.negotiation import StepNegotiationManager
 from scml.scml2020.components.production import (
-    DemandDrivenProductionStrategy,
-    ProductionStrategy,
     SupplyDrivenProductionStrategy,
 )
 from scml.scml2020.components.trading import (
     PredictionBasedTradingStrategy,
-    ReactiveTradingStrategy,
 )
 from scml.scml2020.services.controllers import SyncController
-
-from .pred_trade import ConsumeDrivenPredictionBasedTradingStrategy
 
 
 class ProtectedSyncController(SyncController):
@@ -188,7 +179,7 @@ class ProtectedSyncController(SyncController):
         if len(good_offers) == 0:
             return None, -1000
 
-        production_cost = int(
+        int(
             np.max(
                 self.__parent.awi.profile.costs[:, self.__parent.awi.my_input_product]
             )

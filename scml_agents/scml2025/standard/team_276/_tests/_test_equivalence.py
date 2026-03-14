@@ -1,4 +1,5 @@
 import unittest
+
 from .litaagent_std import litaagent_y, litaagent_yr
 
 
@@ -30,6 +31,7 @@ class TestAgentEquivalence(unittest.TestCase):
             litaagent_yr._split_partners(partners),
         )
         import random
+
         import numpy as np
 
         random.seed(0)

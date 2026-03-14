@@ -1,17 +1,18 @@
-import unittest
-from unittest.mock import MagicMock, patch
 import os
+import unittest
 import uuid
+from unittest.mock import MagicMock, patch
 
 # Assuming your agent and inventory manager are in these files
 # Adjust the import path if necessary
 from inventory_manager_cir import (
+    Batch,
+    IMContract,
+    IMContractType,
     InventoryManagerCIR,
     MaterialType,
-    IMContractType,
-    IMContract,
-    Batch,
 )
+
 from .litaagent_cir import LitaAgentCIR  # Assuming this is your agent class
 
 # Constants from SCML or your agent (ensure these match your agent's usage)
@@ -69,7 +70,7 @@ def create_mock_nmi(q_min=1, q_max=100, p_min=1.0, p_max=20.0, t_min=1, t_max=10
 class TestInventoryManagerCIR(unittest.TestCase):
     def setUp(self):
         # Create env.test to enable debug prints if your code uses it
-        with open("env.test", "w") as f:
+        with open("env.test", "w"):
             pass
         self.im = InventoryManagerCIR(
             raw_storage_cost=0.1,
@@ -239,7 +240,7 @@ class TestInventoryManagerCIR(unittest.TestCase):
 
 class TestLitaAgentCIR(unittest.TestCase):
     def setUp(self):
-        with open("env.test", "w") as f:
+        with open("env.test", "w"):
             pass
 
         self.mock_awi = create_mock_awi(current_step=0, n_steps=20)

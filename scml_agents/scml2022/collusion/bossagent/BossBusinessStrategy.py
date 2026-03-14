@@ -1,5 +1,5 @@
-import math
 import copy
+import math
 
 from .helper import get_negotiable_agent_rate
 

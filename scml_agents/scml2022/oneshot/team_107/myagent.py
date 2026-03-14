@@ -32,7 +32,7 @@ To test this template do the following:
 On Linux/Mac:
     >> source .venv/bin/activate
 On Windows:
-    >> \.venv\Scripts\activate.bat
+    >> \\.venv\\Scripts\activate.bat
 
 3. Update pip just in case (recommended)
 
@@ -60,28 +60,20 @@ import time
 # required for typing
 from typing import Any, Dict, List, Optional
 
-import numpy as np
-from negmas.helpers import humanize_time
+from negmas import (
+    AgentMechanismInterface,
+    Contract,
+    MechanismState,
+    Outcome,
+    ResponseType,
+)
 from negmas.sao import SAOState
 
 # required for development
 from scml.oneshot import OneShotAgent
-from scml.oneshot.agents import RandomOneShotAgent, SyncRandomOneShotAgent
 from scml.utils import anac2022_collusion, anac2022_oneshot, anac2022_std
-from tabulate import tabulate
 
-from negmas import (
-    AgentMechanismInterface,
-    Breach,
-    Contract,
-    Issue,
-    MechanismState,
-    Negotiator,
-    Outcome,
-    ResponseType,
-)
-
-from .other_agents.agent_team73 import Gentle, AdaptiveAgent
+from .other_agents.agent_team73 import AdaptiveAgent, Gentle
 from .other_agents.agent_team86 import AgentOneOneTwo
 from .other_agents.agent_template import LearningAgent
 from .regression_agent import LinearRegressionAgent
@@ -105,9 +97,7 @@ class MyAgent(OneShotAgent):
         """Called when the agent is asking to propose in one negotiation"""
         pass
 
-    def respond(
-        self, negotiator_id: str, state: SAOState
-    ) -> ResponseType:
+    def respond(self, negotiator_id: str, state: SAOState) -> ResponseType:
         """Called when the agent is asked to respond to an offer"""
         return ResponseType.END_NEGOTIATION
 
@@ -197,7 +187,7 @@ def run(
             BuyCheapSellExpensiveAgent,
         ]
 
-    start = time.perf_counter()
+    time.perf_counter()
     if competition == "std":
         runner = anac2022_std
     elif competition == "collusion":

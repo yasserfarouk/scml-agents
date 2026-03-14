@@ -12,11 +12,11 @@ from __future__ import annotations
 # required for typing
 from typing import Any
 
-# required for development
-from scml.std import *
-
 # required for typing
 from negmas import *
+
+# required for development
+from scml.std import *
 
 __all__ = ["AX"]
 
@@ -209,7 +209,7 @@ class AX(StdSyncAgent):
             return None
 
         issues = nmi.issues
-        qissue = issues[QUANTITY]
+        issues[QUANTITY]
         pissue = issues[UNIT_PRICE]
         for basetime in sorted(list(issues[TIME].all)):
             needed = self._needs(partner, basetime)

@@ -331,7 +331,7 @@ class AgentBrain:
             agent_is_buy=agent_is_buy,
         )
         if self.verbose and False:
-            print(f"\t ** ")
+            print("\t ** ")
             print(f"\t Value with = {value_with___}")
             print(f"\t Value without = {value_without}")
             print(f"\t value = {value_with___ - value_without}")

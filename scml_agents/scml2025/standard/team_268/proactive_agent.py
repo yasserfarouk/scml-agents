@@ -1,13 +1,16 @@
-from .simple_sync_agent import SimpleSyncAgent
 import random
+
+from negmas import ResponseType, SAOResponse
 from scml.oneshot.common import *
-from negmas import SAOResponse, ResponseType
+
+from .simple_sync_agent import SimpleSyncAgent
 
 
 def distribute(q: int, n: int) -> list[int]:
     """Distributes n values over m bins with at least one item per bin assuming q > n"""
-    from numpy.random import choice
     from collections import Counter
+
+    from numpy.random import choice
 
     if q < n:
         lst = [0] * (n - q) + [1] * q
@@ -42,7 +45,7 @@ class ProactiveAgent(SimpleSyncAgent):
 
     def first_proposals(self):
         # just randomly distribute my needs over my partners (with best price for me).
-        partners = self.negotiators.keys()
+        self.negotiators.keys()
         s = self.awi.current_step
         distribution = self.distribute_todays_needs()
         return {

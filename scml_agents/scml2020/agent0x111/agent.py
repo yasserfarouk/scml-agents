@@ -217,7 +217,7 @@ class StepController(SAOController, Notifier):
                 self.completed[neg.id] = False
                 self.awi.loginfo(
                     f"{str(self)} negotiating with {partner} on u={self.urange}"
-                    f", q=(1,{self.target-self.secured}), u=({tmin}, {tmax})"
+                    f", q=(1,{self.target - self.secured}), u=({tmin}, {tmax})"
                 )
                 self.awi.request_negotiation(
                     not self.is_seller,
@@ -336,13 +336,13 @@ class ElaboratedMeanERPStrategy(ExecutionRatePredictionStrategy):
         self, contract: Contract, breaches: List[Breach], resolution: Optional[Contract]
     ) -> None:
         super().on_contract_breached(contract, breaches, resolution)
-        seller_id = contract.annotation["seller"]
-        buyer_id = contract.annotation["buyer"]
+        contract.annotation["seller"]
+        contract.annotation["buyer"]
         the_perpetrator = breaches[0].perpetrator
         # print("step: "+str(self.awi.current_step))
         # print("buyer is:"+buyer_id)
         # print("The perprator: "+the_perpetrator )
-        type = breaches[0].type
+        breaches[0].type
         # print("The type: "+type)
         # if(type in "money"):
         #    print("Due to *money* breach the agent {} reported".format(buyer_id))
@@ -424,7 +424,7 @@ class ElaboratedPredictionBasedTradingStrategy(
             if contract.annotation["caller"] == self.id:
                 continue
             is_seller = contract.annotation["seller"] == self.id
-            q, u, t = (
+            q, _u, t = (
                 contract.agreement["quantity"],
                 contract.agreement["unit_price"],
                 contract.agreement["time"],
@@ -473,7 +473,7 @@ class ElaboratedPredictionBasedTradingStrategy(
         s = self.awi.current_step
         for contract, indx in contracts:
             is_seller = contract.annotation["seller"] == self.id
-            q, u, t = (
+            q, _u, t = (
                 contract.agreement["quantity"],
                 contract.agreement["unit_price"],
                 contract.agreement["time"],
@@ -516,7 +516,7 @@ class ElaboratedPredictionBasedTradingStrategy(
 
     def _format(self, c: Contract):
         return (
-            f"{f'>' if c.annotation['seller'] == self.id else '<'}"
+            f"{'>' if c.annotation['seller'] == self.id else '<'}"
             f"{c.annotation['buyer'] if c.annotation['seller'] == self.id else c.annotation['seller']}: "
             f"{c.agreement['quantity']} of {c.annotation['product']} @ {c.agreement['unit_price']} on {c.agreement['time']}"
         )
@@ -715,7 +715,7 @@ class ElaboratedStepNegotiationManager(ElaboratedMeanERPStrategy, NegotiationMan
 
         Breaches_strategy_partners = list(self.suspects_to_bankrupt.keys())
 
-        if Breaches_strategy_partners != None:
+        if Breaches_strategy_partners is not None:
             if annotation["buyer"] in Breaches_strategy_partners:
                 # print("Response Negative")
                 return None
@@ -766,7 +766,6 @@ class ElaboratedStepNegotiationManager(ElaboratedMeanERPStrategy, NegotiationMan
             return
         quantity = c.secured
         target = c.target
-        time_range = info.time_range
         if is_seller:
             controllers = self.sellers
         else:
@@ -916,7 +915,7 @@ class ASMASH(
     def upgrade_exe_fraction(self, quantity: float):
         threshold = 0.6
         seq_of_executions = self.check_conseq_of_execution()
-        if seq_of_executions != False and self._execution_fraction < threshold:
+        if seq_of_executions and self._execution_fraction < threshold:
             old_total = self._total_quantity
             # q = seq_of_executions*mean(self.executed_quantities)
             q = 8 * median(self.executed_quantities) + 2 * quantity
@@ -959,7 +958,7 @@ class ASMASH(
         partners_after_filtering = list(set(partners))
         Breaches_strategy_partners = list(self.suspects_to_bankrupt.keys())
         # print("Bad partners: "+str(Breaches_strategy_partners))
-        if Breaches_strategy_partners != None:
+        if Breaches_strategy_partners is not None:
             # print(Breaches_strategy_partners)
             partners_after_filtering = list(
                 set(partners_after_filtering) - set(Breaches_strategy_partners)
@@ -976,21 +975,19 @@ class ASMASH(
     ):
         # print(str("Partners before filtering: ")+str(partners))
         threshold_of_suspects = self.get_threshold_of_suspect()
-        extended_threshold_of_suspect = self.get_extended_threshold_of_suspect()
+        self.get_extended_threshold_of_suspect()
         suspected_partners = self.get_suspected_partners(
             paramater=threshold_of_suspects
         )
         # print("Suspected patners: "+str(suspected_partners))
         partners_after_filtering = list(set(partners) - set(suspected_partners))
-        ratio_of_partners = float(
-            len(partners_after_filtering) / len(partners)
-        )  # the ratio between the
+        float(len(partners_after_filtering) / len(partners))  # the ratio between the
         # if(ratio_of_partners<ratio_between_partners_and_suspects):
         #    suspected_partners = self.get_suspected_partners(paramater=extended_threshold_of_suspect)
         #    partners_after_filtering=list(set(partners) - set(suspected_partners))
 
         Breaches_strategy_partners = list(self.suspects_to_bankrupt.keys())
-        if Breaches_strategy_partners != None:
+        if Breaches_strategy_partners is not None:
             # print(Breaches_strategy_partners)
             partners_after_filtering = list(
                 set(partners_after_filtering) - set(Breaches_strategy_partners)
@@ -1000,7 +997,7 @@ class ASMASH(
 
     def get_ratio_of_suspects(self, partners: List[str]):
         threshold_of_suspects = self.get_threshold_of_suspect()
-        extended_threshold_of_suspect = self.get_extended_threshold_of_suspect()
+        self.get_extended_threshold_of_suspect()
         suspected_partners = self.get_suspected_partners(
             paramater=threshold_of_suspects
         )

@@ -1,6 +1,7 @@
-from scml.oneshot import QUANTITY, TIME, UNIT_PRICE
 from typing import Tuple, Union
+
 from negmas import Outcome
+from scml.oneshot import QUANTITY, TIME, UNIT_PRICE
 
 
 def get_proposal(unit_price: int, quantity: int, time: int) -> Outcome:

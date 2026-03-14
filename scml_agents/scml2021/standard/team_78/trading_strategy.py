@@ -3,37 +3,12 @@ import pathlib
 import pickle as pkl
 
 # required for running the test tournament
-import time
-
 # required for typing
-from typing import Any, Dict, List, Optional
-
 import numpy as np
-import sklearn
-from negmas import (
-    AgentMechanismInterface,
-    Breach,
-    Contract,
-    Issue,
-    MechanismState,
-    Negotiator,
-)
-from negmas.helpers import humanize_time
 from scml.scml2020 import (
-    MovingRangeNegotiationManager,
     PredictionBasedTradingStrategy,
-    SCML2020Agent,
-    TradeDrivenProductionStrategy,
     TradePredictionStrategy,
 )
-from scml.scml2020.agents import (
-    BuyCheapSellExpensiveAgent,
-    DecentralizingAgent,
-    DoNothingAgent,
-)
-from scml.utils import anac2020_collusion, anac2020_std
-from scml.scml2020.world import Failure
-from tabulate import tabulate
 
 models_dir = pathlib.Path(__file__).parent / "models"
 
@@ -46,7 +21,7 @@ class SklearnTradePredictionStrategy(TradePredictionStrategy):
         ) as file:
             self.input_quantity_model = pkl.load(file)
         with open(
-            models_dir / f"sold_quantity_{min(inp+1, 5)}_predictor_init.pkl", "rb"
+            models_dir / f"sold_quantity_{min(inp + 1, 5)}_predictor_init.pkl", "rb"
         ) as file:
             self.output_quantity_model = pkl.load(file)
 

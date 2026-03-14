@@ -7,9 +7,6 @@ from scml_agents.scml2020.monty_hall import MontyHall
 
 from .switches import (
     SCMLAGENTS_RUN2020,
-    SCMLAGENTS_RUN_COLLUSION_TOURNAMENTS,
-    SCMLAGENTS_RUN_SABOTAGE_TOURNAMENTS,
-    SCMLAGENTS_RUN_STD_TOURNAMENTS,
 )
 
 

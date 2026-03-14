@@ -5,10 +5,8 @@ from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 from negmas import (
     AgentMechanismInterface,
-    Breach,
     Contract,
     Issue,
-    MechanismState,
     Negotiator,
     ResponseType,
     SAOSyncController,
@@ -20,7 +18,6 @@ from scml.scml2020 import (
     QUANTITY,
     TIME,
     UNIT_PRICE,
-    Failure,
     SCML2020Agent,
     SupplyDrivenProductionStrategy,
     TradingStrategy,
@@ -323,7 +320,7 @@ class MyTradingStrategy(SignAllPossible, TradingStrategy):
             if not possible_contracts:
                 continue
             t = contract.agreement["time"]
-            q = contract.agreement["quantity"]
+            contract.agreement["quantity"]
             if contract.annotation["buyer"] == self.id:
                 if buy_contracts[t]:
                     buy_contracts[t] += [contract]

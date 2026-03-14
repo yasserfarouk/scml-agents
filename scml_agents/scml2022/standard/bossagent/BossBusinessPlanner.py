@@ -1,33 +1,28 @@
+import copy
+import math
+from collections import defaultdict
+from typing import Any, Dict, List, Optional
+
 from negmas import AgentMechanismInterface
 from scml.scml2020.common import QUANTITY, TIME, UNIT_PRICE
 
-import copy
-from collections import defaultdict
-
+from .BossBusinessAnalytics import BossBusinessAnalytics
+from .BossBusinessStrategy import BossBusinessStrategy
+from .BossController import SyncController
 from .BossDispatch import BossDispatch
 from .BossNegoStats import BossNegoStats
-from .BossController import SyncController
-from .BossBusinessStrategy import BossBusinessStrategy
-from .BossBusinessAnalytics import BossBusinessAnalytics
-
-
 from .helper import (
-    format_schedule,
-    calculate_total_keep_amount,
-    calculate_current_keep_amount,
-    seller_closest_available_delivery,
     buyer_closest_available_delivery,
+    calculate_current_keep_amount,
+    calculate_total_keep_amount,
+    format_schedule,
+    get_agent_reject_rate,
+    get_pseudo_buyer_contracts_with_quota,
+    get_pseudo_seller_contracts_with_quota,
     is_balance_available,
     is_schedule_available,
-    get_agent_reject_rate,
-    get_pseudo_seller_contracts_with_quota,
-    get_pseudo_buyer_contracts_with_quota,
+    seller_closest_available_delivery,
 )
-
-
-from typing import List, Dict, Optional, Any
-
-import math
 
 
 class BossBusinessPlanner:
@@ -216,7 +211,7 @@ class BossBusinessPlanner:
                             self.max_buyer_delivery_day,
                         )
 
-                    for (offer_t, offer_q) in formatted_pseudos:
+                    for offer_t, offer_q in formatted_pseudos:
                         if offer_t != -1:  # Check if the contract is keep.
                             buyer_delivery_lower = buyer_closest_available_delivery(
                                 self.formatted_schedule,
@@ -310,7 +305,7 @@ class BossBusinessPlanner:
                             self.max_buyer_delivery_day,
                         )
 
-                    for (offer_t, offer_q) in formatted_pseudos:
+                    for offer_t, offer_q in formatted_pseudos:
                         if offer_t != -1:  # Check if the contract is keep.
                             buyer_delivery_lower = buyer_closest_available_delivery(
                                 self.formatted_schedule,
@@ -400,10 +395,12 @@ class BossBusinessPlanner:
                     and seller_id not in self.bankrupt_agents
                     and agent_reject_rate != -1
                 ):
-                    formatted_pseudos = (
-                        formatted_pseudos
-                    ) = get_pseudo_buyer_contracts_with_quota(
-                        self.formatted_schedule, self.pseudo_buyers, self.nego_quota - 1
+                    formatted_pseudos = formatted_pseudos = (
+                        get_pseudo_buyer_contracts_with_quota(
+                            self.formatted_schedule,
+                            self.pseudo_buyers,
+                            self.nego_quota - 1,
+                        )
                     )
                     for offer_t, offer_q in formatted_pseudos:
                         seller_delivery_upper = seller_closest_available_delivery(

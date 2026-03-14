@@ -442,7 +442,6 @@ class Group2(SyncRandomStdAgent):
         return p + 0.0001 >= self.sell_price(t, mn, mx, today) * self.multiplier * 0.1
 
     def good_price(self, partner_id, today: bool):
-        initial_cash = 15000
         nmi = self.get_nmi(partner_id)
         interface = self.awi
         other_report = AWI.reports_of_agent(interface, partner_id)

@@ -83,7 +83,7 @@ class MyNegotiator2(SAONegotiator):
         index = 0
         self.utility_values_of_offers = {}
         if biggest_utility == 0:
-            a = 0
+            pass
         for outcome in self.ordered_outcomes:
             self.ordered_outcomes[index] = outcome[0] / biggest_utility, outcome[1]
             self.utility_values_of_offers[str(self.ordered_outcomes[index][1])] = (

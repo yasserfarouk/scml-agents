@@ -1,68 +1,34 @@
-import functools
-import math
-import time
-from abc import abstractmethod
 from dataclasses import dataclass
-from pprint import pformat, pprint
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 
-import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
-import seaborn as sns
 from negmas import (
     AgentMechanismInterface,
-    AspirationNegotiator,
-    Breach,
     Contract,
     Issue,
     LinearUtilityFunction,
-    MechanismState,
     Negotiator,
     SAONegotiator,
     UtilityFunction,
 )
-from negmas.helpers import get_class, humanize_time, instantiate
+from negmas.helpers import instantiate
 from negmas.outcomes.base_issue import make_issue
-from negmas.outcomes.issue_ops import enumerate_issues
 from scml.scml2020 import (
-    AWI,
-    DecentralizingAgent,
-    Failure,
-    MovingRangeNegotiationManager,
-    PredictionBasedTradingStrategy,
-    RandomAgent,
     SCML2020Agent,
-    SCML2020World,
-    TradeDrivenProductionStrategy,
 )
-from scml.scml2020.agents import (
-    BuyCheapSellExpensiveAgent,
-    DecentralizingAgent,
-    DoNothingAgent,
-    IndDecentralizingAgent,
-)
-from scml.scml2020.common import ANY_LINE, NO_COMMAND, TIME, is_system_agent
+from scml.scml2020.common import NO_COMMAND, is_system_agent
 from scml.scml2020.components import (
     FixedTradePredictionStrategy,
-    SignAllPossible,
-    TradePredictionStrategy,
 )
 from scml.scml2020.components.negotiation import (
     IndependentNegotiationsManager,
-    NegotiationManager,
-    StepNegotiationManager,
 )
 from scml.scml2020.components.prediction import MeanERPStrategy
 from scml.scml2020.components.production import (
-    DemandDrivenProductionStrategy,
     ProductionStrategy,
-    SupplyDrivenProductionStrategy,
 )
 from scml.scml2020.components.trading import TradingStrategy
-from scml.scml2020.services.controllers import StepController, SyncController
-from scml.utils import anac2020_collusion, anac2020_std
-from tabulate import tabulate
+from scml.scml2020.services.controllers import StepController
 
 __all__ = ["WhAgent"]
 
@@ -132,7 +98,7 @@ class AvoidOverproductionTradingStrategy(
     ) -> None:
         super().on_contracts_finalized(signed, cancelled, rejectors)
         for contract in signed:
-            q, u, t = (
+            q, _u, t = (
                 contract.agreement["quantity"],
                 contract.agreement["unit_price"],
                 contract.agreement["time"],
@@ -162,7 +128,6 @@ class AvoidOverproductionTradingStrategy(
         s = self.awi.current_step
 
         for contract, indx in contracts:
-
             is_seller = contract.annotation["seller"] == self.id
             q, u, t = (
                 contract.agreement["quantity"],
@@ -352,7 +317,7 @@ class AvoidOverproductionTradingStrategy(
     def _format(self, c: Contract):
         super()._format(c)
         return (
-            f"{f'>' if c.annotation['seller'] == self.id else '<'}"
+            f"{'>' if c.annotation['seller'] == self.id else '<'}"
             f"{c.annotation['buyer'] if c.annotation['seller'] == self.id else c.annotation['seller']}: "
             f"{c.agreement['quantity']} of {c.annotation['product']} @ {c.agreement['unit_price']} on {c.agreement['time']}"
         )

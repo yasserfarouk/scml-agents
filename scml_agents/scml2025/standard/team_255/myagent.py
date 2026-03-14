@@ -1,18 +1,18 @@
 from __future__ import annotations
 
+import random
+from collections import Counter
+from itertools import chain, combinations, repeat
+
 # required for typing
 from typing import Any
 
+# required for typing
+from negmas import Contract, Outcome, ResponseType, SAOResponse, SAOState
+from numpy.random import choice
+
 # required for development
 from scml.oneshot.common import *
-
-# required for typing
-from negmas import Contract, Outcome, SAOResponse, SAOState, ResponseType
-
-from itertools import repeat, combinations, chain
-import random
-from collections import Counter
-from numpy.random import choice
 
 from .proactive_agent import ProactiveAgent
 
@@ -34,7 +34,7 @@ class PonponAgent(ProactiveAgent):
         self.max_future_accept = 2
 
     def first_proposals(self) -> dict[str, Outcome | None]:
-        partners = self.negotiators.keys()
+        self.negotiators.keys()
         s = self.awi.current_step
         distribution = self.distribute_todays_needs()
         return {
@@ -107,14 +107,13 @@ class PonponAgent(ProactiveAgent):
         return chain.from_iterable(combinations(s, r) for r in range(len(s) + 1))
 
     def distribute_todays_needs(self, partners=None) -> dict[str, int]:
-        inventory_forecast = self.forecast_inventory(n_steps=3)
+        self.forecast_inventory(n_steps=3)
 
         self.ptoday = 1.0
 
         if partners is None:
             partners = self.negotiators.keys()
         response = dict(zip(partners, repeat(0)))
-        forecast_horizon = 1
         safety_margin = 1
         needs_now = self.awi.needed_supplies
         inventory_now = self.awi.inventory.get(self.awi.my_input_product, 0)
@@ -207,8 +206,8 @@ class PonponAgent(ProactiveAgent):
         if not nmi:
             return False
         issues = nmi.issues
-        minp = issues[UNIT_PRICE].min_value
-        maxp = issues[UNIT_PRICE].max_value
+        issues[UNIT_PRICE].min_value
+        issues[UNIT_PRICE].max_value
         r = state.relative_time
         if offer[TIME] > self.awi.current_step:
             r *= self.future_concession

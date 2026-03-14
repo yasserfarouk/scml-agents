@@ -1,14 +1,9 @@
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List
 
 from negmas import (
     AgentMechanismInterface,
-    AspirationNegotiator,
-    Breach,
     Contract,
-    Issue,
     MechanismState,
-    Negotiator,
-    SAONegotiator,
 )
 
 from .nvm_lib2.nvm_lib2 import NVMLib2
@@ -66,11 +61,10 @@ class AgentPlan:
             current_inventory=current_inventory,
             current_time=current_time,
         )
-        time = 0
         if isinstance(current_time, set):
-            time = current_time.pop()
+            current_time.pop()
         else:
-            time = current_time
+            pass
 
         # print("---------------TIME:" + str(time))
 
@@ -193,7 +187,7 @@ class AgentStatistics:
             self.sell_partner_reject,
             self.sell_both_reject,
         ]
-        report = """
+        """
         ############# {}  STAT INFO #############
         Current Balance = {}  Available Balance = {}    Balance Change = {}
         Input Count = {}   Output Count = {}  Available Output = {}
@@ -201,9 +195,7 @@ class AgentStatistics:
         Sell: Agreed Neg = {}     Rejected Neg = {}
         Buy: Both Reject = {}   Agent Reject = {}   Partner Reject = {}     Both Accept = {}
         Sell: Both Reject = {}   Agent Reject = {}   Partner Reject = {}    Both Accept = {}
-        """.format(
-            *params
-        )
+        """.format(*params)
 
     #        #print(report)
 
@@ -214,7 +206,6 @@ class AgentStatistics:
         mechanism: AgentMechanismInterface,
         state: MechanismState,
     ) -> None:
-
         is_buy = annotation["is_buy"]
         if is_buy:
             self.buy_neg_reject_count += 1

@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import pandas as pd
-from agents import BetterAgent, BondAgent, SimpleAgent
+from agents import BetterAgent, BondAgent
 from scml.oneshot import *
 from scml.scml2020 import *
 from scml.utils import anac2021_oneshot

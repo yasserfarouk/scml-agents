@@ -3,8 +3,6 @@
 *Authors* type-your-team-member-names-with-their-emails here
 """
 
-import math
-
 # required for running the test tournament
 import time
 
@@ -14,36 +12,23 @@ from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 from negmas import (
     AgentMechanismInterface,
-    AspirationNegotiator,
     Contract,
     Issue,
     LinearUtilityFunction,
-    MappingUtilityFunction,
     Negotiator,
-    SAOMetaNegotiatorController,
     SAONegotiator,
     UtilityFunction,
     make_issue,
 )
 from negmas.helpers import humanize_time, instantiate
-from negmas.outcomes.issue_ops import enumerate_issues
 
 # required for development
 from scml.scml2020 import (
-    DemandDrivenProductionStrategy,
     IndependentNegotiationsManager,
     MarketAwareBuyCheapSellExpensiveAgent,
-    MarketAwarePredictionBasedTradingStrategy,
-    MovingRangeNegotiationManager,
     PredictionBasedTradingStrategy,
     ProductionStrategy,
-    ReactiveTradingStrategy,
     SCML2020Agent,
-    StepNegotiationManager,
-    SupplyDrivenProductionStrategy,
-    TradeDrivenProductionStrategy,
-    TradePredictionStrategy,
-    TradingStrategy,
 )
 from scml.scml2020.agents import (
     BuyCheapSellExpensiveAgent,
@@ -51,12 +36,7 @@ from scml.scml2020.agents import (
     MarketAwareDecentralizingAgent,
 )
 from scml.scml2020.common import (
-    ANY_LINE,
     NO_COMMAND,
-    QUANTITY,
-    TIME,
-    UNIT_PRICE,
-    is_system_agent,
 )
 from scml.utils import anac2021_collusion, anac2021_oneshot, anac2021_std
 from tabulate import tabulate

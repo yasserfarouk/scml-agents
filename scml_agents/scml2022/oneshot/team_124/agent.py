@@ -178,7 +178,7 @@ class LearningAdaptiveAgent(AdaptiveAgent):
         response = super().respond(negotiator_id, state)
         nmi = self.get_nmi(negotiator_id)
         if self._is_selling(nmi):
-            if not negotiator_id in self._selling_by_id.keys():
+            if negotiator_id not in self._selling_by_id.keys():
                 self._selling_by_id[negotiator_id] = []
             val1 = max(offer[UNIT_PRICE], max(self._selling, default=0))
             val2 = max(
@@ -187,7 +187,7 @@ class LearningAdaptiveAgent(AdaptiveAgent):
             self._selling_by_id[negotiator_id].append(val2)
             self._selling.append(val1)
         else:
-            if not negotiator_id in self._buying_by_id.keys():
+            if negotiator_id not in self._buying_by_id.keys():
                 self._buying_by_id[negotiator_id] = []
             self._buying_by_id[negotiator_id].append(offer[UNIT_PRICE])
             val1 = min(offer[UNIT_PRICE], min(self._buying, default=float("inf")))

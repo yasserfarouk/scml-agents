@@ -9,20 +9,20 @@ the authors and the ANAC 2024 SCML.
 
 from __future__ import annotations
 
+import random
+from collections import Counter
+from itertools import chain, combinations, repeat
+
 # required for typing
 from typing import Any
 
-# required for development
-from scml.std import StdAWI, StdSyncAgent
+# required for typing
+from negmas import Contract, Outcome, ResponseType, SAOResponse, SAOState
+from numpy.random import choice
 from scml.oneshot.common import *
 
-# required for typing
-from negmas import Contract, Outcome, SAOResponse, SAOState, ResponseType
-
-from itertools import repeat, combinations, chain
-import random
-from collections import Counter
-from numpy.random import choice
+# required for development
+from scml.std import StdAWI, StdSyncAgent
 
 __all__ = ["KATSUDONAgent"]
 
@@ -89,7 +89,7 @@ class KATSUDONAgent(StdSyncAgent):
         )
 
     def first_proposals(self) -> dict[str, Outcome | None]:
-        partners = self.negotiators.keys()
+        self.negotiators.keys()
         s = self.awi.current_step
         distribution = self.distribute_todays_needs()
         return {

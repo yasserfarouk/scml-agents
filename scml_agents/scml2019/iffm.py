@@ -37,6 +37,7 @@ The SCML2019Agent class itself has some helper properties/methods that internall
 
 
 """
+
 import math
 import random
 from typing import Any, Callable, Collection, Dict, List, Optional, Type, Union
@@ -228,11 +229,11 @@ class PrintingFactoryManager(DoNothingFactoryManager):
                         print(job)
 
     def _print_schedule(self, start=None, end=None):
-        if start == None:
+        if start is None:
             _range_start = max(0, self.awi.current_step - 10)
         else:
             _range_start = start
-        if end == None:
+        if end is None:
             _range_end = min(self.awi.n_steps, self.awi.current_step + 10)
         else:
             _range_end = end
@@ -387,7 +388,7 @@ class PrintingFactoryManager(DoNothingFactoryManager):
         #    print(self.awi.state.commands)
         # process_statの修正
         for _command in self.awi.state.commands:
-            if _command.profile == None:
+            if _command.profile is None:
                 continue
             else:
                 _line = _command.profile.line
@@ -727,7 +728,7 @@ class AspirationNego2(negmas.sao.AspirationNegotiator):
         """
         if t is None:
             raise ValueError(
-                f"Aspiration negotiators cannot be used in negotiations with no time or #steps limit!!"
+                "Aspiration negotiators cannot be used in negotiations with no time or #steps limit!!"
             )
         if self.exponent < 1e-7:
             return 0.0
@@ -866,9 +867,7 @@ class NonDemandDrivenAgent(PrintingFactoryManager):
             print("Controll:")
             print(
                 "fail rate: {}, current input: {}, current lambdda: {}, current onuput: {}, mu: {}, target lambda: {},\
-target input: {}, delta input: {}".format(
-                    f, ci, clambda, co, mu, tlambda, ti, di
-                )
+target input: {}, delta input: {}".format(f, ci, clambda, co, mu, tlambda, ti, di)
             )
             print(self.add_i, s * di)
 
@@ -1085,7 +1084,7 @@ target input: {}, delta input: {}".format(
             profit = schedule.final_balance - self.simulator.final_balance
             self.awi.logdebug(
                 f"{self.name} singing contract {contract.id} expecting "
-                f'{-profit if profit < 0 else profit} {"loss" if profit < 0 else "profit"}'
+                f"{-profit if profit < 0 else profit} {'loss' if profit < 0 else 'profit'}"
             )
         else:
             self.awi.logdebug(
@@ -1461,9 +1460,9 @@ class InsuranceFraudFactoryManager(NonDemandDrivenAgent):
             for product_id in self.consuming.keys():
                 product = self.products[product_id]
                 if product.catalog_price is None:
-                    price_range = (0.0, 100.0)
+                    pass
                 else:
-                    price_range = (0.0, 1.5 * product.catalog_price)
+                    (0.0, 1.5 * product.catalog_price)
                 cfp = CFP(
                     is_buy=True,
                     publisher=self.id,
@@ -1476,9 +1475,9 @@ class InsuranceFraudFactoryManager(NonDemandDrivenAgent):
             for product_id in self.producing.keys():
                 product = self.products[product_id]
                 if product.catalog_price is None:
-                    price_range = (0.0, 100.0)
+                    pass
                 else:
-                    price_range = (0.0, 1.5 * product.catalog_price)
+                    (0.0, 1.5 * product.catalog_price)
                 cfp = CFP(
                     is_buy=True,
                     publisher=self.id,
@@ -1659,7 +1658,7 @@ class InsuranceFraudFactoryManager(NonDemandDrivenAgent):
         if cfp.max_quantity == self._collusion_para1:
             # print("respond_collusion to " + partner + " by "+ self.name)
             # neg2 = AspirationNegotiator()
-            ufun_ = PessimisticNegotiatorUtility(
+            PessimisticNegotiatorUtility(
                 self, self._create_annotation(cfp=cfp, partner=partner)
             )
             neg2 = InsuranceFraudNegotiator(agent=self, cfp=cfp)
@@ -1667,7 +1666,7 @@ class InsuranceFraudFactoryManager(NonDemandDrivenAgent):
         elif cfp.max_unit_price in [
             self._collusion_para2 * i for i in [10**i for i in range(4)]
         ]:
-            ufun_ = PessimisticNegotiatorUtility(
+            PessimisticNegotiatorUtility(
                 self, self._create_annotation(cfp=cfp, partner=partner)
             )
             neg2 = InsuranceFraudNegotiator(agent=self, cfp=cfp)

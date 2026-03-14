@@ -1,11 +1,7 @@
-from typing import Iterable, List, Optional, Union
+from typing import Iterable
 
 import numpy as np
-from negmas import Contract
-from numpy.core.fromnumeric import take
 from scml.scml2020 import MarketAwareTradePredictionStrategy
-from scml.scml2020.common import ANY_LINE, is_system_agent
-from sklearn.linear_model import LinearRegression, LogisticRegression
 
 
 class PrintLogger:

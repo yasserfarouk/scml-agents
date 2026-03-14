@@ -19,36 +19,29 @@ last update:2023/4/1/15:45
 This code is free to use or update given that proper attribution is given to
 the authors and the ANAC 2024 SCML.
 """
+
 from __future__ import annotations
-from negmas import SAOResponse, ResponseType, Outcome, SAOState
 
-from scml.oneshot.world import SCML2024OneShotWorld as W
-from scml.oneshot import *
-from scml.runner import WorldRunner
-import pandas as pd
-from rich.jupyter import print
-import time
-
+import random
 
 # required for typing
 from typing import Any
 
-# required for development
-from scml.oneshot import OneShotAWI, OneShotSyncAgent
-
 # required for typing
-from negmas import Contract, Outcome, SAOResponse, SAOState
+from negmas import ResponseType, SAOResponse
+from scml.oneshot import *
 
-import random
+# required for development
+from scml.oneshot import OneShotSyncAgent
 
 
 def message(tmp: Any):
     # 提出前にここをコメントアウトすること!!
-    pass # print(tmp)
+    pass  # print(tmp)
     """
-    
+
     詳細説明
-    
+
     :param int 引数(arg1)の名前: 引数(arg1)の説明
     :param 引数(arg2)の名前: 引数(arg2)の説明
     :type 引数(arg2)の名前: 引数(arg2)の型
@@ -56,6 +49,7 @@ def message(tmp: Any):
     :rtype: 戻り値の型
     :raises 例外の名前: 例外の定義
     """
+
 
 def distribute(q: int, n: int) -> list[int]:
     """何かを分配する関数
@@ -68,8 +62,9 @@ def distribute(q: int, n: int) -> list[int]:
     :return: なんじゃこりゃ
     :rtype: list[int]
     """
-    from numpy.random import choice
     from collections import Counter
+
+    from numpy.random import choice
 
     if q < n:
         lst = [0] * (n - q) + [1] * q
@@ -81,13 +76,15 @@ def distribute(q: int, n: int) -> list[int]:
     r = Counter(choice(n, q - n))
     return [r.get(_, 0) + 1 for _ in range(n)]
 
+
 from itertools import chain, combinations
+
 
 def powerset(iterable):
     """
     powerset([1,2,3]) --> () (1,) (2,) (3,) (1,2) (1,3) (2,3) (1,2,3)
     入力されたiterableから冪集合を求める関数
-    
+
     :param iterable: 冪集合を求めたいiterable
     :return: 冪集合
     :rtype: iterable
@@ -95,17 +92,18 @@ def powerset(iterable):
     s = list(iterable)
     return chain.from_iterable(combinations(s, r) for r in range(len(s) + 1))
 
+
 class YuzuAgent5(OneShotSyncAgent):
-    static_stepcounter=0
+    static_stepcounter = 0
 
     def before_step(self):
-        pass # print("=======current_step:",self.awi.current_step,end = "")
+        pass  # print("=======current_step:",self.awi.current_step,end = "")
         if self.awi.is_first_level:
-            pass # print(" This is first level=======")
+            pass  # print(" This is first level=======")
         else:
-            pass # print(" This is second level=======")
-        pass # print("first needed supplies:",self.awi.needed_supplies,"first needed sales:",self.awi.needed_sales)
-        
+            pass  # print(" This is second level=======")
+        pass  # print("first needed supplies:",self.awi.needed_supplies,"first needed sales:",self.awi.needed_sales)
+
         return super().before_step()
 
     def distribute_needs(self) -> dict[str, int]:
@@ -114,16 +112,24 @@ class YuzuAgent5(OneShotSyncAgent):
         """
 
         dist = dict()
-        for i,(needs, all_partners) in enumerate([
-            (self.awi.needed_supplies, self.awi.my_suppliers), # 自分がsecond levelの時にはこっち
-            (self.awi.needed_sales, self.awi.my_consumers),# 自分がfirst levelの時にはこっちだけが実行される
-        ]):
-            #4つをそれぞれ出力
-            #print("needs",needs,"partners:", all_partners)
+        for i, (needs, all_partners) in enumerate(
+            [
+                (
+                    self.awi.needed_supplies,
+                    self.awi.my_suppliers,
+                ),  # 自分がsecond levelの時にはこっち
+                (
+                    self.awi.needed_sales,
+                    self.awi.my_consumers,
+                ),  # 自分がfirst levelの時にはこっちだけが実行される
+            ]
+        ):
+            # 4つをそれぞれ出力
+            # print("needs",needs,"partners:", all_partners)
             # find suppliers and consumers still negotiating with me
             # (日本語) 自分と交渉中のサプライヤーと消費者を見つける(self.negotiators が自分の取引相手)
             partner_ids = [_ for _ in all_partners if _ in self.negotiators.keys()]
-            
+
             # patrners : 交渉中のパートナーの数
             partners = len(partner_ids)
 
@@ -131,8 +137,8 @@ class YuzuAgent5(OneShotSyncAgent):
             # (日本語) needsがない場合、すべての交渉を終了する
             if needs <= 0:
                 dist.update(dict(zip(partner_ids, [0] * partners)))
-                
-                #print(i,"|",self.awi.is_first_level)
+
+                # print(i,"|",self.awi.is_first_level)
                 continue
 
             # distribute my needs over my (remaining) partners.
@@ -140,15 +146,31 @@ class YuzuAgent5(OneShotSyncAgent):
             # Second levelの時は、ニーズを多く受注し、First levelの時は、ニーズを少なく発注する
             # needsの倍率
             needs_multiplier = 1.5
-            if self.awi.is_last_level:# Second levelの時
-                dist.update(dict(zip(partner_ids, distribute(int(needs*needs_multiplier), partners))))
-            else:# First levelの時
-                dist.update(dict(zip(partner_ids, distribute(int(needs/needs_multiplier), partners))))
-            
-            #print(dist)
+            if self.awi.is_last_level:  # Second levelの時
+                dist.update(
+                    dict(
+                        zip(
+                            partner_ids,
+                            distribute(int(needs * needs_multiplier), partners),
+                        )
+                    )
+                )
+            else:  # First levelの時
+                dist.update(
+                    dict(
+                        zip(
+                            partner_ids,
+                            distribute(int(needs / needs_multiplier), partners),
+                        )
+                    )
+                )
+
+            # print(dist)
         return dist
-    
-    def distribute_needs_to_mynegotiator(self,partner_ids:list[str]) -> dict[str, int]:
+
+    def distribute_needs_to_mynegotiator(
+        self, partner_ids: list[str]
+    ) -> dict[str, int]:
         """
         自分にオファーを出した相手にのみニーズを分配する関数
 
@@ -158,12 +180,20 @@ class YuzuAgent5(OneShotSyncAgent):
         """
 
         dist = dict()
-        for i,(needs, all_partners) in enumerate([
-            (self.awi.needed_supplies, self.awi.my_suppliers), # 自分がsecond levelの時にはこっち
-            (self.awi.needed_sales, self.awi.my_consumers),# 自分がfirst levelの時にはこっちだけが実行される
-        ]):
-            #4つをそれぞれ出力
-            
+        for i, (needs, all_partners) in enumerate(
+            [
+                (
+                    self.awi.needed_supplies,
+                    self.awi.my_suppliers,
+                ),  # 自分がsecond levelの時にはこっち
+                (
+                    self.awi.needed_sales,
+                    self.awi.my_consumers,
+                ),  # 自分がfirst levelの時にはこっちだけが実行される
+            ]
+        ):
+            # 4つをそれぞれ出力
+
             # num_patrners : 交渉中のパートナーの数
             num_partners = len(partner_ids)
             all_partner_ids = [_ for _ in all_partners if _ in self.negotiators.keys()]
@@ -180,19 +210,36 @@ class YuzuAgent5(OneShotSyncAgent):
             # needsの倍率
             needs_multiplier = 1.0
             # 最初に全員に1を分配しておく
-            dist.update(dict(zip(all_partner_ids, distribute(num_all_partners, num_all_partners))))
-            pass # print("initial dist:",dist)
+            dist.update(
+                dict(
+                    zip(all_partner_ids, distribute(num_all_partners, num_all_partners))
+                )
+            )
+            pass  # print("initial dist:",dist)
             # 自分にオファーを出した相手にのみニーズを分配
-            if self.awi.is_last_level:# Second levelの時
-                dist.update(dict(zip(partner_ids, distribute(int(needs*needs_multiplier), num_partners))))
+            if self.awi.is_last_level:  # Second levelの時
+                dist.update(
+                    dict(
+                        zip(
+                            partner_ids,
+                            distribute(int(needs * needs_multiplier), num_partners),
+                        )
+                    )
+                )
                 return dist
-            else:# First levelの時
-                dist.update(dict(zip(partner_ids, distribute(int(needs/needs_multiplier), num_partners))))
+            else:  # First levelの時
+                dist.update(
+                    dict(
+                        zip(
+                            partner_ids,
+                            distribute(int(needs / needs_multiplier), num_partners),
+                        )
+                    )
+                )
                 return dist
-            
+
         # なぜかこれがないとエラーが起こる
         return dist
-            
 
     def first_proposals(self):
         # just randomly distribute my needs over my partners (with best price for me).
@@ -200,17 +247,19 @@ class YuzuAgent5(OneShotSyncAgent):
         current_step, price = self._step_and_price(best_price=False)
         distribution = self.distribute_needs()
         # k: パートナーID
-        d = {k: (quantity, current_step, price) if quantity > 0 else None for k, quantity in distribution.items()}
-        pass # print("my first proposal:",d)
+        d = {
+            k: (quantity, current_step, price) if quantity > 0 else None
+            for k, quantity in distribution.items()
+        }
+        pass  # print("my first proposal:",d)
 
         return d
 
     def counter_all(self, offers, states):
         # offers の中身を全て出力
-        pass # print("offers:",offers)
-        pass # print("needed_supplies:",self.awi.needed_supplies,"needed_sales:",self.awi.needed_sales)
-        
-        
+        pass  # print("offers:",offers)
+        pass  # print("needed_supplies:",self.awi.needed_supplies,"needed_sales:",self.awi.needed_sales)
+
         response = dict()
         # process for sales and supplies independently
         # このfor文は、販売と供給を独立して処理する.実質for文を2回回しているだけ
@@ -228,14 +277,14 @@ class YuzuAgent5(OneShotSyncAgent):
         ]:
             # get a random price
             price = issues[UNIT_PRICE].rand()
-            #print("price:",price)
+            # print("price:",price)
             # find active partners
             partners = {_ for _ in all_partners if _ in offers.keys()}
-            #print("partners",partners)
+            # print("partners",partners)
 
             # 自分にとって最適なオファーの組み合わせを探す
             plist = list(powerset(partners))
-            
+
             best_diff, best_indx = float("inf"), -1
             for i, partner_ids in enumerate(plist):
                 others = partners.difference(partner_ids)
@@ -246,7 +295,7 @@ class YuzuAgent5(OneShotSyncAgent):
                 # ここを変更すれば元に戻る
                 diff = estimated_cost
 
-                pass # print(f"estimated_cost:{estimated_cost:.5f} offers",str([offers[_] for _ in partner_ids]))
+                pass  # print(f"estimated_cost:{estimated_cost:.5f} offers",str([offers[_] for _ in partner_ids]))
                 if diff < best_diff:
                     best_diff, best_indx = diff, i
                 if diff == 0:
@@ -254,15 +303,15 @@ class YuzuAgent5(OneShotSyncAgent):
 
             # If the best combination of offers is good enough, accept them and end all other negotiations
             # (日本語) 最適なオファーの組み合わせが十分に良い場合、それらを受け入れて他のすべての交渉を終了します
-            #print([_.relative_time for _ in states.values()])
-            #print("min:",min([_.relative_time for _ in states.values()]))
+            # print([_.relative_time for _ in states.values()])
+            # print("min:",min([_.relative_time for _ in states.values()]))
             th = self._current_threshold(
                 min([_.relative_time for _ in states.values()])
             )
-            pass # print("th:",th)
+            pass  # print("th:",th)
             if best_diff <= th:
-                #print("disporsal cost:",self.awi.current_disposal_cost,"shortfall penalty:",self.awi.current_shortfall_penalty)
-                #print("the cost({}) is under the threshold({})".format(best_diff,th))
+                # print("disporsal cost:",self.awi.current_disposal_cost,"shortfall penalty:",self.awi.current_shortfall_penalty)
+                # print("the cost({}) is under the threshold({})".format(best_diff,th))
                 partner_ids = plist[best_indx]
                 others = list(partners.difference(partner_ids))
                 response |= {
@@ -274,8 +323,8 @@ class YuzuAgent5(OneShotSyncAgent):
             # If I still do not have a good enough offer, distribute my current needs randomly over my partners.
             # (日本語) まだ十分なオファーがない場合、現在のニーズをランダムにパートナーに分配します。
             distribution = self.distribute_needs_to_mynegotiator(partners)
-            pass # print("distribution:",distribution)
-            
+            pass  # print("distribution:",distribution)
+
             response.update(
                 {
                     k: SAOResponse(ResponseType.END_NEGOTIATION, None)
@@ -286,14 +335,14 @@ class YuzuAgent5(OneShotSyncAgent):
                     for k, q in distribution.items()
                 }
             )
-            pass # print("response:",response)
+            pass  # print("response:",response)
         return response
-    
-    def _calc_estimated_cost(self, offerd:int, needs:int):
+
+    def _calc_estimated_cost(self, offerd: int, needs: int):
         """
         disposal costとimprovement costを考慮してdiffを計算する関数
         （単にabsを計算するだけでなく商品の過剰ペナルティと不足ペナルティを加味する）
-        
+
         :param int offerd: 提案された数量
         :param int needs: 外生契約で必要とされる数量
         :return: diff (本当はestimated_cost_indexとかにした方がいいかも)
@@ -309,29 +358,28 @@ class YuzuAgent5(OneShotSyncAgent):
             # 売る量-買う量
             shortage = needs - offerd
         else:
-            #print("Error: 工場レベルが不明です")
+            # print("Error: 工場レベルが不明です")
             pass
-        
-        #余った時
+
+        # 余った時
         if shortage < 0:
             # 一旦平均のdisposal_costを使う
             disposal_cost = self.awi.current_disposal_cost
 
-            return -disposal_cost*shortage
-        #足りない時
+            return -disposal_cost * shortage
+        # 足りない時
         elif shortage > 0:
             short_fall_penalty = self.awi.current_shortfall_penalty
 
-            return short_fall_penalty*shortage
-        #ピッタリの時
+            return short_fall_penalty * shortage
+        # ピッタリの時
         else:
             return 0
 
-
     def _current_threshold(self, r: float):
-        #mn, mx = 0, self.awi.n_lines // 2
+        # mn, mx = 0, self.awi.n_lines // 2
         mn, mx = 0.5, 2.5
-        #(0, 0.5),(1,3)を通る線(r=1の時直線)
+        # (0, 0.5),(1,3)を通る線(r=1の時直線)
         return mn + (mx - mn) * (r**1)
 
     def _step_and_price(self, best_price=False):
@@ -346,26 +394,36 @@ class YuzuAgent5(OneShotSyncAgent):
         if best_price:
             return s, pmax if seller else pmin
         return s, random.randint(pmin, pmax)
-    
+
     def step(self):
-        pass # print("last needed supplies:",self.awi.needed_supplies,"last needed sales:",self.awi.needed_sales)
+        pass  # print("last needed supplies:",self.awi.needed_supplies,"last needed sales:",self.awi.needed_sales)
         # 実際に支払ったshort fall penalty と disposal costを計算
         # sumsp = sum of shortfall penalty
         # sumdc = sum of disposal cost
-        sumsfp = ( self.awi.current_shortfall_penalty*self.awi.needed_supplies if self.awi.needed_supplies > 0 else 0
-                    - self.awi.current_shortfall_penalty*self.awi.needed_sales if self.awi.needed_sales < 0 else 0)
-        sumdc  = (-self.awi.current_disposal_cost*self.awi.needed_supplies if self.awi.needed_supplies < 0 else 0
-                    + self.awi.current_disposal_cost*self.awi.needed_sales if self.awi.needed_sales > 0 else 0)
+        (
+            self.awi.current_shortfall_penalty * self.awi.needed_supplies
+            if self.awi.needed_supplies > 0
+            else 0 - self.awi.current_shortfall_penalty * self.awi.needed_sales
+            if self.awi.needed_sales < 0
+            else 0
+        )
+        (
+            -self.awi.current_disposal_cost * self.awi.needed_supplies
+            if self.awi.needed_supplies < 0
+            else 0 + self.awi.current_disposal_cost * self.awi.needed_sales
+            if self.awi.needed_sales > 0
+            else 0
+        )
 
         # sumsfpとsumdcをそれぞれ3桁にパディングして表示
-        pass # print(f"🔳shortfall penalty: {sumsfp:3.3f}, disposal cost: {sumdc:3.3f}")
-        
+        pass  # print(f"🔳shortfall penalty: {sumsfp:3.3f}, disposal cost: {sumdc:3.3f}")
+
 
 if __name__ == "__main__":
     import sys
 
     # run をインポート
     from helpers.runner import run
+
     for i in range(30):
         run([YuzuAgent5], sys.argv[1] if len(sys.argv) > 1 else "oneshot")
-    

@@ -3,7 +3,7 @@ import math
 from collections import defaultdict
 from typing import Dict
 
-from negmas import ResponseType, SAOSyncController, UtilityFunction, outcome_is_valid
+from negmas import ResponseType, SAOSyncController, outcome_is_valid
 from negmas.sao import SAOResponse
 from scml.scml2020 import QUANTITY, TIME, UNIT_PRICE
 
@@ -249,9 +249,9 @@ class SyncController(SAOSyncController):
                 self.accepted_seller_list[negotiator_id] = state.current_offer
             # Add to accepted negotiators either way.
             self.accepted_negotiator_ids.append(negotiator_id)
-            self.__parent.reject_acceptance_rate[partner_id][
-                "Acceptance"
-            ] += state.current_offer[QUANTITY]
+            self.__parent.reject_acceptance_rate[partner_id]["Acceptance"] += (
+                state.current_offer[QUANTITY]
+            )
         else:
             self.nego_history[negotiator.nmi.id]["Acceptance"] = {}
             self.ended_negotiator_ids.append(negotiator_id)

@@ -25,18 +25,22 @@ class KanbeAgent(AdaptiveAgent):
         )
         for partner_id in self.partners:
             self._received_offers[partner_id] = []
-        self._bp_mxq_opp_acc_selling, self._bp_mnq_opp_acc_selling = defaultdict(
-            int
-        ), defaultdict(lambda: int(10))
-        self._wp_mxq_opp_acc_selling, self._wp_mnq_opp_acc_selling = defaultdict(
-            int
-        ), defaultdict(lambda: int(10))
-        self._bp_mxq_opp_acc_buying, self._bp_mnq_opp_acc_buying = defaultdict(
-            int
-        ), defaultdict(lambda: int(10))
-        self._wp_mxq_opp_acc_buying, self._wp_mnq_opp_acc_buying = defaultdict(
-            int
-        ), defaultdict(lambda: int(10))
+        self._bp_mxq_opp_acc_selling, self._bp_mnq_opp_acc_selling = (
+            defaultdict(int),
+            defaultdict(lambda: int(10)),
+        )
+        self._wp_mxq_opp_acc_selling, self._wp_mnq_opp_acc_selling = (
+            defaultdict(int),
+            defaultdict(lambda: int(10)),
+        )
+        self._bp_mxq_opp_acc_buying, self._bp_mnq_opp_acc_buying = (
+            defaultdict(int),
+            defaultdict(lambda: int(10)),
+        )
+        self._wp_mxq_opp_acc_buying, self._wp_mnq_opp_acc_buying = (
+            defaultdict(int),
+            defaultdict(lambda: int(10)),
+        )
 
     def before_step(self):
         super().before_step()
@@ -95,7 +99,7 @@ class KanbeAgent(AdaptiveAgent):
             up = int(ami.issues[QUANTITY].max_value / 2)
             quantity = min(my_needs, max(up, opbq))
 
-            if olo == None:
+            if olo is None:
                 self.firstproposer = True
             else:
                 if olo[UNIT_PRICE] == self.best_price:
@@ -124,7 +128,9 @@ class KanbeAgent(AdaptiveAgent):
         if len(self._sent_offers[negotiator_id]) > 1:
             lp = self._sent_offers[negotiator_id][-1]
         else:
-            if self.concession and state.step == self.concession_step:  # 個数はneededの半分
+            if (
+                self.concession and state.step == self.concession_step
+            ):  # 個数はneededの半分
                 if olo is not None:
                     if olo[UNIT_PRICE] == self.best_price:
                         price = self.best_price

@@ -55,7 +55,9 @@ class LearningSyncAgent(OneShotSyncAgent, ABC):
         # self.failure_list = defaultdict(lambda: list())  # 交渉失敗した際の取引データ
         self.success_contracts = []  # 交渉成功した契約のリスト
         self.total_trade_quantity = [0, 0]  # 総取引量（外的契約を含む）
-        self.my_offer_list = defaultdict(lambda: list())  # 相手ごとの自分のOfferのリスト
+        self.my_offer_list = defaultdict(
+            lambda: list()
+        )  # 相手ごとの自分のOfferのリスト
         self.opp_offer_list = defaultdict(lambda: list())  # 相手のOfferのリスト
 
         self.best_opp_util = -float("inf")  # その日の相手のOfferの効用値の最大値
@@ -183,7 +185,6 @@ class LearningSyncAgent(OneShotSyncAgent, ABC):
         """Respond to a set of offers given the negotiation state of each."""
         # 変数
         SECURED_MAGNIFICATION = 1.2
-        CHANGE_TIME = 0.8
 
         n = [_ for _ in states.keys()][0]
         state = [_ for _ in states.values()][0]
@@ -668,7 +669,7 @@ class LearningSyncAgent(OneShotSyncAgent, ABC):
                 label="contract with " + k,
             )
 
-        ax.set_title("agent" "s offers")
+        ax.set_title("agents offers")
         ax.set_xlabel("simulation step")
         ax.set_ylabel("unit price")
         ax.set_ylim(0, 40)

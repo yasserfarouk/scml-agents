@@ -1,19 +1,14 @@
 #!/usr/bin/env python
-from collections import defaultdict
 
-from sklearn.linear_model import LinearRegression
 import numpy as np
-import pandas as pd
+from sklearn.linear_model import LinearRegression
 
 from .other_agents.agent_team86 import AgentOneOneTwo
-from .other_agents.agent_template import LearningAgent
-
 
 QUANTITY = 0
 TIME = 1
 UNIT_PRICE = 2
 
-from negmas import Outcome, ResponseType
 
 __all__ = [
     "EVEAgent",
@@ -42,7 +37,7 @@ class EVEAgent(AgentOneOneTwo):
 
 
 if __name__ == "__main__":
-    from other_agents.agent_template import try_agent, print_type_scores, LearningAgent
+    from other_agents.agent_template import print_type_scores, try_agent
 
     world, ascores, tscores = try_agent(EVEAgent)
     print_type_scores(tscores)

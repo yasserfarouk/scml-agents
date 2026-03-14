@@ -1,29 +1,27 @@
 # exports the name of the training algorithm
+import itertools
+from collections import deque
 from pathlib import Path
+from typing import Iterable, Mapping
 
 import numpy as np
 from gymnasium import spaces
 from negmas.outcomes import Outcome
-from scml.oneshot.rl.observation import FlexibleObservationManager
 from scml.oneshot.awi import OneShotAWI
-from scml.oneshot.context import GeneralContext#, SupplierContext, ConsumerContext
-from .mycontext import MySupplierContext, MyConsumerContext
-from stable_baselines3 import A2C, HerReplayBuffer, PPO
-from stable_baselines3.common.base_class import BaseAlgorithm
-
-from typing import Iterable
-import itertools
+from scml.oneshot.common import QUANTITY, UNIT_PRICE, OneShotState
+from scml.oneshot.context import GeneralContext  # , SupplierContext, ConsumerContext
+from scml.oneshot.rl.common import group_partners
 from scml.oneshot.rl.helpers import (
-    discretize_and_clip,
     # read_offers,
     clip,
+    discretize_and_clip,
     recover_offers,
 )
+from scml.oneshot.rl.observation import FlexibleObservationManager
+from stable_baselines3 import PPO
+from stable_baselines3.common.base_class import BaseAlgorithm
 
-from collections import deque
-from typing import Mapping, TypeVar
-from scml.oneshot.common import QUANTITY, TIME, UNIT_PRICE, OneShotState
-from scml.oneshot.rl.common import group_partners
+from .mycontext import MyConsumerContext, MySupplierContext
 
 TrainingAlgorithm: type[BaseAlgorithm] = PPO
 """The algorithm used for training. You can use any stable_baselines3 algorithm or develop your own"""
@@ -55,8 +53,8 @@ class MyObservationManager(FlexibleObservationManager):
         n = (3 * self.n_partners) * self.n_past_received_offers
         self._previous_offers = deque([0] * n, maxlen=n) if n else deque()
 
-
     """This is my observation manager implementing encoding and decoding the state used by the RL algorithm"""
+
     def get_dims(self) -> list[int]:
         """Get the sizes of all dimensions in the observation space. Used if not continuous."""
         return (
@@ -84,43 +82,48 @@ class MyObservationManager(FlexibleObservationManager):
 
     def make_space(self) -> spaces.MultiDiscrete | spaces.Box:
         """Creates the action space"""
-        dims = self.get_dims() # 観測空間のすべての次元のサイズを取得(継承元で定義されているフィールド値の次元数によって定義される)
+        dims = self.get_dims()  # 観測空間のすべての次元のサイズを取得(継承元で定義されているフィールド値の次元数によって定義される)
         if self._dims is None:
             self._dims = dims
         elif self.extra_checks:
-            assert all(
-                a == b for a, b in zip(dims, self._dims, strict=True)
-            ), f"Surprising dims while making space\n{self._dims=}\n{dims=}"
+            assert all(a == b for a, b in zip(dims, self._dims, strict=True)), (
+                f"Surprising dims while making space\n{self._dims=}\n{dims=}"
+            )
         if self.continuous:
-            return spaces.Box(0.0, 1.0, shape=(len(dims),)) # 連続空間, 各次元が0から1の連続実数値範囲を持つ
-        return spaces.MultiDiscrete(np.asarray(dims)) # 離散空間, 各次元の値域を指定する
+            return spaces.Box(
+                0.0, 1.0, shape=(len(dims),)
+            )  # 連続空間, 各次元が0から1の連続実数値範囲を持つ
+        return spaces.MultiDiscrete(
+            np.asarray(dims)
+        )  # 離散空間, 各次元の値域を指定する
 
     def encode(self, awi: OneShotAWI) -> np.ndarray:
         """Encodes the awi as an array"""
         # print(self.n_suppliers)
         # print(self.n_consumers)
         offers = read_offers(
-            awi, # awiを引数として渡してofferを取得する
+            awi,  # awiを引数として渡してofferを取得する
             self.n_suppliers,
             self.n_consumers,
             self.max_group_size,
             self.continuous,
         )
 
-        current_offers = np.asarray(offers).flatten().tolist() # read_offers関数で得られた現在のofferのリストをフラットに
+        current_offers = (
+            np.asarray(offers).flatten().tolist()
+        )  # read_offers関数で得られた現在のofferのリストをフラットに
         # この段階でもofferはループしていない
-        
 
-        if self.extra_checks: # 整合性チェック
-            assert (
-                len(current_offers) == self.n_partners * 3
-            ), f"{len(current_offers)=} but {self.n_partners=}"
+        if self.extra_checks:  # 整合性チェック
+            assert len(current_offers) == self.n_partners * 3, (
+                f"{len(current_offers)=} but {self.n_partners=}"
+            )
             # assert (
             #     len(self._previous_offers)
             #     == self.n_past_received_offers * self.n_partners * 3
             # ), f"{self._previous_offers=} but {self.n_partners=}"
 
-        extra = self.extra_obs(awi) # 追加の観測情報について取得
+        extra = self.extra_obs(awi)  # 追加の観測情報について取得
         v = np.asarray(
             current_offers
             # + list(self._previous_offers)
@@ -149,25 +152,25 @@ class MyObservationManager(FlexibleObservationManager):
             assert not self.continuous or isinstance(space, spaces.Box)
             assert space is not None and space.shape is not None
             exp = space.shape[0]
-            assert (
-                len(v) == exp
-            ), f"{len(v)=}, {len(extra)=}, {len(offers)=}, {exp=}, {self.n_partners=}\n{awi.current_negotiation_details=}"
+            assert len(v) == exp, (
+                f"{len(v)=}, {len(extra)=}, {len(offers)=}, {exp=}, {self.n_partners=}\n{awi.current_negotiation_details=}"
+            )
             if self._dims is None:
                 self._dims = self.get_dims()
             assert self.continuous or all(
                 a <= b for a, b in zip(v, self._dims, strict=True)
             ), f"Surprising dims\n{v=}\n{self._dims=}"
-            assert not self.continuous or all(
-                [0 <= x <= 1 for x in v]
-            ), f"Surprising dims (continuous)\n{v=}"
+            assert not self.continuous or all([0 <= x <= 1 for x in v]), (
+                f"Surprising dims (continuous)\n{v=}"
+            )
             if isinstance(space, spaces.MultiDiscrete):
                 if not all(0 <= a < b for a, b in zip(v, space.nvec)):
                     print(
-                        f"{v=}\n{space.nvec=}\n{space.nvec - v =}\n{ (awi.current_exogenous_input_quantity , awi.total_supplies , awi.total_sales , awi.current_exogenous_output_quantity) }"
+                        f"{v=}\n{space.nvec=}\n{space.nvec - v =}\n{(awi.current_exogenous_input_quantity, awi.total_supplies, awi.total_sales, awi.current_exogenous_output_quantity)}"
                     )
-                assert all(
-                    0 <= a < b for a, b in zip(v, space.nvec)
-                ), f"{offers=}\n{extra=}\n{v=}\n{space.nvec=}\n{space.nvec - v =}\n{ (awi.current_exogenous_input_quantity , awi.total_supplies , awi.total_sales , awi.current_exogenous_output_quantity) }"  # type: ignore
+                assert all(0 <= a < b for a, b in zip(v, space.nvec)), (
+                    f"{offers=}\n{extra=}\n{v=}\n{space.nvec=}\n{space.nvec - v =}\n{(awi.current_exogenous_input_quantity, awi.total_supplies, awi.total_sales, awi.current_exogenous_output_quantity)}"
+                )  # type: ignore
         # print(v)
         # input()
         return v
@@ -191,7 +194,7 @@ class MyObservationManager(FlexibleObservationManager):
             self.continuous,
             n_prices=self.n_prices,
         )
-    
+
     def extra_obs(self, awi):
         """
         The observation values other than offers and previous offers.
@@ -219,7 +222,7 @@ class MyObservationManager(FlexibleObservationManager):
             (awi.needed_sales / self.max_quantity, self.max_quantity + 1),
             (awi.needed_supplies / self.max_quantity, self.max_quantity + 1),
             awi.level / (awi.n_processes - 1),
-            awi.relative_time, # シミュレーション終了時を1としたときの現在の相対時間
+            awi.relative_time,  # シミュレーション終了時を1としたときの現在の相対時間
             (neg_relative_time, 2 * self.n_bins),
             awi.profile.cost / self.max_production_cost,
             incost / (incost + awi.current_shortfall_penalty),
@@ -233,6 +236,8 @@ class MyObservationManager(FlexibleObservationManager):
             exogenous[-1][0]
             / (self.exogenous_multiplier * awi.production_capacities[-1]),
         ]
+
+
 """
 観測情報
 extra_obs
@@ -254,8 +259,6 @@ encode
 MODEL_PATH.parent.mkdir(parents=True, exist_ok=True)
 
 
-
-
 def read_offers(
     state: OneShotAWI | OneShotState,
     n_suppliers: int,
@@ -271,6 +274,7 @@ def read_offers(
         max_group_size=max_group_size,
         continuous=continuous,
     )
+
 
 def encode_given_offers(
     offers: dict[str, Outcome | None],
@@ -291,7 +295,9 @@ def encode_given_offers(
     min_iprice = state.current_input_outcome_space.issues[UNIT_PRICE].min_value
     max_iprice = state.current_input_outcome_space.issues[UNIT_PRICE].max_value
     max_iquantity = state.current_input_outcome_space.issues[QUANTITY].max_value
-    ioffers = encoder(offers, suppliers, min_iprice, max_iprice, negotiation_details(state))
+    ioffers = encoder(
+        offers, suppliers, min_iprice, max_iprice, negotiation_details(state)
+    )
     if continuous:
         ioffers = normalizer(
             ioffers, min_iprice, max_iprice, 0, max_iquantity, subtract_min_price=False
@@ -299,19 +305,24 @@ def encode_given_offers(
     min_oprice = state.current_output_outcome_space.issues[UNIT_PRICE].min_value
     max_oprice = state.current_output_outcome_space.issues[UNIT_PRICE].max_value
     max_oquantity = state.current_output_outcome_space.issues[QUANTITY].max_value
-    ooffers = encoder(offers, consumers, min_oprice, max_iprice, negotiation_details(state))
+    ooffers = encoder(
+        offers, consumers, min_oprice, max_iprice, negotiation_details(state)
+    )
     if continuous:
         ooffers = normalizer(
             ooffers, min_oprice, max_oprice, 0, max_oquantity, subtract_min_price=False
         )
     return ioffers + ooffers
 
+
 def encode_offers_no_time(
     offers: Mapping[str, Outcome | None],
     partner_groups: list[list[str]],
     min_price: int,
     max_price: int,
-    negotiation_details: tuple[list[str], list[str], list[tuple[int, int]], list[tuple[int, int]]],
+    negotiation_details: tuple[
+        list[str], list[str], list[tuple[int, int]], list[tuple[int, int]]
+    ],
 ) -> list[tuple[int, int, int]]:
     """
     Encodes offers from the given partner groups into `n_partners` tuples of quantity, unit-price, and role values.
@@ -329,7 +340,9 @@ def encode_offers_no_time(
     """
     n_partners = len(partner_groups)
     offer_list: list[tuple[int, int, int]] = [(0, 0, 0) for _ in range(n_partners)]
-    current_proposer, new_offerer_agents, offered_list, offer_list_details = negotiation_details
+    current_proposer, new_offerer_agents, offered_list, offer_list_details = (
+        negotiation_details
+    )
 
     for i, partners in enumerate(partner_groups):
         n_read = 0
@@ -372,6 +385,7 @@ def encode_offers_no_time(
     # この時点では提案はループしていない
     return offer_list
 
+
 def normalize_offers_no_time(
     offers: list[tuple[int, int]],
     min_price: int,
@@ -396,15 +410,14 @@ def normalize_offers_no_time(
         for offer in offers
     ]
 
+
 def negotiation_details(awi: OneShotAWI):
-    
     # awi.current_negotiation_detailsの中身を確認
     for key, value in awi.current_negotiation_details.items():
-        current_proposer = [] # 誰からの提案か
-        new_offerer_agents = [] # 誰に提案したか
+        current_proposer = []  # 誰からの提案か
+        new_offerer_agents = []  # 誰に提案したか
         offered_list = []  # 提案された内容のリストを初期化
-        offer_list = [] # 提案した内容のリストを初期化
-        is_current_proposer_me = False # 自分が提案者か？
+        offer_list = []  # 提案した内容のリストを初期化
         # print(f"Key: {key}, Value: {value}")
 
         # "buy"または"sell"キーの中に交渉の詳細がある場合
@@ -420,33 +433,48 @@ def negotiation_details(awi: OneShotAWI):
                         # SAONMIオブジェクトのcurrent_stateを取得
                         if hasattr(mechanism, "_current_state"):
                             current_state = mechanism._current_state
-                            # print(f"    Current State for {sub_key}:")                              
+                            # print(f"    Current State for {sub_key}:")
                             # print(f"      Running: {current_state.running}")
                             # print(f"      Step: {current_state.step}")
                             # print(f"      Current Offer: {current_state.current_offer}")
-                            
+
                             # if current_state.current_offer is not None:
                             #     offer_list.append((current_state.current_offer[0], current_state.current_offer[2]))
-                            
-                            
+
                             # print(f"      Current Proposer: {current_state.current_proposer}")
-                            
+
                             if current_state.current_proposer is not None:
-                                if str(current_state.current_proposer) is not str(awi.agent): # offerが自分から出ない場合
-                                    current_proposer.append(current_state.current_proposer) # 誰からの提案か
+                                if str(current_state.current_proposer) is not str(
+                                    awi.agent
+                                ):  # offerが自分から出ない場合
+                                    current_proposer.append(
+                                        current_state.current_proposer
+                                    )  # 誰からの提案か
                                     if current_state.current_offer is not None:
-                                        offered_list.append((current_state.current_offer[0], current_state.current_offer[2])) # このoffered_listに追加するのは受け取ったofferのみ
-                                else: # 自分が提案者の場合
-                                    new_offerer_agents.append(current_state.new_offerer_agents[0]) # 誰への提案か
+                                        offered_list.append(
+                                            (
+                                                current_state.current_offer[0],
+                                                current_state.current_offer[2],
+                                            )
+                                        )  # このoffered_listに追加するのは受け取ったofferのみ
+                                else:  # 自分が提案者の場合
+                                    new_offerer_agents.append(
+                                        current_state.new_offerer_agents[0]
+                                    )  # 誰への提案か
                                     if current_state.current_offer is not None:
-                                        offer_list.append((current_state.current_offer[0], current_state.current_offer[2])) # offer_listに追加するのは自分が提案したofferのみ
-                                        
+                                        offer_list.append(
+                                            (
+                                                current_state.current_offer[0],
+                                                current_state.current_offer[2],
+                                            )
+                                        )  # offer_listに追加するのは自分が提案したofferのみ
+
                             # print(f"      New Offers: {current_state.new_offers}")
                             # print(f"      Agreement: {current_state.agreement}")
                             # print(f"      Timed Out: {current_state.timedout}")
                             # print(f"      Broken: {current_state.broken}")
                             # print("-" * 50)
-                        
+
         # print(f"Total Offer Quantity: {total_offer_quantity}") # 交渉中の合計数量(offerもcounterも含む)これが自分のrequireとかけ離れていると損
         # print(f"Total Estimated Price: {total_estimated_price}") # 取引量に価格もかけて、どれくらいの販売益が見込めるか(ただしペナルティは考慮していない)
     return current_proposer, new_offerer_agents, offered_list, offer_list

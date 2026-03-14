@@ -1,10 +1,7 @@
-from typing import Dict
-from typing import List
-from typing import Tuple
+from typing import Dict, List, Tuple
 
 import numpy as np
 from negmas import Contract
-
 from scml.scml2020.common import NO_COMMAND
 
 

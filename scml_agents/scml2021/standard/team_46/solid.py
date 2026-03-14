@@ -54,37 +54,28 @@ On Windows:
 You should see a short tournament running and results reported.
 """
 
-
 # required for development
 # required for running the test tournament
 import time
 
 # required for typing
-from typing import Any, Dict, List, Optional
+from typing import Dict, List, Optional
 
 import numpy as np
 from negmas import (
-    AgentMechanismInterface,
-    Breach,
     Contract,
-    Issue,
     MechanismState,
-    Negotiator,
 )
 from negmas.helpers import humanize_time
 from scml import is_system_agent
-from scml.scml2020 import Failure, SCML2020Agent
+from scml.scml2020 import SCML2020Agent
 from scml.scml2020.agents import (
-    BuyCheapSellExpensiveAgent,
     DecentralizingAgent,
-    DoNothingAgent,
     MarketAwareIndependentNegotiationsAgent,
 )
 from scml.scml2020.common import ANY_LINE
 from scml.scml2020.components.production import (
     DemandDrivenProductionStrategy,
-    ProductionStrategy,
-    SupplyDrivenProductionStrategy,
 )
 from scml.scml2020.components.trading import PredictionBasedTradingStrategy
 from scml.utils import anac2021_collusion, anac2021_oneshot, anac2021_std
@@ -122,7 +113,7 @@ class MyTradingStrategy(PredictionBasedTradingStrategy):
         s = self.awi.current_step
         for contract, indx in contracts:
             is_seller = contract.annotation["seller"] == self.id
-            q, u, t = (
+            q, _u, t = (
                 contract.agreement["quantity"],
                 contract.agreement["unit_price"],
                 contract.agreement["time"],
@@ -173,7 +164,7 @@ from negmas import SAOSyncController
 print(SAOSyncController.__doc__)
 """
 
-from typing import Any, Dict, List, Optional, Tuple
+from typing import List, Optional
 
 from negmas import ResponseType, UtilityFunction, outcome_is_valid
 from negmas.sao import SAOResponse

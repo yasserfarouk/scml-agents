@@ -13,49 +13,28 @@ Agent Information
     1. Ayan Sengupta <a-sengupta@nec.com>
 
 """
-import copy
-import itertools
-from abc import ABC
-from collections import defaultdict, namedtuple
-from typing import Any, Dict, List, Optional, Tuple, Union
 
-import matplotlib.pyplot as plt
+from collections import namedtuple
+from typing import Any, Dict, List, Optional, Union
+
 import numpy as np
 from negmas import (
-    AgentMechanismInterface,
     AspirationNegotiator,
     Contract,
-    Issue,
     LinearUtilityFunction,
-    Negotiator,
     ResponseType,
     SAONegotiator,
-    ToughNegotiator,
 )
 from negmas.common import PreferencesChange, PreferencesChangeType
-from negmas.helpers import get_class, instantiate
+from negmas.helpers import get_class
 from negmas.outcomes.base_issue import make_issue
 from scml.scml2020 import (
-    DecentralizingAgent,
-    DoNothingAgent,
-    NegotiationManager,
-    RandomAgent,
     SCML2020Agent,
-    SCML2020World,
-    Simulation,
 )
 
 # required for development
-from scml.scml2020.agents import (
-    BuyCheapSellExpensiveAgent,
-    DecentralizingAgent,
-    DoNothingAgent,
-)
 from scml.scml2020.components import (
     IndependentNegotiationsManager,
-    NegotiationManager,
-    PredictionBasedTradingStrategy,
-    ReactiveTradingStrategy,
     SignAll,
     SupplyDrivenProductionStrategy,
     TradingStrategy,
@@ -93,9 +72,9 @@ class ToughAspirationNegotiator(AspirationNegotiator):
         if offer is None:
             return ResponseType.REJECT_OFFER
 
-        if self.brother == True and offer[0] == 1 and offer[2] > 1000:
+        if self.brother and offer[0] == 1 and offer[2] > 1000:
             return ResponseType.ACCEPT_OFFER
-        if self.brother == True and offer[2] == 1 and offer[0] == 2:
+        if self.brother and offer[2] == 1 and offer[0] == 2:
             return ResponseType.ACCEPT_OFFER
 
         if self.ufun_max is None or self.ufun_min is None:
@@ -128,7 +107,7 @@ class ToughAspirationNegotiator(AspirationNegotiator):
             + self.ufun_min
         )
 
-        if asp < self.threshold and self.brother == False:
+        if asp < self.threshold and not self.brother:
             asp = self.threshold
         if self.presorted:
             if len(self.ordered_outcomes) < 1:
@@ -181,15 +160,15 @@ class GryffindorIndependentNegotiationsManager(IndependentNegotiationsManager):
             else:
                 return 2
 
-        price_range = (
+        (
             int(self.awi.catalog_prices[self.awi.my_output_product] * 0),
             int(self.awi.catalog_prices[self.awi.my_output_product] * 1.5),
         )
         if exploit_condition() == 1:
-            price_range = (1, int(min(price_max)))
+            (1, int(min(price_max)))
 
         elif exploit_condition() == 2:
-            price_range = (1, int(self.awi.state.balance))
+            (1, int(self.awi.state.balance))
 
         def test_proximity():
             _ = []
@@ -281,7 +260,7 @@ class GryffindorIndependentNegotiationsManager(IndependentNegotiationsManager):
             )
 
             for _ in range(4):
-                if self.did_buy == False:
+                if not self.did_buy:
                     self._start_negotiations(
                         self.awi.my_input_product,
                         False,
@@ -298,7 +277,7 @@ class GryffindorIndependentNegotiationsManager(IndependentNegotiationsManager):
                         (self.awi.current_step + 1, self.awi.n_steps),
                         self.awi.my_suppliers,
                     )
-                if self.did_buy == False:
+                if not self.did_buy:
                     if self.awi.current_step + 2 < self.awi.n_steps - 2:
                         self._start_negotiations(
                             self.awi.my_output_product,
@@ -406,12 +385,12 @@ class GryffindorIndependentNegotiationsManager(IndependentNegotiationsManager):
         for contract in signed:
             if contract.agreement["time"] >= self.awi.current_step:
                 if contract.annotation["buyer"] == self.id:
-                    self.step_wise_inventory[
-                        contract.agreement["time"]
-                    ] += contract.agreement["quantity"]
-                    self.step_wise_buy_inventory[
-                        contract.agreement["time"]
-                    ] += contract.agreement["quantity"]
+                    self.step_wise_inventory[contract.agreement["time"]] += (
+                        contract.agreement["quantity"]
+                    )
+                    self.step_wise_buy_inventory[contract.agreement["time"]] += (
+                        contract.agreement["quantity"]
+                    )
                     self.step_wise_balance[contract.agreement["time"]] -= (
                         contract.agreement["quantity"]
                         * contract.agreement["unit_price"]
@@ -421,12 +400,12 @@ class GryffindorIndependentNegotiationsManager(IndependentNegotiationsManager):
                 else:
                     self.did_buy = False
                 if contract.annotation["seller"] == self.id:
-                    self.step_wise_sell_inventory[
-                        contract.agreement["time"]
-                    ] += contract.agreement["quantity"]
-                    self.step_wise_inventory[
-                        contract.agreement["time"]
-                    ] -= contract.agreement["quantity"]
+                    self.step_wise_sell_inventory[contract.agreement["time"]] += (
+                        contract.agreement["quantity"]
+                    )
+                    self.step_wise_inventory[contract.agreement["time"]] -= (
+                        contract.agreement["quantity"]
+                    )
                     self.step_wise_balance[contract.agreement["time"]] += (
                         contract.agreement["quantity"]
                         * contract.agreement["unit_price"]

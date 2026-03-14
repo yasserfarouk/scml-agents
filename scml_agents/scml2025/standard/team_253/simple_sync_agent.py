@@ -1,6 +1,8 @@
-from .base_agents.simple_agent import SimpleAgent
+from negmas import ResponseType, SAOResponse
 from scml.std.agent import StdSyncAgent
-from negmas import SAOResponse, ResponseType
+
+from .base_agents.simple_agent import SimpleAgent
+
 
 class SimpleSyncAgent(StdSyncAgent, SimpleAgent):
     """An agent that distributes its needs over its partners randomly."""
@@ -44,7 +46,8 @@ class SimpleSyncAgent(StdSyncAgent, SimpleAgent):
 
     def respond(self, negotiator_id, state, source=""):
         return StdSyncAgent.respond(self, negotiator_id, state, source)
-    
+
+
 if __name__ == "__main__":
     import sys
 

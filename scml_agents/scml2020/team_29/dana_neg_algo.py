@@ -1,50 +1,29 @@
-import functools
-import math
 import random
 from collections import defaultdict
 from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union
 
-import numpy as np
 from negmas import (
-    INVALID_UTILITY,
     AgentMechanismInterface,
     AgentWorldInterface,
     AspirationNegotiator,
-    Breach,
-    Contract,
     ControlledNegotiator,
-    Issue,
     LinearUtilityFunction,
-    MappingUtilityFunction,
     MechanismState,
-    Negotiator,
     Outcome,
     PolyAspiration,
     ResponseType,
     SAOController,
     SAONegotiator,
-    SAOResponse,
     SAOState,
-    SAOSyncController,
     UtilityFunction,
     Value,
-    outcome_is_valid,
 )
 from negmas.events import Notification, Notifier
 from negmas.helpers import instantiate
-from scml import SCML2020Agent
 from scml.scml2020 import (
     QUANTITY,
-    TIME,
-    UNIT_PRICE,
-    Failure,
     FinancialReport,
-    PredictionBasedTradingStrategy,
-    SCML2020Agent,
 )
-from scml.scml2020.agents.decentralizing import _NegotiationCallbacks
-from scml.scml2020.components.negotiation import ControllerInfo
-from scml.scml2020.services import StepController, SyncController
 
 """
 improvements:
@@ -344,7 +323,7 @@ class DanasController(UpdateUfunc, SAOController, Notifier):
                 self.completed[neg.id] = False
                 self.awi.loginfo(
                     f"{str(self)} negotiating with {partner} on u={self.urange}"
-                    f", q=(1,{self.target-self.secured}), u=({tmin}, {tmax})"
+                    f", q=(1,{self.target - self.secured}), u=({tmin}, {tmax})"
                 )
                 self.awi.request_negotiation(
                     not self.is_seller,

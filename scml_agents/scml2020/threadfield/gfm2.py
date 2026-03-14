@@ -40,7 +40,6 @@ import math
 # required for running the test tournament
 import time
 from itertools import chain, combinations
-from random import randint, sample
 
 # required for typing
 from typing import Any, Dict, List, Optional, Tuple, Type
@@ -60,7 +59,6 @@ from negmas import (
     Value,
 )
 from negmas.helpers import humanize_time
-from negmas.outcomes.issue_ops import enumerate_issues
 from scml.scml2020 import AWI, Failure, SCML2020Agent
 
 # required for development
@@ -373,9 +371,7 @@ class GFM2(SCML2020Agent):
             self.awi.n_lines * self.awi.n_steps
         )
         # 製品余剰
-        s_nml = gauss(
-            sum(est_stock_cap), mu=2 * self.awi.n_lines, sigma=self.awi.n_lines
-        )
+        gauss(sum(est_stock_cap), mu=2 * self.awi.n_lines, sigma=self.awi.n_lines)
         # 利益
         p_nml = 1 / (
             1

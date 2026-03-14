@@ -10,21 +10,21 @@ the authors and the ANAC 2024 SCML.
 
 from __future__ import annotations
 
+from collections import Counter
+from itertools import chain, combinations
+
 # required for typing
 from typing import Any
 
-# required for development
-from scml.oneshot import OneShotAWI, OneShotSyncAgent
-
 # required for typing
 from negmas import Contract, Outcome, SAOResponse, SAOState
-
-from scml.scml2020.common import QUANTITY, UNIT_PRICE
+from negmas.gb.common import ResponseType
 from numpy import random
 from numpy.random import choice
-from collections import Counter
-from itertools import chain, combinations
-from negmas.gb.common import ResponseType
+
+# required for development
+from scml.oneshot import OneShotAWI, OneShotSyncAgent
+from scml.scml2020.common import QUANTITY, UNIT_PRICE
 
 
 def powerset(iterable):

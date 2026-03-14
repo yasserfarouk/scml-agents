@@ -103,8 +103,7 @@ class NegoAgent(AdaptiveAgent):
             return ResponseType.REJECT_OFFER
         if self._donothing:
             return None
-        step = state.step
-        ami = self.get_nmi(negotiator_id)
+        self.get_nmi(negotiator_id)
         self.cleanup(negotiator_id, offer)
 
         if self.needed <= 0:
@@ -199,8 +198,7 @@ class NegoAgent(AdaptiveAgent):
             offer = super().propose(negotiator_id, state)
         else:
             self.wait_count[negotiator_id] = 0
-            step = state.step
-            ami = self.get_nmi(negotiator_id)
+            self.get_nmi(negotiator_id)
             offer = None
             try:
                 if self.queue_offers[negotiator_id] == "First":

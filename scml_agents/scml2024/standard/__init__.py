@@ -7,7 +7,6 @@ from .team_miyajima_std import *
 from .team_penguin import *
 from .teamyuzuru import *
 
-
 __all__ = (
     coyoteteam.__all__
     + team_178.__all__

@@ -1,17 +1,10 @@
 # required for typing
-from pprint import pformat, pprint
 from typing import List, Optional
 
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-import seaborn as sns
 from negmas import *
 from negmas import Contract
 from scml.scml2020 import *
 from scml.scml2020.common import ANY_LINE, is_system_agent
-from scml.scml2020.components import FixedTradePredictionStrategy, SignAllPossible
-from scml.scml2020.components.prediction import MeanERPStrategy
 
 # my need
 from scml.scml2020.components.trading import *
@@ -19,7 +12,9 @@ from scml.scml2020.components.trading import *
 from .prediction import MyERPredictor, MyTradePredictor
 
 
-class MyTrader(MyTradePredictor, MyERPredictor, TradingStrategy):  # MyERPredictorいる？？？
+class MyTrader(
+    MyTradePredictor, MyERPredictor, TradingStrategy
+):  # MyERPredictorいる？？？
     """super().on_contracts_finalizedとか，二重で処理しちゃいそうだから以下のクラスを直接オーバライドはしない
     TradingStrategy
     ReactiveTradingStrategy
@@ -54,7 +49,7 @@ class MyTrader(MyTradePredictor, MyERPredictor, TradingStrategy):  # MyERPredict
             if contract.annotation["caller"] == self.id:
                 continue
             is_seller = contract.annotation["seller"] == self.id
-            q, u, t = (
+            q, _u, t = (
                 contract.agreement["quantity"],
                 contract.agreement["unit_price"],
                 contract.agreement["time"],
@@ -85,7 +80,9 @@ class MyTrader(MyTradePredictor, MyERPredictor, TradingStrategy):  # MyERPredict
                     # print(lines)
                     # print(len(steps))
                     # print(consumed)
-                    q = min(len(steps) - consumed, q)  # 比較するまでもなくlen(steps)<=qでは？
+                    q = min(
+                        len(steps) - consumed, q
+                    )  # 比較するまでもなくlen(steps)<=qでは？
                     consumed += q  # consumed=len(steps)になる
                     # print(q)
                     # print(consumed)  # consumedがどういう働きしてるかよくわからん
@@ -126,7 +123,7 @@ class MyTrader(MyTradePredictor, MyERPredictor, TradingStrategy):  # MyERPredict
         s = self.awi.current_step
         for contract, indx in contracts:
             is_seller = contract.annotation["seller"] == self.id
-            q, u, t = (
+            q, _u, t = (
                 contract.agreement["quantity"],
                 contract.agreement["unit_price"],
                 contract.agreement["time"],
@@ -171,7 +168,7 @@ class MyTrader(MyTradePredictor, MyERPredictor, TradingStrategy):  # MyERPredict
 
     def _format(self, c: Contract):
         return (
-            f"{f'>' if c.annotation['seller'] == self.id else '<'}"
+            f"{'>' if c.annotation['seller'] == self.id else '<'}"
             f"{c.annotation['buyer'] if c.annotation['seller'] == self.id else c.annotation['seller']}: "
             f"{c.agreement['quantity']} of {c.annotation['product']} @ {c.agreement['unit_price']} on {c.agreement['time']}"
         )

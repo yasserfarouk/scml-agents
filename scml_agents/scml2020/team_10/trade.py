@@ -134,7 +134,7 @@ class MyPredictionBasedTradingStrategy(
         input_model_path=TRADE_INPUT_PATH,
         output_model_path=TRADE_OUTPUT_PATH,
         *args,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.input_model = load_trade_model(path=input_model_path)

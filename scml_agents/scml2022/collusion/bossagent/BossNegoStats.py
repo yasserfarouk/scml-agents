@@ -1,8 +1,4 @@
 import copy
-import json
-from collections import defaultdict
-
-import pandas as pd
 
 
 class BossNegoStats:
@@ -51,13 +47,13 @@ class BossNegoStats:
         # print("Buyer Nego bid history: ", self.negotiation_bid_history['buyer'][step])
         # print("Seller nego bid history: ", self.negotiation_bid_history['seller'][step])
         if agentID in self.__parent.my_consumers:
-            self.negotiation_bid_history["buyer"][step][agentID][
-                mechanism_id
-            ] = copy.deepcopy(negotiation_history)
+            self.negotiation_bid_history["buyer"][step][agentID][mechanism_id] = (
+                copy.deepcopy(negotiation_history)
+            )
         else:
-            self.negotiation_bid_history["seller"][step][agentID][
-                mechanism_id
-            ] = copy.deepcopy(negotiation_history)
+            self.negotiation_bid_history["seller"][step][agentID][mechanism_id] = (
+                copy.deepcopy(negotiation_history)
+            )
 
     def set_negotiation_bid_sign(
         self, step, agentID, mechanism_id, agent_sign, opponent_sign
@@ -149,7 +145,7 @@ class BossNegoStats:
     # ============================================
 
     def save_dict(self, dict_to_save, file_name):
-        default_dict = self.default_to_regular(dict_to_save)
+        self.default_to_regular(dict_to_save)
         # Save dict as json.
         # json_file_path = self.__parent.agent_log_folder_name + '/' + file_name + '.json'
         # with open(json_file_path, 'w') as f:

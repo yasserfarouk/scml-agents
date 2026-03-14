@@ -154,7 +154,6 @@ class NegModel(nn.Module, autograd.Function):
         self.eval()
         running_loss = 0.0
         for input, tag in validation_data:
-
             tag_scores = self(input)
             tag = tag.view(-1, NEG_OUTPUT_DIM)
 

@@ -1,55 +1,20 @@
-from typing import Any, Dict, List, Optional, Iterable, Union, Tuple
+from typing import Iterable, List, Optional
 
 import numpy as np
 from negmas import (
-    AgentMechanismInterface,
-    Breach,
     Contract,
-    Issue,
-    MechanismState,
-    Negotiator,
-    SAONegotiator,
-    AspirationNegotiator,
-    make_issue,
-    NegotiatorMechanismInterface,
-    UtilityFunction,
-    LinearUtilityFunction,
 )
-from negmas.helpers import humanize_time, get_class, instantiate
-from scml.scml2020 import Failure
+from scml.scml2020 import (
+    TradePredictionStrategy,
+    TradingStrategy,
+)
+from scml.scml2020.common import ANY_LINE, is_system_agent
+from scml.scml2020.components.prediction import (
+    MeanERPStrategy,
+)
 
 # required for development
 # required for running the test tournament
-import time
-from tabulate import tabulate
-from scml.utils import anac2022_collusion, anac2022_std, anac2022_oneshot
-from scml.scml2020 import (
-    SCML2020Agent,
-    ProductionStrategy,
-    SupplyDrivenProductionStrategy,
-    DemandDrivenProductionStrategy,
-    TradeDrivenProductionStrategy,
-    ReactiveTradingStrategy,
-    PredictionBasedTradingStrategy,
-    TradingStrategy,
-    StepNegotiationManager,
-    IndependentNegotiationsManager,
-    MovingRangeNegotiationManager,
-    TradePredictionStrategy,
-    AWI,
-)
-from scml.scml2020.agents import (
-    BuyCheapSellExpensiveAgent,
-    DecentralizingAgent,
-    DoNothingAgent,
-)
-from scml.scml2020.common import ANY_LINE, is_system_agent, NO_COMMAND, FinancialReport
-from scml.scml2020.components import SignAllPossible
-from scml.scml2020.components.prediction import FixedTradePredictionStrategy
-from scml.scml2020.components.prediction import MarketAwareTradePredictionStrategy
-from scml.scml2020.components.prediction import MeanERPStrategy
-from abc import abstractmethod
-from pprint import pformat
 
 
 class MyTradePredictionStrategy(TradePredictionStrategy):
@@ -311,7 +276,7 @@ class MyTradingStrategy(
 
     def _format(self, c: Contract):
         return (
-            f"{f'>' if c.annotation['seller'] == self.id else '<'}"
+            f"{'>' if c.annotation['seller'] == self.id else '<'}"
             f"{c.annotation['buyer'] if c.annotation['seller'] == self.id else c.annotation['seller']}: "
             f"{c.agreement['quantity']} of {c.annotation['product']} @ {c.agreement['unit_price']} on {c.agreement['time']}"
         )

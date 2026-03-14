@@ -1,11 +1,8 @@
-from typing import List
-from typing import Optional
+from typing import List, Optional
 
 import numpy as np
 from negmas import Contract
-
-from scml.scml2020.common import ANY_LINE
-from scml.scml2020.common import is_system_agent
+from scml.scml2020.common import ANY_LINE, is_system_agent
 
 # from sky_prediction import SkyPredictionStrategy
 from .sky_prediction import SkyPredictionStrategy
@@ -352,7 +349,7 @@ class SkyTradingStrategy(SkyPredictionStrategy, TradingStrategy):
 
     def _format(self, c: Contract):
         return (
-            f"{f'>' if c.annotation['seller'] == self.id else '<'}"
+            f"{'>' if c.annotation['seller'] == self.id else '<'}"
             f"{c.annotation['buyer'] if c.annotation['seller'] == self.id else c.annotation['seller']}: "
             f"{c.agreement['quantity']} of {c.annotation['product']} @ {c.agreement['unit_price']} on {c.agreement['time']}"
         )

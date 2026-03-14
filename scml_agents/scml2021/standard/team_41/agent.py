@@ -197,7 +197,7 @@ def show_agent_scores(world):
 # show_agent_scores(world)  ##########5##########
 
 
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 from negmas import ResponseType, UtilityFunction, outcome_is_valid
 from negmas.sao import SAOResponse, SAOSyncController
@@ -507,8 +507,6 @@ if __name__ == "__main__":
     # plt.show()
     show_agent_scores(world)
 
-from scml.scml2020 import is_system_agent
-
 
 def analyze_unit_price(world, agent_type):
     """Returns the average price relative to the negotiation issues"""
@@ -679,7 +677,6 @@ from scml.scml2020.components import MarketAwareTradePredictionStrategy
 
 class MyPredictor(MarketAwareTradePredictionStrategy):
     def trade_prediction_init(self):
-        inp = self.awi.my_input_product
         self.expected_outputs = self.awi.n_lines * np.ones(self.awi.n_steps, dtype=int)
         self.expected_inputs = self.awi.n_lines * np.ones(self.awi.n_steps, dtype=int)
 
@@ -762,9 +759,8 @@ class FromScratchAgent(SCML2020Agent):
         cancelled: List["Contract"],
         rejectors: List[List[str]],
     ) -> None:
-        awi: AWI = self.awi
         for contract in signed:
-            t, p, q = (
+            _t, p, q = (
                 contract.agreement["time"],
                 contract.agreement["unit_price"],
                 contract.agreement["quantity"],
@@ -811,7 +807,7 @@ class ProactiveFromScratch(FromScratchAgent):
         super().on_contracts_finalized(signed, cancelled, rejectors)
         awi: AWI = self.awi
         for contract in signed:
-            t, p, q = (
+            t, _p, q = (
                 contract.agreement["time"],
                 contract.agreement["unit_price"],
                 contract.agreement["quantity"],
@@ -849,7 +845,6 @@ if __name__ == "__main__":
     world.run_with_progress()
     show_agent_scores(world)
 
-    import seaborn as sns
     from scml.utils import anac2021_std
 
     tournament_types = [

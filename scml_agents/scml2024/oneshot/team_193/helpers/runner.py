@@ -1,18 +1,14 @@
 import time
 
-from negmas.helpers import humanize_time
-from rich import print
 from scml.oneshot.agents import (
+    GreedySyncAgent,
     RandomOneShotAgent,
     SyncRandomOneShotAgent,
-    SingleAgreementAspirationAgent,
-    GreedySyncAgent,
-    RandDistOneShotAgent,
 )
 from scml.std.agents import SyncRandomStdAgent
-from scml_agents import get_agents
 from scml.utils import anac2024_oneshot, anac2024_std
-from tabulate import tabulate
+
+from scml_agents import get_agents
 
 
 def run(
@@ -48,7 +44,7 @@ def run(
         get_agents(y, track="oneshot", winners_only=True, as_class=False)[0]
         for y in (2021, 2022, 2023)
     ]
-    pass # print(winners)
+    pass  # print(winners)
     if competition == "oneshot":
         competitors = (
             list(competitors) + [SyncRandomOneShotAgent, GreedySyncAgent] + winners[1:3]
@@ -57,7 +53,7 @@ def run(
     else:
         competitors = list(competitors) + [SyncRandomStdAgent, RandomOneShotAgent]
 
-    start = time.perf_counter()
+    time.perf_counter()
     if competition == "std":
         runner = anac2024_std
     else:
@@ -71,12 +67,10 @@ def run(
     # just make names shorter
     results.total_scores.agent_type = results.total_scores.agent_type.str.split(  # type: ignore
         "."
-    ).str[
-        -1
-    ]
+    ).str[-1]
     # display results
-    pass # print(tabulate(results.total_scores, headers="keys", tablefmt="psql"))  # type: ignore
-    pass # print(f"Finished in {humanize_time(time.perf_counter() - start)}")
+    pass  # print(tabulate(results.total_scores, headers="keys", tablefmt="psql"))  # type: ignore
+    pass  # print(f"Finished in {humanize_time(time.perf_counter() - start)}")
 
 
 if __name__ == "__main__":

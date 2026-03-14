@@ -22,8 +22,7 @@ class SyncObserveManager:
         return "S-OM"
 
     @property
-    def state_dim(self) -> int:
-        ...
+    def state_dim(self) -> int: ...
 
     @abstractmethod
     def encode(
@@ -32,12 +31,10 @@ class SyncObserveManager:
         states: Dict[str, SAOState],
         needs: int,
         nmi: SAONMI,
-    ) -> torch.Tensor:
-        ...
+    ) -> torch.Tensor: ...
 
     @abstractmethod
-    def decode(self, state: torch.Tensor, opp_ids: List[str]) -> Dict[str, tuple]:
-        ...
+    def decode(self, state: torch.Tensor, opp_ids: List[str]) -> Dict[str, tuple]: ...
 
 
 class SyncBoxOM(SyncObserveManager):
@@ -169,8 +166,7 @@ class IndObserveManager:
         return "I-OM"
 
     @property
-    def state_dim(self) -> int:
-        ...
+    def state_dim(self) -> int: ...
 
     @abstractmethod
     def encode(
@@ -179,15 +175,13 @@ class IndObserveManager:
         state: MechanismState,
         needs: int,
         nmi: SAONMI,
-    ) -> torch.Tensor:
-        ...
+    ) -> torch.Tensor: ...
 
     @abstractmethod
     def decode(
         self,
         state: torch.Tensor,
-    ) -> tuple:
-        ...
+    ) -> tuple: ...
 
 
 class IndBoxOM(IndObserveManager):

@@ -1,9 +1,7 @@
 # %% Standard imports
 from matplotlib import pyplot as plt
-
-
-from scml.std import *
 from scml.runner import WorldRunner
+from scml.std import *
 
 from .litaagent_std.litaagent_cir import LitaAgentCIR
 from .litaagent_std.litaagent_p import LitaAgentP

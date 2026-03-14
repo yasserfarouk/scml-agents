@@ -1,7 +1,8 @@
-import pandas as pd
-import matplotlib.pyplot as plt
-import importlib
 import argparse
+import importlib
+
+import matplotlib.pyplot as plt
+import pandas as pd
 
 # Import SCML standard world (2025 or fallback to 2024)
 try:
@@ -12,9 +13,10 @@ except ImportError:
 # Import agent classes
 # from scml_agents.scml2024 import PenguinAgent # PenguinAgent cannot be used due to version
 from scml.oneshot.agents import GreedyOneShotAgent
-from scml.std.agents import RandomStdAgent, SyncRandomStdAgent, GreedyStdAgent
-from .litaagent_std.litaagent_y import LitaAgentY
+from scml.std.agents import GreedyStdAgent, RandomStdAgent, SyncRandomStdAgent
+
 from .litaagent_std.litaagent_n import LitaAgentN
+from .litaagent_std.litaagent_y import LitaAgentY
 
 # Available agent mapping
 AVAILABLE_AGENTS = {

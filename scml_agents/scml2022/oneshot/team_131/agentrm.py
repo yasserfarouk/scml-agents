@@ -79,7 +79,7 @@ class AgentRM(OneShotAgent):
         return super().on_negotiation_end(negotiator_id, state)
 
     def propose(self, negotiator_id: str, state) -> "Outcome":
-        if self.first_proposer == None:
+        if self.first_proposer is None:
             self.first_proposer = True
 
         ami = self.get_nmi(negotiator_id)
@@ -113,7 +113,7 @@ class AgentRM(OneShotAgent):
         offer = state.current_offer
         if not offer:
             return ResponseType.REJECT_OFFER
-        if self.first_proposer == None:
+        if self.first_proposer is None:
             self.first_proposer = False
 
         self.your_needs[negotiator_id] = offer[QUANTITY]
@@ -148,7 +148,7 @@ class AgentRM(OneShotAgent):
                 )
 
         # 自分の応答でその日の交渉が全て終了の場合の特別な処理
-        if state.step == ami.n_steps - 1 and self.first_proposer == False:
+        if state.step == ami.n_steps - 1 and not self.first_proposer:
             if self.n_consumers - self.n_end_negotiators == 1:
                 if self._is_selling(ami):
                     if offer[QUANTITY] > my_needs:
@@ -277,7 +277,7 @@ class AgentRM(OneShotAgent):
             return 0
         # 後から提案したエージェントの提案は，相手がアクセプトしたか否かで量を調整できないので，頑固めにする
         if self._is_selling(ami):
-            if self.first_proposer == False:
+            if not self.first_proposer:
                 mx = ami.issues[UNIT_PRICE].max_value
                 mn = (
                     self.awi.current_exogenous_input_price
@@ -357,7 +357,7 @@ class AgentRM(OneShotAgent):
         return mn, mx
 
     def _th(self, step, n_steps, e=None):
-        if e == None:
+        if e is None:
             e = self._e
         if n_steps <= 1:
             return 1

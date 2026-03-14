@@ -1,14 +1,11 @@
 # Elisha Gerson
 # 328612304
 
-import sys
 
 import matplotlib.pyplot as plt
 import numpy as np
 from scml.scml2020 import (
     DecentralizingAgent,
-    MovingRangeNegotiationManager,
-    RandomAgent,
     SCML2020Agent,
     SCML2020World,
 )
@@ -22,7 +19,7 @@ from scml.scml2020.components.trading import PredictionBasedTradingStrategy
 
 # from new_neg import StepBuyBestSellNegManager, _NegotiationCallbacks
 from .mixed_neg import StepBuyBestSellNegManager, _NegotiationCallbacks
-from .nego_strategy import MyNegotiationManager, SyncController
+from .nego_strategy import MyNegotiationManager
 
 # class for production strategy that will integrate the best of supply and best of demand driven production strategies
 # one strategy, Production has cost so over production may not be a good idea. On the other hand, the inventory is
@@ -186,7 +183,7 @@ if __name__ == "__main__":
             n_processes=3,
             n_agents_per_process=2,
         ),
-        construct_graphs=True
+        construct_graphs=True,
     )
     world.run_with_progress()
     world.draw(steps=(0, world.n_steps), together=False, ncols=2, figsize=(20, 20))

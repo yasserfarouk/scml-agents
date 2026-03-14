@@ -390,7 +390,7 @@ class NVMFactoryManager(DoNothingFactoryManager):
         """Will be called whenever a failure happens in one of the agent's factory's production lines"""
         if self.verbose:
             print(
-                f'A failure on production occur at {self.awi.current_step}!!! = {[str(fail)  + "**" for fail in failures]}'
+                f"A failure on production occur at {self.awi.current_step}!!! = {[str(fail) + '**' for fail in failures]}"
             )
 
     # ================================
@@ -413,7 +413,7 @@ class NVMFactoryManager(DoNothingFactoryManager):
             neg_ufun = self.output_negotiator_ufun
         else:
             if self.verbose:
-                print(f"--- WARNING!!! WARNING!!! Rejecting a negotiation --- ")
+                print("--- WARNING!!! WARNING!!! Rejecting a negotiation --- ")
             return None
         return AspirationNegotiator(
             ufun=neg_ufun, aspiration_type=self.agent_aspiration_type

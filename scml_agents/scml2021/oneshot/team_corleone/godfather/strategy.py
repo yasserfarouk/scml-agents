@@ -3,7 +3,6 @@ import random
 from typing import Callable, List
 
 import numpy as np
-from negmas import SAOResponse
 
 from .bilat_ufun import BilatUFun, BilatUFunAvg
 from .nash_calc_godfather import NashCalcGodfather
@@ -271,7 +270,7 @@ class StrategyProphetAspiration(StrategyParetoAspiration):
             return self.ufun_inverse(target_util)
 
     def acceptance(self, histories, ufuns, standing_util):
-        t = histories[-1].est_frac_complete()
+        histories[-1].est_frac_complete()
         curr_step = len(histories[-1].opp_offers())
         selected_indices = [-1]
 

@@ -10,16 +10,15 @@ the authors and the ANAC 2024 SCML.
 
 from __future__ import annotations
 
-# required for typing
+import random
 
+# required for typing
+from negmas import Contract, ResponseType, SAOResponse
+
+# required for typing
 # required for development
 from scml.oneshot import *
 from scml.std import *
-
-# required for typing
-from negmas import Contract, SAOResponse, ResponseType
-
-import random
 
 __all__ = ["CautiousOneShotAgent"]
 
@@ -856,12 +855,12 @@ class CautiousOneShotAgent(OneShotSyncAgent):
             # find the set of partners that gave me the best offer set
             # (i.e. total quantity nearest to my needs)
             plist = list(powerset(partners))[::-1]
-            plus_best_diff, plus_best_expected_diff, plus_best_indx = (
+            plus_best_diff, _plus_best_expected_diff, plus_best_indx = (
                 float("inf"),
                 float("inf"),
                 -1,
             )
-            minus_best_diff, minus_best_expected_diff, minus_best_indx = (
+            minus_best_diff, _minus_best_expected_diff, minus_best_indx = (
                 -float("inf"),
                 -float("inf"),
                 -1,
@@ -1116,8 +1115,8 @@ class CautiousOneShotAgent(OneShotSyncAgent):
 if __name__ == "__main__":
     import sys
 
+    from helpers.agents import AgentVSCforOneShot, KanbeAgent, QuantityOrientedAgent
     from helpers.runner import run
-    from helpers.agents import QuantityOrientedAgent, KanbeAgent, AgentVSCforOneShot
 
     competitors = [
         CautiousOneShotAgent,

@@ -1,7 +1,7 @@
 import json
 import os
 import time
-from typing import List, Optional, Tuple
+from typing import Optional
 
 import pandas as pd
 
@@ -267,7 +267,7 @@ class NVMLib:
                 optimal_sol = row
                 if verbose:
                     print(
-                        f"\tit took "
+                        "\tit took "
                         + format(time.time() - t0, ".4f")
                         + f" seconds to find a better solution: {NVMLib.pandas_tuple_to_nvm_plan(optimal_sol, T)}, "
                         f" revenue = " + format(optimal_sol_revenue, ".4f")
@@ -312,7 +312,7 @@ class NVMLib:
         end = current_time + self.mpnvp_number_of_periods
         if end >= self.game_length:
             if verbose:
-                print(f"Time past the end of game, returning None")
+                print("Time past the end of game, returning None")
             return None
 
         # Unlike prices, we assume that for quantities we have a distribution for all possible values within our domain and we check this in the constructor.

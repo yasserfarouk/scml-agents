@@ -3,13 +3,14 @@ from scml.oneshot.common import QUANTITY, TIME, UNIT_PRICE
 from .agent_utils import AgentUtils as au
 from .utility_evaluator import UtilityEvaluator
 
+
 class OfferGenerator:
     def __init__(self, awi, distribution, ue: UtilityEvaluator):
         self.awi = awi
         self.todays_distribution = distribution
         self.ue = ue
         self.nmis = {}
-    
+
     def set_nmis(self, nmis):
         self.nmis = nmis
 
@@ -45,13 +46,13 @@ class OfferGenerator:
             if score > best_score:
                 best_score = score
                 best_price = p
-        
-        if au.is_buyer(self.awi, partner_id) == True:
+
+        if au.is_buyer(self.awi, partner_id):
             catalog_price = self.awi.catalog_prices[self.awi.level + 1]
-        elif au.is_seller(self.awi, partner_id) == True:
+        elif au.is_seller(self.awi, partner_id):
             catalog_price = self.awi.catalog_prices[self.awi.level]
         return int((best_price + catalog_price) / 2)
-    
+
     def generate_base_offer(self, partner_id: str, threshold: float) -> tuple:
         """
         自身のベストオファーと受け入れ可能な最低限のオファーを比較し，
@@ -59,7 +60,12 @@ class OfferGenerator:
         BUYER ならより安く/早く/多く，SELLER ならより高く/遅く/少なくを選ぶ．
         """
         # Step 1: ベストオファーの生成（効用最大）
-        quantity_best = self.get_best_quantity(partner_id, self.todays_distribution.get(partner_id, 0) if self.todays_distribution else 0)
+        quantity_best = self.get_best_quantity(
+            partner_id,
+            self.todays_distribution.get(partner_id, 0)
+            if self.todays_distribution
+            else 0,
+        )
         time_best = self.get_best_time(partner_id)
         price_best = self.get_best_price(partner_id)
         best_offer = (quantity_best, time_best, price_best)
@@ -78,9 +84,11 @@ class OfferGenerator:
                     time_val = 1
                 base_offer.append(time_val)
             elif i == UNIT_PRICE:
-                base_offer.append(min(b, a) if au.is_buyer(self.awi, partner_id) else max(b, a))
+                base_offer.append(
+                    min(b, a) if au.is_buyer(self.awi, partner_id) else max(b, a)
+                )
         return tuple(base_offer)
-    
+
     def find_acceptable_offer(self, partner_id: str, threshold: float) -> tuple:
         """
         閾値 just above を満たすような最小効用変化のオファーを返す．
@@ -91,7 +99,9 @@ class OfferGenerator:
 
         for q in range(issues[QUANTITY].min_value, issues[QUANTITY].max_value + 1):
             for t in range(issues[TIME].min_value, issues[TIME].max_value + 1):
-                for p in range(issues[UNIT_PRICE].min_value, issues[UNIT_PRICE].max_value + 1):
+                for p in range(
+                    issues[UNIT_PRICE].min_value, issues[UNIT_PRICE].max_value + 1
+                ):
                     offer = (q, t, p)
                     score = self.ue.ufun(partner_id, offer)
                     margin = score - threshold
@@ -103,10 +113,12 @@ class OfferGenerator:
             acceptable_offer = (
                 issues[QUANTITY].min_value,
                 issues[TIME].min_value,
-                issues[UNIT_PRICE].max_value if au.is_buyer(self.awi, partner_id) else issues[UNIT_PRICE].min_value
+                issues[UNIT_PRICE].max_value
+                if au.is_buyer(self.awi, partner_id)
+                else issues[UNIT_PRICE].min_value,
             )
         return acceptable_offer
-        
+
     def find_least_concession_offer(self, partner_id: str, base_offer: tuple) -> tuple:
         """
         base_offer から 1つの issue を変更し，効用が base_offer 以下かつ最小減少のオファーを返す．

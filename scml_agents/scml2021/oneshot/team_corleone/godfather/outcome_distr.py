@@ -3,7 +3,6 @@ from typing import Callable, Dict, List, Tuple
 
 import numpy as np
 
-from .offer import Offer
 from .spaces import *
 
 

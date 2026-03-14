@@ -200,7 +200,6 @@ class AdaptiveSyncAgent(OneShotSyncAgent, AdaptiveAgent, ABC):
 
     def counter_all(self, offers, states):
         """Respond to a set of offers given the negotiation state of each."""
-        SECURED_MAGNIFICATION = 1.2
 
         my_needs = self._needed()
         if my_needs <= 0:
@@ -224,7 +223,7 @@ class AdaptiveSyncAgent(OneShotSyncAgent, AdaptiveAgent, ABC):
             zip(offers.values(), is_selling, offers.keys()),
             key=lambda x: (-x[0][UNIT_PRICE]) if x[1] else x[0][UNIT_PRICE],
         )
-        secured, outputs, chosen = 0, [], dict()
+        secured, _outputs, _chosen = 0, [], dict()
         for i, k in enumerate(offers.keys()):
             offer, is_output, name = sorted_offers[i]
             response = AdaptiveAgent.respond(self, name, states[name], offer)
@@ -387,7 +386,10 @@ class LearningAgentT(AdaptiveAgent, ABC):
         self._opp_price_slack = opp_price_slack
         self._opp_acc_price_slack = opp_acc_price_slack
         self._range_slack = range_slack
-        self.new_price_selling, self.new_price_buying = float("inf"), 0.0  # 価格変化後の交渉価格
+        self.new_price_selling, self.new_price_buying = (
+            float("inf"),
+            0.0,
+        )  # 価格変化後の交渉価格
         self.new_price_slack = 0.05
         self.concession_threshold = 3  # 譲歩の変化率の閾値
 
@@ -411,7 +413,7 @@ class LearningAgentT(AdaptiveAgent, ABC):
 
     def on_negotiation_start(self, negotiator_id: str, state: MechanismState) -> None:
         is_selling = self._is_selling(self.get_nmi(negotiator_id))
-        nmi = self.get_nmi(negotiator_id)
+        self.get_nmi(negotiator_id)
         if is_selling:
             self.nego_info["my_name"] = shorten_name(
                 self.get_nmi(negotiator_id).annotation["seller"]
@@ -541,7 +543,7 @@ class LearningAgentT(AdaptiveAgent, ABC):
         # offer a price that is around th of your best possible price
 
         # パラメタの設定
-        name = nmi.annotation["buyer"] if is_selling else nmi.annotation["seller"]
+        nmi.annotation["buyer"] if is_selling else nmi.annotation["seller"]
         good_price_range = self.good_price_range(nmi)
         success_agreements = opponent_agreements(
             nmi, is_selling, self.success_contracts
@@ -647,7 +649,7 @@ class LearningAgentT(AdaptiveAgent, ABC):
         """Limits the price by the best price received"""
         mn = nmi.issues[UNIT_PRICE].min_value
         mx = nmi.issues[UNIT_PRICE].max_value
-        concession_degree = 1 - self.strong_degree(nmi)
+        1 - self.strong_degree(nmi)
 
         if self._is_selling(nmi):
             partner = nmi.annotation["buyer"]
@@ -924,7 +926,9 @@ class LearningSyncAgent_(OneShotSyncAgent, ABC):
         self._delta = delta
         self._e = concession_exponent
         self.e = util_exponent  # 閾値の決定に用いる
-        self.strong_degree = 1.0  # offerのprice rangeを決定する際に用いる（どれだけ強気かどうか）
+        self.strong_degree = (
+            1.0  # offerのprice rangeを決定する際に用いる（どれだけ強気かどうか）
+        )
         self.parameter_min_max = defaultdict(lambda: list())  # デバッグ用
         self.min_max_delta = 0.1  # strong_degreeの変化の度合い
         self.successful_times_thr = 3  # 連続交渉成功回数の閾値
@@ -949,7 +953,9 @@ class LearningSyncAgent_(OneShotSyncAgent, ABC):
         self.success_list = defaultdict(lambda: list())  # 交渉成功した際の取引データ
         self.success_contracts = []  # 交渉成功した契約のリスト
         self.total_trade_quantity = [0, 0]  # 総取引量（外的契約を含む）
-        self.my_offer_list = defaultdict(lambda: list())  # 相手ごとの自分のOfferのリスト
+        self.my_offer_list = defaultdict(
+            lambda: list()
+        )  # 相手ごとの自分のOfferのリスト
         self.opp_offer_list = defaultdict(lambda: list())  # 相手のOfferのリスト
         self.best_opp_util = -float("inf")  # その日の相手のOfferの効用値の最大値
         self.best_agr_util = -float("inf")  # 合意に達した契約の効用値の最大値
@@ -1587,7 +1593,7 @@ class LearningSyncAgent_(OneShotSyncAgent, ABC):
                 edgecolors="black",
             )
 
-        ax.set_title("agent" "s offers")
+        ax.set_title("agents offers")
         ax.set_xlabel("simulation step")
         ax.set_ylabel("unit price")
         ax.set_ylim(0, 40)
@@ -1799,7 +1805,6 @@ class LearningSyncAgent(OneShotSyncAgent, LearningAgent, ABC):
 
     def counter_all(self, offers, states):
         """Respond to a set of offers given the negotiation state of each."""
-        SECURED_MAGNIFICATION = 1.2
 
         my_needs = self._needed()
         if my_needs <= 0:
@@ -1823,7 +1828,7 @@ class LearningSyncAgent(OneShotSyncAgent, LearningAgent, ABC):
             zip(offers.values(), is_selling, offers.keys()),
             key=lambda x: (-x[0][UNIT_PRICE]) if x[1] else x[0][UNIT_PRICE],
         )
-        secured, outputs, chosen = 0, [], dict()
+        secured, _outputs, _chosen = 0, [], dict()
         for i, k in enumerate(offers.keys()):
             offer, is_output, name = sorted_offers[i]
             response = LearningAgent.respond(self, name, states[name], offer)

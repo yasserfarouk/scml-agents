@@ -10,28 +10,21 @@ from negmas import (
     outcome_is_valid,
 )
 from negmas.sao import SAOResponse
-from playground_agent import MyAgent, MyAgentDror
 from scml.scml2020 import (
     QUANTITY,
     TIME,
     UNIT_PRICE,
     DecentralizingAgent,
     IndDecentralizingAgent,
-    RandomAgent,
     SCML2020Agent,
     SCML2020World,
 )
 from scml.scml2020.components import TradePredictionStrategy
 from scml.scml2020.components.negotiation import (
-    IndependentNegotiationsManager,
     MovingRangeNegotiationManager,
-    StepNegotiationManager,
 )
 from scml.scml2020.components.production import (
-    DemandDrivenProductionStrategy,
-    ProductionStrategy,
     SupplyDrivenProductionStrategy,
-    TradeDrivenProductionStrategy,
 )
 from scml.scml2020.components.trading import PredictionBasedTradingStrategy
 
@@ -227,7 +220,6 @@ class SyncController(SAOSyncController):
 
 
 class MyNegotiationManager:
-
     """My negotiation strategy
 
     Args:
@@ -388,7 +380,6 @@ class MyDrorAgent(
 
 class MyPredictor(TradePredictionStrategy):
     def trade_prediction_init(self):
-        inp = self.awi.my_input_product
         self.expected_outputs = self.awi.n_lines * np.ones(self.awi.n_steps, dtype=int)
         self.expected_inputs = self.awi.n_lines * np.ones(self.awi.n_steps, dtype=int)
 

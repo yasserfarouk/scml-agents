@@ -1,11 +1,8 @@
 import os
-import random
 from collections import defaultdict
-from pprint import pprint
 
 import numpy as np
 import pandas as pd
-from matplotlib import markers
 from matplotlib import pyplot as plt
 from negmas import ResponseType
 from PPO_Emb31 import PPO_Emb
@@ -16,7 +13,6 @@ pd.set_option("display.max_columns", 50)
 import datetime
 
 from sklearn.decomposition import PCA
-from sklearn.manifold import TSNE
 from torch.utils.tensorboard import SummaryWriter
 
 N_SIMULATIONS = 30000  # 50000
@@ -101,7 +97,7 @@ class PPOTrainAgent(OneShotAgent):
         directory = "PPO_preTrained"
         # env_name = "OneShot-v2-"+(f"{'-'.join(self.awi.my_consumers)}_seller" if self.awi.my_suppliers[0]=="SELLER" else f"{'-'.join(self.awi.my_suppliers)}_buyer")
         env_name = "OneShot-v3-" + (
-            f"seller" if self.awi.my_suppliers[0] == "SELLER" else f"buyer"
+            "seller" if self.awi.my_suppliers[0] == "SELLER" else "buyer"
         )
         if not os.path.exists(directory):
             os.makedirs(directory)
@@ -169,7 +165,9 @@ class PPOTrainAgent(OneShotAgent):
         for negotiator_id in self.my_negotiators:
             negotiator_id = negotiator_id[2:-2]
 
-            self.ppo_action_flag[negotiator_id] = False  # その日にselect_actionを行ったらTrueにする
+            self.ppo_action_flag[negotiator_id] = (
+                False  # その日にselect_actionを行ったらTrueにする
+            )
             self.first_proposer[negotiator_id] = None
             if negotiator_id not in PPOTrainAgent.opp_simulation_total_rewards.keys():
                 PPOTrainAgent.opp_simulation_total_rewards[negotiator_id] = []
@@ -189,7 +187,9 @@ class PPOTrainAgent(OneShotAgent):
 
         negotiator_id = negotiator_id[2:-2]
 
-        if self.first_proposer[negotiator_id] == None:  # 自分が先手で提案する日の第一ラウンド
+        if (
+            self.first_proposer[negotiator_id] is None
+        ):  # 自分が先手で提案する日の第一ラウンド
             self.first_proposer[negotiator_id] = 1
             self.action[negotiator_id] = self.ppo.select_action(
                 self.obs[negotiator_id] + self.embs[negotiator_id], negotiator_id
@@ -200,14 +200,18 @@ class PPOTrainAgent(OneShotAgent):
 
         offer = [-1, -1, -1]
         offer[TIME] = self.awi.current_step
-        offer[QUANTITY] = 1  # 学習時は量が過剰であることでリジェクトされるのを防ぐために常に1個で提案
+        offer[QUANTITY] = (
+            1  # 学習時は量が過剰であることでリジェクトされるのを防ぐために常に1個で提案
+        )
         offer[UNIT_PRICE] = (
             self.action[negotiator_id]
             * (ami.issues[UNIT_PRICE].max_value - ami.issues[UNIT_PRICE].min_value)
             + ami.issues[UNIT_PRICE].min_value
         )
         # 状態を記録
-        self.obs[negotiator_id][2] = self.action[negotiator_id]  # 直前の自分のオファー価格
+        self.obs[negotiator_id][2] = self.action[
+            negotiator_id
+        ]  # 直前の自分のオファー価格
 
         return offer
 
@@ -219,7 +223,9 @@ class PPOTrainAgent(OneShotAgent):
 
         negotiator_id = negotiator_id[2:-2]
 
-        if self.first_proposer[negotiator_id] == None:  # 自分が後手で提案する日の第一ラウンド
+        if (
+            self.first_proposer[negotiator_id] is None
+        ):  # 自分が後手で提案する日の第一ラウンド
             self.first_proposer[negotiator_id] = 0
 
         # 相手のofferの変化はその前の自分の行動が影響している可能性があるので，一つ前のbufferのrewardに譲歩等に関する報酬を与える
@@ -326,8 +332,8 @@ class PPOTrainAgent(OneShotAgent):
         negotiator_id = list(partners).copy()
         negotiator_id.remove(my_id)
         negotiator_id = negotiator_id[0]
-        ami = self.get_nmi(negotiator_id)
-        my_need = self._needed(negotiator_id)
+        self.get_nmi(negotiator_id)
+        self._needed(negotiator_id)
 
         negotiator_id = negotiator_id[2:-2]
 
@@ -384,10 +390,9 @@ class PPOTrainAgent(OneShotAgent):
         # 最終日の終わりに，PPOモデルを保存, シミュレーションの総報酬をログに記録
         if self.awi.current_step == self.awi.n_steps - 1:
             # 1シミュレーション(50日)の終わりにPPO Update
-            losses = {}
             if (
-                PPOTrainAgent._count + 1
-            ) % 10 == 0 and self.emb_dim != 0:  # and PPOTrainAgent._count<0.5*N_SIMULATIONS: #10シミュレーションに1回表現関数のUpdate
+                (PPOTrainAgent._count + 1) % 10 == 0 and self.emb_dim != 0
+            ):  # and PPOTrainAgent._count<0.5*N_SIMULATIONS: #10シミュレーションに1回表現関数のUpdate
                 # self.ppo.update_rep(coef_im=1.0,coef_id=0.1)
 
                 # IICRの算出
@@ -423,7 +428,7 @@ class PPOTrainAgent(OneShotAgent):
                 len(self.ppo.buffer[negotiator_id[2:-2]].rewards) > 1
                 for negotiator_id in self.my_negotiators
             ]:
-                losses = self.ppo.update(coef_adv=1.0, coef_critic=0.5, coef_ent=0.01)
+                self.ppo.update(coef_adv=1.0, coef_critic=0.5, coef_ent=0.01)
 
             for i, negotiator_id in enumerate(self.my_negotiators):
                 negotiator_id = negotiator_id[2:-2]
@@ -582,7 +587,6 @@ class PPOTrainAgent(OneShotAgent):
                     smoothed_rewards = [
                         PPOTrainAgent.opp_simulation_total_rewards[negotiator_id][0]
                     ]
-                    smoothing_rate = 0.95
                     for total_reward in PPOTrainAgent.opp_simulation_total_rewards[
                         negotiator_id
                     ][1:]:
@@ -720,7 +724,9 @@ class PPOTestAgent(OneShotAgent):
             }
 
         for negotiator_id in self.my_negotiators:
-            self.ppo_action_flag[negotiator_id] = False  # その日にselect_actionを行ったらTrueにする
+            self.ppo_action_flag[negotiator_id] = (
+                False  # その日にselect_actionを行ったらTrueにする
+            )
             if (
                 negotiator_id in self.ppo.episode_buffer.keys()
                 and len(self.ppo.episode_buffer[negotiator_id]) > 0
@@ -744,7 +750,9 @@ class PPOTestAgent(OneShotAgent):
         if not ami or my_needs <= 0 or self.awi.is_bankrupt(negotiator_id):
             return None
 
-        if self.first_proposer[negotiator_id] == None:  # 自分が先手で提案する日の第一ラウンド
+        if (
+            self.first_proposer[negotiator_id] is None
+        ):  # 自分が先手で提案する日の第一ラウンド
             self.first_proposer[negotiator_id] = 1
             self.action[negotiator_id] = self.ppo.select_action(
                 self.obs[negotiator_id] + self.embs[negotiator_id], negotiator_id
@@ -766,7 +774,9 @@ class PPOTestAgent(OneShotAgent):
             + ami.issues[UNIT_PRICE].min_value
         )
         # 状態を記録
-        self.obs[negotiator_id][2] = self.action[negotiator_id]  # 直前の自分のオファー価格
+        self.obs[negotiator_id][2] = self.action[
+            negotiator_id
+        ]  # 直前の自分のオファー価格
 
         return offer
 
@@ -774,7 +784,9 @@ class PPOTestAgent(OneShotAgent):
         offer = state.current_offer
         if not offer:
             return ResponseType.REJECT_OFFER
-        if self.first_proposer[negotiator_id] == None:  # 自分が後手で提案する日の第一ラウンド
+        if (
+            self.first_proposer[negotiator_id] is None
+        ):  # 自分が後手で提案する日の第一ラウンド
             self.first_proposer[negotiator_id] = 0
 
         ami = self.get_nmi(negotiator_id)
@@ -855,8 +867,8 @@ class PPOTestAgent(OneShotAgent):
         negotiator_id = list(partners).copy()
         negotiator_id.remove(my_id)
         negotiator_id = negotiator_id[0]
-        ami = self.get_nmi(negotiator_id)
-        my_need = self._needed(negotiator_id)
+        self.get_nmi(negotiator_id)
+        self._needed(negotiator_id)
 
         if self.ppo_action_flag[negotiator_id]:
             self.ppo.buffer[negotiator_id].rewards[-1] = self.reward_for_neg_failure

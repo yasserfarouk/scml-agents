@@ -1,15 +1,12 @@
 # -*- coding: utf-8 -*-
 import math
 
-from negmas import ResponseType
+# required for typing
+from negmas import Contract, Outcome, ResponseType
 from scml.oneshot import *
-
 
 # required for development
 from scml.std import *
-
-# required for typing
-from negmas import Contract, Outcome
 
 # tournament
 
@@ -137,7 +134,7 @@ class AnalysisAgent(SimpleAgent):
         my_needs = self._needed(negotiator_id)
         if my_needs <= 0:
             return None
-        ami = self.get_nmi(negotiator_id)
+        self.get_nmi(negotiator_id)
         offer = [-1] * 3
         offer[TIME] = self.awi.current_step
         offer[UNIT_PRICE] = self.find_price(best_price=True)

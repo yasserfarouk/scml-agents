@@ -35,7 +35,6 @@ You can access the full list of these capabilities on the documentation.
 """
 
 # required for running the test tournament
-import time
 
 # required for typing
 from typing import Any, Dict, List, Optional, Tuple
@@ -43,7 +42,6 @@ from typing import Any, Dict, List, Optional, Tuple
 import numpy as np
 from negmas import (
     AgentMechanismInterface,
-    Breach,
     Contract,
     Issue,
     MechanismState,
@@ -52,15 +50,12 @@ from negmas import (
     SAOSyncController,
     outcome_is_valid,
 )
-from negmas.helpers import humanize_time
 from negmas.sao import SAOResponse
 from scml.scml2020 import (
     QUANTITY,
     TIME,
     UNIT_PRICE,
     DemandDrivenProductionStrategy,
-    Failure,
-    MovingRangeNegotiationManager,
     PredictionBasedTradingStrategy,
     SCML2020Agent,
     StepNegotiationManager,
@@ -68,13 +63,6 @@ from scml.scml2020 import (
 )
 
 # required for development
-from scml.scml2020.agents import (
-    BuyCheapSellExpensiveAgent,
-    DecentralizingAgent,
-    DoNothingAgent,
-)
-from scml.utils import anac2020_collusion, anac2020_std
-from tabulate import tabulate
 
 __all__ = ["BARGentCovid19"]
 
@@ -394,8 +382,6 @@ class MyNegotiationManager:
 
 from typing import Dict, List, Tuple
 
-import numpy as np
-from negmas import Contract
 from scml.scml2020.common import NO_COMMAND
 
 
@@ -686,7 +672,7 @@ import numpy as np
 from negmas import Contract
 from scml.scml2020 import TradingStrategy
 from scml.scml2020.common import ANY_LINE, is_system_agent
-from scml.scml2020.components import FixedTradePredictionStrategy, SignAllPossible
+from scml.scml2020.components import FixedTradePredictionStrategy
 from scml.scml2020.components.prediction import MeanERPStrategy
 
 
@@ -725,7 +711,7 @@ class MyPredictionBasedTradingStrategy(
         consumed = 0
         for contract in signed:
             is_seller = contract.annotation["seller"] == self.id
-            q, u, t = (
+            q, _u, t = (
                 contract.agreement["quantity"],
                 contract.agreement["unit_price"],
                 contract.agreement["time"],
@@ -780,7 +766,7 @@ class MyPredictionBasedTradingStrategy(
         taken = 0
         s = self.awi.current_step
         for contract, indx in contracts:
-            q, u, t = (
+            q, _u, t = (
                 contract.agreement["quantity"],
                 contract.agreement["unit_price"],
                 contract.agreement["time"],
@@ -812,7 +798,7 @@ class MyPredictionBasedTradingStrategy(
 
     def _format(self, c: Contract):
         return (
-            f"{f'>' if c.annotation['seller'] == self.id else '<'}"
+            f"{'>' if c.annotation['seller'] == self.id else '<'}"
             f"{c.annotation['buyer'] if c.annotation['seller'] == self.id else c.annotation['seller']}: "
             f"{c.agreement['quantity']} of {c.annotation['product']} @ {c.agreement['unit_price']} on {c.agreement['time']}"
         )

@@ -454,8 +454,8 @@ def get_agent_reject_rate(agent_id, reject_acceptance_rate, current_step):
             reject_acceptance_rate[agent_id]["Reject"].items()
         ):
             # Get rejectance rate of buyer id.
-            agent_reject_rate = reject_quantity / (
-                reject_acceptance_rate[agent_id]["Acceptance"]
+            agent_reject_rate = (
+                reject_quantity / (reject_acceptance_rate[agent_id]["Acceptance"])
             )
             reject_coefficient = (current_step - reject_day) / (current_step)
             total_agent_reject_rate += (

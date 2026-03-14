@@ -1,3 +1,6 @@
+from .team_62 import *
+from .team_94 import *
+from .team_96 import *
 from .team_102 import *
 from .team_103 import *
 from .team_105 import *
@@ -8,9 +11,6 @@ from .team_124 import *
 from .team_126 import *
 from .team_131 import *
 from .team_134 import *
-from .team_62 import *
-from .team_94 import *
-from .team_96 import *
 
 __all__ = (
     team_102.__all__

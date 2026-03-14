@@ -1,9 +1,6 @@
 from pathlib import Path
 
-import matplotlib.pyplot as plt
 import numpy as np
-from sklearn import linear_model
-from sklearn.metrics import mean_squared_error, r2_score
 
 
 def get_stats(directory):
@@ -29,7 +26,9 @@ for path in get_stats(path_dir):
     # print(stats_step)
 
     print("LOADING", counter, path)
-    read = np.genfromtxt(path, delimiter=",", skip_header=1)  # numpyによるCSVからの行列生成
+    read = np.genfromtxt(
+        path, delimiter=",", skip_header=1
+    )  # numpyによるCSVからの行列生成
     # print(read.shape)
     # print(read)
 

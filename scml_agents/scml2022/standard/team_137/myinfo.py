@@ -1,8 +1,7 @@
-from multiprocessing import parent_process
-from re import A
-from typing import List
-from negmas import Breach, Contract, Issue
 import copy
+from typing import List
+
+from negmas import Contract
 
 
 class myinfo:
@@ -10,7 +9,6 @@ class myinfo:
         self.parent = parent
 
         n_steps = self.parent.awi.n_steps
-        n_lines = self.parent.awi.n_lines
 
         # price
         self.min_margine = 5
@@ -28,16 +26,18 @@ class myinfo:
         # 在庫管理パラメタ
         self.TIMEMARGINE = 0  # TODO
 
-        if self.parent.awi.is_last_level == True:
+        if self.parent.awi.is_last_level:
             self.last_trade_day = n_steps - 1
-            self.invB_checkday = n_steps  # 売りが先に決まっているのでできる時にはいつでも買ってよい。
+            self.invB_checkday = (
+                n_steps  # 売りが先に決まっているのでできる時にはいつでも買ってよい。
+            )
 
             self.invB_q_ulimit = 0
             self.invB_q_blimit = -30  # TODO
 
             self.n = n_steps  # 取引可能な日数の範囲(全て)
 
-        elif self.parent.awi.is_middle_level == True:
+        elif self.parent.awi.is_middle_level:
             self.last_trade_day = (
                 n_steps
                 - 1
@@ -79,7 +79,9 @@ class myinfo:
         self.last_day = -1
         # need
         self.input_needs: dict[int, int] = [0 for _ in range(n_steps)]
-        self.output_needs: dict[int, int] = [0 for _ in range(n_steps)]  # マイナスにもなります。
+        self.output_needs: dict[int, int] = [
+            0 for _ in range(n_steps)
+        ]  # マイナスにもなります。
         self.max_input = -1
 
         # controll
@@ -134,7 +136,7 @@ class myinfo:
         n_lines = self.parent.awi.n_lines
         t = agreement["time"]
         q = agreement["quantity"]
-        p = agreement["unit_price"]
+        agreement["unit_price"]
         self.offer_memoryA.append(agreement)
         q_t = q
         d = t
@@ -157,16 +159,15 @@ class myinfo:
         self.offer_memoryB.append(agreement)
         t = agreement["time"]
         q = agreement["quantity"]
-        p = agreement["unit_price"]
+        agreement["unit_price"]
         for d in range(t, n_steps + 1):
             self.secure_inventoryB[d] -= q
 
     def set_contractC(self, agreement):  # spot
         n_steps = self.parent.awi.n_steps
-        n_lines = self.parent.awi.n_lines
         t = agreement["time"]
         q = agreement["quantity"]
-        p = agreement["unit_price"]
+        agreement["unit_price"]
         self.offer_memoryC.append(agreement)
 
         for t_d in range(t, n_steps + 1):
@@ -179,7 +180,6 @@ class myinfo:
         quantities: List[int],
         compensation_money: int,
     ):
-
         if len(contracts) == 0:
             return
 

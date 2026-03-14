@@ -1,8 +1,6 @@
 from typing import List, Optional
 
-import numpy as np
 from negmas import Contract
-from numpy.core.fromnumeric import take
 from scml.scml2020 import PredictionBasedTradingStrategy
 from scml.scml2020.common import ANY_LINE, is_system_agent
 

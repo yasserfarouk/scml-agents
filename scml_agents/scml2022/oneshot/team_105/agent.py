@@ -1,42 +1,20 @@
 #!/usr/bin/env python
 # required for running tournaments and printing
-import time
 import statistics
+import time
 
 # required for typing
-from typing import Any, Dict, List, Optional
-
 import numpy as np
-from negmas.helpers import humanize_time
-from negmas.sao import SAOState
-
-# required for development
-from scml.oneshot import OneShotAgent
-from scml.oneshot.agents import RandomOneShotAgent, SyncRandomOneShotAgent
-from scml.utils import anac2022_collusion, anac2022_oneshot, anac2022_std
-from tabulate import tabulate
-
-from scml.scml2020 import *
-from scml.oneshot import *
-import matplotlib.pyplot as plt
-import pandas as pd
-
-from negmas import save_stats
-
-from scml.scml2020.world import is_system_agent
-from collections import defaultdict
-
-
 from negmas import (
-    AgentMechanismInterface,
-    Breach,
-    Contract,
-    Issue,
-    MechanismState,
-    Negotiator,
     Outcome,
     ResponseType,
 )
+from scml.oneshot import *
+
+# required for development
+from scml.oneshot import OneShotAgent
+from scml.scml2020 import *
+from scml.utils import anac2022_collusion, anac2022_oneshot, anac2022_std
 
 QUANTITY = 0
 TIME = 1
@@ -296,7 +274,7 @@ def run(
             BuyCheapSellExpensiveAgent,
         ]
 
-    start = time.perf_counter()
+    time.perf_counter()
     if competition == "std":
         runner = anac2022_std
     elif competition == "collusion":

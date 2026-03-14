@@ -38,20 +38,8 @@ You can access the full list of these capabilities on the documentation.
 import time
 
 # required for typing
-from typing import Any, Dict, List, Optional
-
-import numpy as np
-from negmas import (
-    AgentMechanismInterface,
-    Breach,
-    Contract,
-    Issue,
-    MechanismState,
-    Negotiator,
-)
 from negmas.helpers import humanize_time
 from scml.scml2020 import (
-    Failure,
     MovingRangeNegotiationManager,
     PredictionBasedTradingStrategy,
     SCML2020Agent,
@@ -62,7 +50,6 @@ from scml.scml2020 import (
 from scml.scml2020.agents import (
     BuyCheapSellExpensiveAgent,
     DecentralizingAgent,
-    DoNothingAgent,
 )
 from scml.utils import anac2020_collusion, anac2020_std
 from tabulate import tabulate

@@ -56,40 +56,14 @@ You should see a short tournament running and results reported.
 
 # required for typing
 import logging
-import math
-import pickle
-import random
 
 # required for running tournaments and printing
-import time
-import warnings
 from collections import defaultdict
 from copy import deepcopy
-from functools import partial
-from typing import Any, Collection, Dict, Iterable, List, Optional, Tuple, Union
 
 import numpy as np
 from negmas import (
-    AgentMechanismInterface,
-    Breach,
-    Contract,
-    Issue,
-    MechanismState,
-    Negotiator,
-    Outcome,
     ResponseType,
-    SAOResponse,
-)
-from negmas.helpers import humanize_time
-from negmas.outcomes import Issue
-from negmas.preferences import UtilityFunction
-from negmas.sao import (
-    AspirationNegotiator,
-    NaiveTitForTatNegotiator,
-    NiceNegotiator,
-    SimpleTitForTatNegotiator,
-    TopFractionNegotiator,
-    ToughNegotiator,
 )
 
 # required for development
@@ -97,13 +71,11 @@ from scml.oneshot import OneShotAgent
 from scml.oneshot.agent import *
 from scml.oneshot.agents import (
     GreedyOneShotAgent,
-    GreedySingleAgreementAgent,
     GreedySyncAgent,
     RandomOneShotAgent,
-    SyncRandomOneShotAgent,
 )
 from scml.scml2020.common import QUANTITY, TIME, UNIT_PRICE
-from scml.utils import anac2021_collusion, anac2021_oneshot, anac2021_std
+from scml.utils import anac2021_oneshot
 from tabulate import tabulate
 
 # warnings.filterwarnings('error')
@@ -133,7 +105,7 @@ class StagHunter(OneShotAgent):
         range_slack=0.1,
         trading_price_slack=0.15,
         trading_price_slack2=0.05,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(*args, **kwargs)
         # self._e = concession_exponent
@@ -283,7 +255,6 @@ class StagHunter(OneShotAgent):
                 # self._is_prev_agg[oppo_id] = False
 
         if self.awi.current_step > 0:
-
             revs = [
                 (oppo_id, np.mean(self._prev_mag_profit[oppo_id][1:]))
                 for oppo_id in self.oppo_list
@@ -297,7 +268,6 @@ class StagHunter(OneShotAgent):
         self._best_acc_prices.append(self._cur_best_price)
 
         for oppo_id in self.oppo_list:
-
             if self.awi.is_first_level:
                 self._best_opp_acc_selling[oppo_id] = max(
                     self._best_opp_acc_prices[oppo_id][
@@ -401,7 +371,7 @@ class StagHunter(OneShotAgent):
         nmi = self.get_nmi(negotiator_id)
 
         unit_price_issue = nmi.issues[UNIT_PRICE]
-        quantity_issue = nmi.issues[QUANTITY]
+        nmi.issues[QUANTITY]
 
         offer = list(offer)
 
@@ -633,7 +603,6 @@ class StagHunter(OneShotAgent):
     #     return tuple(offer)
 
     def _needed(self):
-
         # summary = self.awi.exogenous_contract_summary
         # demand = min(summary[0][0], summary[-1][0]) / (self.awi.n_competitors + 1)
         demand = (
@@ -800,7 +769,7 @@ class StagHunterV5(OneShotAgent):
         step_agg_price_slack2=0.3,
         quantity_slack=2 / 3,
         range_slack=0.1,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(*args, **kwargs)
         # self._e = concession_exponent
@@ -944,7 +913,6 @@ class StagHunterV5(OneShotAgent):
                 self._is_prev_agg[oppo_id] = False
 
         if self.awi.current_step > 0:
-
             revs = (
                 [
                     (oppo_id, np.mean(self._best_opp_acc_prices[oppo_id][-3:]))
@@ -996,7 +964,6 @@ class StagHunterV5(OneShotAgent):
         self._best_acc_prices.append(self._cur_best_price)
 
         for oppo_id in self.oppo_list:
-
             if self.awi.is_first_level:
                 self._best_opp_acc_selling[oppo_id] = max(
                     self._best_opp_acc_prices[oppo_id][-3:]
@@ -1059,7 +1026,6 @@ class StagHunterV5(OneShotAgent):
                 self._cur_rank[oppo_id] = max(0, self._cur_rank[oppo_id] - 1)
 
     def _needed(self):
-
         # summary = self.awi.exogenous_contract_summary
         # demand = min(summary[0][0], summary[-1][0]) / (self.awi.n_competitors + 1)
         demand = (
@@ -1407,7 +1373,6 @@ class StagHunterV6(StagHunterV5):
         )
 
         for p in test_price_interval:
-
             offer_p = deepcopy(offer)
             offer_p[UNIT_PRICE] = p
 
@@ -1466,12 +1431,12 @@ class StagHunterV7(StagHunter):
             if len(self._prev_opp_quantity[negotiator_id]):
                 offer[QUANTITY] = min(self._prev_opp_quantity[negotiator_id][-3:])
 
-        u1 = self.ufun.from_offers(
+        self.ufun.from_offers(
             tuple(tuple(_) for _ in self.cur_offer_list.values()),
             tuple([self.awi.is_first_level] * len(self.cur_offer_list)),
         )
 
-        u2 = self.ufun.from_offers(
+        self.ufun.from_offers(
             tuple(
                 tuple(_) for _ in list(self.cur_offer_list.values()) + [tuple(offer)]
             ),

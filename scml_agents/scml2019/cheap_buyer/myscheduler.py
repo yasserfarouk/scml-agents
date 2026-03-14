@@ -294,7 +294,6 @@ class MyScheduler(Scheduler):
             if self.strategy == "earliest_feasible":
                 number_of_rows = current_schedule.shape[0]
                 number_of_columns = current_schedule.shape[1]
-                empty_slots = []
                 # bookmark = simulator.bookmark()
                 with transaction(simulator) as bookmark:
                     for time in range(number_of_columns):
@@ -472,7 +471,6 @@ class MyScheduler(Scheduler):
         ensure_storage_for: int = 0,
         start_at: int = 0,
     ):
-
         # Now, schedule the contracts
         schedule = self.schedule_contracts(
             contracts=contracts,

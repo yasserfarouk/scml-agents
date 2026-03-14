@@ -1,29 +1,21 @@
 # required for running the test tournament
-import copy
 import functools
 import math
-import time
 from dataclasses import dataclass
 
 # required for typing
-from pprint import pprint
 from typing import Any, Dict, List, Optional, Tuple, Union
 
-import numpy as np
 from negmas import (
     AgentMechanismInterface,
     AspirationNegotiator,
-    Breach,
-    Contract,
     Issue,
-    MechanismState,
     Negotiator,
     SAONegotiator,
 )
-from negmas.helpers import get_class, humanize_time
-from scml.scml2020 import AWI, SCML2020Agent, SCML2020World
-from scml.scml2020.common import TIME
-from scml.scml2020.services.controllers import StepController, SyncController
+from negmas.helpers import get_class
+from scml.scml2020 import AWI
+from scml.scml2020.services.controllers import StepController
 
 
 @dataclass
@@ -337,7 +329,6 @@ class MyNegotiationManager:
             return
         quantity = c.secured
         target = c.target
-        time_range = info.time_range
         if is_seller:
             controllers = self.sellers
         else:

@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
-import negmas
-import scml
 
-from collections import defaultdict
 import random
-from negmas import ResponseType
-from scml.oneshot import *
-from scml.utils import anac2024_oneshot
-from negmas.sao.common import SAOResponse
+from collections import defaultdict
 from itertools import chain, combinations
 
+from negmas import ResponseType
+from negmas.sao.common import SAOResponse
+from scml.oneshot import *
+
 __all__ = ["CPDistAgent"]
+
 
 def powerset(iterable):
     s = list(iterable)
     return chain.from_iterable(combinations(s, r) for r in range(len(s) + 1))
+
 
 class CPDistAgent(SyncRandomOneShotAgent):
     def __init__(self, *args, **kwargs):
@@ -34,7 +34,7 @@ class CPDistAgent(SyncRandomOneShotAgent):
             return None
         offer = list(offer)
 
-        #compare q_opp_offer and q_need (cooperate)
+        # compare q_opp_offer and q_need (cooperate)
         if seller:
             opponent = ami.annotation["buyer"]
             offer[QUANTITY] = min(self.q_opp_offer[opponent], offer[QUANTITY])
@@ -43,7 +43,7 @@ class CPDistAgent(SyncRandomOneShotAgent):
             opponent = ami.annotation["seller"]
             offer[QUANTITY] = min(self.q_opp_offer[opponent], offer[QUANTITY])
             offer[UNIT_PRICE] = ami.issues[UNIT_PRICE].min_value
-        
+
         return tuple(offer)
 
     def counter_all(self, offers, states):
@@ -125,4 +125,3 @@ class CPDistAgent(SyncRandomOneShotAgent):
                 }
             )
         return response
-

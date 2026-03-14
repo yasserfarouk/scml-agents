@@ -216,9 +216,9 @@ class LitaAgentY(StdSyncAgent):
 
         self.partner_stats: Dict[str, Dict[str, float]] = {}
         self.partner_models: Dict[str, Dict[str, float]] = {}
-        self._last_partner_offer: Dict[str, float] = (
-            {}
-        )  # Stores the last price offered by a partner / 存储伙伴的最新报价价格
+        self._last_partner_offer: Dict[
+            str, float
+        ] = {}  # Stores the last price offered by a partner / 存储伙伴的最新报价价格
 
         # Counters for dynamic profit margin adjustment (Added from Step 7)
         # 用于动态利润率调整的计数器 (从步骤7添加)
@@ -246,9 +246,9 @@ class LitaAgentY(StdSyncAgent):
     def before_step(self) -> None:
         """每天开始前，同步日内关键需求信息。"""
         """Called before each day starts, to synchronize key daily demand information."""
-        assert (
-            self.im
-        ), "InventoryManager 尚未初始化!"  # InventoryManager not initialized!
+        assert self.im, (
+            "InventoryManager 尚未初始化!"
+        )  # InventoryManager not initialized!
         current_day = (
             self.awi.current_step
         )  # Use local var for f-string clarity / 使用局部变量以提高f-string清晰度
@@ -327,9 +327,9 @@ class LitaAgentY(StdSyncAgent):
     def step(self) -> None:
         """每天结束时调用：执行 IM 的日终操作并刷新市场均价。"""
         """Called at the end of each day: executes IM's end-of-day operations and refreshes market average prices."""
-        assert (
-            self.im
-        ), "InventoryManager 尚未初始化!"  # InventoryManager not initialized!
+        assert self.im, (
+            "InventoryManager 尚未初始化!"
+        )  # InventoryManager not initialized!
         # 让 IM 完成收货 / 生产 / 交付 / 规划
         # Let IM complete receiving / production / delivery / planning
         result = self.im.process_day_operations()
@@ -464,9 +464,7 @@ class LitaAgentY(StdSyncAgent):
             )["average_cost"]
             if im_avg_raw_cost > 0:
                 avg_raw_cost = im_avg_raw_cost
-            elif (
-                self.im.raw_batches
-            ):  # Fallback to current batch average if IM summary is zero / 如果IM摘要为零，则回退到当前批次平均值
+            elif self.im.raw_batches:  # Fallback to current batch average if IM summary is zero / 如果IM摘要为零，则回退到当前批次平均值
                 total_cost = sum(
                     b.unit_cost * b.remaining
                     for b in self.im.raw_batches
@@ -631,8 +629,8 @@ class LitaAgentY(StdSyncAgent):
                 var = 0.0  # No variance if only one success or no successes / 如果只有一个成功或没有成功，则没有方差
             std = var**0.5
             rate = success_count / max(1, contracts_count)  # Success rate / 成功率
-            base = mean + std * (
-                1 - rate
+            base = (
+                mean + std * (1 - rate)
             )  # Adjust mean by std dev scaled by failure rate / 按失败率缩放的标准差调整均值
         else:
             base = default  # No historical data, use default / 没有历史数据，使用默认值
@@ -648,8 +646,8 @@ class LitaAgentY(StdSyncAgent):
             pid, base
         )  # Get model-based reservation price / 获取基于模型的保留价格
         return (
-            base + model_price
-        ) / 2  # Blend historical/heuristic base with model price / 将历史/启发式基础与模型价格混合
+            (base + model_price) / 2
+        )  # Blend historical/heuristic base with model price / 将历史/启发式基础与模型价格混合
 
     # ------------------------------------------------------------------
     # 🌟 3-b. 动态让步策略
@@ -674,15 +672,13 @@ class LitaAgentY(StdSyncAgent):
     def _concession_multiplier(self, rel_time: float, opp_rate: float = 0.0) -> float:
         """Calculates a concession multiplier based on relative time and opponent's concession rate."""
         """根据相对时间和对手的让步率计算让步乘数。"""
-        if (
-            self.concession_model
-        ):  # If a custom concession model exists, use it / 如果存在自定义让步模型，则使用它
+        if self.concession_model:  # If a custom concession model exists, use it / 如果存在自定义让步模型，则使用它
             return self.concession_model(rel_time, opp_rate)
         # Apply a non-linear curve to relative time, and factor in opponent's rate
         # 对相对时间应用非线性曲线，并考虑对手的让步率
         non_linear_rel_time = rel_time**self.concession_curve_power
-        base = non_linear_rel_time * (
-            1 + opp_rate
+        base = (
+            non_linear_rel_time * (1 + opp_rate)
         )  # Higher opponent rate can increase our concession / 对手让步率越高，我们的让步可能越大
         return max(0.0, min(1.0, base))  # Clamp between 0 and 1 / 限制在0和1之间
 
@@ -725,9 +721,7 @@ class LitaAgentY(StdSyncAgent):
             is_late_stage = rel_time > 0.7
             is_very_late_stage = rel_time > 0.85
 
-            if (
-                is_very_late_stage
-            ):  # Very late in negotiation, be more aggressive in conceding / 谈判非常后期，更积极地让步
+            if is_very_late_stage:  # Very late in negotiation, be more aggressive in conceding / 谈判非常后期，更积极地让步
                 adjusted_mult = max(
                     base_mult, 0.80
                 )  # Ensure at least 80% concession if very late / 如果非常后期，确保至少80%的让步
@@ -826,9 +820,7 @@ class LitaAgentY(StdSyncAgent):
             pred = 1.0 / (
                 1.0 + math.exp(-z)
             )  # Sigmoid function for probability / Sigmoid函数计算概率
-        except (
-            OverflowError
-        ):  # Handle potential overflow if z is too large/small / 处理z过大/过小导致的溢出
+        except OverflowError:  # Handle potential overflow if z is too large/small / 处理z过大/过小导致的溢出
             pred = 1.0 if z > 0 else 0.0
         y = 1.0 if accepted else 0.0  # True label / 真实标签
         err = y - pred  # Prediction error / 预测误差
@@ -899,9 +891,7 @@ class LitaAgentY(StdSyncAgent):
             # 检查当前计算价格是否非常接近我们的底价
             is_near_walkaway = abs(
                 current_calculated_price - abs_min_price_for_current_qty_time
-            ) < (
-                abs_min_price_for_current_qty_time * 0.03
-            )  # Within 3% / 3%以内
+            ) < (abs_min_price_for_current_qty_time * 0.03)  # Within 3% / 3%以内
             opponent_price_is_lower = (
                 price < current_calculated_price
             )  # Opponent's offer is better than our calculated price / 对手的报价优于我们的计算价格
@@ -1181,17 +1171,13 @@ class LitaAgentY(StdSyncAgent):
 
         # Determine needs based on agent's layer in the supply chain
         # 根据代理在供应链中的层级确定需求
-        if (
-            self.awi.is_first_level
-        ):  # Sells raw materials, buys nothing via negotiation / 销售原材料，不通过谈判采购
+        if self.awi.is_first_level:  # Sells raw materials, buys nothing via negotiation / 销售原材料，不通过谈判采购
             _, _, buy_need_optional_float = (
                 self._get_supply_demand_first_layer()
             )  # Should be 0 / 应为0
             buy_need_optional = int(buy_need_optional_float)
             sell_need = self._get_sales_demand_first_layer()
-        elif (
-            self.awi.is_last_level
-        ):  # Buys raw materials, sells nothing via negotiation / 采购原材料，不通过谈判销售
+        elif self.awi.is_last_level:  # Buys raw materials, sells nothing via negotiation / 采购原材料，不通过谈判销售
             buy_need_emergency, buy_need_planned, buy_need_optional_float = (
                 self._get_supply_demand_middle_last_layer_today()
             )
@@ -1240,9 +1226,7 @@ class LitaAgentY(StdSyncAgent):
         chosen_partners_for_distribution = partners[
             :k
         ]  # If _ptoday=1.0, this is all partners / 如果_ptoday=1.0，则为所有伙伴
-        if (
-            not chosen_partners_for_distribution
-        ):  # Should not happen if partners is not empty and k>=1 / 如果partners非空且k>=1，则不应发生
+        if not chosen_partners_for_distribution:  # Should not happen if partners is not empty and k>=1 / 如果partners非空且k>=1，则不应发生
             return {p: 0 for p in partners}
 
         # The _distribute function handles cases where needs < len(chosen_partners_for_distribution)
@@ -1304,12 +1288,15 @@ class LitaAgentY(StdSyncAgent):
         for pid, qty in distribution.items():
             if qty <= 0:
                 continue  # No need for this partner / 此伙伴无需求
-            time_issue = self.get_nmi(pid).issues[TIME]
+            nmi = self.get_nmi(pid)
+            if nmi is None:
+                continue  # No NMI available for this partner
+            time_issue = nmi.issues[TIME]
             # Propose delivery time within NMI, not before today
             # 在NMI范围内提议交货时间，不早于今天
             delivery_time = max(today, time_issue.min_value)
             delivery_time = min(delivery_time, time_issue.max_value)
-            qty_issue = self.get_nmi(pid).issues[QUANTITY]
+            qty_issue = nmi.issues[QUANTITY]
             # Propose quantity within NMI bounds
             # 在NMI范围内提议数量
             final_qty = min(qty, qty_issue.max_value)
@@ -1318,9 +1305,9 @@ class LitaAgentY(StdSyncAgent):
                 continue  # Invalid quantity after clamping / 限制后数量无效
 
             price_for_proposal: float
-            reason_log_parts: List[str] = (
-                []
-            )  # For logging decision process / 用于记录决策过程
+            reason_log_parts: List[
+                str
+            ] = []  # For logging decision process / 用于记录决策过程
 
             if self._is_consumer(pid):  # Selling to consumer / 销售给消费者
                 avg_raw_cost = self.get_avg_raw_cost_fallback(
@@ -1785,9 +1772,9 @@ class LitaAgentY(StdSyncAgent):
                     res[pid] = SAOResponse(
                         ResponseType.REJECT_OFFER, outcome_tuple
                     )  # Counter with partial quantity / 以部分数量还价
-                accepted_quantities_for_planned_this_call[
-                    t
-                ] += accept_qty_int  # Update accepted for this call / 更新此调用中已接受的数量
+                accepted_quantities_for_planned_this_call[t] += (
+                    accept_qty_int  # Update accepted for this call / 更新此调用中已接受的数量
+                )
                 if os.path.exists("env.test"):
                     print(log_prefix + f"Accepted Qty {accept_qty_int}. " + log_details)
             else:  # Cannot accept or price is not good / 无法接受或价格不好
@@ -1797,9 +1784,7 @@ class LitaAgentY(StdSyncAgent):
                 if not price_is_acceptable:
                     rejection_reason += "PriceUnacceptable(Effective);"
 
-                if (
-                    not price_is_acceptable
-                ):  # If price is the issue, try to negotiate down / 如果是价格问题，尝试谈判降低
+                if not price_is_acceptable:  # If price is the issue, try to negotiate down / 如果是价格问题，尝试谈判降低
                     target_quoted_price_for_negotiation = (
                         max_affordable_raw_price_jit - estimated_storage_cost_per_unit
                     )  # Target price before storage / 存储前的目标价格
@@ -1890,10 +1875,13 @@ class LitaAgentY(StdSyncAgent):
             # Determine if price is "cheap" based on market average and discount factor
             # 根据市场平均价和折扣因子确定价格是否“便宜”
             cheap_threshold = (
-                self._market_material_price_avg
-                if self._market_material_price_avg > 0
-                else price * 1.5
-            ) * self.cheap_price_discount  # Fallback if no market avg / 如果没有市场平均价则回退
+                (
+                    self._market_material_price_avg
+                    if self._market_material_price_avg > 0
+                    else price * 1.5
+                )
+                * self.cheap_price_discount
+            )  # Fallback if no market avg / 如果没有市场平均价则回退
             price_is_cheap = price <= cheap_threshold
 
             # Calculate procurement limit and headroom, adjusted by inventory health
@@ -1960,9 +1948,9 @@ class LitaAgentY(StdSyncAgent):
                 res[pid] = SAOResponse(
                     ResponseType.ACCEPT_OFFER, offer
                 )  # Accept original offer / 接受原始报价
-                accepted_quantities_for_optional_this_call[
-                    t
-                ] += accept_qty_int  # Update accepted for this call / 更新此调用中已接受的数量
+                accepted_quantities_for_optional_this_call[t] += (
+                    accept_qty_int  # Update accepted for this call / 更新此调用中已接受的数量
+                )
                 if os.path.exists("env.test"):
                     print(log_prefix + f"Accepted Qty {accept_qty_int}. " + log_details)
             else:  # Cannot accept or price not cheap enough / 无法接受或价格不够便宜
@@ -1972,9 +1960,7 @@ class LitaAgentY(StdSyncAgent):
                 if not price_is_cheap:
                     rejection_reason += "PriceNotCheap;"
 
-                if (
-                    not price_is_cheap
-                ):  # If price is not cheap, try to negotiate to cheap threshold / 如果价格不便宜，尝试谈判至便宜阈值
+                if not price_is_cheap:  # If price is not cheap, try to negotiate to cheap threshold / 如果价格不便宜，尝试谈判至便宜阈值
                     conceded_price = self._apply_concession(
                         pid, cheap_threshold, state, price
                     )  # Apply concession / 应用让步
@@ -2196,9 +2182,9 @@ class LitaAgentY(StdSyncAgent):
     def on_negotiation_success(self, contract: Contract, mechanism: StdAWI) -> None:
         """Called when a negotiation succeeds and a contract is formed."""
         """在谈判成功并形成合同时调用。"""
-        assert (
-            self.im
-        ), "InventoryManager 尚未初始化"  # InventoryManager not initialized
+        assert self.im, (
+            "InventoryManager 尚未初始化"
+        )  # InventoryManager not initialized
         partner = self.get_partner_id(contract)  # Get partner ID / 获取伙伴ID
         if partner == "unknown_partner":  # Safety check / 安全检查
             if os.path.exists("env.test"):
@@ -2240,9 +2226,9 @@ class LitaAgentY(StdSyncAgent):
             material_type=mat_type,
         )
         added = self.im.add_transaction(new_c)  # Add to IM / 添加到IM
-        assert (
-            added
-        ), f"❌ ({self.id}) IM.add_transaction 失败! contract={contract.id}"  # IM.add_transaction failed!
+        assert added, (
+            f"❌ ({self.id}) IM.add_transaction 失败! contract={contract.id}"
+        )  # IM.add_transaction failed!
 
         # Update partner statistics for successful negotiation
         # 更新伙伴的成功谈判统计数据
@@ -2502,8 +2488,8 @@ class LitaAgentY(StdSyncAgent):
     def _print_daily_status_report(self, result) -> None:
         """输出每日库存、生产和销售状态报告，包括未来预测"""
         """Outputs a daily status report of inventory, production, and sales, including future forecasts."""
-        if not self.im or not os.path.exists(
-            "env.test"
+        if (
+            not self.im or not os.path.exists("env.test")
         ):  # Only print if IM exists and in test environment / 仅当IM存在且在测试环境中时打印
             return
 
@@ -2515,7 +2501,7 @@ class LitaAgentY(StdSyncAgent):
         # Table header / 表头
         header = "|   日期    |  原料真库存  |  原料预计库存   | 计划生产  |  剩余产能  |  产品真库存  |  产品预计库存  |  已签署销售量  |  实际产品交付  |"
         # Date | Raw True Inv | Raw Est Inv | Planned Prod | Remain Cap | Prod True Inv | Prod Est Inv | Signed Sales | Actual Prod Deliv
-        separator = (
+        (
             "|" + "-" * (len(header) + 24) + "|"
         )  # Adjust separator length based on content / 根据内容调整分隔符长度
 

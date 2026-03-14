@@ -1,4 +1,3 @@
-import logging
 from typing import Any, Dict, List, Optional, Tuple
 
 import matplotlib.pyplot as plt
@@ -10,14 +9,10 @@ from scml.scml2020 import (
     TIME,
     UNIT_PRICE,
     DecentralizingAgent,
-    RandomAgent,
     SCML2020Agent,
     SCML2020World,
 )
-from scml.scml2020.agents.decentralizing import _NegotiationCallbacks
 from scml.scml2020.components.production import (
-    DemandDrivenProductionStrategy,
-    ProductionStrategy,
     SupplyDrivenProductionStrategy,
 )
 from scml.scml2020.components.trading import (
@@ -115,7 +110,7 @@ class SyncController(SAOSyncController):
             return -1000.0
 
         price_util = offer[UNIT_PRICE] / parent.awi.catalog_prices[product_id]
-        if self._is_seller == False:
+        if not self._is_seller:
             price_util = -price_util
 
         if offer[QUANTITY] > (needed[offer[TIME]] - secured[offer[TIME]]):
@@ -160,7 +155,7 @@ class SyncController(SAOSyncController):
         self.seq_cntr += 1
 
         if self._is_seller and (int(self.__parent.awi.agent.id[1]) == 5):
-            a = 5
+            pass
 
         # find the best offer
         negotiator_ids = list(offers.keys())
@@ -182,7 +177,7 @@ class SyncController(SAOSyncController):
                 response = ResponseType.REJECT_OFFER
             return {k: SAOResponse(response, best_proposals[k]) for k in offers.keys()}
 
-        relative_time = min(_.relative_time for _ in states.values())
+        min(_.relative_time for _ in states.values())
 
         if self._is_seller:
             if self.overall_best_util_sell < self._best_utils[best_partner]:
@@ -195,8 +190,7 @@ class SyncController(SAOSyncController):
 
         # if this is good enough or the negotiation is about to end accept the best offer
         if (
-            best_utility
-            >= self._utility_threshold * compare_util
+            best_utility >= self._utility_threshold * compare_util
             # or relative_time > self._time_threshold
         ):
             responses = {

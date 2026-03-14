@@ -12,18 +12,15 @@ from __future__ import annotations
 
 # required for typing
 import random
-
-# required for development
-from scml.std import *
+from collections import Counter
+from itertools import chain, combinations, repeat
 
 # required for typing
 from negmas import *
-
-
-from itertools import chain, combinations, repeat
-
 from numpy.random import choice
-from collections import Counter
+
+# required for development
+from scml.std import *
 
 __all__ = ["PenguinAgent"]
 
@@ -68,7 +65,7 @@ class PenguinAgent(StdSyncAgent):
 
     def first_proposals(self):
         # just randomly distribute my needs over my partners (with best price for me).
-        partners = self.negotiators.keys()
+        self.negotiators.keys()
         s = self.awi.current_step
         distribution = self.distribute_todays_needs()
 
@@ -159,9 +156,7 @@ class PenguinAgent(StdSyncAgent):
             current_step_partners = {
                 _ for _ in partners if _ in current_step_offers.keys()
             }
-            future_step_partners = {
-                _ for _ in partners if _ in future_step_offers.keys()
-            }
+            {_ for _ in partners if _ in future_step_offers.keys()}
 
             # 将来の契約返す(ここで返したものを後から再度オファーするエージェントの候補から外す)
             duplicate_list = [0 for _ in range(awi.n_steps)]  # 重複分
@@ -188,7 +183,7 @@ class PenguinAgent(StdSyncAgent):
             best_minus_diff = float("inf")
 
             plist = list(powerset(current_step_partners))
-            best_diff, best_indx = float("inf"), -1
+            _best_diff, best_indx = float("inf"), -1
             for i, partner_ids in enumerate(plist):
                 others = current_step_partners.difference(partner_ids)
                 offered = sum(current_step_offers[p][QUANTITY] for p in partner_ids)

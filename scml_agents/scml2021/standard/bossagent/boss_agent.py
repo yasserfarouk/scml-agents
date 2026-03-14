@@ -1,9 +1,7 @@
 # required for typing
 import math
 from collections import defaultdict
-from typing import Any, Dict, List, Optional
 
-from negmas import Contract
 from scml.scml2020 import SCML2020Agent
 
 # Boss modules.
@@ -99,9 +97,7 @@ class CharliesAgent(
         self.pseudo_sellers = {}
 
         # Keep custom stats.
-        self.reject_acceptance_rate = (
-            {}
-        )  # Key is agent id, value is {'Acceptance': int, 'Reject': int}.
+        self.reject_acceptance_rate = {}  # Key is agent id, value is {'Acceptance': int, 'Reject': int}.
 
         for supplier in self.my_suppliers:
             self.reject_acceptance_rate[supplier] = {"Acceptance": 0, "Reject": {}}

@@ -3,16 +3,11 @@
 
 # required for running tournament
 import time
-from pathlib import Path
 
-import pandas as pd
-from agent import MyLearnNegotiationAgent, NegotiatorAgent, UnicornAgent
+from agent import UnicornAgent
 from negmas.helpers import humanize_time
 from scml.scml2020.agents import (
-    BuyCheapSellExpensiveAgent,
     DecentralizingAgent,
-    IndDecentralizingAgent,
-    RandomAgent,
 )
 from scml.utils import anac2020_collusion, anac2020_std
 from tabulate import tabulate

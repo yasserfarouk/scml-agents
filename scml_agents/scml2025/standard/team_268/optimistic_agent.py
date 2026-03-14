@@ -1,5 +1,7 @@
 from collections import defaultdict
+
 from scml.oneshot.common import *
+
 from .simple_agent import SimpleAgent
 
 __all__ = ["OptimisticAgent"]

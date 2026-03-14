@@ -6,6 +6,7 @@ Last modified: March-04-2023
 negmas version: 0.9.8
 scml version: 0.5.6
 """
+
 import time
 
 import matplotlib.pyplot as plt
@@ -90,9 +91,7 @@ class TwoOneFive(OneShotAgent):
             return None
 
         nmi = self.get_nmi(negotiator_id)
-        partner = (
-            nmi.annotation["buyer"] if self.awi.level == 0 else nmi.annotation["seller"]
-        )
+        (nmi.annotation["buyer"] if self.awi.level == 0 else nmi.annotation["seller"])
         offer = [-1] * 3
         offer[TIME] = self.awi.current_step
         isSelling = self._is_selling(nmi)
@@ -126,7 +125,7 @@ class TwoOneFive(OneShotAgent):
         if not offer:
             return ResponseType.REJECT_OFFER
         # collect info
-        nmi = self.get_nmi(negotiator_id)
+        self.get_nmi(negotiator_id)
         offer_quantity = offer[QUANTITY]
         offer_unit_price = offer[UNIT_PRICE]
 
