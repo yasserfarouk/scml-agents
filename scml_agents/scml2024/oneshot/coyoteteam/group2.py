@@ -365,19 +365,30 @@ class SyncRandomStdAgent(StdSyncAgent):
 
     def best_price(self, partner_id):
         """Best price for a negotiation today"""
-        issue = self.get_nmi(partner_id).issues[UNIT_PRICE]
+        nmi = self.get_nmi(partner_id)
+        if nmi is None:
+            # Fallback to current issues if no active negotiation
+            if self.is_consumer(partner_id):
+                return self.awi.current_output_issues[UNIT_PRICE].max_value
+            else:
+                return self.awi.current_input_issues[UNIT_PRICE].min_value
+        issue = nmi.issues[UNIT_PRICE]
         return issue.max_value if self.is_consumer(partner_id) else issue.min_value
 
     def good_price(self, partner_id, today: bool):
         """A good price to use"""
         nmi = self.get_nmi(partner_id)
+        if nmi is None:
+            # Fallback to current issues if no active negotiation
+            if self.is_supplier(partner_id):
+                return self.awi.current_input_issues[UNIT_PRICE].min_value
+            else:
+                return self.awi.current_output_issues[UNIT_PRICE].max_value
         mn = nmi.issues[UNIT_PRICE].min_value
         mx = nmi.issues[UNIT_PRICE].max_value
         if self.is_supplier(partner_id):
             return self.buy_price(nmi.state.relative_time, mn, mx, today=today)
-        return self.sell_price(
-            self.get_nmi(partner_id).state.relative_time, mn, mx, today=today
-        )
+        return self.sell_price(nmi.state.relative_time, mn, mx, today=today)
 
     def buy_price(self, t: float, mn: float, mx: float, today: bool) -> float:
         """Return a good price to buy at"""
@@ -443,38 +454,46 @@ class Group2(SyncRandomStdAgent):
 
     def good_price(self, partner_id, today: bool):
         nmi = self.get_nmi(partner_id)
-        interface = self.awi
-        other_report = AWI.reports_of_agent(interface, partner_id)
-        state = nmi.state
-        my_cash = self.awi.current_balance
-        other_cash = 0
-        if other_report is not None:
-            other_cash = other_report[(len(other_report) - 1) * 5].cash
-        if state.relative_time > 0.2 * (
-            1 + (my_cash / (my_cash + other_cash))
-        ):  # Korku Kısmı
-            self.multiplier = 0.2
+        if nmi is None:
+            # Fallback when no active negotiation
+            if self.is_supplier(partner_id):
+                issues = self.awi.current_input_issues
+            else:
+                issues = self.awi.current_output_issues
+            mn = issues[UNIT_PRICE].min_value
+            mx = issues[UNIT_PRICE].max_value
+            relative_time = self.awi.relative_time
+        else:
+            interface = self.awi
+            other_report = AWI.reports_of_agent(interface, partner_id)
+            state = nmi.state
+            my_cash = self.awi.current_balance
+            other_cash = 0
+            if other_report is not None:
+                other_cash = other_report[(len(other_report) - 1) * 5].cash
+            if state.relative_time > 0.2 * (
+                1 + (my_cash / (my_cash + other_cash))
+            ):  # Korku Kısmı
+                self.multiplier = 0.2
 
-        elif state.relative_time < 0.2 * (
-            1 + (other_cash / (my_cash + other_cash))
-        ):  # İnat Kısmı
-            self.multiplier = 1.5
+            elif state.relative_time < 0.2 * (
+                1 + (other_cash / (my_cash + other_cash))
+            ):  # İnat Kısmı
+                self.multiplier = 1.5
+
+            mn = nmi.issues[UNIT_PRICE].min_value
+            mx = nmi.issues[UNIT_PRICE].max_value
+            relative_time = nmi.state.relative_time
 
         """A good price to use"""
-        mn = nmi.issues[UNIT_PRICE].min_value
-        mx = nmi.issues[UNIT_PRICE].max_value
         if self.is_supplier(partner_id):
             return (
-                self.buy_price(nmi.state.relative_time, mn, mx, today=today)
+                self.buy_price(relative_time, mn, mx, today=today)
                 / self.multiplier
                 * 1.2
             )
         return (
-            self.sell_price(
-                self.get_nmi(partner_id).state.relative_time, mn, mx, today=today
-            )
-            * self.multiplier
-            * 0.1
+            self.sell_price(relative_time, mn, mx, today=today) * self.multiplier * 0.1
         )
 
 

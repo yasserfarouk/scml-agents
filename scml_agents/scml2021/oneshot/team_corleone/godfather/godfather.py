@@ -423,7 +423,11 @@ class GodfatherAgent(OneShotSyncAgent):
         """Estimates the bilateral utility function for negotiation j, wrt other outcomes predicted"""
 
         offer_space = self._get_offer_space(j)
+        if offer_space is None:
+            return None
         outcome_space = self._get_outcome_space(j)
+        if outcome_space is None:
+            return None
         offer_space.offer_set()
         all_outcomes = outcome_space.outcome_set()
         util_table: Dict[Outcome, float] = {}  # outcome -> utility

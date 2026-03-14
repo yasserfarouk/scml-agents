@@ -285,7 +285,14 @@ class PenguinAgent(StdSyncAgent):
     # 法外な値段を排除するためのプログラム
     def is_valid_price(self, price, partner):
         nmi = self.get_nmi(partner)
-        issues = nmi.issues
+        if nmi is None:
+            # Fallback when no active negotiation
+            if self.is_consumer(partner):
+                issues = self.awi.current_output_issues
+            else:
+                issues = self.awi.current_input_issues
+        else:
+            issues = nmi.issues
         pissue = issues[UNIT_PRICE]
         minp, maxp = pissue.min_value, pissue.max_value
         if self.is_consumer(partner):
@@ -511,7 +518,16 @@ class PenguinAgent(StdSyncAgent):
         return partner in self.awi.my_suppliers
 
     def best_price(self, partner):
-        issue = self.get_nmi(partner).issues[UNIT_PRICE]
+        nmi = self.get_nmi(partner)
+        if nmi is None:
+            # Fallback when no active negotiation
+            if self.is_supplier(partner):
+                issues = self.awi.current_input_issues
+            else:
+                issues = self.awi.current_output_issues
+            issue = issues[UNIT_PRICE]
+        else:
+            issue = nmi.issues[UNIT_PRICE]
         pmin, pmax = issue.min_value, issue.max_value
         return pmin if self.is_supplier(partner) else pmax
 
@@ -520,7 +536,14 @@ class PenguinAgent(StdSyncAgent):
         # 今日足りていない分のためのオファーのため少し譲歩する
 
         nmi = self.get_nmi(partner)
-        issues = nmi.issues
+        if nmi is None:
+            # Fallback when no active negotiation
+            if self.is_consumer(partner):
+                issues = self.awi.current_output_issues
+            else:
+                issues = self.awi.current_input_issues
+        else:
+            issues = nmi.issues
         pissue = issues[UNIT_PRICE]
         minp, maxp = pissue.min_value, pissue.max_value
 

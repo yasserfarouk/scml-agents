@@ -225,7 +225,16 @@ class DogAgent(StdSyncAgent):
 
     # 最初の提案は、最低価格、最高価格でOK
     def best_price(self, partner):
-        issue = self.get_nmi(partner).issues[UNIT_PRICE]
+        nmi = self.get_nmi(partner)
+        if nmi is None:
+            # Fallback when no active negotiation
+            if self.is_supplier(partner):
+                issues = self.awi.current_input_issues
+            else:
+                issues = self.awi.current_output_issues
+            issue = issues[UNIT_PRICE]
+        else:
+            issue = nmi.issues[UNIT_PRICE]
         t = self.awi.relative_time * 0.025
         if self.is_supplier(partner):
             return issue.min_value + ((issue.max_value - issue.min_value) * t)

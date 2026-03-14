@@ -291,7 +291,7 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
 
         signed_future_inputs = self.past_contracts[
             (self.past_contracts.t >= self.awi.current_step)
-            & (not self.past_contracts.is_sell)
+            & (~self.past_contracts.is_sell)
         ]["q"].sum()
         signed_future_outputs = self.past_contracts[
             (self.past_contracts.t >= self.awi.current_step)
@@ -516,7 +516,7 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
         ].q.sum()
         signed_future_inputs = self.past_contracts[
             (self.past_contracts.t >= self.awi.current_step)
-            & (not self.past_contracts.is_sell)
+            & (~self.past_contracts.is_sell)
         ].q.sum()
 
         n_steps_to_produce = (
@@ -707,7 +707,7 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
             )  # using max() to avoid any bug
 
         signed_buying_inputs = (
-            self.past_contracts[not self.past_contracts.is_sell].q.sum()
+            self.past_contracts[~self.past_contracts.is_sell].q.sum()
             if self.past_contracts.shape[0] > 0
             else 0
         )
@@ -830,7 +830,7 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
 
         buying_contracts = self.past_contracts[
             (self.past_contracts.t >= self.awi.current_step)
-            & (not self.past_contracts.is_sell)
+            & (~self.past_contracts.is_sell)
         ]
         signed_future_inputs = buying_contracts["q"].sum()
 
@@ -883,7 +883,7 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
         )
 
         total_sell = self.past_contracts.loc[self.past_contracts.is_sell, "q"].sum()
-        total_buy = self.past_contracts.loc[not self.past_contracts.is_sell, "q"].sum()
+        total_buy = self.past_contracts.loc[~self.past_contracts.is_sell, "q"].sum()
         flow_ratio = total_sell / total_buy if total_buy else 0
 
         if (

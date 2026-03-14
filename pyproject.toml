@@ -19,7 +19,7 @@ dependencies = [
     "click>=6.0",
     "scml>=0.7.7",
     "negmas>=0.15.2",
-    "torch",
+    "torch>=2.2.0",  # Minimum version for macOS stability
     "numpy",
     "pulp",
     "xgboost",
