@@ -37,9 +37,9 @@
 self.today_insufficient = im.get_today_insufficient(t)
 self.total_insufficient = im.get_total_insufficient(t)
 
-raw_need_today = self.today_insufficient           # emergency
-raw_need_future = self.total_insufficient          # planned
-raw_need_optional = int(raw_need_future * 0.2)     # 20 % buffer
+raw_need_today = self.today_insufficient  # emergency
+raw_need_future = self.total_insufficient  # planned
+raw_need_optional = int(raw_need_future * 0.2)  # 20 % buffer
 ```
 
 | Layer            | Buy Need Source          | Sell Need Source                                      |
@@ -61,6 +61,7 @@ class Batch:
     remaining: float
     unit_cost: float
     production_time: int  # day index
+
 
 class InventoryManager:
     def add_transaction(self, contract: IMContract):
@@ -118,7 +119,7 @@ return out
 def _distribute_todays_needs(self, partners):
     k = max(1, int(len(partners) * self._ptoday))  # fraction selected
     chosen = random.sample(partners, k)
-    quantities = _distribute(total_need, k)        # random integer split
+    quantities = _distribute(total_need, k)  # random integer split
     return dict(zip(chosen, quantities))
 ```
 
@@ -161,11 +162,11 @@ Optional stock‑up triggers when `price ≤ market_avg * cheap_price_discount` 
 
 # Slide 8 — Sales Offer Handling
 
-```python
+```text
 max_prod = im.get_max_possible_production(t)
 if signed_qty + qty > max_prod:
     counter_qty = max_prod - signed_qty
-    REJECT → counter(counter_qty, t, price)
+    REJECT → counter(counter_qty, t, price)
 ...
 ```
 
@@ -189,8 +190,7 @@ def concession_model(time, opp_rate, beta=0.5):
 # Slide 10 — Dynamic Profit & Risk Tuning
 
 ```python
-agent.update_profit_strategy(min_profit_margin=0.12,
-                             cheap_price_discount=0.6)
+agent.update_profit_strategy(min_profit_margin=0.12, cheap_price_discount=0.6)
 ```
 
 * Raise margin when demand high / capacity tight. &#x20;
