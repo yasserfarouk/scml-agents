@@ -87,7 +87,7 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
         self.partners = self.my_suppliers + self.my_consumers
 
         self.trade_stats = pd.DataFrame(
-            -1,
+            -1.0,  # Use float to allow float values in columns like hist_utility, sign_rate, etc.
             columns=[
                 "sign_rate",
                 "agree_rate",
@@ -197,13 +197,10 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
         """
 
         for partner in self.partners:
-            if (
-                partner
-                in [
-                    "SELLER",
-                    "BUYER",
-                ]
-            ):  # no negotiation with global players, so, trade_stats is not needed for them
+            if partner in [
+                "SELLER",
+                "BUYER",
+            ]:  # no negotiation with global players, so, trade_stats is not needed for them
                 continue
 
             n_negotiations, n_agree, n_signs = 0, 0, 0
@@ -332,9 +329,11 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
             ]
 
             eagerness["nego_score"] = eagerness.nego_parameters.apply(
-                lambda row: round((row[0] * row[1]) ** 0.5 * row[2] * row[3], 3)
-                if -1 not in row
-                else 0
+                lambda row: (
+                    round((row[0] * row[1]) ** 0.5 * row[2] * row[3], 3)
+                    if -1 not in row
+                    else 0
+                )
             )
 
             average_score = eagerness.nego_score.mean()
@@ -470,9 +469,9 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
 
         # do not allow the negotiatiors allocated 0 quantity to engage in negotiators
         if negotiator.q_bounds[1] > 0:
-            negotiator.params[
-                "alpha"
-            ] = -1  # counter agenda might not be suitable for us, therefore all desirable bids are allowed to propose
+            negotiator.params["alpha"] = (
+                -1
+            )  # counter agenda might not be suitable for us, therefore all desirable bids are allowed to propose
             negotiator.valid_q_bounds = [qvalues.min_value, qvalues.max_value]
             negotiator.valid_t_bounds = [tvalues.min_value, tvalues.max_value]
             negotiator.valid_p_bounds = [pvalues.min_value, pvalues.max_value]
@@ -562,8 +561,9 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
         """
         Calculates own trading price as sqrt(weighted historical price * weighted last price) based on contracts.
         """
-        if partner == None or partner not in self.past_contracts.index.get_level_values(
-            0
+        if (
+            partner == None
+            or partner not in self.past_contracts.index.get_level_values(0)
         ):
             pcs = self.past_contracts
         else:
@@ -845,11 +845,13 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
                     "price": contract.agreement["unit_price"],
                     "quantity": contract.agreement["quantity"],
                     "time": contract.agreement["time"],
-                    "breach_score": self.supplier_states[contract.annotation["seller"]][
-                        "breach_score"
-                    ]
-                    if contract.annotation["seller"] != "SELLER"
-                    else 0,
+                    "breach_score": (
+                        self.supplier_states[contract.annotation["seller"]][
+                            "breach_score"
+                        ]
+                        if contract.annotation["seller"] != "SELLER"
+                        else 0
+                    ),
                     "partner": contract.annotation["seller"],
                 }
                 for sign_indx, contract in enumerate(contracts)
@@ -864,11 +866,13 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
                     "price": contract.agreement["unit_price"],
                     "quantity": contract.agreement["quantity"],
                     "time": contract.agreement["time"],
-                    "breach_score": self.consumer_states[contract.annotation["buyer"]][
-                        "breach_score"
-                    ]
-                    if contract.annotation["buyer"] != "BUYER"
-                    else 0,
+                    "breach_score": (
+                        self.consumer_states[contract.annotation["buyer"]][
+                            "breach_score"
+                        ]
+                        if contract.annotation["buyer"] != "BUYER"
+                        else 0
+                    ),
                     "partner": contract.annotation["buyer"],
                 }
                 for sign_indx, contract in enumerate(contracts)
@@ -987,7 +991,7 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
                             )
 
                 signed_future_inputs = (
-                    buying_contracts.set_index("t").groupby("t", axis=0)["q"].sum()
+                    buying_contracts.set_index("t").groupby("t")["q"].sum()
                 )
 
                 for t, q in signed_future_inputs.items():

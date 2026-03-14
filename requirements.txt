@@ -1,10 +1,2 @@
-click
-scml>=0.5.0
-pulp
-xgboost
+# Development dependencies - use `uv sync` to install
 -e .
-tensorflow; sys_platform != "darwin"
-tensorflow-macos; sys_platform == "darwin"
-tensorflow-metal; sys_platform == "darwin"
-torch; sys_platform != "darwin"
-torch; sys_platform == "darwin"
