@@ -71,7 +71,6 @@ import sys
 # required for running tournaments and printing
 import time
 from collections import defaultdict
-# from os import PRIO_PROCESS
 
 # required for typing
 from typing import Any, Dict, List, Optional
@@ -89,12 +88,15 @@ from negmas import (
 from negmas.helpers import humanize_time
 
 # required for development
-from numpy.lib.arraysetops import isin
+from numpy import isin
 from scml.oneshot import OneShotAgent
 from scml.oneshot.agents import RandomOneShotAgent, SyncRandomOneShotAgent
 from scml.oneshot.world import SCML2020OneShotWorld, is_system_agent
 from scml.utils import anac2021_collusion, anac2021_oneshot, anac2021_std
 from tabulate import tabulate
+
+# from os import PRIO_PROCESS
+
 
 __all__ = [
     "QlAgent",
@@ -121,6 +123,7 @@ if ENABLE_GRAPH:
     matplotlib.use("TkAgg")
     # matplotlib.use('Agg')
     from scipy.signal import butter, filtfilt
+
 
 # Debug print type #1
 def DEBUG_PRINT(msg):
@@ -1715,7 +1718,6 @@ class QlAgent(OneShotAgent):
                         # print(a)
                         return a
             else:
-
                 # map current MDP state to "index space" state
                 state_m = self._state_mapper(state, unit_price_issue, quantity_issue)
                 # print("q")
@@ -2070,9 +2072,9 @@ class QlAgent(OneShotAgent):
                                     # for needs in range(-1,self.awi.n_lines+1,self.needs_res):
                                     for i_n, needs in enumerate(self.ne_range):
                                         # q_t[(p_s,np.ceil(q_s),p_so,q_so,needs)] = dict()
-                                        q_t[
-                                            (i_p_s, i_q_s, i_ps_so, i_q_so, i_n)
-                                        ] = dict()
+                                        q_t[(i_p_s, i_q_s, i_ps_so, i_q_so, i_n)] = (
+                                            dict()
+                                        )
                             # for needs in range(-1,self.awi.n_lines+1,self.needs_res):
                             for i_n, needs in enumerate(self.ne_range):
                                 q_t[(i_ps_so, i_q_so, i_n)] = dict()
@@ -2108,7 +2110,6 @@ class QlAgent(OneShotAgent):
                                     for i_q_so, q_so in enumerate(q_range):
                                         for i_p_s, p_s in enumerate(my_p_range):
                                             for i_q_s, q_s in enumerate(my_q_range):
-
                                                 # for needs in range(-1,self.awi.n_lines+1,self.needs_res):
                                                 for i_n, needs in enumerate(
                                                     self.ne_range
@@ -2143,16 +2144,16 @@ class QlAgent(OneShotAgent):
                                         # for needs in range(-1,self.awi.n_lines+1,self.needs_res):
                                         for i_n, needs in enumerate(self.ne_range):
                                             # q_t[(p_so,q_so,needs)][(p,np.ceil(q))] = self._initial_q_seller(p,np.ceil(q),needs, nmi, (p_so,q_so,needs))#0
-                                            q_t[(i_ps_so, i_q_so, i_n)][
-                                                (i_p, i_q)
-                                            ] = self._initial_q_seller(
-                                                p,
-                                                np.ceil(q),
-                                                needs,
-                                                nmi,
-                                                (p_so, q_so, needs),
-                                                None,
-                                                (i_p, i_q),
+                                            q_t[(i_ps_so, i_q_so, i_n)][(i_p, i_q)] = (
+                                                self._initial_q_seller(
+                                                    p,
+                                                    np.ceil(q),
+                                                    needs,
+                                                    nmi,
+                                                    (p_so, q_so, needs),
+                                                    None,
+                                                    (i_p, i_q),
+                                                )
                                             )  # 0
                             else:
                                 # q_t[s][(p,np.ceil(q))] = 0#self._initial_q_seller(p,np.ceil(q),needs,nmi)
@@ -2178,7 +2179,6 @@ class QlAgent(OneShotAgent):
                                     for i_q_so, q_so in enumerate(q_range):
                                         for i_p_s, p_s in enumerate(my_p_range):
                                             for i_q_s, q_s in enumerate(my_q_range):
-
                                                 # for needs in range(-1,self.awi.n_lines+1,self.needs_res):
                                                 for i_n, needs in enumerate(
                                                     self.ne_range
@@ -2212,16 +2212,16 @@ class QlAgent(OneShotAgent):
                                         # for needs in range(-1,self.awi.n_lines+1,self.needs_res):
                                         for i_n, needs in enumerate(self.ne_range):
                                             # q_t[(p_so,q_so,needs)][(p,np.ceil(q))] = self._initial_q_buyer(p,np.ceil(q),needs, nmi, (p_so,q_so,needs))#0
-                                            q_t[(i_ps_so, i_q_so, i_n)][
-                                                (i_p, i_q)
-                                            ] = self._initial_q_buyer(
-                                                p,
-                                                np.ceil(q),
-                                                needs,
-                                                nmi,
-                                                (p_so, q_so, needs),
-                                                None,
-                                                (i_p, i_q),
+                                            q_t[(i_ps_so, i_q_so, i_n)][(i_p, i_q)] = (
+                                                self._initial_q_buyer(
+                                                    p,
+                                                    np.ceil(q),
+                                                    needs,
+                                                    nmi,
+                                                    (p_so, q_so, needs),
+                                                    None,
+                                                    (i_p, i_q),
+                                                )
                                             )  # 0
                             else:
                                 # q_t[s][(p,np.ceil(q))] = 0#self._initial_q_buyer(p, np.ceil(q), )
@@ -2314,49 +2314,49 @@ class QlAgent(OneShotAgent):
                             for i_n, needs in enumerate(self.ne_range):
                                 if is_seller:
                                     # q_t[(p_so,q_so,needs)]["end"] = self._initial_q_seller(p_so,q_so,needs,nmi, (p_so,q_so,needs), "end")
-                                    q_t[(i_ps_so, i_q_so, i_n)][
-                                        "end"
-                                    ] = self._initial_q_seller(
-                                        p_so,
-                                        q_so,
-                                        needs,
-                                        nmi,
-                                        (p_so, q_so, needs),
-                                        "end",
+                                    q_t[(i_ps_so, i_q_so, i_n)]["end"] = (
+                                        self._initial_q_seller(
+                                            p_so,
+                                            q_so,
+                                            needs,
+                                            nmi,
+                                            (p_so, q_so, needs),
+                                            "end",
+                                        )
                                     )
                                     # q_t[(p_so,q_so,needs)]["acc"] = self._initial_q_seller(p_so,q_so,needs,nmi, (p_so,q_so,needs), "acc")
-                                    q_t[(i_ps_so, i_q_so, i_n)][
-                                        "acc"
-                                    ] = self._initial_q_seller(
-                                        p_so,
-                                        q_so,
-                                        needs,
-                                        nmi,
-                                        (p_so, q_so, needs),
-                                        "acc",
+                                    q_t[(i_ps_so, i_q_so, i_n)]["acc"] = (
+                                        self._initial_q_seller(
+                                            p_so,
+                                            q_so,
+                                            needs,
+                                            nmi,
+                                            (p_so, q_so, needs),
+                                            "acc",
+                                        )
                                     )
                                 else:
                                     # q_t[(p_so,q_so,needs)]["end"] = self._initial_q_buyer(p_so,q_so,needs,nmi, (p_so,q_so,needs), "end")
-                                    q_t[(i_ps_so, i_q_so, i_n)][
-                                        "end"
-                                    ] = self._initial_q_buyer(
-                                        p_so,
-                                        q_so,
-                                        needs,
-                                        nmi,
-                                        (p_so, q_so, needs),
-                                        "end",
+                                    q_t[(i_ps_so, i_q_so, i_n)]["end"] = (
+                                        self._initial_q_buyer(
+                                            p_so,
+                                            q_so,
+                                            needs,
+                                            nmi,
+                                            (p_so, q_so, needs),
+                                            "end",
+                                        )
                                     )
                                     # q_t[(p_so,q_so,needs)]["acc"] = self._initial_q_buyer(p_so,q_so,needs,nmi, (p_so,q_so,needs), "acc")
-                                    q_t[(i_ps_so, i_q_so, i_n)][
-                                        "acc"
-                                    ] = self._initial_q_buyer(
-                                        p_so,
-                                        q_so,
-                                        needs,
-                                        nmi,
-                                        (p_so, q_so, needs),
-                                        "acc",
+                                    q_t[(i_ps_so, i_q_so, i_n)]["acc"] = (
+                                        self._initial_q_buyer(
+                                            p_so,
+                                            q_so,
+                                            needs,
+                                            nmi,
+                                            (p_so, q_so, needs),
+                                            "acc",
+                                        )
                                     )
         # initializing the action vector
         # action_vec = dict()
@@ -2486,6 +2486,7 @@ class QlAgent(OneShotAgent):
     :param: nmi - the nmi object of the framework
     :return: the penalty per unit
     """
+
     # storage : buying to much == disposal, delivery : selling too much == shortfall
     def _too_much_penalty(self, nmi):
         if self._is_selling(nmi):

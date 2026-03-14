@@ -4,13 +4,14 @@ from typing import Callable, List
 
 import numpy as np
 from negmas import SAOResponse
-from numpy.lib.arraysetops import _unpack_tuple
 
 from .bilat_ufun import BilatUFun, BilatUFunAvg
 from .nash_calc_godfather import NashCalcGodfather
 from .negotiation_history import BilateralHistory
 from .offer import Offer
 from .spaces import *
+
+# _unpack_tuple was removed from numpy.lib.arraysetops in newer versions (unused import)
 
 
 class Strategy:
