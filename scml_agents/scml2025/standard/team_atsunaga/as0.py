@@ -4,17 +4,15 @@
 from __future__ import annotations
 
 import random
-from collections import defaultdict, Counter
-
-# required for development
-from scml.std import *
+from collections import Counter, defaultdict
+from itertools import chain, combinations, repeat
 
 # required for typing
 from negmas import *
-
-from itertools import chain, combinations, repeat
-
 from numpy.random import choice
+
+# required for development
+from scml.std import *
 
 __all__ = ["AS0"]
 
@@ -384,6 +382,8 @@ class AS0(StdSyncAgent):
     def smart_price(self, partner, is_first_proposal=False, is_counter_offer=False):
         """改善された価格戦略"""
         nmi = self.get_nmi(partner)
+        if nmi is None:
+            return None
         issues = nmi.issues
         pissue = issues[UNIT_PRICE]
         minp, maxp = pissue.min_value, pissue.max_value
@@ -425,6 +425,8 @@ class AS0(StdSyncAgent):
     # 元のメソッドを保持（基本ロジックは変更しない）
     def is_valid_price(self, price, partner):
         nmi = self.get_nmi(partner)
+        if nmi is None:
+            return False
         issues = nmi.issues
         pissue = issues[UNIT_PRICE]
         minp, maxp = pissue.min_value, pissue.max_value
@@ -629,7 +631,10 @@ class AS0(StdSyncAgent):
         return partner in self.awi.my_suppliers
 
     def best_price(self, partner):
-        issue = self.get_nmi(partner).issues[UNIT_PRICE]
+        nmi = self.get_nmi(partner)
+        if nmi is None:
+            return None
+        issue = nmi.issues[UNIT_PRICE]
         pmin, pmax = issue.min_value, issue.max_value
         return pmin if self.is_supplier(partner) else pmax
 

@@ -1,15 +1,18 @@
-from .simple_sync_agent import SimpleSyncAgent
 import random
+
+from negmas import ResponseType, SAOResponse
 from scml.oneshot.common import *
-from negmas import SAOResponse, ResponseType
+
+from .simple_sync_agent import SimpleSyncAgent
 
 __all__ = ["ProactiveAgent"]
 
 
 def distribute(q: int, n: int) -> list[int]:
     """Distributes n values over m bins with at least one item per bin assuming q > n"""
-    from numpy.random import choice
     from collections import Counter
+
+    from numpy.random import choice
 
     if q < n:
         lst = [0] * (n - q) + [1] * q
@@ -48,9 +51,11 @@ class ProactiveAgent(SimpleSyncAgent):
         s = self.awi.current_step
         distribution = self.distribute_todays_needs()
         return {
-            k: (q, s, self.best_price(k))
-            if q > 0
-            else self.sample_future_offer(k).outcome
+            k: (
+                (q, s, self.best_price(k))
+                if q > 0
+                else self.sample_future_offer(k).outcome
+            )
             for k, q in distribution.items()
         }
 
@@ -110,10 +115,13 @@ class ProactiveAgent(SimpleSyncAgent):
             # randomly over my partners.
             distribution = self.distribute_todays_needs()
             response |= {
-                k: self.sample_future_offer(k)
-                if q == 0
-                else SAOResponse(
-                    ResponseType.REJECT_OFFER, (q, self.awi.current_step, self.price(k))
+                k: (
+                    self.sample_future_offer(k)
+                    if q == 0
+                    else SAOResponse(
+                        ResponseType.REJECT_OFFER,
+                        (q, self.awi.current_step, self.price(k)),
+                    )
                 )
                 for k, q in distribution.items()
             }
@@ -166,6 +174,8 @@ class ProactiveAgent(SimpleSyncAgent):
     def sample_future_offer(self, partner):
         # get a random future offer. In reality an offer today may be returned
         nmi = self.get_nmi(partner)
+        if nmi is None:
+            return SAOResponse(ResponseType.END_NEGOTIATION, None)
         outcome = nmi.random_outcome()
         t = outcome[TIME]
         if t == self.awi.current_step:
@@ -182,9 +192,15 @@ class ProactiveAgent(SimpleSyncAgent):
         return partner in self.awi.my_suppliers
 
     def best_price(self, partner):
-        issue = self.get_nmi(partner).issues[UNIT_PRICE]
+        nmi = self.get_nmi(partner)
+        if nmi is None:
+            return None
+        issue = nmi.issues[UNIT_PRICE]
         pmin, pmax = issue.min_value, issue.max_value
         return pmin if self.is_supplier(partner) else pmax
 
     def price(self, partner):
-        return self.get_nmi(partner).issues[UNIT_PRICE].rand()
+        nmi = self.get_nmi(partner)
+        if nmi is None:
+            return None
+        return nmi.issues[UNIT_PRICE].rand()

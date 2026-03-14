@@ -1,8 +1,8 @@
-from scml.oneshot import *
-from negmas import ResponseType
-from scml.oneshot import *
 import math
 import random
+
+from negmas import ResponseType
+from scml.oneshot import *
 
 random.seed(0)
 
@@ -42,6 +42,11 @@ class AgentRM(OneShotAgent):
         negotiator_id.remove(my_id)
         negotiator_id = negotiator_id[0]
         ami = self.get_nmi(negotiator_id)
+        if ami is None:
+            self.secured += contract.agreement["quantity"]
+            if negotiator_id in self.your_needs:
+                self.your_needs.pop(negotiator_id)
+            return
 
         if self._is_selling(ami):
             if negotiator_id in self._opp_best_success_selling.keys():
@@ -82,6 +87,8 @@ class AgentRM(OneShotAgent):
 
         if not offer:
             return None
+        if ami is None:
+            return tuple(offer) if isinstance(offer, list) else offer
         offer = list(offer)
 
         if negotiator_id in self.your_needs.keys():
@@ -111,6 +118,8 @@ class AgentRM(OneShotAgent):
 
         self.your_needs[negotiator_id] = offer[QUANTITY]
         ami = self.get_nmi(negotiator_id)
+        if ami is None:
+            return ResponseType.REJECT_OFFER
         my_needs = self._needed(negotiator_id)
 
         # 必要量を既に満たしていたら交渉を終了する
@@ -264,6 +273,8 @@ class AgentRM(OneShotAgent):
 
     def _find_good_price(self, negotiator_id, state, quantity):
         ami = self.get_nmi(negotiator_id)
+        if ami is None:
+            return 0
         # 後から提案したエージェントの提案は，相手がアクセプトしたか否かで量を調整できないので，頑固めにする
         if self._is_selling(ami):
             if self.first_proposer == False:

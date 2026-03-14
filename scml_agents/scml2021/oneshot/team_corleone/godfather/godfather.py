@@ -831,10 +831,15 @@ class GodfatherAgent(OneShotSyncAgent):
         )
 
     def _get_opp_id_from_neg_id(self, negotiator_id: str) -> str:
-        return self._get_opp_id_from_nmi(self.get_nmi(negotiator_id))
+        nmi = self.get_nmi(negotiator_id)
+        if nmi is None:
+            return None
+        return self._get_opp_id_from_nmi(nmi)
 
     def _get_offer_space(self, neg_id: str) -> OfferSpace:
         nmi = self.get_nmi(neg_id)
+        if nmi is None:
+            return None
         q = nmi.issues[QUANTITY]
         p = nmi.issues[UNIT_PRICE]
         return OfferSpace(
@@ -1157,6 +1162,8 @@ class CheatingGodfatherAgent(GodfatherAgent):
     def get_my_id(self, opp_id: str):
         """Gets agent's own id. Probably not the best method, but oh well."""
         nmi = self.get_nmi(opp_id)
+        if nmi is None:
+            return None
         our_ids = nmi.agent_ids
         my_id_list = [i for i in our_ids if i != opp_id]
         if len(my_id_list) != 1:
