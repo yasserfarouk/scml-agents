@@ -289,14 +289,16 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
         current_inputs = self.awi.state.inventory[self.awi.my_input_product]
         current_outputs = self.awi.state.inventory[self.awi.my_output_product]
 
-        signed_future_inputs = self.past_contracts[
+        signed_future_inputs = self.past_contracts.loc[
             (self.past_contracts.t >= self.awi.current_step)
-            & (~self.past_contracts.is_sell)
-        ]["q"].sum()
-        signed_future_outputs = self.past_contracts[
+            & (not self.past_contracts.is_sell),
+            "q",
+        ].sum()
+        signed_future_outputs = self.past_contracts.loc[
             (self.past_contracts.t >= self.awi.current_step)
-            & (self.past_contracts.is_sell)
-        ]["q"].sum()
+            & (self.past_contracts.is_sell),
+            "q",
+        ].sum()
 
         future_outputs = current_inputs + signed_future_inputs + current_outputs
         neediness = (
@@ -510,14 +512,16 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
         input_inventory = self.awi.state.inventory[self.awi.my_input_product]
         output_inventory = self.awi.state.inventory[self.awi.my_output_product]
 
-        signed_future_outputs = self.past_contracts[
+        signed_future_outputs = self.past_contracts.loc[
             (self.past_contracts.t >= self.awi.current_step)
-            & (self.past_contracts.is_sell)
-        ].q.sum()
-        signed_future_inputs = self.past_contracts[
+            & (self.past_contracts.is_sell),
+            "q",
+        ].sum()
+        signed_future_inputs = self.past_contracts.loc[
             (self.past_contracts.t >= self.awi.current_step)
-            & (~self.past_contracts.is_sell)
-        ].q.sum()
+            & (not self.past_contracts.is_sell),
+            "q",
+        ].sum()
 
         n_steps_to_produce = (
             self.awi.n_steps - self.awi.current_step - self.STOP_PRODUCTION_LAST_N_STEP
@@ -707,12 +711,12 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
             )  # using max() to avoid any bug
 
         signed_buying_inputs = (
-            self.past_contracts[~self.past_contracts.is_sell].q.sum()
+            self.past_contracts.loc[not self.past_contracts.is_sell, "q"].sum()
             if self.past_contracts.shape[0] > 0
             else 0
         )
         signed_selling_outputs = (
-            self.past_contracts[self.past_contracts.is_sell].q.sum()
+            self.past_contracts.loc[self.past_contracts.is_sell, "q"].sum()
             if self.past_contracts.shape[0] > 0
             else 0
         )
@@ -828,9 +832,9 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
         input_inventory = self.awi.state.inventory[self.awi.my_input_product]
         output_inventory = self.awi.state.inventory[self.awi.my_output_product]
 
-        buying_contracts = self.past_contracts[
+        buying_contracts = self.past_contracts.loc[
             (self.past_contracts.t >= self.awi.current_step)
-            & (~self.past_contracts.is_sell)
+            & (not self.past_contracts.is_sell)
         ]
         signed_future_inputs = buying_contracts["q"].sum()
 
@@ -883,7 +887,7 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
         )
 
         total_sell = self.past_contracts.loc[self.past_contracts.is_sell, "q"].sum()
-        total_buy = self.past_contracts.loc[~self.past_contracts.is_sell, "q"].sum()
+        total_buy = self.past_contracts.loc[not self.past_contracts.is_sell, "q"].sum()
         flow_ratio = total_sell / total_buy if total_buy else 0
 
         if (
@@ -959,7 +963,7 @@ class Mediocre(SCML2020Agent, ProductionStrategy, TradingStrategy, NegotiationMa
             )
 
             signed_sell_quantities = (
-                self.past_contracts[
+                self.past_contracts.loc[
                     (self.past_contracts.t >= self.awi.current_step)
                     & (self.past_contracts.is_sell)
                 ]
