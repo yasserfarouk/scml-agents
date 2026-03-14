@@ -477,7 +477,7 @@ class AdaptiveQlAgent(OneShotAgent):
 
         DEBUG_PRINT("on_negotiation_success, " + partner)
 
-        ami = self.get_ami(partner)
+        ami = self.get_nmi(partner)
         unit_price_issue = ami.issues[OFFER_FIELD_IDX.UNIT_PRICE]
         quantity_issue = ami.issues[OFFER_FIELD_IDX.QUANTITY]
         # print("QL p range : " + str(unit_price_issue))
@@ -692,7 +692,7 @@ class AdaptiveQlAgent(OneShotAgent):
 
         DEBUG_PRINT("on_negotiation_failure, " + partner)
 
-        ami = self.get_ami(partner)
+        ami = self.get_nmi(partner)
         unit_price_issue = ami.issues[OFFER_FIELD_IDX.UNIT_PRICE]
         quantity_issue = ami.issues[OFFER_FIELD_IDX.QUANTITY]
         if self.failure_list[partner]:
@@ -936,7 +936,7 @@ class AdaptiveQlAgent(OneShotAgent):
         # Getting our current needs
         my_needs = self._needed(negotiator_id)
         # DEBUG_PRINT("needs : " + str(my_needs))
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         if not ami:
             pass  # print("No AMI !")
             return None
@@ -1244,7 +1244,7 @@ class AdaptiveQlAgent(OneShotAgent):
         # Getting current left needs
         my_needs = self._needed(negotiator_id)
 
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         if not ami:
             DEBUG_PRINT("No AMI !")
             return None
@@ -2915,7 +2915,7 @@ class AdaptiveQlAgent(OneShotAgent):
         my_needs = int(self._needed(negotiator_id))
         if my_needs <= 0:
             return None
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         if not ami:
             return None
         quantity_issue = ami.issues[OFFER_FIELD_IDX.QUANTITY]
@@ -3017,7 +3017,7 @@ class AdaptiveQlAgent(OneShotAgent):
         # over-write the unit price in the best offer with a good-enough price
         offer = list(offer)
         offer[OFFER_FIELD_IDX.UNIT_PRICE] = self._find_good_price(
-            self.get_ami(negotiator_id), state
+            self.get_nmi(negotiator_id), state
         )
         return (offer[OFFER_FIELD_IDX.UNIT_PRICE], offer[OFFER_FIELD_IDX.QUANTITY])
 
@@ -3037,7 +3037,7 @@ class AdaptiveQlAgent(OneShotAgent):
             return response
 
         # reject offers with prices that are deemed NOT good-enough
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         response = (
             response
             if self._is_good_price(ami, state, offer[OFFER_FIELD_IDX.UNIT_PRICE])

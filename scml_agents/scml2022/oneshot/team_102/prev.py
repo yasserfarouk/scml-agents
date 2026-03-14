@@ -51,7 +51,10 @@ class Gentle(AdaptiveAgent):
         self._opp_price_slack = opp_price_slack
         self._opp_acc_price_slack = opp_acc_price_slack
         self._range_slack = range_slack
-        self.new_price_selling, self.new_price_buying = float("inf"), 0.0  # 価格変化後の交渉価格
+        self.new_price_selling, self.new_price_buying = (
+            float("inf"),
+            0.0,
+        )  # 価格変化後の交渉価格
         self.new_price_slack = 0.05
         self.concession_threshold = 3  # 譲歩の変化率の閾値
         self.worst_opp_acc_price_slack = (
@@ -85,15 +88,15 @@ class Gentle(AdaptiveAgent):
         self.first_offer_price_slack = INF
 
     def on_negotiation_start(self, negotiator_id: str, state: MechanismState) -> None:
-        is_selling = self._is_selling(self.get_ami(negotiator_id))
-        ami = self.get_ami(negotiator_id)
+        is_selling = self._is_selling(self.get_nmi(negotiator_id))
+        ami = self.get_nmi(negotiator_id)
         if is_selling:
             self.nego_info["my_name"] = shorten_name(
-                self.get_ami(negotiator_id).annotation["seller"]
+                self.get_nmi(negotiator_id).annotation["seller"]
             )
         else:
             self.nego_info["my_name"] = shorten_name(
-                self.get_ami(negotiator_id).annotation["buyer"]
+                self.get_nmi(negotiator_id).annotation["buyer"]
             )
 
     def on_negotiation_success(self, contract, mechanism):
@@ -146,7 +149,9 @@ class Gentle(AdaptiveAgent):
         offer = list(offer)
         offer[QUANTITY] = min(self.awi.profile.n_lines, offer[QUANTITY])
 
-        self._record_information({shorten_name(negotiator_id): offer}, True)  # offerの保存
+        self._record_information(
+            {shorten_name(negotiator_id): offer}, True
+        )  # offerの保存
 
         # デバッグ用
         # if self.nego_info["negotiation_step"] == 19:
@@ -167,7 +172,7 @@ class Gentle(AdaptiveAgent):
 
         # update my current best price to use for limiting concession in other
         # negotiations
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         up = offer[UNIT_PRICE]
         if self._is_selling(ami):
             partner = ami.annotation["buyer"]
@@ -328,7 +333,7 @@ class Gentle(AdaptiveAgent):
 
     def _first_offer_price(self, name: str):
         """合意のない相手に対するofferの価格を決定"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         is_selling = self._is_selling(ami)
         time = t(self.awi.current_step, self.awi.n_steps)
 
@@ -476,7 +481,7 @@ class Gentle(AdaptiveAgent):
 
     def _opp_concession_rate_change(self, name: str):
         """相手の譲歩の変化率を計算"""
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         offers = [
             _
             for _ in self.opp_offer_list[shorten_name(name)]
@@ -620,7 +625,7 @@ class AdaptiveSyncAgent(OneShotSyncAgent, AdaptiveAgent):
         responses = {
             k: SAOResponse(ResponseType.REJECT_OFFER, v) for k, v in offers.items()
         }
-        is_selling = (self._is_selling(self.get_ami(_)) for _ in offers.keys())
+        is_selling = (self._is_selling(self.get_nmi(_)) for _ in offers.keys())
         sorted_offers = sorted(
             zip(offers.values(), is_selling, offers.keys()),
             key=lambda x: (-x[0][UNIT_PRICE]) if x[1] else x[0][UNIT_PRICE],
@@ -672,7 +677,9 @@ class LearningSyncAgent_(OneShotSyncAgent):
         self._delta = delta
         self._e = concession_exponent
         self.e = util_exponent  # 閾値の決定に用いる
-        self.strong_degree = 1.0  # offerのprice rangeを決定する際に用いる（どれだけ強気かどうか）
+        self.strong_degree = (
+            1.0  # offerのprice rangeを決定する際に用いる（どれだけ強気かどうか）
+        )
         self.parameter_min_max = defaultdict(lambda: list())  # デバッグ用
         self.min_max_delta = 0.1  # strong_degreeの変化の度合い
         self.successful_times_thr = 3  # 連続交渉成功回数の閾値
@@ -697,7 +704,9 @@ class LearningSyncAgent_(OneShotSyncAgent):
         self.success_list = defaultdict(lambda: list())  # 交渉成功した際の取引データ
         self.success_contracts = []  # 交渉成功した契約のリスト
         self.total_trade_quantity = [0, 0]  # 総取引量（外的契約を含む）
-        self.my_offer_list = defaultdict(lambda: list())  # 相手ごとの自分のOfferのリスト
+        self.my_offer_list = defaultdict(
+            lambda: list()
+        )  # 相手ごとの自分のOfferのリスト
         self.opp_offer_list = defaultdict(lambda: list())  # 相手のOfferのリスト
         self.best_opp_util = -float("inf")  # その日の相手のOfferの効用値の最大値
         self.best_agr_util = -float("inf")  # 合意に達した契約の効用値の最大値
@@ -791,13 +800,13 @@ class LearningSyncAgent_(OneShotSyncAgent):
 
     def on_negotiation_start(self, negotiator_id: str, state: MechanismState) -> None:
         if self.my_name is None:
-            if self._is_selling(self.get_ami(negotiator_id)):
+            if self._is_selling(self.get_nmi(negotiator_id)):
                 self.my_name = self.shorten_name(
-                    self.get_ami(negotiator_id).annotation["seller"]
+                    self.get_nmi(negotiator_id).annotation["seller"]
                 )
             else:
                 self.my_name = self.shorten_name(
-                    self.get_ami(negotiator_id).annotation["buyer"]
+                    self.get_nmi(negotiator_id).annotation["buyer"]
                 )
 
     def first_proposals(self):
@@ -817,36 +826,38 @@ class LearningSyncAgent_(OneShotSyncAgent):
 
         n = [_ for _ in states.keys()][0]
         state = [_ for _ in states.values()][0]
-        opponent_names = self.opponent_names(self.get_ami(n))
+        opponent_names = self.opponent_names(self.get_nmi(n))
 
         # print("\n")
         # print(
-        #     f"my name:{self.get_ami(n).negotiator_names[0] if self._is_selling(self.get_ami(n)) else self.get_ami(n).negotiator_names[1]}")
-        # print(f"step:{state.step}, n_steps:{self.get_ami(n).n_steps},")
-        # f" t:{self.t(state.step, self.get_ami(n).n_steps)}")
+        #     f"my name:{self.get_nmi(n).negotiator_names[0] if self._is_selling(self.get_nmi(n)) else self.get_nmi(n).negotiator_names[1]}")
+        # print(f"step:{state.step}, n_steps:{self.get_nmi(n).n_steps},")
+        # f" t:{self.t(state.step, self.get_nmi(n).n_steps)}")
         # print(f"offers:{offers}")
         # print(f"_threshold:{self._threshold}, delta:{self._delta}")
         # print(f"strong degree:{self.strong_degree}, delta:{self.min_max_delta}")
         # print(f"parameter [max, min]:{self.parameter_min_max.items()}")
         # print(f"my_opponents:{self.awi.my_consumers, self.awi.my_suppliers}")
-        # print(f"my_opponents full:{self.opponent_names(self.get_ami(n))}")
+        # print(f"my_opponents full:{self.opponent_names(self.get_nmi(n))}")
 
         # 良いUnit Priceを記録
 
         print_log(
             "my name",
-            self.get_ami(n).negotiator_names[0]
-            if self._is_selling(self.get_ami(n))
-            else self.get_ami(n).negotiator_names[1],
+            (
+                self.get_nmi(n).negotiator_names[0]
+                if self._is_selling(self.get_nmi(n))
+                else self.get_nmi(n).negotiator_names[1]
+            ),
         )
-        print_log(["step", "n_steps"], [state.step, self.get_ami(n).n_steps])
+        print_log(["step", "n_steps"], [state.step, self.get_nmi(n).n_steps])
         print_log("offers", offers.keys())
 
         for n in offers.keys():
             self.record_best_price(n, offers[n])
 
         my_needs = self._needed()
-        is_selling = (self._is_selling(self.get_ami(_)) for _ in offers.keys())
+        is_selling = (self._is_selling(self.get_nmi(_)) for _ in offers.keys())
         sorted_offers = sorted(
             zip(offers.values(), is_selling),
             key=lambda x: (-x[0][UNIT_PRICE]) if x[1] else x[0][UNIT_PRICE],
@@ -920,7 +931,7 @@ class LearningSyncAgent_(OneShotSyncAgent):
 
         for k, v in chosen.items():
             up = v[UNIT_PRICE]
-            if self._is_good_price(self.get_ami(k), state.step, up):
+            if self._is_good_price(self.get_nmi(k), state.step, up):
                 responses[str(k)] = SAOResponse(ResponseType.ACCEPT_OFFER, None)
 
         # print("\n", chosen.values(), sorted_offers, offers)
@@ -928,13 +939,13 @@ class LearningSyncAgent_(OneShotSyncAgent):
         # print(
         #     f"u:{u}, threshold:{threshold}, u >= threshold:{u >= threshold}, "
         #     f"my_need:{my_needs}, producible:{producible}, secured {secured}, "
-        #     f"\ndetect_min_utility:{self.detect_min_utility(my_needs, self.get_ami(n))}, "
+        #     f"\ndetect_min_utility:{self.detect_min_utility(my_needs, self.get_nmi(n))}, "
         #     f"default_min_utility: {self.ufun.min_utility}")
         # print(f"u:{u}, threshold:{threshold}, u >= threshold:{u >= threshold}, "
         #       f"\nmy_need:{my_needs}, producible:{producible}, secured {secured}, "
         #       f"\nbest_opp_util:{self.best_opp_util}, best_agr_util:{self.best_agr_util}, "
         #       f"\ndetect_max_min_utility:{mx, mn}, std:{std} "
-        #       f"detect_std_utility:{self.detect_std_utility(my_needs, self.get_ami(n))})")
+        #       f"detect_std_utility:{self.detect_std_utility(my_needs, self.get_nmi(n))})")
         # print(f"total trade quantity:{self.total_trade_quantity}")
         # print_log("total trade quantity", self.total_trade_quantity)
         # print_log("responses", responses)
@@ -963,13 +974,13 @@ class LearningSyncAgent_(OneShotSyncAgent):
             return None
         offer = list(offer)
         offer[UNIT_PRICE] = self._find_good_price(
-            self.get_ami(negotiator_id), max(step, 0)
+            self.get_nmi(negotiator_id), max(step, 0)
         )
         return tuple(offer)
 
     def record_best_price(self, negotiator_id: str, offer: "Outcome") -> "None":
         # 取引におけるBestな値を記録
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         if self._is_selling(ami):
             self._best_selling = max(offer[UNIT_PRICE], self._best_selling)
         else:
@@ -977,7 +988,7 @@ class LearningSyncAgent_(OneShotSyncAgent):
 
         # update my current best price to use for limiting concession in other
         # negotiations
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         up = offer[UNIT_PRICE]
         if self._is_selling(ami):
             partner = ami.annotation["buyer"]
@@ -990,7 +1001,7 @@ class LearningSyncAgent_(OneShotSyncAgent):
         my_needs = self._needed(negotiator_id)
         if my_needs <= 0:
             return None
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         if not ami:
             return None
         quantity_issue = ami.issues[QUANTITY]
@@ -1122,16 +1133,20 @@ class LearningSyncAgent_(OneShotSyncAgent):
         max_offer = (
             min(need, self.awi.profile.n_lines),
             self.awi.current_step,
-            ami.issues[UNIT_PRICE].max_value
-            if self._is_selling(ami)
-            else ami.issues[UNIT_PRICE].min_value,
+            (
+                ami.issues[UNIT_PRICE].max_value
+                if self._is_selling(ami)
+                else ami.issues[UNIT_PRICE].min_value
+            ),
         )
         min_offer = (
             0,
             self.awi.current_step,
-            ami.issues[UNIT_PRICE].min_value
-            if self._is_selling(ami)
-            else ami.issues[UNIT_PRICE].max_value,
+            (
+                ami.issues[UNIT_PRICE].min_value
+                if self._is_selling(ami)
+                else ami.issues[UNIT_PRICE].max_value
+            ),
         )
 
         return self.from_offers(
@@ -1324,7 +1339,7 @@ class LearningSyncAgent_(OneShotSyncAgent):
                 edgecolors="black",
             )
 
-        ax.set_title("agent" "s offers")
+        ax.set_title("agents offers")
         ax.set_xlabel("simulation step")
         ax.set_ylabel("unit price")
         ax.set_ylim(0, 40)
@@ -1559,7 +1574,7 @@ class LearningSyncAgent(OneShotSyncAgent, LearningAgent):
         responses = {
             k: SAOResponse(ResponseType.REJECT_OFFER, v) for k, v in offers.items()
         }
-        is_selling = (self._is_selling(self.get_ami(_)) for _ in offers.keys())
+        is_selling = (self._is_selling(self.get_nmi(_)) for _ in offers.keys())
         sorted_offers = sorted(
             zip(offers.values(), is_selling, offers.keys()),
             key=lambda x: (-x[0][UNIT_PRICE]) if x[1] else x[0][UNIT_PRICE],
@@ -1621,16 +1636,16 @@ class LearningSyncAgentT(LearningSyncAgent):
         return super().first_proposals()
 
     def on_negotiation_start(self, negotiator_id: str, state: MechanismState) -> None:
-        if self._is_selling(self.get_ami(negotiator_id)):
+        if self._is_selling(self.get_nmi(negotiator_id)):
             self.nego_info["my_name"] = shorten_name(
-                self.get_ami(negotiator_id).annotation["seller"]
+                self.get_nmi(negotiator_id).annotation["seller"]
             )
         else:
             self.nego_info["my_name"] = shorten_name(
-                self.get_ami(negotiator_id).annotation["buyer"]
+                self.get_nmi(negotiator_id).annotation["buyer"]
             )
 
-        if self._is_selling(self.get_ami(negotiator_id)):
+        if self._is_selling(self.get_nmi(negotiator_id)):
             self._opp_price_slack = 0.1
             self._step_price_slack = 0.1
         else:
@@ -1645,7 +1660,7 @@ class LearningSyncAgentT(LearningSyncAgent):
                 _ for _ in self.success_list if _[TIME] == self.awi.current_step
             ]
             is_selling = [
-                self._is_selling(self.get_ami(negotiator_id)) for _ in agreements
+                self._is_selling(self.get_nmi(negotiator_id)) for _ in agreements
             ]
             if agreements:
                 util = self.ufun.from_offers(agreements, is_selling)
@@ -1735,7 +1750,7 @@ class LearningSyncAgentT(LearningSyncAgent):
         best_opponents = []
         for n in range(1, max(len(names) + 1, 3 + 1)):
             for comb in itertools.combinations(names, n):
-                is_selling = (self._is_selling(self.get_ami(_)) for _ in comb)
+                is_selling = (self._is_selling(self.get_nmi(_)) for _ in comb)
                 select_offers = [offers[_] for _ in comb]
                 util = self.ufun.from_offers(select_offers, is_selling)
 
@@ -1747,7 +1762,7 @@ class LearningSyncAgentT(LearningSyncAgent):
 
     def util_th(self, states):
         """効用値の閾値を決定"""
-        ami = self.get_ami(list(states.keys())[0])
+        ami = self.get_nmi(list(states.keys())[0])
         is_selling = self._is_selling(ami)
         my_need = max(min(self._needed(), self.awi.profile.n_lines), 0)
         edge_offers = [
@@ -1965,7 +1980,7 @@ class LearningSyncAgentT(LearningSyncAgent):
             for _ in self.opp_offer_list[shorten_name(name)]
             if _[TIME] == self.awi.current_step
         ]
-        ami = self.get_ami(name)
+        ami = self.get_nmi(name)
         if len(offers) == 0:
             if self._is_selling(ami):
                 return ami.issues[UNIT_PRICE].min_value

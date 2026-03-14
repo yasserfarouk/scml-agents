@@ -235,7 +235,7 @@ class UcOneshotAgent3_4(OneShotAgent):
     def propose(self, negotiator_id: str, state: MechanismState):
         """Called when the agent is asking to propose in one negotiation"""
         # collect info
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         partner = (
             ami.annotation["buyer"] if self.awi.level == 0 else ami.annotation["seller"]
         )
@@ -281,7 +281,7 @@ class UcOneshotAgent3_4(OneShotAgent):
         if not offer:
             return ResponseType.REJECT_OFFER
         # collect info
-        ami = self.get_ami(negotiator_id)
+        ami = self.get_nmi(negotiator_id)
         partner = (
             ami.annotation["buyer"] if self.awi.level == 0 else ami.annotation["seller"]
         )
