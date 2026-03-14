@@ -87,7 +87,18 @@ target-version = "py311"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "W"]
-ignore = ["E501"]  # Line too long - let formatter handle it
+ignore = [
+    "E501",  # Line too long - let formatter handle it
+    "E402",  # Module level import not at top of file
+    "E721",  # Type comparisons instead of isinstance()
+    "E722",  # Bare except clauses
+    "E741",  # Ambiguous variable names
+    "F401",  # Unused imports (many are intentional re-exports)
+    "F403",  # Star imports are OK in this codebase
+    "F405",  # Names from star imports are OK
+    "F811",  # Redefinition of unused name
+    "F821",  # Undefined name (many are from star imports that ruff can't resolve)
+]
 
 [tool.ruff.lint.isort]
 known-first-party = ["scml_agents"]

@@ -15,7 +15,19 @@ repos:
       - id: check-added-large-files
         args: ["--maxkb=2000"]
         #   id: fix-encoding-pragma
+  # - repo: https://github.com/asottile/pyupgrade
+  #   rev: v2.31.0
+  #   hooks:
+  #     - id: pyupgrade
+  #       args: [--py310-plus]
+  #       exclude: __init__.py, negotiate.py
   - repo: https://github.com/astral-sh/ruff-pre-commit
+    #   repo: https://github.com/bwhmather/ssort
+    #   rev: v0.10.2
+    #   hooks:
+    #   -   id: ssort
+    #
+
     rev: v0.14.13
     hooks:
       - id: ruff
@@ -23,6 +35,16 @@ repos:
         args: [--fix, --unsafe-fixes]
       - id: ruff-format
         types_or: [python, pyi, jupyter]
+  # - repo: https://github.com/pre-commit/mirrors-isort
+  #   rev: v5.10.1
+  #   hooks:
+  #       - id: isort
+  #         args: ["--profile", "black"]
+  #         exclude: __init__.py
+  # - repo: https://github.com/psf/black
+  #   rev: 22.3.0
+  #   hooks:
+  #       - id: black
   - repo: https://github.com/asottile/blacken-docs
     rev: 1.20.0
     hooks:
