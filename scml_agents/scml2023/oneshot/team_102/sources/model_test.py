@@ -1,25 +1,22 @@
-import random
-
 import numpy as np
 import torch
 from matplotlib import pyplot as plt
 from torch.utils.tensorboard import SummaryWriter
 
-from rl.PPO2 import PPO
-from rl.model import OneshotPPO
+from .rl.model import OneshotPPO
 
 
 def main(
-        state_dim=100,
-        action_dim=[10] * 10,
-        lr_actor: float = 3e-3,
-        lr_critic: float = 1e-2,
-        gamma: float = 0.99,
-        k_epochs: int = 10,
-        eps_clip: float = 0.2,
-        net_arch=[64, 64]
+    state_dim=100,
+    action_dim=[10] * 10,
+    lr_actor: float = 3e-3,
+    lr_critic: float = 1e-2,
+    gamma: float = 0.99,
+    k_epochs: int = 10,
+    eps_clip: float = 0.2,
+    net_arch=[64, 64],
 ):
-    d_path = 'test'
+    d_path = "test"
     ppo = OneshotPPO(
         state_dim=state_dim,
         action_dim=action_dim,
@@ -45,7 +42,7 @@ def main(
         ppo.buffer.is_terminals.append(True)
 
         rewards.append(reward)
-        pass # print(f'\rstep{i} reward: {reward}', end='')
+        pass  # print(f'\rstep{i} reward: {reward}', end='')
 
         if i % 64 == 0 and i != 0:
             ppo.update()
@@ -69,5 +66,5 @@ def moving_average(data, window_size):
     return ma_vec.tolist()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
