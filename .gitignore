@@ -174,3 +174,6 @@ my_results/
 
 # macOS Icon files (contain special characters)
 Icon?
+
+# Large uncompressed data files (use .zip versions instead)
+scml_agents/scml2020/monty_hall/nvm_lib/qtty_domain/qtty_domain_t_5_d_10.csv
