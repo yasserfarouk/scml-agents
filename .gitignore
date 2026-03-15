@@ -171,3 +171,6 @@ dist/*
 .vscode/*
 /.vscode
 my_results/
+
+# macOS Icon files (contain special characters)
+Icon?
