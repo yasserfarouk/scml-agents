@@ -1,28 +1,47 @@
 # -*- coding: utf-8 -*-
-from .staghunter import *
-from .team_50 import *
-from .team_51 import *
-from .team_54 import *
-from .team_55 import *
-from .team_61 import *
-from .team_62 import *
-from .team_72 import *
-from .team_73 import *
-from .team_86 import *
-from .team_90 import *
-from .team_corleone import *
+"""SCML 2021 Oneshot track agents with lazy imports."""
+from __future__ import annotations
 
-__all__ = (
-    staghunter.__all__
-    + team_50.__all__
-    + team_51.__all__
-    + team_54.__all__
-    + team_55.__all__
-    + team_61.__all__
-    + team_62.__all__
-    + team_72.__all__
-    + team_73.__all__
-    + team_86.__all__
-    + team_90.__all__
-    + team_corleone.__all__
-)
+import importlib
+
+__all__ = [
+    "staghunter",
+    "team_50",
+    "team_51",
+    "team_54",
+    "team_55",
+    "team_61",
+    "team_62",
+    "team_72",
+    "team_73",
+    "team_86",
+    "team_90",
+    "team_corleone",
+]
+
+_SUBMODULES = {
+    "staghunter",
+    "team_50",
+    "team_51",
+    "team_54",
+    "team_55",
+    "team_61",
+    "team_62",
+    "team_72",
+    "team_73",
+    "team_86",
+    "team_90",
+    "team_corleone",
+}
+
+
+def __getattr__(name: str):
+    if name in _SUBMODULES:
+        module = importlib.import_module(f".{name}", __name__)
+        globals()[name] = module
+        return module
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+
+def __dir__():
+    return __all__

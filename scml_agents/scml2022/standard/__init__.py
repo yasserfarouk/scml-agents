@@ -1,18 +1,37 @@
 # -*- coding: utf-8 -*-
-from .bossagent import *
-from .team_9 import *
-from .team_99 import *
-from .team_100 import *
-from .team_137 import *
-from .team_may import *
-from .wabisabikoalas import *
+"""SCML 2022 Standard track agents with lazy imports."""
+from __future__ import annotations
 
-__all__ = (
-    team_may.__all__
-    + bossagent.__all__
-    + team_100.__all__
-    + team_137.__all__
-    + team_9.__all__
-    + team_99.__all__
-    + wabisabikoalas.__all__
-)
+import importlib
+
+__all__ = [
+    "bossagent",
+    "team_9",
+    "team_99",
+    "team_100",
+    "team_137",
+    "team_may",
+    "wabisabikoalas",
+]
+
+_SUBMODULES = {
+    "bossagent",
+    "team_9",
+    "team_99",
+    "team_100",
+    "team_137",
+    "team_may",
+    "wabisabikoalas",
+}
+
+
+def __getattr__(name: str):
+    if name in _SUBMODULES:
+        module = importlib.import_module(f".{name}", __name__)
+        globals()[name] = module
+        return module
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+
+def __dir__():
+    return __all__

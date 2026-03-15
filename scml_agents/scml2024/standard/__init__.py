@@ -1,19 +1,39 @@
-from .coyoteteam import *
-from .team_178 import *
-from .team_181 import *
-from .team_193 import *
-from .team_atsunaga import *
-from .team_miyajima_std import *
-from .team_penguin import *
-from .teamyuzuru import *
+# -*- coding: utf-8 -*-
+"""SCML 2024 Standard track agents with lazy imports."""
+from __future__ import annotations
 
-__all__ = (
-    coyoteteam.__all__
-    + team_178.__all__
-    + team_181.__all__
-    + team_193.__all__
-    + team_atsunaga.__all__
-    + team_miyajima_std.__all__
-    + team_penguin.__all__
-    + teamyuzuru.__all__
-)
+import importlib
+
+__all__ = [
+    "coyoteteam",
+    "team_178",
+    "team_181",
+    "team_193",
+    "team_atsunaga",
+    "team_miyajima_std",
+    "team_penguin",
+    "teamyuzuru",
+]
+
+_SUBMODULES = {
+    "coyoteteam",
+    "team_178",
+    "team_181",
+    "team_193",
+    "team_atsunaga",
+    "team_miyajima_std",
+    "team_penguin",
+    "teamyuzuru",
+}
+
+
+def __getattr__(name: str):
+    if name in _SUBMODULES:
+        module = importlib.import_module(f".{name}", __name__)
+        globals()[name] = module
+        return module
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+
+def __dir__():
+    return __all__

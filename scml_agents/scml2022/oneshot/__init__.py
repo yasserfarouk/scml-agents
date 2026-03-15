@@ -1,29 +1,49 @@
-from .team_62 import *
-from .team_94 import *
-from .team_96 import *
-from .team_102 import *
-from .team_103 import *
-from .team_105 import *
-from .team_106 import *
-from .team_107 import *
-from .team_123 import *
-from .team_124 import *
-from .team_126 import *
-from .team_131 import *
-from .team_134 import *
+# -*- coding: utf-8 -*-
+"""SCML 2022 Oneshot track agents with lazy imports."""
+from __future__ import annotations
 
-__all__ = (
-    team_102.__all__
-    + team_103.__all__
-    + team_105.__all__
-    + team_106.__all__
-    + team_107.__all__
-    + team_123.__all__
-    + team_124.__all__
-    + team_126.__all__
-    + team_131.__all__
-    + team_134.__all__
-    + team_62.__all__
-    + team_94.__all__
-    + team_96.__all__
-)
+import importlib
+
+__all__ = [
+    "team_62",
+    "team_94",
+    "team_96",
+    "team_102",
+    "team_103",
+    "team_105",
+    "team_106",
+    "team_107",
+    "team_123",
+    "team_124",
+    "team_126",
+    "team_131",
+    "team_134",
+]
+
+_SUBMODULES = {
+    "team_62",
+    "team_94",
+    "team_96",
+    "team_102",
+    "team_103",
+    "team_105",
+    "team_106",
+    "team_107",
+    "team_123",
+    "team_124",
+    "team_126",
+    "team_131",
+    "team_134",
+}
+
+
+def __getattr__(name: str):
+    if name in _SUBMODULES:
+        module = importlib.import_module(f".{name}", __name__)
+        globals()[name] = module
+        return module
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
+
+def __dir__():
+    return __all__
