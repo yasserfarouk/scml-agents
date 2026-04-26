@@ -1,0 +1,8 @@
+{
+	"venvPath": "/Users/yasser/myvenvs",
+	"venv": "scml-agents",
+	"extraPaths": [
+		"/Users/yasser/code/projects/negmas"
+	],
+	"useLibraryCodeForTypes": true
+}

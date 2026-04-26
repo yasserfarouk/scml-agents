@@ -1,0 +1,3 @@
+这是根据Skeleton创建的LitaAgent
+其路径位于./litaagent_std/litaagent_y.py
+类名为LitaAgentY
