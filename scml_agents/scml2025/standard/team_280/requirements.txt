@@ -409,7 +409,7 @@ ujson @ file:///C:/b/abs_c93a278xy4/croot/ujson_1717598062082/work
 unicodedata2 @ file:///C:/b/abs_b6apldlg7y/croot/unicodedata2_1713212998255/work
 Unidecode @ file:///C:/b/abs_4cczv71djp/croot/unidecode_1724790062151/work
 uri-template==1.3.0
-urllib3==1.26.20
+urllib3==2.6.3
 w3lib @ file:///C:/Users/dev-admin/perseverance-python-buildout/croot/w3lib_1709162573908/work
 watchdog @ file:///C:/b/abs_b3l_3s276z/croot/watchdog_1717166538403/work
 wcwidth @ file:///Users/ktietz/demo/mc3/conda-bld/wcwidth_1629357192024/work
