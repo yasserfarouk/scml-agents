@@ -7,3 +7,25 @@ __author__ = ""
 __team__ = ""
 __email__ = ""
 __version__ = "3.4.0"
+
+# --- BEGIN generated metadata (scmlweb update_agents_repo.py) ---
+ID = 20044
+NAME = 'UcOneshotAgent3_4'
+CLASS_NAME = 'UcOneshotAgent3_4'
+VERSION = '3.4.0'
+TEAM = 'Team 62'
+AUTHOR = 'Yuchen Liu'
+MEMBERS = [{'name': 'Takayuki Ito', 'institution': 'Kyoto University', 'country': 'China'}, {'name': 'Yuchen Liu', 'institution': 'Kyoto University', 'country': 'China'}, {'name': 'Rafik Hadfi', 'institution': 'Kyoto University', 'country': 'China'}]
+COUNTRY = 'China'
+INSTITUTION = 'Independent'
+TAGS = ['Reinforcement Learning']
+USES_LLM = False
+DESC = "The basic strategy of  UcOneshotAgent is adjusting agent's concession rate towards different partner agents based on previous turns' negotiation results, number of partners and other environment variables. Adjustment will be conducted at the end of each day of simulation in step() function and the new concession rate will be used next day when negotiating with partner agents."
+METADATA = {
+    'id': ID, 'name': NAME, 'class_name': CLASS_NAME,
+    'version': VERSION, 'team': TEAM, 'author': AUTHOR,
+    'members': MEMBERS, 'country': COUNTRY,
+    'institution': INSTITUTION, 'tags': TAGS,
+    'uses_llm': USES_LLM, 'description': DESC,
+}
+# --- END generated metadata ---

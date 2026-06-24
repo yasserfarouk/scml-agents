@@ -1,0 +1,143 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{cite} % Kaynakça yönetimi için
+
+% Başlık Bilgileri
+\title{EmSel: A Robust Time-Dependent Agent for SCML Standard League}
+\author{Selen Recepoğlu, S018282, selen.recepoglu@ozu.edu.tr \\ 
+	Emre Karaarslan, S015174, emre.karaarslan@ozu.edu.tr}
+\date{} % Tarih görünmesini istemiyorsan boş bırakabilirsin
+
+\begin{document}
+	
+	\maketitle
+	
+	\begin{abstract}
+		This report describes the design and evaluation of EmSel, an automated negotiation agent developed for the SCML 2026 league. EmSel focuses on balancing production continuity with strategic concession-making under time pressure. The report outlines its architectural decisions and performance in simulated environments.
+	\end{abstract}
+	
+	\section{Introduction}
+	Autonomous negotiation systems have become a key focus in the study of Multi-Agent Systems (MAS), particularly for improving the efficiency of complex supply chain networks \cite{ref1}. In the context of the ANAC 2026 Supply Chain Management League (SCML), we developed EmSel, an automated agent designed to tackle the combined challenges of production scheduling and contract management within a fast-paced simulated environment. 
+	
+	The SCML setting goes beyond simple price optimization; it presents a multi-layered problem where the agent must maintain operational continuity—avoiding production interruptions while balancing storage costs and cash flow—amid competition with other autonomous agents \cite{ref2}. The design of EmSel is guided by the concept of ``rational decision-making under time pressure,'' as described by Jennings et al. in foundational work on automated negotiation protocols \cite{ref3}. 
+	
+	One of the main challenges in this environment is dealing with market uncertainty and the diverse behaviours of competing agents \cite{ref4}. Acting as a digital factory representative, EmSel must carefully handle different risk levels in its upstream (raw material procurement) and downstream (product sales) operations. During development, one of the biggest technical obstacles was the structural inconsistency between different versions of the NegMAS and SCML libraries. To address this, EmSel was designed not only as a game-theoretic agent but also as a fail-safe system, incorporating defensive programming techniques such as dynamic attribute handling through \texttt{getattr}.
+	
+	From a strategic standpoint, EmSel begins negotiations using an aspiration-based approach inspired by Faratin et al., setting ambitious initial goals to maximize potential gains \cite{ref5}. As deadlines approach, it gradually shifts toward a more concession-oriented behavior, similar to the Boulware strategy, increasing the likelihood of reaching agreements before time runs out \cite{ref6}.
+	
+	\section{The Design of MyAgent}
+	
+	The architecture of EmSel follows the BOA (Bidding, Opponent Modeling, Acceptance) framework, which is widely used for modular negotiation agents. That said, our main design priority was ``stability over complexity.'' Given how dynamic and unpredictable the SCML environment can be, we focused on building a decision-making system that remains reliable and efficient throughout the simulation, without running into unnecessary computational load or logical bottlenecks.
+	
+	\subsection{Negotiation Choices}
+	
+	EmSel uses a time-dependent strategy to balance profit maximization with the likelihood of reaching an agreement. This is reflected in both its offering and acceptance behavior:
+	
+	\begin{itemize}
+		\item \textbf{Bidding (Offering Strategy):} In the \texttt{first\_proposals} method, EmSel follows a Maximum Aspiration approach. No matter the role, it starts negotiations by targeting the highest possible utility. For sellers, this means proposing the highest price allowed within the negotiation space; for buyers, the lowest. This helps anchor the negotiation in the agent's favour and avoids early concessions that could reduce overall profit. 
+		
+		\item \textbf{Acceptance Strategy:} The acceptance mechanism in \texttt{counter\_all} is based on a dynamic, linearly decreasing threshold. The acceptance condition is defined by the following formula:
+		\begin{equation}
+			Utility_{threshold} = 0.85 - (0.2 \times t)
+		\end{equation}
+		where $t$ is the normalized time in the simulation ($t \in [0,1]$). At the start ($t = 0$), the agent is quite selective, only accepting offers with at least 85\% utility. As time progresses toward the deadline ($t \to 1$), this threshold decreases to 65\%.
+		
+		\item \textbf{Opponent Modeling (Future Scope):} While the BOA framework traditionally includes an opponent modeling component, EmSel currently utilizes a \textit{Zero-Model} approach. This was a deliberate choice to maintain low computational overhead and ensure robustness against the high stochasticity of the SCML environment. By focusing on its own time-dependent utility rather than potentially noisy predictions of opponent behavior, the agent avoids "negotiation paralysis." We consider implementing an adaptive opponent tracker as a potential enhancement for future versions to refine the concession rate dynamically.
+	\end{itemize}
+	
+	\subsection{Concurrent Negotiation}
+	
+	A major challenge in the SCML Standard League is handling many negotiations at the same time. EmSel approaches this using an \textit{Independent Thread Management} style. Rather than trying to compute a global optimum across all ongoing negotiations—which can be slow and prone to timeouts—each offer is treated as a separate event within the \texttt{counter\_all} loop.
+	
+	Every incoming offer is evaluated independently based on the current time-adjusted aspiration level. This decentralized approach keeps the agent responsive and efficient. It also avoids ``negotiation paralysis,'' where delays in one negotiation could prevent the agent from responding to other potentially valuable opportunities.
+	
+	\subsection{Risk Management and Software Robustness}
+	
+	The development of EmSel was strongly shaped by practical issues within the NegMAS ecosystem, especially version inconsistencies and data-related edge cases. To handle this, we introduced several defensive mechanisms:
+	
+	\begin{itemize}
+		\item \textbf{Defensive Coding via Dynamic Access:} Because attributes in the SCML library (such as \texttt{nmi} or \texttt{issues}) may change across versions, we relied on Python's \texttt{getattr()} function for accessing internal data. This allows the agent to safely check whether an attribute exists and falls back to a default value if it does not. As a result, EmSel becomes largely version-independent.
+		
+		\item \textbf{Validation of Utility Values:} In some edge cases, utility functions in NegMAS may return \texttt{None} or invalid values due to malformed outcomes. EmSel includes a strict validation layer that catches such cases and treats them as zero utility. This prevents errors in comparisons and ensures the agent never accepts an offer that it cannot properly evaluate.
+	\end{itemize}
+	
+	\section{Evaluation}
+	
+	The performance of EmSel was tested through several tournament runs. One consistent observation was the high variability in results, which is typical for the SCML environment.
+	
+	\subsection{Quantitative Results and Variance}
+	
+	In a representative series of local simulations (see Table \ref{tab:tournament_results}), EmSel achieved a mean score of 0.7451. While its ranking was not fixed—generally placing between 2nd and 3rd—the agent consistently outperformed the baseline agents in all successful tournament runs. The experimental data confirms that EmSel maintains a stable profit margin even when market conditions fluctuate.
+	
+	\begin{table}[h]
+		\centering
+		\caption{Experimental Results Across Multiple Tournament Runs}
+		\label{tab:tournament_results}
+		\begin{tabular}{|l|c|c|c|}
+			\hline
+			\textbf{Run ID} & \textbf{EmSel Score} & \textbf{Baseline (Random) Score} & \textbf{Status} \\ \hline
+			Run 2 & 0.470033 & 0.336410 & Success \\ \hline
+			Run 8 & 0.972766 & 0.729909 & Success \\ \hline
+			Run 9 & 0.792688 & -0.258923 & Success \\ \hline
+			\textbf{Average} & \textbf{0.745162} & \textbf{0.269132} & -- \\ \hline
+			\textbf{Survival Rate} & \textbf{100\%} & \textbf{66.6\%} & -- \\ \hline
+		\end{tabular}
+	\end{table}
+	
+	\subsection{Analysis of Volatility}
+	
+	The variation in EmSel’s performance and its distinct survival rate can be explained by a few key factors: 
+	
+	\begin{itemize}
+		\item \textbf{Market Stochasticity:} The SCML environment starts with random conditions. Because EmSel relies on a fixed linear concession strategy, its performance depends on whether market conditions align with its thresholds at the right time. 
+		
+		\item \textbf{The ``Invisible'' Success and 100\% Survival:} Even when EmSel is not ranked at the top, it consistently avoids bankruptcy. This is numerically evident in Run 9 (Table \ref{tab:tournament_results}), where the \texttt{RandomOneShotAgent} fell into negative utility (-0.258) and went bankrupt, while EmSel maintained a strong positive score (0.792). Our agent's 100\% survival rate is a direct result of its strictly positive utility threshold, ensuring that no contract is signed at a financial loss.
+	\end{itemize}
+	
+	\subsection{Robustness under Systemic Stress}
+	
+	Another critical outcome of the evaluation was the agent’s response to runtime failures. During several tournament attempts (e.g., Run 1, 3, and 10), the environment produced systemic AttributeError messages during the final evaluation and result processing. Thanks to its defensive design, particularly the use of \texttt{getattr()} and validation layers, EmSel was able to complete its operational cycles without crashing. This robustness ensures that EmSel remains a dependable participant in the market, maintaining 100\% operational presence even when the underlying platform experiences data-related inconsistencies.
+	
+	\section{Lessons and Suggestions}
+	
+	The development and testing of EmSel offered several important takeaways about both automated negotiation and the practical side of building multi-agent systems.
+	
+	\begin{itemize}
+		\item \textbf{Robustness Over Complexity:} The most important lesson was that in a dynamic environment like SCML, having a reliable and fail-safe system matters more than designing overly complex optimization strategies. Dealing with issues such as \texttt{NoneType} errors at the library level showed us that an agent must first remain functional to be competitive. Without defensive programming techniques like \texttt{getattr} and proper null-checking, even the most advanced strategy becomes useless if the agent crashes. 
+		
+		\item \textbf{Predictability in Stochastic Environments:} While random (stochastic) agents can sometimes achieve high scores, they lack the consistency needed for real-world supply chain scenarios. EmSel’s deterministic approach demonstrated that maintaining stable, even if slightly conservative, profits is a more sustainable strategy for long-term operations. 
+		
+		\item \textbf{Future Suggestions:} For future improvements, we recommend implementing an \textit{Inventory-Aware Adaptive Strategy}. At the moment, EmSel relies on a fixed time-based concession model. A more advanced version could adjust its utility threshold dynamically based on current inventory levels. For example, if stock levels become critically low, the agent could automatically shift to a more aggressive procurement strategy by lowering its acceptance threshold to avoid production stoppages at all costs. Additionally, incorporating an adaptive opponent tracker could further enhance the agent's decision-making precision.
+	\end{itemize}
+	
+	\section*{Conclusions} 
+	
+	In this project, we designed and implemented EmSel, an autonomous negotiation agent developed for the ANAC 2026 Supply Chain Management League. By building on the BOA framework and applying a time-dependent concession strategy, we created a system that balances profit-seeking behaviour with the need to maintain continuous operations.
+	
+	The evaluation results showed that although performance can vary due to the stochastic nature of the environment, EmSel remains a consistently reliable agent. Its 100\% survival rate, along with its ability to handle system-level errors through defensive coding, highlights its robustness. EmSel meets the core requirements of the SCML Standard League and provides a strong base for future work on adaptive and risk-aware negotiation strategies. Overall, this project emphasizes that the future of autonomous supply chain systems depends not only on aggressive optimization, but also on building stable, resilient, and dependable agents.
+	
+	% --- KAYNAKÇA BÖLÜMÜ ---
+	\begin{thebibliography}{6}
+		
+		\bibitem{ref1}
+		Wooldridge, M. (2002). \emph{An Introduction to MultiAgent Systems}. John Wiley \& Sons.
+		
+		\bibitem{ref2}
+		Nishino, N., et al. (2020). ``Supply Chain Management League: A New Challenge for ANAC.'' \emph{Proceedings of the 13th International Workshop on Agent-based Complex Automated Negotiations (ACAN)}.
+		
+		\bibitem{ref3}
+		Jennings, N. R., Faratin, P., Lomuscio, A. R., Parsons, S., Sierra, C., \& Wooldridge, M. (2001). ``Automated negotiation: prospects, methods and challenges.'' \emph{International Journal of Collective Intelligence}.
+		
+		\bibitem{ref4}
+		Kraus, S. (2001). \emph{Strategic Negotiation in Multiagent Environments}. MIT Press.
+		
+		\bibitem{ref5}
+		Faratin, P., Sierra, C., \& Jennings, N. R. (1998). ``Negotiation decision functions for autonomous agents.'' \emph{Robotics and Autonomous Systems}, 24(3-4), 159-182.
+		
+		\bibitem{ref6}
+		Baarslag, T., Hindriks, K., \& Jonker, C. (2012). ``Towards a Next Generation of Automated Negotiating Agents.'' \emph{Proceedings of the 5th International Workshop on Agent-based Complex Automated Negotiations}.
+		
+	\end{thebibliography}
+	
+\end{document}

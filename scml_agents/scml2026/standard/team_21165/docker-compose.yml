@@ -1,0 +1,9 @@
+version: "3.9" # Specify the Docker Compose file version
+services:
+  anl:
+    build: . # Build the image from the current directory
+    ports:
+      - "8501:8501" # Map port 8501 from host to container
+    volumes:
+      - .:/app # Mount current folder as a volume at /app in the container
+      - $HOME/negmas:/root/negmas # Mount negmas folder

@@ -1,0 +1,4 @@
+Winners: ['scml.oneshot.sysagents.DefaultOneShotAdapter:__main__.CostAverseAgent']
+Winners: ['scml.oneshot.sysagents.DefaultOneShotAdapter:__main__.CostAverseAgent']
+Winners: ['scml.oneshot.sysagents.DefaultOneShotAdapter:__main__.CostAverseAgent']
+Winners: ['scml.oneshot.sysagents.DefaultOneShotAdapter:__main__.CostAverseAgent']

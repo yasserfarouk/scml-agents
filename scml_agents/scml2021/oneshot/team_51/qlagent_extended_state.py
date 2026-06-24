@@ -59,6 +59,7 @@ You should see a short tournament running and results reported.
 
 import ast
 import math
+import os
 import random
 
 # other libraries
@@ -247,7 +248,7 @@ class QlAgent(OneShotAgent):
             try:
                 # with open('q_seller.pickle', 'rb') as handle:
                 #     self.learned_q_seller_t = pickle.load(handle)
-                with open("q_seller.txt") as handle_s:
+                with open(os.path.join(os.path.dirname(__file__), "q_seller.txt")) as handle_s:
                     self.learned_q_seller_t = ast.literal_eval(handle_s.read())
                 DEBUG_PRINT("UPLOADED FROM q_seller.pickle")
             except FileNotFoundError:
@@ -256,7 +257,7 @@ class QlAgent(OneShotAgent):
             try:
                 # with open('q_buyer.pickle', 'rb') as handle:
                 #     self.learned_q_buyer_t = pickle.load(handle)
-                with open("q_buyer.txt") as handle_b:
+                with open(os.path.join(os.path.dirname(__file__), "q_buyer.txt")) as handle_b:
                     self.learned_q_buyer_t = ast.literal_eval(handle_b.read())
                 DEBUG_PRINT("UPLOADED FROM q_buyer.pickle")
             except FileNotFoundError:
@@ -737,6 +738,8 @@ class QlAgent(OneShotAgent):
         if partner not in self.negotiators.keys():
             return None
         nmi = self.get_nmi(partner)
+        if nmi is None:
+            return None
         unit_price_issue = nmi.issues[OFFER_FIELD_IDX.UNIT_PRICE]
         quantity_issue = nmi.issues[OFFER_FIELD_IDX.QUANTITY]
 

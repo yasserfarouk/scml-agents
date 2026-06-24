@@ -26,6 +26,7 @@ __all__ = [
     "scml2023",
     "scml2024",
     "scml2025",
+    "scml2026",
     "contrib",
 ]
 
@@ -38,6 +39,7 @@ _SUBMODULES = {
     "scml2023",
     "scml2024",
     "scml2025",
+    "scml2026",
     "contrib",
 }
 

@@ -473,7 +473,10 @@ def _agent(year: int, track: str, team: str) -> str:
 FAILING_AGENTS: dict[str, str] = {
     "scml_agents.scml2021.standard.team_78.YIYAgent": "Needs scikit-learn<=1.3.* and is tested on python 3.10 only",
     "scml_agents.scml2021.oneshot.team_51.QlAgent": "Needs scikit-learn<=1.3.* and is tested on python 3.10 only",
-    "scml_agents.scml2022.oneshot.team_94.AdaptiveQlAgent": "Needs scikit-learn<=1.3.* and is tested on python 3.10 only",
+    "scml_agents.scml2022.oneshot.team_94.AdaptiveQlAgent": "Needs scikit-learn<=1.3.* and is tested on python 3.10 only; also accesses NegotiatorInfo.nmi (None) under current negmas",
+    "scml_agents.scml2021.standard.team_mediocre.Mediocre": "Internal lookup KeyError under current pandas/numpy (uninitialised -1 state not in index)",
+    "scml_agents.scml2021.oneshot.team_corleone.GoldfishParetoEmpiricalGodfatherAgent": "Accesses offer_set on a None nmi/state under current negmas (AttributeError at run time)",
+    "scml_agents.scml2026.standard.team_20941.okagent.OkAgent": "Accesses NegotiatorInfo.nmi which no longer exists in scml>=0.8 (AttributeError at run time)",
 }
 
 
@@ -488,6 +491,7 @@ def get_agents(  # type: ignore
     bird_only: bool = False,
     top_only: int | float | None = None,
     ignore_failing: bool = False,
+    skip_failing_agents: bool = False,
     as_class: Literal[False] = False,
 ) -> tuple[str, ...]:
     ...
@@ -504,6 +508,7 @@ def get_agents(
     bird_only: bool = False,
     top_only: int | float | None = None,
     ignore_failing: bool = False,
+    skip_failing_agents: bool = False,
     as_class: Literal[True] = True,
 ) -> tuple[type[Agent], ...]:
     ...
@@ -519,6 +524,7 @@ def get_agents(
     bird_only: bool = False,
     top_only: int | float | None = None,
     ignore_failing: bool = False,
+    skip_failing_agents: bool = False,
     as_class: bool = True,
 ) -> tuple[type[Agent] | str, ...]:
     """
@@ -541,10 +547,13 @@ def get_agents(
                   SCML
         as_class: If true, the agent classes will be returned otherwise their full class names.
         ignore_failing: If true, agents known to fail with current dependencies will be excluded.
+        skip_failing_agents: If true, agents marked as failing their tests (listed in
+                        FAILING_AGENTS) are skipped. Absence from FAILING_AGENTS is the
+                        default "passing" state. Equivalent to ignore_failing.
     """
     if version in ("all", "any"):
         results = []
-        for v in (2019, 2020, 2021, 2022, 2023, 2024, 2025, "contrib"):
+        for v in (2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026, "contrib"):
             results += list(
                 get_agents(  # type: ignore
                     v,
@@ -556,6 +565,7 @@ def get_agents(
                     top_only=top_only,
                     as_class=as_class,  # type: ignore
                     ignore_failing=ignore_failing,
+                    skip_failing_agents=skip_failing_agents,
                 )
             )
         return tuple(results)
@@ -1280,28 +1290,54 @@ def get_agents(
                 _agent(2025, "oneshot", t) for t in _TEAMS_WITH_ALL[(2025, "oneshot")]
             )
 
+    elif isinstance(version, int) and version == 2026:
+        # 2026 participants are generated into scml2026/<track>/ +
+        # registry.py by scmlweb/python/update_agents_repo.py.
+        # `qualified_only` drops disqualified entries; finalists/winners
+        # stay empty until announced (set_finalists/set_winners).
+        from scml_agents.registry import get_participants
+
+        if bird_only or track in ("collusion", "col"):
+            classes = tuple()
+        else:
+            tracks = []
+            if track in ("std", "standard"):
+                tracks = ["standard"]
+            elif track in ("one", "oneshot"):
+                tracks = ["oneshot"]
+            elif track in ("any", "all"):
+                tracks = ["standard", "oneshot"]
+            classes = tuple(
+                cp
+                for t in tracks
+                for cp in get_participants(
+                    2026,
+                    t,
+                    qualified_only=qualified_only,
+                    finalists_only=finalists_only,
+                    winners_only=winners_only,
+                )
+            )
+
     elif isinstance(version, str) and version == "contrib":
         classes = tuple()
 
     else:
         raise ValueError(
-            f"The version {version} is unknown. Valid versions are 2019, 2020, 2021, 2022, 2023, 2024, 2025 (as ints), 'contrib' as a string"
+            f"The version {version} is unknown. Valid versions are 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026 (as ints), 'contrib' as a string"
         )
 
-    # At this point, classes contains full class path strings
+    # At this point, classes contains full class path strings. Filter the
+    # FAILING_AGENTS here, BEFORE converting to classes: FAILING_AGENTS keys
+    # are the registry (MAIN_AGENT re-export) paths, whereas
+    # get_full_type_name(cls) returns the class's real defining module, so a
+    # post-conversion filter would silently miss them.
+    if ignore_failing or skip_failing_agents:
+        classes = tuple(_ for _ in classes if _ not in FAILING_AGENTS.keys())
+
     if as_class:
         classes = tuple(get_class(_) for _ in classes)  # type: ignore
     # else: classes is already tuple of strings
-
-    if ignore_failing:
-        classes = tuple(
-            [
-                _
-                for _ in classes
-                if (get_full_type_name(_) if as_class else _)
-                not in FAILING_AGENTS.keys()
-            ]
-        )
 
     if top_only is not None:
         n = int(top_only) if top_only >= 1 else int(top_only * len(classes))

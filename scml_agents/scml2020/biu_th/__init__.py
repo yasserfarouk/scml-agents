@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from .agent import *
+MAIN_AGENT = THBiuAgent
 
 __all__ = agent.__all__
 

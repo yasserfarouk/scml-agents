@@ -1,0 +1,10 @@
+numpy
+scipy
+__future__
+random
+collections
+itertools
+negmas
+numpy.random
+scml.std
+datetime

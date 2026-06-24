@@ -1,0 +1,4 @@
+negmas
+scml
+numpy
+scipy

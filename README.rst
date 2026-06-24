@@ -277,3 +277,307 @@ Installation Note
 =================
 
 If you are on Apple M1, you will need to install tensorflow **before** installing this package on conda using the method described `here <https://developer.apple.com/metal/tensorflow-plugin/>`_
+
+.. BEGIN generated standings: 2026
+
+ANAC 2026 Results
+=================
+
+OneShot Track
+-------------
+
+Qualified agents (16)
+~~~~~~~~~~~~~~~~~~~~~
+
+.. list-table::
+   :header-rows: 1
+
+   * - #
+     - Agent
+     - ID
+     - Author
+     - Team
+     - Institute
+     - Country
+   * - 1
+     - agent03
+     - 21244
+     - Yifan Zhang
+     - Team 403
+     - South China University of Technology
+     - China
+   * - 2
+     - AssariAsari
+     - 21089
+     - Rinon Asanuma
+     - Team 376
+     - Tokyo University of Agriculture and Technology
+     - Japan
+   * - 3
+     - BayesianAgent
+     - 21637
+     - kouta miyamoto
+     - Team 371
+     - Kyoto University
+     - Japan
+   * - 4
+     - CodexAgentOneshot
+     - 21804
+     - Ryota GENSEKI
+     - Team 507
+     - Tokyo University of Agriculture and Technology
+     - Japan
+   * - 5
+     - EFRDist
+     - 21022
+     - Mason Hagan
+     - Team 353
+     - Brown University
+     - United States
+   * - 6
+     - Group3
+     - 21562
+     - Yeabsira Simeka Maru
+     - Team 491
+     - Özyeğin University
+     - Türkiye
+   * - 7
+     - heyoneshot
+     - 21798
+     - カズマ
+     - チーム298
+     - Tokyo University of Agriculture and Technology
+     - Japan
+   * - 8
+     - IsobeAgent
+     - 21095
+     - Hayate Ogata
+     - Team 380
+     - Nagoya Institute of Technology
+     - Japan
+   * - 9
+     - LatticeOneshotAgent
+     - 21484
+     - Yuzuru Kitamura
+     - Team179
+     - Tokyo University of Agriculture and Technology
+     - Japan
+   * - 10
+     - PenaltyAvoid
+     - 21041
+     - Tarek Medhat
+     - Team 357
+     - Assiut University
+     - Egypt
+   * - 11
+     - SBDOneShot
+     - 21813
+     - Hajime Endo
+     - Team Ukku
+     - Tokyo University of Agriculture and Technology
+     - Japan
+   * - 12
+     - SteadySyncAgent
+     - 21056
+     - Sora Kawase
+     - Team 364
+     - Kyoto University
+     - Japan
+   * - 13
+     - supvelikos
+     - 21619
+     - Kosuke Nakata
+     - Team 412
+     - Tokyo University of Agriculture and Technology
+     - Japan
+   * - 14
+     - TimeWeightedAgent
+     - 21155
+     - ishigami
+     - Team 400
+     - Nagoya Institute of Technology
+     - Japan
+   * - 15
+     - Yamashitaagent
+     - 21196
+     - Masaki Yamashita
+     - Team 369
+     - Kyoto University
+     - Japan
+   * - 16
+     - Ysi
+     - 21799
+     - Ryoshin Hatakeyama
+     - Team 497
+     - Tokyo University of Agriculture and Technology
+     - Japan
+
+Get them after install with:
+
+>>> scml_agents.get_agents(2026, track="oneshot", qualified_only=True)
+
+**Disqualified (1):** SKRI
+
+Standard Track
+--------------
+
+Qualified agents (20)
+~~~~~~~~~~~~~~~~~~~~~
+
+.. list-table::
+   :header-rows: 1
+
+   * - #
+     - Agent
+     - ID
+     - Author
+     - Team
+     - Institute
+     - Country
+   * - 1
+     - AgeAgeAgent
+     - 21165
+     - MorikawaYuto
+     - Team 404
+     - Nagoya Institute of Technology
+     - Japan
+   * - 2
+     - agent01std
+     - 21195
+     - Yifan Zhang
+     - Team 403
+     - South China University of Technology
+     - China
+   * - 3
+     - ArionAgent
+     - 21021
+     - Muhammad Raees Azam
+     - Arion Strategists
+     - Özyeğin University
+     - Türkiye
+   * - 4
+     - BalancedGreedyStdAgent
+     - 20964
+     - Takaya
+     - Team 341
+     - Nagoya Institute of Technology
+     - Japan
+   * - 5
+     - CodexAgentStd
+     - 21803
+     - Ryota GENSEKI
+     - Team 507
+     - Tokyo University of Agriculture and Technology
+     - Japan
+   * - 6
+     - COW
+     - 21303
+     - Naoki Ushida
+     - Team 389
+     - Nagoya Institute of Technology
+     - Japan
+   * - 7
+     - EmSel
+     - 21084
+     - Emre Karaarslan
+     - Team EmSel
+     - Özyeğin University
+     - Türkiye
+   * - 8
+     - GS3
+     - 21201
+     - nakayamarintaro
+     - Team 411
+     - Nagoya Institute of Technology
+     - Japan
+   * - 9
+     - heystd
+     - 21800
+     - カズマ
+     - チーム298
+     - Tokyo University of Agriculture and Technology
+     - Japan
+   * - 10
+     - HorizonAwareAgent
+     - 21653
+     - Yuzuru Kitamura
+     - Team179
+     - Tokyo University of Agriculture and Technology
+     - Japan
+   * - 11
+     - KotaAgent
+     - 21747
+     - Hibino-Kota
+     - Team 337
+     - Nagoya Institute of Technology
+     - Japan
+   * - 12
+     - MyAgent17803196313323
+     - 21559
+     - Hamid Majidi Balanji
+     - Team 484
+     - Özyeğin University
+     - Türkiye
+   * - 13
+     - okagent
+     - 20941
+     - Kohga Okashita
+     - Team 336
+     - Nagoya Institute of Technology
+     - Japan
+   * - 14
+     - Rohn
+     - 21695
+     - Ryoshin Hatakeyama
+     - Team 497
+     - Tokyo University of Agriculture and Technology
+     - Japan
+   * - 15
+     - SBD
+     - 21650
+     - Hajime Endo
+     - Team Ukku
+     - Tokyo University of Agriculture and Technology
+     - Japan
+   * - 16
+     - ShimijimiShijimi
+     - 21127
+     - Rinon Asanuma
+     - Team 376
+     - Tokyo University of Agriculture and Technology
+     - Japan
+   * - 17
+     - SugaiAgent
+     - 21313
+     - Toshiki Sugai
+     - Team 328
+     - NIT
+     - Japan
+   * - 18
+     - SuperimagentZ
+     - 21683
+     - Aoi Imazeki
+     - Team 342
+     - Nagoya Institute of Technology
+     - Japan
+   * - 19
+     - SupmerkosV3
+     - 22272
+     - Kosuke Nakata
+     - Team 412
+     - Tokyo University of Agriculture and Technology
+     - Japan
+   * - 20
+     - TakaLinkAgent
+     - 21282
+     - Takafumi Omori
+     - TakaTakaWorks
+     - Nagoya Institute of Technology
+     - Japan
+
+Get them after install with:
+
+>>> scml_agents.get_agents(2026, track="standard", qualified_only=True)
+
+.. END generated standings: 2026
+

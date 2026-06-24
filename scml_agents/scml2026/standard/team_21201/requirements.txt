@@ -1,0 +1,5 @@
+negmas==0.15.4
+scml==0.8.2
+pandas==3.0.2
+matplotlib==3.10.8
+numpy==2.4.4
