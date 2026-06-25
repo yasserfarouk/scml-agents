@@ -35,248 +35,7 @@ For example, to get the top 10% of the Oneshot track finalists in year 2024 as s
 
 >>> get_agents(version=2025, track="oneshot", finalists_only=True, top_only=0.1, as_class=False)
 
-Winners of the SCML 2025 Competition
-====================================
-
-Oneshot Track
--------------
-* First Place (tie): Yuzuru Kitamura for **CostAverseAgent**
-* First Place (tie): Shota Takayama for **Rchan**
-* First Place (tie): Rikuto Takano and Takeaki Sakabe for **AlmostEqualAgent**
-
-You can get these agents after installing scml-agents by running:
-
->>> scml_agents.get_agents(2024, track="oneshot", winners_only=True)
-
-Standard Track
---------------
-* First Place: Atsunaga Sadahiro for **AS0**
-* Second Place: Sota Sakaguchi and Takanobu Otsuka for **XenoSotaAgent**
-* Third Place: Sora Nishizaki and Takanobu Otsuka for **UltraSuperMiracleSoraFinalAgentZ**
-
-You can get this agent after installing scml-agents by running:
-
->>> scml_agents.get_agents(2024, track="std", winners_only=True)
-
-Winners of the SCML 2024 Competition
-====================================
-
-Oneshot Track
--------------
-* First Place: Ryoga Miyajima for **CautiousOneShotAgent**
-* Second Place: Arnie He, Akash Singirikonda, and Amy Greenwald for **MatchingPennies**
-* Third Place (tie): Hajime Endo for **DistRedistAgent**
-* Third Place (tie): Yuzuru Kitamura for **EpsilonGreedyAgent**
-
-You can get these agents after installing scml-agents by running:
-
->>> scml_agents.get_agents(2024, track="oneshot", winners_only=True)
-
-Standard Track
---------------
-* First Place: Gou Kazusa for **PenguinAgent**
-
-You can get this agent after installing scml-agents by running:
-
->>> scml_agents.get_agents(2024, track="std", winners_only=True)
-
-Winners of the SCML 2023 Competition
-====================================
-
-Oneshot Track
--------------
-* First Place: Pedro Hrosz Turini and Jaime Sichman for **QuantityOrientedAgent**
-* Second Place: Shota Kimata and Yuko Sakurai for **CCAgent**
-* Third Place: Masato Kijima for **KanbeAgent**
-
-You can get these agents after installing scml-agents by running:
-
->>> scml_agents.get_agents(2023, track="oneshot", winners_only=True)
-
-Standard Track
---------------
-* First Place: Sadahiro Atsunaga for **AgentSDH**
-
-You can get this agent after installing scml-agents by running:
-
->>> scml_agents.get_agents(2023, track="std", winners_only=True)
-
-Collusion Track
----------------
-* Honorary Mention: Kazuki Komori for **M5**
-
-You can get this agent after installing scml-agents by running:
-
->>> scml_agents.get_agents(2023, track="collusion", winners_only=True)
-
-Winners of the SCML 2022 Competition
-====================================
-
-Oneshot Track
--------------
-* First Place: Chris Mascioli and Amy Greenwald for **PatientAgent**
-* Second Place: Takumu Shimizu for **GentleS**
-* Third Place: Shiraz Nave, Amit Dayan, Sariel Turayfor **AgentSAS**
-
-You can get these agents after installing scml-agents by running:
-
->>> scml_agents.get_agents(2022, track="oneshot", winners_only=True)
-
-Standard Track
---------------
-* First Place: Ito Nobuhiro and Takanobu Otsukafor **Lobster**
-* Second Place: Kazuki Komori for **M5**
-* Third Place: Koki Katagiri and Tatanobu Otsuka for **Artisan Kangaroo**
-
-You can get these agents after installing scml-agents by running:
-
->>> scml_agents.get_agents(2022, track="std", winners_only=True)
-
-Collusion Track
----------------
-* Honorary Mention: Kazuki Komori for **M5**
-
-You can get this agent after installing scml-agents by running:
-
->>> scml_agents.get_agents(2022, track="collusion", winners_only=True)
-
-Winners of the SCML 2021 Competition
-====================================
-
-Oneshot Track
--------------
-* First Place: Assaf Tirangel, Yossi Weizman, Inbal Avraham for **Agent112**
-* Second Place: Takumu Shimizu for **Gentle**
-* Third Place (tie): Sagi Nachum for **Agent74**
-* Third Place (tie): Yuchen Liu, Rafik Hadfi and Takayuki Ito for **UCOneshotAgent**
-
-You can get these agents after installing scml-agents by running:
-
->>> scml_agents.get_agents(2021, track="oneshot", winners_only=True)
-
-Standard Track
---------------
-* First Place: Kazuki Komori for **M4**
-* Second Place: Mehmet Onur Keskin, Umit Cakan, Gevher Yesevi, Reyhan Aydogan, Amy Greenwald for **CharliesAgent**
-* Third Place: Koki Katagiri for **Artisan Kangaroo**
-
-You can get these agents after installing scml-agents by running:
-
->>> scml_agents.get_agents(2021, track="std", winners_only=True)
-
-Collusion Track
----------------
-* First Place: Kazuki Komori for **M4**
-* Second Place: Mehmet Onur Keskin, Umit Cakan, Gevher Yesevi, Reyhan Aydogan, Amy Greenwald for **CharliesAgent**
-
-You can get these agents after installing scml-agents by running:
-
->>> scml_agents.get_agents(2021, track="collusion", winners_only=True)
-
-Winners of the SCML 2020 Competition
-====================================
-
-Standard Track
---------------
-* First Place: Masahito Okuno for **SteadyMgr**
-* Second Place: Guy Heller, E. Gerson, I. Hen and M. Akrabi for **Agent30**
-
-You can get these agents after installing scml-agents by running:
-
->>> scml_agents.get_agents(2020, track="std", winners_only=True)
-
-Collusion Track
----------------
-* First Place: Kazuki Komori for **MMM**
-* Second Place: Ayan Sengupta for **Merchant**
-
-You can get these agents after installing scml-agents by running:
-
->>> scml_agents.get_agents(2020, track="collusion", winners_only=True)
-
-
-Agents accepted for the SCML 2025 qualifications
-================================================
-
-A list of all agents accepted for the SCML 2025 qualifications round can be found at `https://scml.cs.brown.edu/scml2025 <https://scml.cs.brown.edu/scml2022>`_
-
-Agents accepted for the SCML 2024 qualifications
-================================================
-
-A list of all agents accepted for the SCML 2024 qualifications round can be found at `https://scml.cs.brown.edu/scml2024 <https://scml.cs.brown.edu/scml2022>`_
-
-Agents accepted for the SCML 2023 qualifications
-================================================
-
-A list of all agents accepted for the SCML 2023 qualifications round can be found at `https://scml.cs.brown.edu/scml2023 <https://scml.cs.brown.edu/scml2022>`_
-
-Agents accepted for the SCML 2022 qualifications
-================================================
-
-A list of all agents accepted for the SCML 2022 qualifications round can be found at `https://scml.cs.brown.edu/scml2022 <https://scml.cs.brown.edu/scml2022>`_
-
-Agents accepted for the SCML 2021 qualifications
-================================================
-
-A list of all agents accepted for the SCML 2021 qualifications round can be found at `https://scml.cs.brown.edu/scml2021 <https://scml.cs.brown.edu/scml2021>`_
-
-
-Agents accepted for the SCML 2020 qualifications
-================================================
-
-This is a list of all the agents accepted for the SCML 2020 qualifications round.
-
-============= ============= =======================  ====================================================================================================
-  Team          Identifier    Agent/Class name         Team Members
-============= ============= =======================  ====================================================================================================
-  a-sengupta    a-sengupta    Merchant                 Ayan Sengupta
-------------- ------------- -----------------------  ----------------------------------------------------------------------------------------------------
-  Past Frauds   past_frauds   MhiranoAgent             Masanori Hirano
-------------- ------------- -----------------------  ----------------------------------------------------------------------------------------------------
-  Team 15       team_15       SteadyMgr                Masahito Okuno
-------------- ------------- -----------------------  ----------------------------------------------------------------------------------------------------
-  Team 17       team_17       WhAgent                  Noriko Yuasa
-------------- ------------- -----------------------  ----------------------------------------------------------------------------------------------------
-  Team 18       team_18       Mercu                    Kazuto Kakutani
-------------- ------------- -----------------------  ----------------------------------------------------------------------------------------------------
-  Team 19       team_19       Ashgent                  Shuhei Aoyama
-------------- ------------- -----------------------  ----------------------------------------------------------------------------------------------------
-  Team 20       team_20       CrescentAgent            Yuki Yoshimura
-------------- ------------- -----------------------  ----------------------------------------------------------------------------------------------------
-  Team 22       team_22       SavingAgent              Takuma Kawamura
-------------- ------------- -----------------------  ----------------------------------------------------------------------------------------------------
-  ThreadField   threadfield   GreedyFactoryManager2    Yuta Hosokawa
-------------- ------------- -----------------------  ----------------------------------------------------------------------------------------------------
-  Team May      team_may      MMM                      Kazuki Komori
-------------- ------------- -----------------------  ----------------------------------------------------------------------------------------------------
-  Team 10       team_10       UnicornAgent             Dolev Mutzari
-------------- ------------- -----------------------  ----------------------------------------------------------------------------------------------------
-  BARgent       bargent       BARGentCovid19           Zacharie Cohen, O. Fogler, D. Neuman and R. Cohen
-------------- ------------- -----------------------  ----------------------------------------------------------------------------------------------------
-  BIU-TH        biu_th        THBiu                    Haim Nafcha
-------------- ------------- -----------------------  ----------------------------------------------------------------------------------------------------
-  agent0x111    agent0x111    ASMASH                   Matanya, Shmulik, Assaf
-------------- ------------- -----------------------  ----------------------------------------------------------------------------------------------------
-  Team 25       team_25       Agent30                  Guy Heller, E. Gerson, I. Hen and M. Akrabi
-------------- ------------- -----------------------  ----------------------------------------------------------------------------------------------------
- Team 29       team_29       BIUDODY                  Dror Levy, D. Joffe and O. Nagar
-------------- ------------- -----------------------  ----------------------------------------------------------------------------------------------------
- Team 32       team_32       BeerAgent                Benjamin Wexler
-------------- ------------- -----------------------  ----------------------------------------------------------------------------------------------------
- Team 27       team_27       AgentProjectGC           Cihan Eran and Gevher Yesevi
-------------- ------------- -----------------------  ----------------------------------------------------------------------------------------------------
-  MontyHall     montyhall     MontyHall                Enrique Areyan Viqueira, E. Li, D. Silverston, A. Sridhar, J. Tsatsaros, A. Yuan and A. Greenwald
-============= ============= =======================  ====================================================================================================
-
- You can get these agents after installing scml-agents by running:
-
->>> scml_agents.get_agents(2020, track="any")
-
-
-Installation Note
-=================
-
-If you are on Apple M1, you will need to install tensorflow **before** installing this package on conda using the method described `here <https://developer.apple.com/metal/tensorflow-plugin/>`_
+.. BEGIN generated standings region
 
 .. BEGIN generated standings: 2026
 
@@ -581,11 +340,313 @@ Get them after install with:
 
 .. END generated standings: 2026
 
+.. BEGIN generated standings: 2019
+
+ANAC 2019 Results
+=================
+
+Standard Track
+--------------
+
+Qualified agents (6)
+~~~~~~~~~~~~~~~~~~~~
+
+.. list-table::
+   :header-rows: 1
+
+   * - #
+     - Agent
+     - ID
+     - Author
+     - Team
+     - Institute
+     - Country
+   * - 1
+     - CheapBuyerFactoryManager
+     - 21821
+     - cheap_buyer
+     - cheap_buyer
+     - —
+     - —
+   * - 2
+     - FJ2FactoryManager
+     - 21817
+     - fj2
+     - fj2
+     - —
+     - —
+   * - 3
+     - InsuranceFraudFactoryManager
+     - 21819
+     - iffm
+     - iffm
+     - —
+     - —
+   * - 4
+     - NVMFactoryManager
+     - 21822
+     - nvm
+     - nvm
+     - —
+     - —
+   * - 5
+     - RaptFactoryManager
+     - 21818
+     - rapt_fm
+     - rapt_fm
+     - —
+     - —
+   * - 6
+     - SAHAFactoryManager
+     - 21820
+     - saha
+     - saha
+     - —
+     - —
+
+.. END generated standings: 2019
+
+.. END generated standings region
+
+Winners of the SCML 2025 Competition
+====================================
+
+Oneshot Track
+-------------
+* First Place (tie): Yuzuru Kitamura for **CostAverseAgent**
+* First Place (tie): Shota Takayama for **Rchan**
+* First Place (tie): Rikuto Takano and Takeaki Sakabe for **AlmostEqualAgent**
+
+You can get these agents after installing scml-agents by running:
+
+>>> scml_agents.get_agents(2024, track="oneshot", winners_only=True)
+
+Standard Track
+--------------
+* First Place: Atsunaga Sadahiro for **AS0**
+* Second Place: Sota Sakaguchi and Takanobu Otsuka for **XenoSotaAgent**
+* Third Place: Sora Nishizaki and Takanobu Otsuka for **UltraSuperMiracleSoraFinalAgentZ**
+
+You can get this agent after installing scml-agents by running:
+
+>>> scml_agents.get_agents(2024, track="std", winners_only=True)
+
+Winners of the SCML 2024 Competition
+====================================
+
+Oneshot Track
+-------------
+* First Place: Ryoga Miyajima for **CautiousOneShotAgent**
+* Second Place: Arnie He, Akash Singirikonda, and Amy Greenwald for **MatchingPennies**
+* Third Place (tie): Hajime Endo for **DistRedistAgent**
+* Third Place (tie): Yuzuru Kitamura for **EpsilonGreedyAgent**
+
+You can get these agents after installing scml-agents by running:
+
+>>> scml_agents.get_agents(2024, track="oneshot", winners_only=True)
+
+Standard Track
+--------------
+* First Place: Gou Kazusa for **PenguinAgent**
+
+You can get this agent after installing scml-agents by running:
+
+>>> scml_agents.get_agents(2024, track="std", winners_only=True)
+
+Winners of the SCML 2023 Competition
+====================================
+
+Oneshot Track
+-------------
+* First Place: Pedro Hrosz Turini and Jaime Sichman for **QuantityOrientedAgent**
+* Second Place: Shota Kimata and Yuko Sakurai for **CCAgent**
+* Third Place: Masato Kijima for **KanbeAgent**
+
+You can get these agents after installing scml-agents by running:
+
+>>> scml_agents.get_agents(2023, track="oneshot", winners_only=True)
+
+Standard Track
+--------------
+* First Place: Sadahiro Atsunaga for **AgentSDH**
+
+You can get this agent after installing scml-agents by running:
+
+>>> scml_agents.get_agents(2023, track="std", winners_only=True)
+
+Collusion Track
+---------------
+* Honorary Mention: Kazuki Komori for **M5**
+
+You can get this agent after installing scml-agents by running:
+
+>>> scml_agents.get_agents(2023, track="collusion", winners_only=True)
+
+Winners of the SCML 2022 Competition
+====================================
+
+Oneshot Track
+-------------
+* First Place: Chris Mascioli and Amy Greenwald for **PatientAgent**
+* Second Place: Takumu Shimizu for **GentleS**
+* Third Place: Shiraz Nave, Amit Dayan, Sariel Turayfor **AgentSAS**
+
+You can get these agents after installing scml-agents by running:
+
+>>> scml_agents.get_agents(2022, track="oneshot", winners_only=True)
+
+Standard Track
+--------------
+* First Place: Ito Nobuhiro and Takanobu Otsukafor **Lobster**
+* Second Place: Kazuki Komori for **M5**
+* Third Place: Koki Katagiri and Tatanobu Otsuka for **Artisan Kangaroo**
+
+You can get these agents after installing scml-agents by running:
+
+>>> scml_agents.get_agents(2022, track="std", winners_only=True)
+
+Collusion Track
+---------------
+* Honorary Mention: Kazuki Komori for **M5**
+
+You can get this agent after installing scml-agents by running:
+
+>>> scml_agents.get_agents(2022, track="collusion", winners_only=True)
+
+Winners of the SCML 2021 Competition
+====================================
+
+Oneshot Track
+-------------
+* First Place: Assaf Tirangel, Yossi Weizman, Inbal Avraham for **Agent112**
+* Second Place: Takumu Shimizu for **Gentle**
+* Third Place (tie): Sagi Nachum for **Agent74**
+* Third Place (tie): Yuchen Liu, Rafik Hadfi and Takayuki Ito for **UCOneshotAgent**
+
+You can get these agents after installing scml-agents by running:
+
+>>> scml_agents.get_agents(2021, track="oneshot", winners_only=True)
+
+Standard Track
+--------------
+* First Place: Kazuki Komori for **M4**
+* Second Place: Mehmet Onur Keskin, Umit Cakan, Gevher Yesevi, Reyhan Aydogan, Amy Greenwald for **CharliesAgent**
+* Third Place: Koki Katagiri for **Artisan Kangaroo**
+
+You can get these agents after installing scml-agents by running:
+
+>>> scml_agents.get_agents(2021, track="std", winners_only=True)
+
+Collusion Track
+---------------
+* First Place: Kazuki Komori for **M4**
+* Second Place: Mehmet Onur Keskin, Umit Cakan, Gevher Yesevi, Reyhan Aydogan, Amy Greenwald for **CharliesAgent**
+
+You can get these agents after installing scml-agents by running:
+
+>>> scml_agents.get_agents(2021, track="collusion", winners_only=True)
+
+Winners of the SCML 2020 Competition
+====================================
+
+Standard Track
+--------------
+* First Place: Masahito Okuno for **SteadyMgr**
+* Second Place: Guy Heller, E. Gerson, I. Hen and M. Akrabi for **Agent30**
+
+You can get these agents after installing scml-agents by running:
+
+>>> scml_agents.get_agents(2020, track="std", winners_only=True)
+
+Collusion Track
+---------------
+* First Place: Kazuki Komori for **MMM**
+* Second Place: Ayan Sengupta for **Merchant**
+
+You can get these agents after installing scml-agents by running:
+
+>>> scml_agents.get_agents(2020, track="collusion", winners_only=True)
 
 
+Agents accepted for the SCML 2025 qualifications
+================================================
+
+A list of all agents accepted for the SCML 2025 qualifications round can be found at `https://scml.cs.brown.edu/scml2025 <https://scml.cs.brown.edu/scml2022>`_
+
+Agents accepted for the SCML 2024 qualifications
+================================================
+
+A list of all agents accepted for the SCML 2024 qualifications round can be found at `https://scml.cs.brown.edu/scml2024 <https://scml.cs.brown.edu/scml2022>`_
+
+Agents accepted for the SCML 2023 qualifications
+================================================
+
+A list of all agents accepted for the SCML 2023 qualifications round can be found at `https://scml.cs.brown.edu/scml2023 <https://scml.cs.brown.edu/scml2022>`_
+
+Agents accepted for the SCML 2022 qualifications
+================================================
+
+A list of all agents accepted for the SCML 2022 qualifications round can be found at `https://scml.cs.brown.edu/scml2022 <https://scml.cs.brown.edu/scml2022>`_
+
+Agents accepted for the SCML 2021 qualifications
+================================================
+
+A list of all agents accepted for the SCML 2021 qualifications round can be found at `https://scml.cs.brown.edu/scml2021 <https://scml.cs.brown.edu/scml2021>`_
 
 
+Agents accepted for the SCML 2020 qualifications
+================================================
+
+This is a list of all the agents accepted for the SCML 2020 qualifications round.
+
+============= ============= =======================  ====================================================================================================
+  Team          Identifier    Agent/Class name         Team Members
+============= ============= =======================  ====================================================================================================
+  a-sengupta    a-sengupta    Merchant                 Ayan Sengupta
+------------- ------------- -----------------------  ----------------------------------------------------------------------------------------------------
+  Past Frauds   past_frauds   MhiranoAgent             Masanori Hirano
+------------- ------------- -----------------------  ----------------------------------------------------------------------------------------------------
+  Team 15       team_15       SteadyMgr                Masahito Okuno
+------------- ------------- -----------------------  ----------------------------------------------------------------------------------------------------
+  Team 17       team_17       WhAgent                  Noriko Yuasa
+------------- ------------- -----------------------  ----------------------------------------------------------------------------------------------------
+  Team 18       team_18       Mercu                    Kazuto Kakutani
+------------- ------------- -----------------------  ----------------------------------------------------------------------------------------------------
+  Team 19       team_19       Ashgent                  Shuhei Aoyama
+------------- ------------- -----------------------  ----------------------------------------------------------------------------------------------------
+  Team 20       team_20       CrescentAgent            Yuki Yoshimura
+------------- ------------- -----------------------  ----------------------------------------------------------------------------------------------------
+  Team 22       team_22       SavingAgent              Takuma Kawamura
+------------- ------------- -----------------------  ----------------------------------------------------------------------------------------------------
+  ThreadField   threadfield   GreedyFactoryManager2    Yuta Hosokawa
+------------- ------------- -----------------------  ----------------------------------------------------------------------------------------------------
+  Team May      team_may      MMM                      Kazuki Komori
+------------- ------------- -----------------------  ----------------------------------------------------------------------------------------------------
+  Team 10       team_10       UnicornAgent             Dolev Mutzari
+------------- ------------- -----------------------  ----------------------------------------------------------------------------------------------------
+  BARgent       bargent       BARGentCovid19           Zacharie Cohen, O. Fogler, D. Neuman and R. Cohen
+------------- ------------- -----------------------  ----------------------------------------------------------------------------------------------------
+  BIU-TH        biu_th        THBiu                    Haim Nafcha
+------------- ------------- -----------------------  ----------------------------------------------------------------------------------------------------
+  agent0x111    agent0x111    ASMASH                   Matanya, Shmulik, Assaf
+------------- ------------- -----------------------  ----------------------------------------------------------------------------------------------------
+  Team 25       team_25       Agent30                  Guy Heller, E. Gerson, I. Hen and M. Akrabi
+------------- ------------- -----------------------  ----------------------------------------------------------------------------------------------------
+ Team 29       team_29       BIUDODY                  Dror Levy, D. Joffe and O. Nagar
+------------- ------------- -----------------------  ----------------------------------------------------------------------------------------------------
+ Team 32       team_32       BeerAgent                Benjamin Wexler
+------------- ------------- -----------------------  ----------------------------------------------------------------------------------------------------
+ Team 27       team_27       AgentProjectGC           Cihan Eran and Gevher Yesevi
+------------- ------------- -----------------------  ----------------------------------------------------------------------------------------------------
+  MontyHall     montyhall     MontyHall                Enrique Areyan Viqueira, E. Li, D. Silverston, A. Sridhar, J. Tsatsaros, A. Yuan and A. Greenwald
+============= ============= =======================  ====================================================================================================
+
+ You can get these agents after installing scml-agents by running:
+
+>>> scml_agents.get_agents(2020, track="any")
 
 
+Installation Note
+=================
 
-
+If you are on Apple M1, you will need to install tensorflow **before** installing this package on conda using the method described `here <https://developer.apple.com/metal/tensorflow-plugin/>`_
