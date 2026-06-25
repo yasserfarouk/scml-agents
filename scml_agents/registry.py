@@ -192,6 +192,20 @@ _REGISTRY: dict = json.loads(r"""
             }
         },
         {
+            "class_path": "scml_agents.scml2026.oneshot.team_21707.skri.SKRI",
+            "metadata": {
+                "finalist": false,
+                "winner": false,
+                "qualified": false,
+                "disqualified": true,
+                "uses_llm": false,
+                "has_report": false,
+                "has_description": false,
+                "team_id": "21707",
+                "name": "SKRI"
+            }
+        },
+        {
             "class_path": "scml_agents.scml2026.oneshot.team_21798.hi.oneshot.Oneshot",
             "metadata": {
                 "finalist": false,
@@ -257,7 +271,7 @@ _REGISTRY: dict = json.loads(r"""
                 "qualified": true,
                 "disqualified": false,
                 "uses_llm": false,
-                "has_report": false,
+                "has_report": true,
                 "has_description": true,
                 "team_id": "20941",
                 "name": "okagent"

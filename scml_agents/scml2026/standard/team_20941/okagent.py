@@ -32,7 +32,7 @@ class OkAgent(StdSyncAgent):
 
     def estimated_trading_price(self, partner):
 
-        nmi = self.negotiators[partner].nmi
+        nmi = self.negotiators[partner][0].nmi
 
         min_price = nmi.issues[2].min_value
         max_price = nmi.issues[2].max_value
