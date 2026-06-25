@@ -29,6 +29,9 @@ jobs:
           python -m site
           python -m pip install --upgrade pip
           python -m pip install -e ".[dev]"
+          # triton (a Linux-only torch dep) segfaults on import on the CI runner,
+          # crashing the whole test process. CPU-only testing never needs it.
+          python -m pip uninstall -y triton pytorch-triton || true
       - name: "Run pytest for ${{ matrix.python-version }}"
         run: "python -W ignore -m pytest tests"
 
