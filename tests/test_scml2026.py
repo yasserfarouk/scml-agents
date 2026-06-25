@@ -15,8 +15,13 @@ from .switches import (
 def test_get_agents_2026_counts():
     # Full set per track (qualified == not disqualified; finalists/winners
     # are announced later).
-    assert len(get_agents(2026, track="oneshot", as_class=False)) == 16
+    assert len(get_agents(2026, track="oneshot", as_class=False)) == 17
+    assert (
+        len(get_agents(2026, track="oneshot", qualified_only=True, as_class=False))
+        == 16
+    )
     assert len(get_agents(2026, track="std", as_class=False)) == 20
+    assert len(get_agents(2026, track="std", qualified_only=True, as_class=False)) == 20
     assert len(get_agents(2026, finalists_only=True)) == 0
     assert len(get_agents(2026, winners_only=True)) == 0
 
