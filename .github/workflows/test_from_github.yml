@@ -33,6 +33,10 @@ jobs:
           python -m pip install git+https://github.com/yasserfarouk/negmas.git
           yes | python -m pip uninstall scml
           python -m pip install git+https://github.com/yasserfarouk/scml.git
+          # triton (a Linux-only torch dep) segfaults on import on the CI runner,
+          # crashing the whole test process. CPU-only testing never needs it.
+          # Keep last so the scml/negmas reinstalls above can't drag it back in.
+          python -m pip uninstall -y triton pytorch-triton || true
       - name: "Run pytest for ${{ matrix.python-version }}"
         run: "python -W ignore -m pytest tests"
 
