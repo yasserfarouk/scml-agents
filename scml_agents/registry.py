@@ -96,7 +96,7 @@ _REGISTRY: dict = json.loads(r"""
         {
             "class_path": "scml_agents.scml2026.oneshot.team_21155.time_weighted_agent2.TimeWeightedAgent",
             "metadata": {
-                "finalist": false,
+                "finalist": true,
                 "winner": false,
                 "qualified": true,
                 "disqualified": false,
@@ -138,7 +138,7 @@ _REGISTRY: dict = json.loads(r"""
         {
             "class_path": "scml_agents.scml2026.oneshot.team_21484.latice_oneshot_agent.LatticeOneShotAgent",
             "metadata": {
-                "finalist": false,
+                "finalist": true,
                 "winner": false,
                 "qualified": true,
                 "disqualified": false,
@@ -180,7 +180,7 @@ _REGISTRY: dict = json.loads(r"""
         {
             "class_path": "scml_agents.scml2026.oneshot.team_21637.bayesian_agent.BayesianAgent",
             "metadata": {
-                "finalist": false,
+                "finalist": true,
                 "winner": false,
                 "qualified": true,
                 "disqualified": false,
@@ -250,7 +250,7 @@ _REGISTRY: dict = json.loads(r"""
         {
             "class_path": "scml_agents.scml2026.oneshot.team_21813.sbdoneshot_agent.SBDOneShot",
             "metadata": {
-                "finalist": false,
+                "finalist": true,
                 "winner": false,
                 "qualified": true,
                 "disqualified": false,
@@ -378,7 +378,7 @@ _REGISTRY: dict = json.loads(r"""
         {
             "class_path": "scml_agents.scml2026.standard.team_21282.taka_link_agent.TakaLinkAgent",
             "metadata": {
-                "finalist": false,
+                "finalist": true,
                 "winner": false,
                 "qualified": true,
                 "disqualified": false,
@@ -392,7 +392,7 @@ _REGISTRY: dict = json.loads(r"""
         {
             "class_path": "scml_agents.scml2026.standard.team_21303.cow.COW",
             "metadata": {
-                "finalist": false,
+                "finalist": true,
                 "winner": false,
                 "qualified": true,
                 "disqualified": false,
@@ -434,7 +434,7 @@ _REGISTRY: dict = json.loads(r"""
         {
             "class_path": "scml_agents.scml2026.standard.team_21650.sbd_agent.SBD",
             "metadata": {
-                "finalist": false,
+                "finalist": true,
                 "winner": false,
                 "qualified": true,
                 "disqualified": false,
@@ -448,7 +448,7 @@ _REGISTRY: dict = json.loads(r"""
         {
             "class_path": "scml_agents.scml2026.standard.team_21653.horizon_aware_agent.HorizonAwareAgent",
             "metadata": {
-                "finalist": false,
+                "finalist": true,
                 "winner": false,
                 "qualified": true,
                 "disqualified": false,
@@ -476,7 +476,7 @@ _REGISTRY: dict = json.loads(r"""
         {
             "class_path": "scml_agents.scml2026.standard.team_21695.rohn.Rohn",
             "metadata": {
-                "finalist": false,
+                "finalist": true,
                 "winner": false,
                 "qualified": true,
                 "disqualified": false,
@@ -504,7 +504,7 @@ _REGISTRY: dict = json.loads(r"""
         {
             "class_path": "scml_agents.scml2026.standard.team_21800.hi.std.Std",
             "metadata": {
-                "finalist": false,
+                "finalist": true,
                 "winner": false,
                 "qualified": true,
                 "disqualified": false,

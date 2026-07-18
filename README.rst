@@ -45,6 +45,52 @@ ANAC 2026 Results
 OneShot Track
 -------------
 
+Finalists (4)
+~~~~~~~~~~~~~
+
+.. list-table::
+   :header-rows: 1
+
+   * - #
+     - Agent
+     - ID
+     - Author
+     - Team
+     - Institute
+     - Country
+   * - 1
+     - BayesianAgent
+     - 21637
+     - kouta miyamoto
+     - Team 371
+     - Kyoto University
+     - Japan
+   * - 2
+     - LatticeOneshotAgent
+     - 21484
+     - Yuzuru Kitamura
+     - Team179
+     - Tokyo University of Agriculture and Technology
+     - Japan
+   * - 3
+     - SBDOneShot
+     - 21813
+     - Hajime Endo
+     - Team Ukku
+     - Tokyo University of Agriculture and Technology
+     - Japan
+   * - 4
+     - TimeWeightedAgent
+     - 21155
+     - ishigami
+     - Team 400
+     - Nagoya Institute of Technology
+     - Japan
+
+Get them after install with:
+
+>>> scml_agents.get_agents(2026, track="oneshot", finalists_only=True)
+
 Qualified agents (16)
 ~~~~~~~~~~~~~~~~~~~~~
 
@@ -179,6 +225,66 @@ Get them after install with:
 
 Standard Track
 --------------
+
+Finalists (6)
+~~~~~~~~~~~~~
+
+.. list-table::
+   :header-rows: 1
+
+   * - #
+     - Agent
+     - ID
+     - Author
+     - Team
+     - Institute
+     - Country
+   * - 1
+     - COW
+     - 21303
+     - Naoki Ushida
+     - Team 389
+     - Nagoya Institute of Technology
+     - Japan
+   * - 2
+     - heystd
+     - 21800
+     - カズマ
+     - チーム298
+     - Tokyo University of Agriculture and Technology
+     - Japan
+   * - 3
+     - HorizonAwareAgent
+     - 21653
+     - Yuzuru Kitamura
+     - Team179
+     - Tokyo University of Agriculture and Technology
+     - Japan
+   * - 4
+     - Rohn
+     - 21695
+     - Ryoshin Hatakeyama
+     - Team 497
+     - Tokyo University of Agriculture and Technology
+     - Japan
+   * - 5
+     - SBD
+     - 21650
+     - Hajime Endo
+     - Team Ukku
+     - Tokyo University of Agriculture and Technology
+     - Japan
+   * - 6
+     - TakaLinkAgent
+     - 21282
+     - Takafumi Omori
+     - TakaTakaWorks
+     - Nagoya Institute of Technology
+     - Japan
+
+Get them after install with:
+
+>>> scml_agents.get_agents(2026, track="standard", finalists_only=True)
 
 Qualified agents (20)
 ~~~~~~~~~~~~~~~~~~~~~
