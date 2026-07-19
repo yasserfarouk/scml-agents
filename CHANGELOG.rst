@@ -1,6 +1,29 @@
 Changelog
 =========
 
+0.5.1 (2026.07.19)
+-------------------
+
+* Adding SCML 2026 Agents, qualification lists, and finalists (4 oneshot, 6 standard)
+* Implementing lazy imports to fix slow import times (~95s -> ~3s)
+* Removing an unused 8.8MB CSV file
+* CI: uninstalling triton to fix a segfault (exit 139) in tests
+* Various test corrections and README updates
+
+0.5.0 (2026.03.15)
+-------------------
+
+* Migrating from setup.py to pyproject.toml
+* Switching from black/isort to ruff for formatting and linting
+* Replacing deprecated get_ami() with get_nmi() and adding None checks for its return value
+* Fixing pandas MultiIndex indexing and a PyTorch macOS segfault
+* Adding a GitHub Actions workflow to publish to PyPI on tags
+
+0.4.14 (2026.03.14)
+-------------------
+
+* Fixing numpy imports for compatibility with newer numpy versions
+
 0.4.13 (2025.08.27)
 -------------------
 

@@ -45,7 +45,7 @@ include = [
     "scml_agents/**/*",
     "AUTHORS.rst",
     "CONTRIBUTING.rst",
-    "HISTORY.rst",
+    "CHANGELOG.rst",
     "LICENSE",
     "README.rst",
     "MANIFEST.in",
