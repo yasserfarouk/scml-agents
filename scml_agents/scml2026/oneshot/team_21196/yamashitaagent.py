@@ -106,7 +106,7 @@ class YamashitaAgent(OneShotSyncAgent):
             beta_slope = (y - x) / 0.8
             penalty_weight = beta_slope * (shortfall_penalty - 0.2) + x
 
-            ratio = all_offers / needs
+            ratio = all_offers / needs if needs > 0 else float("inf")
             if 1.0 < ratio < 3.0:
                 expedite = 10 * np.exp(-1.151 * (ratio - 1.0))
             else:
