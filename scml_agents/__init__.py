@@ -4,6 +4,7 @@ SCML Agents package with lazy imports for fast loading.
 
 Use get_agents() to retrieve agent classes for specific competition years.
 """
+
 from __future__ import annotations
 
 import importlib
@@ -11,7 +12,11 @@ import sys
 from typing import TYPE_CHECKING
 
 # Only import get_agents and FAILING_AGENTS - these are lightweight
+from ._rand import register as _register_seeder
 from .agents import FAILING_AGENTS, get_agents
+
+# Seed torch whenever NEGMAS_RAND_SEED asks for a seed (a no-op otherwise)
+_register_seeder()
 
 __version__ = "0.5.1"
 

@@ -1,6 +1,12 @@
 Changelog
 =========
 
+Unreleased
+-------------------
+
+* Following NegMAS's global seed: when ``NEGMAS_RAND_SEED`` is set, torch is
+  seeded with it too (no effect when the variable is unset)
+
 0.5.1 (2026.07.19)
 -------------------
 
