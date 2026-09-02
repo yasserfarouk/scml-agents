@@ -18,7 +18,7 @@ from .agents import FAILING_AGENTS, get_agents
 # Seed torch whenever NEGMAS_RAND_SEED asks for a seed (a no-op otherwise)
 _register_seeder()
 
-__version__ = "0.5.1"
+__version__ = "0.5.2"
 
 __all__ = [
     "__version__",

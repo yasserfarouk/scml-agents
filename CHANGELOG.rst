@@ -1,11 +1,14 @@
 Changelog
 =========
 
-Unreleased
+0.5.2 (2026.09.02)
 -------------------
 
+* Requiring NegMAS 0.16.0 and SCML 0.8.4 (the latest releases on PyPI)
 * Following NegMAS's global seed: when ``NEGMAS_RAND_SEED`` is set, torch is
   seeded with it too (no effect when the variable is unset)
+* Fixing an intermittent ZeroDivisionError in YamashitaAgent (2026 oneshot)
+  when the agent had no remaining needs while offers were still on the table
 
 0.5.1 (2026.07.19)
 -------------------

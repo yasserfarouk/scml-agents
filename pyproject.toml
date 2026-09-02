@@ -1,6 +1,6 @@
 [project]
 name = "scml-agents"
-version = "0.5.1"
+version = "0.5.2"
 description = "Agents submitted to the SCML competition or contributed by the community"
 readme = "README.rst"
 license = "GPL-2.0-or-later"
@@ -17,8 +17,8 @@ classifiers = [
 requires-python = ">=3.11"
 dependencies = [
     "click>=6.0",
-    "scml>=0.8.3",
-    "negmas>=0.15.7",
+    "scml>=0.8.4",
+    "negmas>=0.16.0",
     "torch>=2.2.0",  # Minimum version for macOS stability
     "numpy",
     "pulp",
