@@ -109,7 +109,7 @@ prettytable==3.16.0
 progressbar2==4.5.0
 prometheus_client==0.22.0
 prompt_toolkit==3.0.51
-protobuf==5.29.4
+protobuf==7.34.0rc1
 psutil==7.0.0
 ptyprocess==0.7.0
 PuLP==3.1.1
